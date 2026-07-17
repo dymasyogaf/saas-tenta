@@ -9,9 +9,11 @@ export default defineNuxtConfig({
     '@vee-validate/nuxt',
   ],
 
-  // Supabase config (keys will come from .env)
+  // Supabase config
   supabase: {
     redirect: false, // We'll handle auth redirects manually
+    url: process.env.SUPABASE_URL || 'https://pjmsnphhnporuownasxe.supabase.co',
+    key: process.env.SUPABASE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBqbXNucGhobnBvcnVvd25hc3hlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQxODU0NDcsImV4cCI6MjA5OTc2MTQ0N30.nqxxJD-KqRcQjDrwEbyNBcKEiCY151_kNaBwk1APhbA'
   },
 
   // Konfigurasi Nitro untuk deployment ke Cloudflare Pages
