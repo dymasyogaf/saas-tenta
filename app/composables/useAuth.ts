@@ -48,9 +48,17 @@ export const useAuth = () => {
       if (err) throw err
       return data
     } catch (err: any) {
-      const errorText = typeof err.message === 'string' ? err.message : 
-                        (err.data?.message || err.error_description || JSON.stringify(err))
-      error.value = errorText || 'Gagal mendaftar. Silakan coba lagi.'
+      if (err instanceof Error) {
+        error.value = err.message
+      } else {
+        // Coba bongkar paksa isi dari error yang aneh ini
+        try {
+          const keys = Object.keys(err).join(', ')
+          error.value = `Error Keys: [${keys}] - Raw: ${String(err)} - Details: ${JSON.stringify(err)}`
+        } catch(e) {
+          error.value = 'Un-parsable error occurred.'
+        }
+      }
       return null
     } finally {
       loading.value = false
