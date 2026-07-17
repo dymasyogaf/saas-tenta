@@ -1,0 +1,8 @@
+body { background-color: #F5F7FA; color: #0E1B2A; }
+h1, h2, h3, h4, h5, h6 { font-family: 'Plus Jakarta Sans', sans-serif; }
+
+/* Interactive Tabs Logic */
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+.nav-item.active { background-color: #FFF4EB; color: #FF7A1A; font-weight: 600; }
+.nav-item.active i { color: #FF7A1A; }

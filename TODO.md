@@ -1,0 +1,293 @@
+# 📋 Tentaklik SaaS — Master To-Do List
+
+> Dokumen ini dihasilkan dari analisis `persiapan.md` + mockup HTML yang sudah ada.
+> Terakhir diperbarui: 16 Juli 2026
+
+---
+
+## Hasil Analisis `persiapan.md`
+
+### ✅ Yang Sudah Tepat
+- Stack decision: Nuxt 3 + Supabase + Cloudflare — solid choice
+- Pembagian 4 fase sudah runtut dan realistis
+- Library yang dipilih (Pinia, VeeValidate+Zod, ApexCharts) sesuai kebutuhan
+- Awareness bahwa API keys harus di-server-side sudah ada
+
+### ⚠️ Gap / Yang Perlu Ditambah
+1. **OTP Provider** — ✅ Sudah diputuskan pakai **Fonnte** (WhatsApp native, murah, populer di Indonesia)
+2. **Escrow system** — Disebut di requirement awal tapi belum ada di fase manapun
+3. **Admin panel** — Tidak disebut sama sekali, padahal ada flow "approve akun iklan" yang butuh sisi admin
+4. **Database schema** — Belum ada rencana tabel Supabase
+5. **Testing strategy** — Belum disebut
+6. **CI/CD pipeline** — Hanya sebatas "push auto-deploy", belum ada linting/preview deploy
+7. **Rate limiting & queue** — Ads API punya rate limit ketat, belum direncanakan
+8. **Multi-tenant RLS** — Belum direncanakan detail policy-nya
+
+---
+
+## 📦 FASE 0: Pre-Development (Sebelum Ngoding)
+
+### 0.1 Finalisasi Keputusan Arsitektur
+- [x] ~~Pilih OTP provider~~ → **Fonnte** ✅
+- [x] ~~Tentukan payment gateway~~ → **Duidku** ✅
+- [ ] Putuskan deployment: Cloudflare Pages + Workers vs Vercel
+- [ ] Tentukan apakah admin panel terpisah atau di-route yang sama
+- [ ] Tentukan domain & subdomain structure (app.tentaklik.com? dashboard.tentaklik.com?)
+
+### 0.2 Buat Desain Database Schema
+- [ ] Tabel `users` — profil, email, phone, 2fa_enabled, pin_hash
+- [ ] Tabel `bank_accounts` — pemilik, nama bank, nomor rekening (FK ke users)
+- [ ] Tabel `ad_accounts` — platform (meta/tiktok/google), status, user_id
+- [ ] Tabel `saldo` — balance, pending_balance, user_id
+- [ ] Tabel `transactions` — type (topup/withdraw/transfer), amount, status, xendit_ref
+- [ ] Tabel `ad_issues` — campaign_id, platform, issue_type, status
+- [ ] Tabel `notifications` — user_id, type, message, read, created_at
+- [ ] Tabel `referral_codes` — code, user_id, usage_count, expires_at
+- [ ] Siapkan RLS policies per tabel (user hanya bisa akses data sendiri)
+
+---
+
+## 🔑 FASE 1: Registrasi Akun & API Keys
+
+### 1.1 Ads Platform APIs
+- [ ] **Meta/Facebook Ads**
+  - [ ] Buat Facebook Business App di [developers.facebook.com](https://developers.facebook.com)
+  - [ ] Atur permissions: `ads_read`, `ads_management`
+  - [ ] Generate long-lived access token (~3 bulan)
+  - [ ] Catat App ID, App Secret, Access Token → simpan di env
+- [ ] **TikTok Ads**
+  - [ ] Daftar di [TikTok API for Business](https://business-api.tiktok.com)
+  - [ ] Apply untuk Marketing API access
+  - [ ] Catat App ID, Secret → simpan di env
+- [ ] **Google Ads**
+  - [ ] Buat project di [Google Cloud Console](https://console.cloud.google.com)
+  - [ ] Enable Google Ads API
+  - [ ] Setup OAuth 2.0 credentials
+  - [ ] Apply untuk Developer Token
+  - [ ] Catat Client ID, Client Secret, Developer Token, Refresh Token → simpan di env
+
+### 1.2 Payment Gateway
+- [ ] **Duidku**
+  - [ ] Daftar di [duidku.com](https://duidku.com)
+  - [ ] Dapatkan API keys (sandbox mode dulu)
+  - [ ] Setup payment channels (VA, QRIS, e-wallet)
+  - [ ] Konfigurasi callback URL (akan diisi setelah deploy)
+  - [ ] Catat Merchant Code, API Key, Secret Key → simpan di env
+
+### 1.3 OTP / WhatsApp (Fonnte) ✅
+- [x] ~~Daftar di fonnte.com~~
+- [x] ~~Hubungkan device WhatsApp (scan QR)~~
+- [x] ~~Dapatkan API token dari dashboard Fonnte~~
+- [x] ~~Test kirim OTP ke nomor sendiri~~
+- [x] ~~Catat API Token → simpan di env~~
+
+### 1.4 Cloudflare
+- [ ] Buat akun Cloudflare (jika belum)
+- [ ] Setup domain tentaklik.com (atau subdomain)
+- [ ] Siapkan Cloudflare Pages project
+
+### 1.5 Supabase ✅
+- [x] ~~Buat project baru di [supabase.com](https://supabase.com)~~
+- [x] ~~Catat: Project URL, anon key, service_role key~~
+- [ ] Enable Auth providers yang dibutuhkan (Email, Phone)
+- [ ] Setup Storage bucket untuk dokumen KYC
+
+---
+
+## 🏗️ FASE 2: Inisialisasi Proyek & Migrasi Frontend
+
+### 2.1 Setup Nuxt 3 Project ✅
+- [x] ~~`npx nuxi@latest init`~~ — Nuxt 4.4.8 (Nitro 2.13.4, Vite 7.3.6, Vue 3.5.40)
+- [x] ~~Install dependencies~~ — @nuxtjs/supabase, @pinia/nuxt, @nuxtjs/tailwindcss, @vee-validate/nuxt, zod, apexcharts, vue3-apexcharts, date-fns, lucide-vue-next
+- [x] ~~Konfigurasi `nuxt.config.ts`~~ — modules, runtimeConfig (Duidku, Fonnte, Meta, TikTok, Google), app head
+- [x] ~~Setup Tailwind config~~ — migrasi ke `tailwind.config.ts`
+- [x] ~~Copy fonts setup~~ — Inter + Plus Jakarta Sans via Google Fonts
+- [x] ~~Copy color system~~ — ink-*, orange-* palette + custom shadows
+- [x] ~~Setup `app.vue`~~ — NuxtLayout + NuxtPage
+- [x] ~~`.env.example`~~ — template semua API keys
+- [x] ~~Dev server tested~~ — berjalan di localhost:3000 ✅
+
+### 2.2 Buat Layout Structure ✅
+- [x] ~~`layouts/default.vue`~~ — untuk landing page / auth pages
+- [x] ~~`layouts/dashboard.vue`~~ — migrasi dari mockup:
+  - [x] ~~Sidebar (nav items, logo, mobile toggle)~~
+  - [x] ~~Header (title, notification dropdown, top-up button, profile dropdown)~~
+  - [x] ~~Mobile overlay & responsive behavior~~
+
+### 2.3 Migrasi Halaman dari Mockup HTML ✅
+Setiap view di `index.html` menjadi halaman Vue terpisah:
+
+| Mockup View ID | Target File | Komponen Yang Perlu Dipecah |
+|---|---|---|
+| `view-dashboard` | `pages/dashboard/index.vue` | StatsCard, CampaignRow |
+| `view-platform` | `pages/dashboard/platform.vue` | HeroBanner, PlatformCard, StepsAccordion |
+| `view-saldo` | `pages/dashboard/saldo.vue` | SaldoTabs, SearchFilter, DataTable |
+| `view-bermasalah` | `pages/dashboard/bermasalah.vue` | FilterBar, IssueTable |
+| `view-notifikasi` | `pages/dashboard/notifikasi.vue` | NotifTabs, EmptyState |
+| `view-topup` | `pages/dashboard/topup.vue` | BalanceCard, ReportCard, MutationTabs, MutationTable |
+| `view-profile` | `pages/dashboard/profile.vue` | UserCard, ProfileNav, ProfileForm, BankForm, LayananCard, ReferralCard |
+
+- [x] ~~**Dashboard**~~ — port `view-dashboard` (stats cards + campaign table)
+- [x] ~~**Platform Iklan**~~ — port `view-platform` (hero + 3 platform cards + steps accordion)
+- [x] ~~**Saldo Iklan**~~ — port `view-saldo` (5 sub-tabs + filters + tables)
+- [x] ~~**Iklan Bermasalah**~~ — port `view-bermasalah` (Meta/TikTok tabs + filter bar)
+- [x] ~~**Notifikasi**~~ — port `view-notifikasi` (tabs + empty state)
+- [x] ~~**Top Up / My Balance**~~ — port `view-topup` (balance summary + report + 5 mutation tabs)
+- [x] ~~**Profile**~~ — port `view-profile` (sidebar nav + 4 sub-sections)
+
+### 2.4 Migrasi Modals → Vue Components ✅
+- [x] ~~`components/modal/PasswordModal.vue`~~ — dari `modal-password`
+- [x] ~~`components/modal/PinModal.vue`~~ — dari `modal-pin`
+- [x] ~~`components/modal/VerifyPhoneModal.vue`~~ — dari `modal-verify-phone`
+
+### 2.5 Migrasi Auth Pages ✅
+- [x] ~~`pages/login.vue`~~ — dari `login.html`
+- [x] ~~`pages/register.vue`~~ — dari `register.html`
+
+### 2.6 Shared Components ✅
+- [x] ~~`components/shared/Toast.vue`~~ — migrasi showToast()
+- [x] ~~`components/shared/EmptyState.vue`~~ — reusable "Data tidak ditemukan"
+- [x] ~~`components/shared/DataTable.vue`~~ — reusable table component
+- [x] ~~`components/shared/SearchInput.vue`~~
+- [x] ~~`components/shared/FilterDropdown.vue`~~
+
+### 2.7 Migrasi JavaScript → Composables & Stores ✅
+| Fungsi di `script.js` | Target | Status |
+|---|---|---|
+| `switchTab()` | Vue Router navigation | ✅ Done |
+| `toggleSidebar()` | Local component state di layout | ✅ Done |
+| `showToast()` | `composables/useToast.ts` | ✅ Done |
+| `toggleSteps()` | Local component state (ref) | ✅ Done |
+| `switchSaldoTab()` | Local component state | ✅ Done |
+| `switchBermasalahTab()` | Local component state | ✅ Done |
+| `switchProfileTab()` | Local component state | ✅ Done |
+| `toggleModal()` | Vue v-model components | ✅ Done |
+| `switchBalanceTab()` | Local component state | ✅ Done |
+| `toggleProfileMenu()` | Local component state | ✅ Done |
+| `toggleNotificationMenu()` | Local component state | ✅ Done |
+
+### 2.8 Fitur Verifikasi Akun / eKYC (Alur MVP Webhook)
+- [x] ~~Buat halaman utuh (full page) untuk `/dashboard/verification`.~~
+- [x] ~~Sesuaikan warna UI menjadi **Oranye** dan ubah copywriting "Benefit" ke ranah Ads.~~
+- [x] ~~**Rombak Alur Wizard (Menjadi 3 Langkah Saja):**~~
+  - ~~**Langkah 1 (Data Diri):** Input Upload KTP, **Upload Pas Photo** (baru), Nama, NIK, Tgl Lahir, Email, No HP. Hapus kewajiban Ambil Foto Selfie kamera.~~
+  - ~~**Langkah 2 (Ringkasan):** Review data sebelum dikirim.~~
+  - ~~**Langkah 3 (Verifikasi OTP):** Gembok keamanan. Kirim kode OTP via Fonnte ke No HP pengguna saat mereka memencet "Kirim".~~
+- [x] ~~**Integrasi Webhook & Status:**~~
+  - ~~Jika OTP divalidasi dengan benar, tembakkan data teks ke URL Webhook (Google Sheet) lengkap beserta Foto KTP dan Pas Photo Base64.~~
+  - ~~Simpan status `profile_verified: true` ke dalam Supabase `user_metadata`.~~
+  - ~~Arahkan pengguna (redirect) kembali ke `/dashboard`.~~
+- [x] ~~**Update UI Profil (`profile.vue`):**~~
+  - ~~Tampilkan badge hijau "Profile Terverifikasi" (menggantikan tombol oranye) jika `user_metadata.profile_verified` bernilai `true`.~~
+
+---
+
+## 🔒 FASE 3: Backend — Supabase & Server Routes
+
+### 3.1 Supabase Database Setup ✅
+- [x] ~~Buat semua tabel sesuai schema di Fase 0.2~~
+- [x] ~~Setup RLS policies:~~
+  - [x] ~~Users: `auth.uid() = id`~~
+  - [x] ~~Transactions: `auth.uid() = user_id`~~
+  - [x] ~~Ad accounts: `auth.uid() = user_id`~~
+  - [x] ~~Notifications: `auth.uid() = user_id`~~
+- [x] ~~Buat database functions (jika perlu calculated fields)~~
+- [x] ~~Enable Realtime pada tabel `notifications`~~
+
+### 3.2 Supabase Auth ✅
+- [ ] Konfigurasi email auth (confirm email flow)
+- [ ] Konfigurasi phone auth (untuk OTP)
+- [x] ~~Setup auth middleware di Nuxt (`middleware/auth.global.ts`)~~
+- [x] ~~Buat `composables/useAuth.ts` (login, register, logout, getUser)~~
+- [x] ~~Implementasi fungsi auth ke `pages/login.vue` & `pages/register.vue`~~
+
+### 3.3 Nuxt Server Routes — Payment (Duidku)
+- [ ] `server/api/duidku/create-payment.post.ts` — buat request pembayaran (VA/QRIS/e-wallet)
+- [ ] `server/api/duidku/callback.post.ts` — terima callback pembayaran dari Duidku
+- [ ] `server/api/duidku/check-status.get.ts` — cek status transaksi
+- [ ] Implementasi idempotency key untuk callback
+- [ ] Setup callback signature verification (Merchant Code + API Key hash)
+
+### 3.4 Nuxt Server Routes — Ads API Proxy
+- [ ] `server/api/ads/meta/accounts.get.ts` — list Meta ad accounts
+- [ ] `server/api/ads/meta/campaigns.get.ts` — campaign performance
+- [ ] `server/api/ads/tiktok/accounts.get.ts` — list TikTok ad accounts
+- [ ] `server/api/ads/tiktok/campaigns.get.ts` — campaign performance
+- [ ] `server/api/ads/google/accounts.get.ts` — list Google ad accounts
+- [ ] `server/api/ads/google/campaigns.get.ts` — campaign performance
+- [ ] Implementasi caching (Redis / in-memory) untuk API responses
+- [ ] Handle rate limiting per platform
+
+### 3.5 Nuxt Server Routes — OTP ✅
+- [x] ~~`server/api/otp/send.post.ts` — kirim OTP via SMS/WhatsApp~~
+- [x] ~~`server/api/otp/verify.post.ts` — verifikasi OTP~~
+- [x] ~~Rate limit: max 5 attempt per session~~
+- [x] ~~Implementasi countdown (350 detik sesuai mockup)~~
+
+### 3.6 Nuxt Server Routes — Saldo & Escrow
+- [ ] `server/api/saldo/balance.get.ts` — ambil saldo user
+- [ ] `server/api/saldo/topup.post.ts` — request top-up (trigger Duidku payment)
+- [ ] `server/api/saldo/withdraw.post.ts` — request penarikan
+- [ ] `server/api/saldo/transfer.post.ts` — pindah saldo antar akun
+- [ ] Implementasi escrow logic (hold → release → refund)
+
+---
+
+## 🧪 FASE 4: Pinia Stores & Data Flow
+
+### 4.1 Stores
+- [ ] `stores/user.ts` — user profile, auth state
+- [ ] `stores/saldo.ts` — balance, transactions, mutations
+- [ ] `stores/ads.ts` — ad accounts, campaigns, issues
+- [ ] `stores/notification.ts` — notifikasi list, unread count, realtime subscription
+
+### 4.2 Composables
+- [ ] `composables/useAuth.ts` — login, register, logout, check session
+- [ ] `composables/useSaldo.ts` — top-up flow, withdraw flow
+- [ ] `composables/useAds.ts` — fetch campaigns, request new account
+- [ ] `composables/useToast.ts` — toast notification system
+- [ ] `composables/useModal.ts` — modal open/close management
+- [ ] `composables/useSidebar.ts` — sidebar toggle (mobile)
+
+---
+
+## 🚀 FASE 5: Deployment & Go-Live
+
+### 5.1 Environment Setup
+- [ ] Buat `.env` file dengan semua API keys
+- [ ] Setup Cloudflare Pages environment variables
+- [ ] Pastikan semua secrets TIDAK ada di frontend code
+
+### 5.2 Deploy ke Cloudflare
+- [ ] Connect GitHub repo ke Cloudflare Pages
+- [ ] Set build command: `npm run build`
+- [ ] Set preset ke `cloudflare-pages`
+- [ ] Test preview deployment
+- [ ] Setup custom domain
+
+### 5.3 Post-Deploy Config
+- [ ] Update Duidku callback URL ke production URL
+- [ ] Update Meta/TikTok/Google OAuth redirect URLs
+- [ ] Update Supabase allowed redirect URLs
+- [ ] Test semua flow end-to-end di production
+
+### 5.4 Monitoring & Security
+- [ ] Setup error tracking (Sentry atau Cloudflare Analytics)
+- [ ] Implementasi rate limiting di server routes
+- [ ] Review semua RLS policies
+- [ ] CORS config untuk production domain only
+
+---
+
+## 📌 Quick Win — Mulai Hari Ini
+
+Urutan yang disarankan untuk hari ini:
+
+1. **[30 menit]** Daftar akun developer: Meta, TikTok, Google (Fase 1.1)
+2. **[5 menit]** Daftar Xendit test mode (Fase 1.2)
+3. **[15 menit]** Buat Supabase project (Fase 1.5)
+4. **[30 menit]** Init Nuxt 3 project + install dependencies (Fase 2.1)
+5. **[1-2 jam]** Migrasi layout dashboard (sidebar + header) (Fase 2.2)
+6. **[2-3 jam]** Port halaman Dashboard & Platform Iklan (Fase 2.3)
+
+> Total estimasi hari pertama: ~4-5 jam untuk fondasi yang solid ✊

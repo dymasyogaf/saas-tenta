@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Masuk - Tentaklik SaaS</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="assets/style.css">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="assets/tailwind-config.js"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4 font-sans antialiased bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMSIgY3k9IjEiIHI9IjEiIGZpbGw9InJnYmEoMTQsIDI3LCA0MiwgMC4wMykiLz48L3N2Zz4=')]">
+  
+  <div class="w-full max-w-md bg-white rounded-3xl shadow-xl shadow-ink-900/5 border border-ink-100 p-8 md:p-10 relative overflow-hidden">
+    <!-- Decorative Blob -->
+    <div class="absolute top-0 right-0 w-32 h-32 bg-orange-500 opacity-5 rounded-full blur-2xl -mr-10 -mt-10 pointer-events-none"></div>
+
+    <div class="flex justify-center mb-8">
+      <img src="assets/logo-full.png" alt="Tentaklik Logo" class="h-8 w-auto">
+    </div>
+
+    <div class="text-center mb-8">
+      <h1 class="text-2xl font-display font-bold text-ink-900 mb-2">Selamat Datang Kembali</h1>
+      <p class="text-ink-500 text-sm">Masuk untuk mengelola kampanye iklan Anda.</p>
+    </div>
+
+    <!-- Error Message -->
+    <div id="error-message" class="hidden flex items-center gap-2 bg-red-50 text-red-600 p-3 mb-6 rounded-xl border border-red-200 text-sm font-medium">
+      <i data-lucide="alert-circle" class="w-4 h-4 shrink-0"></i>
+      <span>Email atau password salah.</span>
+    </div>
+
+    <form id="loginForm" class="space-y-5">
+      <div>
+        <label class="block text-sm font-semibold text-ink-900 mb-2">Email</label>
+        <div class="relative">
+          <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-ink-400">
+            <i data-lucide="mail" class="w-5 h-5"></i>
+          </div>
+          <input type="email" id="email" required placeholder="nama@perusahaan.com" class="w-full pl-11 pr-4 py-3 bg-ink-50 border border-ink-200 rounded-xl focus:bg-white focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 transition-all outline-none text-ink-900 placeholder:text-ink-400">
+        </div>
+      </div>
+
+      <div>
+        <div class="flex justify-between items-center mb-2">
+          <label class="block text-sm font-semibold text-ink-900">Password</label>
+          <button type="button" onclick="alert('Fitur reset password belum tersedia. Silakan hubungi admin.')" class="text-xs font-bold text-orange-600 hover:text-orange-700">Lupa Password?</button>
+        </div>
+        <div class="relative">
+          <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-ink-400">
+            <i data-lucide="lock" class="w-5 h-5"></i>
+          </div>
+          <input type="password" id="password" required placeholder="••••••••" class="w-full pl-11 pr-4 py-3 bg-ink-50 border border-ink-200 rounded-xl focus:bg-white focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 transition-all outline-none text-ink-900 placeholder:text-ink-400">
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2 pt-2">
+        <input type="checkbox" id="remember" class="w-4 h-4 text-orange-600 bg-ink-50 border-ink-200 rounded focus:ring-orange-500 focus:ring-2 accent-orange-500">
+        <label for="remember" class="text-sm font-medium text-ink-600 select-none cursor-pointer">Ingat saya</label>
+      </div>
+
+      <button type="submit" class="w-full bg-orange-500 text-white font-bold py-3.5 px-4 rounded-xl hover:bg-orange-600 transition-colors shadow-lg shadow-orange-500/20 mt-2 flex justify-center items-center gap-2">
+        Masuk <i data-lucide="arrow-right" class="w-4 h-4"></i>
+      </button>
+    </form>
+
+    <p class="text-center text-sm font-medium text-ink-600 mt-8">
+      Belum punya akun? <a href="register.html" class="text-orange-600 font-bold hover:underline">Daftar sekarang</a>
+    </p>
+  </div>
+
+  <script>
+    lucide.createIcons();
+
+    document.getElementById('loginForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      const errorMsg = document.getElementById('error-message');
+
+      if (email === 'admin@tentaklik.com' && password === 'admin123') {
+        errorMsg.classList.add('hidden');
+        window.location.href = 'index.html';
+      } else {
+        errorMsg.classList.remove('hidden');
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,32 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─── Base styles ─── */
+body {
+  background-color: #F5F7FA;
+  color: #0E1B2A;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+/* ─── Custom scrollbar hiding ─── */
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* ─── Navigation active states ─── */
+.nav-item.active {
+  background-color: #FFF4EB;
+  color: #FF7A1A;
+  font-weight: 600;
+}
+.nav-item.active :deep(svg) {
+  color: #FF7A1A;
+}

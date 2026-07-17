@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Daftar - Tentaklik SaaS</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="assets/style.css">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="assets/tailwind-config.js"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4 font-sans antialiased bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMSIgY3k9IjEiIHI9IjEiIGZpbGw9InJnYmEoMTQsIDI3LCA0MiwgMC4wMykiLz48L3N2Zz4=')]">
+  
+  <div class="w-full max-w-lg bg-white rounded-3xl shadow-xl shadow-ink-900/5 border border-ink-100 p-8 md:p-10 relative overflow-hidden my-8">
+    <!-- Decorative Blob -->
+    <div class="absolute top-0 left-0 w-40 h-40 bg-orange-500 opacity-5 rounded-full blur-3xl -ml-10 -mt-10 pointer-events-none"></div>
+
+    <div class="flex justify-center mb-6">
+      <img src="assets/logo-full.png" alt="Tentaklik Logo" class="h-8 w-auto">
+    </div>
+
+    <div class="text-center mb-8">
+      <h1 class="text-2xl font-display font-bold text-ink-900 mb-2">Buat Akun Baru</h1>
+      <p class="text-ink-500 text-sm">Mulai kelola iklan Anda dengan bebas batas hari ini.</p>
+    </div>
+
+    <form id="registerForm" class="space-y-4">
+      <div>
+        <label class="block text-sm font-semibold text-ink-900 mb-2">Nama Lengkap</label>
+        <div class="relative">
+          <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-ink-400">
+            <i data-lucide="user" class="w-5 h-5"></i>
+          </div>
+          <input type="text" required placeholder="Budi Santoso" class="w-full pl-11 pr-4 py-3 bg-ink-50 border border-ink-200 rounded-xl focus:bg-white focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 transition-all outline-none text-ink-900 placeholder:text-ink-400">
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-sm font-semibold text-ink-900 mb-2">Email Bisnis</label>
+        <div class="relative">
+          <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-ink-400">
+            <i data-lucide="mail" class="w-5 h-5"></i>
+          </div>
+          <input type="email" required placeholder="budi@perusahaan.com" class="w-full pl-11 pr-4 py-3 bg-ink-50 border border-ink-200 rounded-xl focus:bg-white focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 transition-all outline-none text-ink-900 placeholder:text-ink-400">
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-semibold text-ink-900 mb-2">Password</label>
+          <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-ink-400">
+              <i data-lucide="lock" class="w-5 h-5"></i>
+            </div>
+            <input type="password" required placeholder="••••••••" class="w-full pl-11 pr-4 py-3 bg-ink-50 border border-ink-200 rounded-xl focus:bg-white focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 transition-all outline-none text-ink-900 placeholder:text-ink-400">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-sm font-semibold text-ink-900 mb-2">Konfirmasi Password</label>
+          <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-ink-400">
+              <i data-lucide="lock-keyhole" class="w-5 h-5"></i>
+            </div>
+            <input type="password" required placeholder="••••••••" class="w-full pl-11 pr-4 py-3 bg-ink-50 border border-ink-200 rounded-xl focus:bg-white focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 transition-all outline-none text-ink-900 placeholder:text-ink-400">
+          </div>
+        </div>
+      </div>
+
+      <div class="pt-2">
+        <p class="text-xs text-ink-500 leading-relaxed text-center">
+          Dengan mendaftar, Anda menyetujui <button type="button" onclick="alert('Syarat & Ketentuan sedang disiapkan.')" class="text-orange-600 font-bold hover:underline">Syarat & Ketentuan</button> serta <button type="button" onclick="alert('Kebijakan Privasi sedang disiapkan.')" class="text-orange-600 font-bold hover:underline">Kebijakan Privasi</button> kami.
+        </p>
+      </div>
+
+      <button id="submitBtn" type="submit" class="w-full bg-ink-900 text-white font-bold py-3.5 px-4 rounded-xl hover:bg-ink-800 transition-colors shadow-lg shadow-ink-900/10 mt-2 flex justify-center items-center gap-2">
+        <span>Daftar Sekarang</span> <i data-lucide="arrow-right" class="w-4 h-4"></i>
+      </button>
+    </form>
+
+    <p class="text-center text-sm font-medium text-ink-600 mt-8">
+      Sudah punya akun? <a href="login.html" class="text-orange-600 font-bold hover:underline">Masuk di sini</a>
+    </p>
+  </div>
+
+  <script>
+    lucide.createIcons();
+
+    document.getElementById('registerForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      const btn = document.getElementById('submitBtn');
+      const originalText = btn.innerHTML;
+      
+      // Loading state
+      btn.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> <span>Memproses...</span>`;
+      lucide.createIcons({ root: btn });
+      btn.disabled = true;
+
+      // Dummy success after 1 second
+      setTimeout(() => {
+        alert('Pendaftaran berhasil! Silakan masuk dengan akun Anda.');
+        window.location.href = 'login.html';
+      }, 1000);
+    });
+  </script>
+</body>
+</html>
