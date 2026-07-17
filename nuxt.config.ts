@@ -14,6 +14,11 @@ export default defineNuxtConfig({
     redirect: false, // We'll handle auth redirects manually
   },
 
+  // Konfigurasi Nitro untuk deployment ke Cloudflare Pages
+  nitro: {
+    preset: 'cloudflare-pages',
+  },
+
   // App metadata
   app: {
     head: {
