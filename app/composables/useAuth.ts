@@ -17,10 +17,13 @@ export const useAuth = () => {
       if (err) throw err
       return data
     } catch (err: any) {
-      if (err.message.includes('Invalid login credentials')) {
+      const errorText = typeof err.message === 'string' ? err.message : 
+                        (err.data?.message || err.error_description || JSON.stringify(err))
+                        
+      if (errorText.includes('Invalid login credentials')) {
         error.value = 'Email atau password yang Anda masukkan salah.'
       } else {
-        error.value = err.message || 'Gagal untuk masuk. Silakan coba lagi.'
+        error.value = errorText || 'Gagal untuk masuk. Silakan coba lagi.'
       }
       return null
     } finally {
@@ -45,7 +48,9 @@ export const useAuth = () => {
       if (err) throw err
       return data
     } catch (err: any) {
-      error.value = err.message || 'Gagal mendaftar. Silakan coba lagi.'
+      const errorText = typeof err.message === 'string' ? err.message : 
+                        (err.data?.message || err.error_description || JSON.stringify(err))
+      error.value = errorText || 'Gagal mendaftar. Silakan coba lagi.'
       return null
     } finally {
       loading.value = false
