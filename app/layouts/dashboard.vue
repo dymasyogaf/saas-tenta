@@ -3,7 +3,7 @@
     <!-- Mobile Overlay -->
     <div
       v-if="isSidebarOpen"
-      class="fixed inset-0 bg-ink-900/50 z-40 md:hidden transition-opacity"
+      class="fixed inset-0 bg-ink-900/50 z-40 lg:hidden transition-opacity"
       @click="isSidebarOpen = false"
     />
 
@@ -12,7 +12,7 @@
       :class="[
         'w-64 bg-white border-r border-ink-100 flex flex-col fixed inset-y-0 left-0 z-50',
         'transform transition-transform duration-300 shrink-0',
-        'md:relative md:translate-x-0',
+        'lg:relative lg:translate-x-0',
         isSidebarOpen ? 'translate-x-0' : '-translate-x-full',
       ]"
     >
@@ -48,22 +48,22 @@
     <!-- Main Content -->
     <main class="flex-1 flex flex-col h-screen overflow-hidden">
       <!-- Header -->
-      <header class="h-16 bg-white border-b border-ink-100 flex items-center justify-between px-6 shrink-0">
+      <header class="h-16 bg-white border-b border-ink-100 flex items-center justify-between px-4 sm:px-6 shrink-0 gap-2">
         <!-- Mobile: menu + logo -->
-        <div class="flex items-center gap-4 md:hidden">
-          <button class="text-ink-600 hover:text-orange-500" @click="isSidebarOpen = true">
+        <div class="flex items-center gap-2 sm:gap-4 lg:hidden shrink-0">
+          <button class="text-ink-600 hover:text-orange-500 shrink-0" @click="isSidebarOpen = true">
             <Menu class="w-6 h-6" />
           </button>
-          <img src="/logo-full.png" alt="Tentaklik Logo" class="h-6 w-auto" />
+          <img src="/logo-full.png" alt="Tentaklik Logo" class="h-5 sm:h-6 w-auto shrink-0 object-contain" />
         </div>
 
         <!-- Desktop: page title -->
-        <div class="hidden md:block">
+        <div class="hidden lg:block">
           <h2 class="text-xl font-display font-bold text-ink-900">{{ pageTitle }}</h2>
         </div>
 
         <!-- Right side actions -->
-        <div class="flex items-center gap-5">
+        <div class="flex items-center gap-3 sm:gap-5">
           <!-- Notification Bell -->
           <div class="relative">
             <button class="text-ink-500 hover:text-orange-500 transition-colors relative mt-1" @click="isNotifOpen = !isNotifOpen">
@@ -104,9 +104,11 @@
           <!-- Top Up Button -->
           <NuxtLink
             to="/dashboard/topup"
-            class="bg-orange-500 hover:bg-orange-600 text-white px-5 py-2 rounded-xl text-sm font-semibold shadow-sm transition-all flex items-center gap-2"
+            class="bg-orange-500 hover:bg-orange-600 text-white px-3 sm:px-5 py-2 rounded-xl text-sm font-semibold shadow-sm transition-all flex items-center gap-1.5 sm:gap-2 whitespace-nowrap shrink-0"
           >
-            <Plus class="w-4 h-4" /> Top Up Saldo
+            <Plus class="w-4 h-4 shrink-0" />
+            <span class="hidden sm:inline">Top Up Saldo</span>
+            <span class="sm:hidden">Top Up</span>
           </NuxtLink>
 
           <!-- Profile Dropdown -->
@@ -118,7 +120,7 @@
               <div class="w-9 h-9 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center font-bold text-sm shrink-0">
                 {{ userInitials }}
               </div>
-              <span class="font-bold text-ink-900 hidden md:block">{{ userName }}</span>
+              <span class="font-bold text-ink-900 hidden lg:block">{{ userName }}</span>
               <ChevronDown class="w-4 h-4 text-ink-900" />
             </button>
 
@@ -150,7 +152,7 @@
       </header>
 
       <!-- Page Content (scrollable) -->
-      <div class="flex-1 overflow-auto p-6 md:p-8">
+      <div class="flex-1 overflow-auto p-4 md:p-8">
         <slot />
       </div>
     </main>

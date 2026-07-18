@@ -3,7 +3,7 @@
     <!-- Header -->
     <div class="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
       <h2 class="text-2xl font-display font-bold text-ink-900">Iklan Bermasalah</h2>
-      <div class="flex gap-3">
+      <div class="flex flex-col sm:flex-row gap-3">
         <button class="bg-[#fcd34d] hover:bg-[#fbbf24] text-ink-900 px-4 py-2.5 rounded-md font-semibold text-sm flex items-center gap-2 transition-colors shadow-sm">
           <div class="bg-orange-600 text-white rounded-full p-1"><Lightbulb class="w-3.5 h-3.5" /></div> Lihat Syarat dan Ketentuan
         </button>

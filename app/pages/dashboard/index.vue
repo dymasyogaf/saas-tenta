@@ -44,7 +44,7 @@
           
           <template v-else>
             <!-- Looping Campaign Dinamis dari Meta Ads Proxy -->
-            <div v-for="cmp in adsStore.campaigns" :key="cmp.id" class="flex items-center justify-between p-4 bg-ink-50 rounded-xl hover:bg-ink-100 transition-colors">
+            <div v-for="cmp in adsStore.campaigns" :key="cmp.id" class="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 bg-ink-50 rounded-xl hover:bg-ink-100 transition-colors gap-4">
               <div class="flex items-center gap-4">
                 <img :src="cmp.id.startsWith('gads') ? '/icon-google-ads.png' : (cmp.id.startsWith('tt') ? '/tiktok.svg' : '/icon-meta-ads.png')" alt="Ads" class="w-12 h-12 rounded-xl shadow-sm border border-ink-100 object-contain bg-white p-2" />
                 <div>
@@ -52,7 +52,7 @@
                   <p class="text-sm text-ink-500">Berjalan • Spend: {{ formatCurrency(cmp.spend) }}</p>
                 </div>
               </div>
-              <div class="text-right">
+              <div class="w-full sm:w-auto flex sm:block justify-between items-center sm:text-right border-t sm:border-0 border-ink-200 pt-3 sm:pt-0 mt-1 sm:mt-0">
                 <p class="font-display font-bold text-ink-900 text-lg">{{ cmp.impressions.toLocaleString('id-ID') }} Impresi</p>
                 <p class="text-sm font-medium text-green-600">{{ cmp.clicks.toLocaleString('id-ID') }} Klik</p>
               </div>

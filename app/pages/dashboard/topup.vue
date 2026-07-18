@@ -113,7 +113,7 @@
     </div>
 
     <!-- Bottom Section: Tabs and Table -->
-    <div class="bg-white border border-ink-100 rounded-xl shadow-sm flex flex-col">
+    <div class="bg-white border border-ink-100 rounded-xl shadow-sm flex flex-col overflow-hidden">
       <!-- Tabs & Download -->
       <div class="flex flex-col xl:flex-row xl:items-center justify-between border-b border-ink-100 p-2 gap-4">
         <div class="flex overflow-x-auto hide-scrollbar bg-ink-50 p-1.5 rounded-xl flex-1 max-w-full gap-1">
@@ -213,7 +213,7 @@
               </div>
             </div>
             
-            <div class="grid grid-cols-3 gap-2">
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
               <button @click="topupAmount = 50000" class="py-2.5 bg-ink-50 border border-ink-200 rounded-xl text-sm font-bold text-ink-700 hover:bg-orange-50 hover:border-orange-300 hover:text-orange-600 transition-colors">50 Ribu</button>
               <button @click="topupAmount = 100000" class="py-2.5 bg-ink-50 border border-ink-200 rounded-xl text-sm font-bold text-ink-700 hover:bg-orange-50 hover:border-orange-300 hover:text-orange-600 transition-colors">100 Ribu</button>
               <button @click="topupAmount = 500000" class="py-2.5 bg-ink-50 border border-ink-200 rounded-xl text-sm font-bold text-ink-700 hover:bg-orange-50 hover:border-orange-300 hover:text-orange-600 transition-colors">500 Ribu</button>
@@ -268,7 +268,7 @@
               <p class="text-xs text-ink-500 mt-2">Saldo tersedia: <span class="font-bold text-orange-600">{{ formatRupiah(saldoStore.balance) }}</span></p>
             </div>
             
-            <div class="grid grid-cols-3 gap-2">
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
               <button @click="allocateAmount = Math.min(50000, saldoStore.balance)" class="py-2.5 bg-ink-50 border border-ink-200 rounded-xl text-sm font-bold text-ink-700 hover:bg-orange-50 hover:border-orange-300 hover:text-orange-600 transition-colors">50 Ribu</button>
               <button @click="allocateAmount = Math.min(100000, saldoStore.balance)" class="py-2.5 bg-ink-50 border border-ink-200 rounded-xl text-sm font-bold text-ink-700 hover:bg-orange-50 hover:border-orange-300 hover:text-orange-600 transition-colors">100 Ribu</button>
               <button @click="allocateAmount = saldoStore.balance" class="py-2.5 bg-ink-50 border border-ink-200 rounded-xl text-sm font-bold text-ink-700 hover:bg-orange-50 hover:border-orange-300 hover:text-orange-600 transition-colors">Semua</button>

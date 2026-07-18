@@ -14,7 +14,7 @@ export default defineEventHandler(async (event) => {
     }
 
     // Gunakan service role untuk memotong saldo dengan aman
-    const supabaseAdmin = serverSupabaseServiceRole(event)
+    const supabaseAdmin = serverSupabaseServiceRole<any>(event)
     
     // 1. Cek saldo saat ini
     const { data: saldoData, error: fetchError } = await supabaseAdmin
