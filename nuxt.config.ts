@@ -13,7 +13,8 @@ export default defineNuxtConfig({
   supabase: {
     redirect: false, // We'll handle auth redirects manually
     url: 'https://pjmsnphhnporuownasxe.supabase.co',
-    key: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBqbXNucGhobnBvcnVvd25hc3hlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQxODU0NDcsImV4cCI6MjA5OTc2MTQ0N30.nqxxJD-KqRcQjDrwEbyNBcKEiCY151_kNaBwk1APhbA'
+    key: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBqbXNucGhobnBvcnVvd25hc3hlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQxODU0NDcsImV4cCI6MjA5OTc2MTQ0N30.nqxxJD-KqRcQjDrwEbyNBcKEiCY151_kNaBwk1APhbA',
+    types: false, // Disable database type generation to suppress warning
   },
 
   // Konfigurasi Nitro untuk deployment ke Cloudflare Pages
@@ -58,6 +59,16 @@ export default defineNuxtConfig({
       appName: 'Tentaklik',
       supabaseUrl: '',
       supabaseKey: '',
+    },
+  },
+
+  // Pre-bundle known dependencies to avoid runtime discovery warnings
+  vite: {
+    optimizeDeps: {
+      include: [
+        'lucide-vue-next',
+        'pinia',
+      ],
     },
   },
 })

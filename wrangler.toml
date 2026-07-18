@@ -1,0 +1,11 @@
+# Cloudflare Pages configuration
+name = "tentaklik-saas"
+compatibility_date = "2025-07-15"
+
+# CRITICAL: Enable Node.js compatibility for Supabase auth to work
+# Without this, Supabase client operations silently fail with empty error objects {}
+compatibility_flags = ["nodejs_compat"]
+
+[vars]
+NUXT_PUBLIC_SUPABASE_URL = "https://pjmsnphhnporuownasxe.supabase.co"
+NUXT_PUBLIC_SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBqbXNucGhobnBvcnVvd25hc3hlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQxODU0NDcsImV4cCI6MjA5OTc2MTQ0N30.nqxxJD-KqRcQjDrwEbyNBcKEiCY151_kNaBwk1APhbA"

@@ -93,7 +93,6 @@ const newEmail = ref('')
 const password = ref('')
 const showPassword = ref(false)
 const isLoading = ref(false)
-const isReadonly = ref(true)
 
 const isValid = computed(() => {
   return newEmail.value.length > 5 && newEmail.value.includes('@') && newEmail.value !== props.currentEmail && password.value.length >= 6
@@ -124,6 +123,12 @@ const saveEmail = async () => {
     
     if (updateError) throw updateError
     
+    // 3. Update juga email di tabel public.users agar sinkron
+    const { data: userSession } = await supabase.auth.getUser()
+    if (userSession.user?.id) {
+      await (supabase as any).from('users').update({ email: newEmail.value }).eq('id', userSession.user.id)
+    }
+    
     addToast('Permintaan ubah email berhasil. Silakan cek kotak masuk email baru (dan lama) Anda untuk konfirmasi.', 'success')
     emit('email-updated')
     close()
@@ -140,7 +145,6 @@ const close = () => {
     newEmail.value = ''
     password.value = ''
     showPassword.value = false
-    isReadonly.value = true
   }, 200)
 }
 </script>

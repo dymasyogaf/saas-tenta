@@ -291,7 +291,7 @@
 <script setup lang="ts">
 import { 
   Gem, ChevronRight, ShieldCheck, Smartphone, 
-  AlertCircle, Lock, Key, Receipt, Loader2
+  AlertCircle, Lock, Receipt, Loader2
 } from 'lucide-vue-next'
 
 definePageMeta({
@@ -321,8 +321,7 @@ const initials = computed(() => {
 
 const isPhoneVerified = ref(false)
 const isLoadingPhone = ref(true)
-const debugInfo = ref('Belum fetch...')
-const fetchError = ref('')
+
 const isPasswordOpen = ref(false)
 const isEmailOpen = ref(false)
 const isVerifyPhoneOpen = ref(false)
@@ -352,8 +351,6 @@ const fetchProfile = async () => {
     
   if (error) {
     console.error('Supabase Profile Fetch Error:', error)
-    fetchError.value = JSON.stringify(error)
-    debugInfo.value = 'Error fetching'
     return
   }
   
@@ -413,7 +410,7 @@ const handleVerified = async () => {
     // 2. Tandai database bahwa nomor sudah verified
     const uid = (user.value as any)?.id || (user.value as any)?.sub
     if (uid) {
-      await supabase.from('users').update({ phone_verified: true } as any).eq('id', uid)
+      await (supabase as any).from('users').update({ phone_verified: true }).eq('id', uid)
     }
     
     pendingPhone.value = ''

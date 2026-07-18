@@ -328,9 +328,7 @@ import {
   ScanFace, 
   ShieldCheck, 
   FileText, 
-  Camera, 
   ClipboardCheck, 
-  Send,
   AlertCircle,
   Upload,
   Loader2,
@@ -426,12 +424,11 @@ const submitVerification = async () => {
       body: { phone: userPhone.value, code: otpCode.value }
     })
     
-    // Fungsi konversi File ke Base64
     const fileToBase64 = (file: File): Promise<string> => {
       return new Promise((resolve, reject) => {
         const reader = new FileReader()
         reader.readAsDataURL(file)
-        reader.onload = () => resolve((reader.result as string).split(',')[1])
+        reader.onload = () => resolve((reader.result as string).split(',')[1] || '')
         reader.onerror = error => reject(error)
       })
     }

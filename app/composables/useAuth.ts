@@ -1,5 +1,66 @@
 import { useSupabaseClient, useSupabaseUser } from '#imports'
 
+/**
+ * Helper: Safely extract a human-readable error message from any thrown value.
+ * In Cloudflare Pages/Workers runtime, `instanceof Error` can fail because the
+ * prototype chain differs from Node.js. So we check for common properties first.
+ */
+function extractErrorMessage(err: unknown): string {
+  // 1. If it's a string, use it directly
+  if (typeof err === 'string') return err
+
+  // 2. If it has a `.message` property (AuthApiError, Error, etc.)
+  if (err && typeof err === 'object' && 'message' in err) {
+    const msg = (err as any).message
+    if (typeof msg === 'string' && msg.length > 0 && msg !== '{}' && msg !== '""') return msg
+  }
+
+  // 3. Try other common Supabase error shapes
+  if (err && typeof err === 'object') {
+    const obj = err as Record<string, any>
+    if (typeof obj.error_description === 'string') return obj.error_description
+    if (typeof obj.msg === 'string') return obj.msg
+    if (obj.data && typeof obj.data.message === 'string') return obj.data.message
+  }
+
+  // 4. Last resort: JSON.stringify, but guard against empty "{}"
+  try {
+    const json = JSON.stringify(err)
+    if (json && json !== '{}' && json !== '""') return json
+  } catch { /* ignore */ }
+
+  return 'Terjadi kesalahan yang tidak diketahui. Silakan coba lagi.'
+}
+
+/**
+ * Translate common Supabase auth error messages to user-friendly Indonesian text.
+ */
+function translateAuthError(msg: string): string {
+  const lower = msg.toLowerCase()
+
+  if (lower.includes('invalid login credentials'))
+    return 'Email atau password yang Anda masukkan salah.'
+  if (lower.includes('email not confirmed'))
+    return 'Email belum dikonfirmasi. Silakan cek inbox Anda.'
+  if (lower.includes('user already registered') || lower.includes('already been registered'))
+    return 'Email ini sudah terdaftar. Silakan login atau gunakan email lain.'
+  if (lower.includes('password') && lower.includes('at least'))
+    return 'Password terlalu pendek. Minimal 6 karakter.'
+  if (lower.includes('rate limit') || lower.includes('too many requests'))
+    return 'Terlalu banyak percobaan. Silakan tunggu beberapa saat.'
+  if (lower.includes('signup is disabled'))
+    return 'Pendaftaran saat ini dinonaktifkan. Hubungi admin.'
+  
+  // Guard against Supabase returning 500 internal server errors which trigger AuthRetryableFetchError
+  if (lower.includes('authretryablefetcherror'))
+    return 'Gagal mendaftar. Jika Anda menggunakan nomor HP/Email lama, pastikan belum dipakai akun lain (atau hubungi admin).'
+    
+  if (lower.includes('network') || lower.includes('fetch'))
+    return 'Koneksi gagal. Periksa internet Anda dan coba lagi.'
+
+  return msg
+}
+
 export const useAuth = () => {
   const supabase = useSupabaseClient()
   const user = useSupabaseUser()
@@ -16,15 +77,8 @@ export const useAuth = () => {
       })
       if (err) throw err
       return data
-    } catch (err: any) {
-      const errorText = typeof err.message === 'string' ? err.message : 
-                        (err.data?.message || err.error_description || JSON.stringify(err))
-                        
-      if (errorText.includes('Invalid login credentials')) {
-        error.value = 'Email atau password yang Anda masukkan salah.'
-      } else {
-        error.value = errorText || 'Gagal untuk masuk. Silakan coba lagi.'
-      }
+    } catch (err: unknown) {
+      error.value = translateAuthError(extractErrorMessage(err))
       return null
     } finally {
       loading.value = false
@@ -47,18 +101,9 @@ export const useAuth = () => {
       })
       if (err) throw err
       return data
-    } catch (err: any) {
-      if (err instanceof Error) {
-        error.value = err.message
-      } else {
-        // Coba bongkar paksa isi dari error yang aneh ini
-        try {
-          const keys = Object.keys(err).join(', ')
-          error.value = `Error Keys: [${keys}] - Raw: ${String(err)} - Details: ${JSON.stringify(err)}`
-        } catch(e) {
-          error.value = 'Un-parsable error occurred.'
-        }
-      }
+    } catch (err: unknown) {
+      console.error('RAW SUPABASE REGISTER ERROR:', err)
+      error.value = translateAuthError(extractErrorMessage(err))
       return null
     } finally {
       loading.value = false
@@ -70,8 +115,8 @@ export const useAuth = () => {
     try {
       const { error: err } = await supabase.auth.signOut()
       if (err) throw err
-    } catch (err: any) {
-      console.error('Logout error:', err)
+    } catch (err: unknown) {
+      console.error('Logout error:', extractErrorMessage(err))
     } finally {
       loading.value = false
     }
@@ -86,3 +131,4 @@ export const useAuth = () => {
     logout,
   }
 }
+

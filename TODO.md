@@ -1,7 +1,16 @@
 # 📋 Tentaklik SaaS — Master To-Do List
 
 > Dokumen ini dihasilkan dari analisis `persiapan.md` + mockup HTML yang sudah ada.
-> Terakhir diperbarui: 16 Juli 2026
+> Terakhir diperbarui: 17 Juli 2026
+
+---
+
+## 🔥 Target Berikutnya (Prioritas Utama Pasca-Deploy)
+- [ ] **Integrasi Saldo Iklan & Payment Gateway (Duidku)**
+  - [ ] Pembuatan skema koneksi API untuk Top Up.
+  - [ ] Pembangunan halaman riwayat saldo.
+- [ ] **Pembuatan Endpoint Callback Transaksi**
+  - [ ] Menangkap webhook sukses pembayaran dari Duidku secara *real-time*.
 
 ---
 
@@ -180,6 +189,12 @@ Setiap view di `index.html` menjadi halaman Vue terpisah:
 - [x] ~~**Update UI Profil (`profile.vue`):**~~
   - ~~Tampilkan badge hijau "Profile Terverifikasi" (menggantikan tombol oranye) jika `user_metadata.profile_verified` bernilai `true`.~~
 
+### 2.9 Bug Fixes & Refinements (17-18 Juli) ✅
+- [x] ~~Bypass limit SMTP Supabase (Disable Confirm Email) untuk mencegah Error 500 saat registrasi.~~
+- [x] ~~Perbaiki penanganan error 500 (`AuthRetryableFetchError`) dari Supabase di `useAuth.ts` agar tidak disalahartikan sebagai error koneksi.~~
+- [x] ~~Sinkronisasi update email dari `auth.users` ke `public.users` saat user mengganti email di `EmailModal.vue`.~~
+- [x] ~~Pembersihan data hantu (*ghost users*) menggunakan mekanisme `ON DELETE CASCADE` dari Supabase Auth.~~
+
 ---
 
 ## 🔒 FASE 3: Backend — Supabase & Server Routes
@@ -259,10 +274,10 @@ Setiap view di `index.html` menjadi halaman Vue terpisah:
 - [ ] Pastikan semua secrets TIDAK ada di frontend code
 
 ### 5.2 Deploy ke Cloudflare
-- [ ] Connect GitHub repo ke Cloudflare Pages
-- [ ] Set build command: `npm run build`
-- [ ] Set preset ke `cloudflare-pages`
-- [ ] Test preview deployment
+- [x] ~~Connect GitHub repo ke Cloudflare Pages~~
+- [x] ~~Set build command: `npm run build`~~
+- [x] ~~Set preset ke `cloudflare-pages`~~
+- [x] ~~Test preview deployment~~
 - [ ] Setup custom domain
 
 ### 5.3 Post-Deploy Config
