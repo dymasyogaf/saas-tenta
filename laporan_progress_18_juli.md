@@ -29,6 +29,11 @@ Sistem *Top-Up* saldo berhasil diintegrasikan dengan Duitku Sandbox secara penuh
 ## 🔒 4. Manajemen Keamanan Kunci Rahasia
 *   Menghapus risiko kebocoran data dengan memperbaiki penamaan variabel `.env` dari `NUXT_PUBLIC_SUPABASE_SERVICE_KEY` menjadi `SUPABASE_SERVICE_KEY`. Variabel tersebut sekarang tersimpan dengan aman khusus di level *server-side*.
 
+## 🚀 5. Penyempurnaan Tambahan (Fitur Pro & Fix)
+*   **Dynamic URL Redirect:** Mengubah *hardcode* domain pengalihan Duitku di backend menjadi dinamis (`getRequestHost`), sehingga aplikasi otomatis mendeteksi penggunaan di *Localhost* maupun *Live Domain*.
+*   **Pilihan Metode Pembayaran ala Pro:** Menambahkan *Dropdown* pilihan metode pembayaran (BCA, Mandiri, BRI, OVO, ShopeePay, DANA, QRIS) di dalam UI Modal Tambah Saldo. Pelanggan kini dapat memilih cara bayar langsung dari dalam aplikasi.
+*   **Branding (Favicon):** Mengganti `favicon.ico` bawaan Nuxt menjadi logo resmi aplikasi (dari `icon-512.png`).
+
 ---
 
 ### ⏭️ Target Selanjutnya
