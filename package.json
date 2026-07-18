@@ -31,8 +31,10 @@
     }
   },
   "devDependencies": {
+    "@oxc-minify/binding-linux-x64-gnu": "0.133.0",
     "@oxc-parser/binding-linux-x64-gnu": "0.133.0",
     "@oxc-transform/binding-linux-x64-gnu": "0.133.0",
+    "@rolldown/binding-linux-x64-gnu": "1.1.5",
     "vite": "^8.1.5",
     "wrangler": "^4.112.0"
   }
