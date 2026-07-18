@@ -1,7 +1,7 @@
 # 📋 Tentaklik SaaS — Master To-Do List
 
 > Dokumen ini dihasilkan dari analisis `persiapan.md` + mockup HTML yang sudah ada.
-> Terakhir diperbarui: 17 Juli 2026
+> Terakhir diperbarui: 19 Juli 2026
 
 ---
 
@@ -315,28 +315,28 @@ Setiap view di `index.html` menjadi halaman Vue terpisah:
 ## 🚀 FASE 6: Dasbor Admin & Role Management (RBAC)
 
 ### 6.1 Database & Security (Supabase)
-- [ ] Tambahkan kolom `role` di tabel `users` (client, admin_compliance, admin_ads_ops, admin_finance, super_admin)
-- [ ] Konfigurasi ulang kebijakan *Row Level Security* (RLS) di setiap tabel berdasarkan `role`
-- [ ] Pembuatan middleware Nuxt untuk memblokir akses ke URL `/admin` bagi user biasa
+- [x] ~~Tambahkan kolom `role` di tabel `users` (client, admin_compliance, admin_ads_ops, admin_finance, super_admin)~~
+- [x] ~~Konfigurasi ulang kebijakan *Row Level Security* (RLS) di setiap tabel berdasarkan `role`~~
+- [x] ~~Pembuatan middleware Nuxt untuk memblokir akses ke URL `/admin` bagi user biasa~~
 
 ### 6.2 UI & Logika Dasbor Admin
-- [ ] Layout khusus Admin (Navigasi berbeda dengan dasbor Klien)
-- [ ] Halaman `admin/requests` (Untuk Tim Audit menyetujui formulir akun baru)
-- [ ] Halaman `admin/ads-ops` (Untuk Tim Iklan memasukkan ID Akun/Ad Account ID ke profil Klien)
-- [ ] Halaman `admin/finance` (Untuk Tim Keuangan memverifikasi Withdraw dan fee pencairan)
-- [ ] Halaman `admin/users` (Khusus Super Admin: Angkat/hapus jabatan karyawan)
+- [x] ~~Layout khusus Admin (Navigasi berbeda dengan dasbor Klien)~~
+- [x] ~~Halaman Beranda (`admin/index.vue`): Metrik riil (Total Klien, Total Akun, Estimasi Fee), grafik ApexCharts, tabel aktivitas terbaru.~~
+- [x] ~~Halaman `admin/verifications` (Tim Audit: Verifikasi eKYC, bypass RLS, sinkronisasi Supabase Storage & UI)~~
+- [x] ~~Halaman `admin/clients` (CRM Daftar Klien): Tabel pemantauan seluruh klien (Profil, KYC, Saldo Dompet, Jml Akun Iklan) beserta fitur Filter/Pencarian.~~
+- [x] ~~Halaman `admin/ads-ops` (Tim Iklan: Memasukkan ID Akun Meta/Google ke profil Klien)~~
+- [x] ~~Halaman `admin/finance` (Tim Keuangan: Memverifikasi Withdraw dan mutasi top-up)~~
+- [x] ~~Halaman `admin/users` (Super Admin - Manajemen Staf Internal): Tabel karyawan dan fitur "Tambah Data Staf" (Opsi A: Cari dari Daftar Klien lalu ubah role, Opsi B: Buat Akun Baru via API bypass auth).~~
 
 ---
 
-## 📌 Quick Win — Mulai Hari Ini
+## 📌 Quick Win — Mulai Hari Ini (19 Juli 2026)
 
-Urutan yang disarankan untuk hari ini:
+Fase 6 (Dasbor Admin) & Fase 2 (Frontend) telah **selesai 100%**. Urutan yang disarankan untuk target berikutnya:
 
-1. **[30 menit]** Daftar akun developer: Meta, TikTok, Google (Fase 1.1)
-2. **[5 menit]** Daftar Xendit test mode (Fase 1.2)
-3. **[15 menit]** Buat Supabase project (Fase 1.5)
-4. **[30 menit]** Init Nuxt 3 project + install dependencies (Fase 2.1)
-5. **[1-2 jam]** Migrasi layout dashboard (sidebar + header) (Fase 2.2)
-6. **[2-3 jam]** Port halaman Dashboard & Platform Iklan (Fase 2.3)
+1. **[1-2 jam]** Bangun & rapikan arsitektur Data Flow (Pinia Stores) di Fase 4 (`user.ts`, `ads.ts`, `notification.ts`).
+2. **[1 jam]** Sinkronisasi API Proxy untuk Meta/TikTok/Google Ads (Fase 3.4).
+3. **[2 jam]** Kembangkan sistem logika pencabutan / hold saldo (Escrow Logic) di transaksi iklan.
+4. **[1 jam]** Rapikan dan uji coba kembali seluruh alur end-to-end dari kacamata klien dan admin.
 
-> Total estimasi hari pertama: ~4-5 jam untuk fondasi yang solid ✊
+> Total estimasi hari ini: ~4-6 jam untuk penyempurnaan integrasi Backend & Komunikasi Data! ✊

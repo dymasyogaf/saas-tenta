@@ -394,6 +394,7 @@ const handleFileUpload = (event: Event, type: 'ktp' | 'pasphoto') => {
   const target = event.target as HTMLInputElement
   if (target.files && target.files.length > 0) {
     const file = target.files[0]
+    if (!file) return
     
     // Validasi Format
     if (!['image/jpeg', 'image/png', 'image/jpg'].includes(file.type)) {
@@ -456,7 +457,7 @@ const submitVerification = async () => {
       method: 'POST',
       body: { phone: userPhone.value, code: otpCode.value }
     })
-    
+    // 2. Upload File ke Supabase Storage via Server (Aman dari RLS)
     const fileToBase64 = (file: File): Promise<string> => {
       return new Promise((resolve, reject) => {
         const reader = new FileReader()
@@ -469,43 +470,47 @@ const submitVerification = async () => {
     const ktpBase64 = await fileToBase64(selectedKTP.value!)
     const pasPhotoBase64 = await fileToBase64(selectedPasPhoto.value!)
 
-    // 2. Tembak data ke Webhook Google Sheet beserta File (Base64)
-    await $fetch('/api/webhook/ekyc', {
+    const uploadResponse = await $fetch('/api/upload-kyc', {
       method: 'POST',
       body: {
-        nama: formData.value.name,
-        nik: formData.value.nik,
-        tanggal_lahir: formData.value.dob,
-        email: user.value?.email,
-        no_hp: userPhone.value,
+        userId: user.value?.id || user.value?.sub,
         ktp_base64: ktpBase64,
         ktp_mime: selectedKTP.value!.type,
-        ktp_name: selectedKTP.value!.name,
         pasphoto_base64: pasPhotoBase64,
         pasphoto_mime: selectedPasPhoto.value!.type,
-        pasphoto_name: selectedPasPhoto.value!.name
+        nama: formData.value.name,
+        nik: formData.value.nik,
+        tanggal_lahir: formData.value.dob
       }
     })
-    
-    // 3. Update Supabase Users Table
-    const { error: updateError } = await (supabase as any)
-      .from('users')
-      .update({ 
-        verification_status: 'pending',
-        verification_details: {
-          name: formData.value.name,
+
+    const ktpUrl = (uploadResponse as any).ktp_url
+    const pasPhotoUrl = (uploadResponse as any).pasphoto_url
+
+    // 3. Tembak data ke Webhook Google Sheet (Hanya URL, bukan Base64 raksasa)
+    try {
+      await $fetch('/api/webhook/ekyc', {
+        method: 'POST',
+        body: {
+          nama: formData.value.name,
           nik: formData.value.nik,
-          dob: formData.value.dob
+          tanggal_lahir: formData.value.dob,
+          email: user.value?.email,
+          no_hp: userPhone.value,
+          ktp_url: ktpUrl,
+          pasphoto_url: pasPhotoUrl
         }
       })
-      .eq('id', user.value?.id || user.value?.sub)
-      
-    if (updateError) throw updateError
+    } catch (webhookErr) {
+      console.warn('Webhook gagal, tapi data aman di Supabase:', webhookErr)
+    }
+    
     
     addToast('Pengajuan verifikasi berhasil dikirim. Tim Audit akan segera meninjau data Anda.', 'success')
     
-    // 4. Redirect ke Dashboard
-    router.push('/dashboard')
+    // 4. Redirect ke Dashboard dengan Hard Reload agar Layout (Banner) ter-refresh
+    window.location.href = '/dashboard'
+    
     
   } catch (err: any) {
     const cleanError = err.data?.statusMessage || err.data?.message || err.message || 'Gagal melakukan verifikasi.'

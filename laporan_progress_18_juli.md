@@ -77,8 +77,18 @@ Sistem *Top-Up* saldo berhasil diintegrasikan dengan Duitku Sandbox secara penuh
     - Daftar Pilihan Platform Iklan (`platform.vue`)
     - Hingga Tabel dasbor antrean audit Tim Internal (`admin/verifications.vue`).
 
+## 👑 12. Dasbor Eksekutif (Ruang Kendali Super Admin)
+*   **Storage eKYC Tanpa Hambatan (Bypass RLS):** Memperbaiki sistem pengunggahan dokumen KTP & Pas Foto klien yang sebelumnya diblokir oleh *Row Level Security* (RLS). File kini diunggah melalui API *server-side* yang dipersenjatai dengan *Service Role Key*, sehingga data tersimpan kokoh di *Supabase Storage Bucket* (`kyc_documents`).
+*   **Sinkronisasi UI *Real-Time*:** Menerapkan *Hard Reload* cerdas usai klien mensubmit formulir verifikasi eKYC, memaksa *Layout Banner* memuat ulang status terbarunya (berubah seketika menjadi Oranye/Pending) tanpa perlu direfresh manual.
+*   **Integrasi Metrik Dasbor Admin (`/admin/index.vue`):** Menyulap dasbor kosong menjadi "Control Room" finansial yang mewah. Dasbor ini kini menarik data langsung (live) dari database:
+    *   **Metrik Operasional:** Lencana jumlah Antrean KYC dan *Request* Akun Iklan yang tersinkron otomatis ke indikator *Sidebar*.
+    *   **Metrik Kesehatan Bisnis:** Menampilkan Total Klien Terdaftar, Jumlah Akun Iklan Aktif, dan algoritma *Estimasi Management Fee* (berdasarkan total *Top-Up*).
+    *   **Grafik & Log Aktivitas:** Menanamkan *ApexCharts* dan tabel bergulir (*feed*) yang menangkap riwayat perputaran uang (Top-Up, Transfer, Withdraw) sepersekian detik setelah kejadian.
+
 ---
 
 ### ⏭️ Target Selanjutnya
 1. ~~Pembuatan API proaktif untuk mengecek status transaksi Duitku (`check-status.get.ts`).~~ (Selesai)
-2. Pembuatan antarmuka **Dashboard Admin** spesifik untuk Tim Ads Ops (menyalurkan Ad Account ID) dan Finance (mengaudit *Withdrawal*).
+2. **Pembangunan Sistem CRM (Manajemen Klien):** Menciptakan halaman baru `/admin/clients` murni untuk memantau data seluruh klien (Saldo, KYC, Jml Iklan).
+3. **Penyempurnaan RBAC (Manajemen Karyawan):** Merombak halaman `/admin/users` secara eksklusif bagi Super Admin untuk mengangkat jabatan staf, dilengkapi fungsi buat akun belakang layar via *Supabase Admin API*.
+4. Pembuatan antarmuka **Dashboard Admin** spesifik untuk Tim Ads Ops (menyalurkan Ad Account ID) dan Finance (mengaudit *Withdrawal*).

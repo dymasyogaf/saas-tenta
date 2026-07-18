@@ -84,9 +84,27 @@
         <div class="p-6 overflow-y-auto">
           <div v-if="selectedUser" class="space-y-6">
             
-            <div class="p-4 bg-orange-50 border border-orange-200 rounded-xl">
-              <p class="text-xs text-orange-600 font-bold uppercase mb-1">Peringatan Audit</p>
-              <p class="text-sm text-orange-800">Pastikan NIK dan Nama sesuai dengan data KTP fisik. Untuk foto KTP dan wajah, silakan periksa di Google Sheets (Data Webhook).</p>
+            <div class="p-4 bg-orange-50 border border-orange-200 rounded-xl" v-if="!selectedUser.verification_details?.ktp_url">
+              <p class="text-xs text-orange-600 font-bold uppercase mb-1">Peringatan Audit (Data Lama)</p>
+              <p class="text-sm text-orange-800">Foto KTP dan wajah tidak ditemukan di server. Silakan periksa di Google Sheets (Data Webhook lama).</p>
+            </div>
+
+            <!-- Tampilan Foto KTP & Pas Photo -->
+            <div v-if="selectedUser.verification_details?.ktp_url" class="grid grid-cols-1 md:grid-cols-2 gap-4 border-b border-ink-100 pb-6">
+              <div>
+                <label class="block text-xs font-bold text-ink-500 uppercase mb-2">Foto KTP</label>
+                <div class="rounded-xl overflow-hidden border border-ink-200 bg-ink-50 aspect-video relative group">
+                   <img :src="selectedUser.verification_details.ktp_url" alt="KTP" class="w-full h-full object-cover" />
+                   <a :href="selectedUser.verification_details.ktp_url" target="_blank" class="absolute inset-0 bg-ink-900/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-xs font-bold rounded-xl backdrop-blur-sm">Lihat Penuh</a>
+                </div>
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-ink-500 uppercase mb-2">Pas Foto Diri</label>
+                <div class="rounded-xl overflow-hidden border border-ink-200 bg-ink-50 aspect-square md:aspect-video relative group">
+                   <img :src="selectedUser.verification_details.pasphoto_url" alt="Pas Foto" class="w-full h-full object-cover" />
+                   <a :href="selectedUser.verification_details.pasphoto_url" target="_blank" class="absolute inset-0 bg-ink-900/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-xs font-bold rounded-xl backdrop-blur-sm">Lihat Penuh</a>
+                </div>
+              </div>
             </div>
 
             <div class="space-y-4">
@@ -141,7 +159,8 @@ import { ref, onMounted } from 'vue'
 import { RefreshCw, Loader2, ShieldCheck, ScanFace, X, CheckCircle2 } from 'lucide-vue-next'
 
 definePageMeta({
-  layout: 'dashboard'
+  layout: 'admin',
+  middleware: ['admin']
 })
 
 const supabase = useSupabaseClient()
