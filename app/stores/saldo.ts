@@ -59,7 +59,7 @@ export const useSaldoStore = defineStore('saldo', {
       }
     },
 
-    async topup(amount: number, userValue: any) {
+    async topup(amount: number, userValue: any, method?: string) {
       this.isLoading = true
       this.error = null
       
@@ -81,6 +81,7 @@ export const useSaldoStore = defineStore('saldo', {
           method: 'POST',
           body: {
             amount,
+            method, // <- Metode yang dipilih dari Modal
             userId: uid,
             userEmail: email,
             userName: meta.full_name || 'Member',

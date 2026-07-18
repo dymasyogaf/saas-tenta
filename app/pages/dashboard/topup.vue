@@ -249,6 +249,26 @@
               <button @click="topupAmount = 100000" class="py-2.5 bg-ink-50 border border-ink-200 rounded-xl text-sm font-bold text-ink-700 hover:bg-orange-50 hover:border-orange-300 hover:text-orange-600 transition-colors">100 Ribu</button>
               <button @click="topupAmount = 500000" class="py-2.5 bg-ink-50 border border-ink-200 rounded-xl text-sm font-bold text-ink-700 hover:bg-orange-50 hover:border-orange-300 hover:text-orange-600 transition-colors">500 Ribu</button>
             </div>
+            
+            <div class="mt-4">
+              <label class="block text-sm font-medium text-ink-700 mb-2">Pilih Metode Pembayaran</label>
+              <div class="relative">
+                <select v-model="selectedMethod" class="w-full appearance-none pl-4 pr-10 py-3 bg-white border-2 border-ink-200 rounded-xl focus:outline-none focus:border-orange-500 focus:ring-4 focus:ring-orange-500/20 font-bold text-ink-900 text-sm transition-all cursor-pointer">
+                  <optgroup label="Virtual Account">
+                    <option value="BC">BCA Virtual Account</option>
+                    <option value="BM">Mandiri Virtual Account</option>
+                    <option value="BR">BRI Virtual Account</option>
+                  </optgroup>
+                  <optgroup label="E-Wallet & Retail">
+                    <option value="OV">OVO</option>
+                    <option value="SP">ShopeePay</option>
+                    <option value="DA">DANA</option>
+                    <option value="QR">QRIS</option>
+                  </optgroup>
+                </select>
+                <ChevronDown class="w-5 h-5 absolute right-4 top-1/2 -translate-y-1/2 text-ink-500 pointer-events-none" />
+              </div>
+            </div>
           </div>
         </div>
         
@@ -295,6 +315,7 @@ const formatRupiah = (angka: number) => {
 
 const isTopupModalOpen = ref(false)
 const topupAmount = ref<number | ''>('')
+const selectedMethod = ref('OV')
 const user = useSupabaseUser()
 
 const isValidTopup = computed(() => {
@@ -304,11 +325,12 @@ const isValidTopup = computed(() => {
 const handleTopup = () => {
   isTopupModalOpen.value = true
   topupAmount.value = 50000
+  selectedMethod.value = 'OV'
 }
 
 const submitTopup = async () => {
   if (!isValidTopup.value) return
-  await saldoStore.topup(topupAmount.value as number, user.value)
+  await saldoStore.topup(topupAmount.value as number, user.value, selectedMethod.value)
 }
 
 onMounted(() => {
