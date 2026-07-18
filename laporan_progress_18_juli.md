@@ -50,9 +50,14 @@ Sistem *Top-Up* saldo berhasil diintegrasikan dengan Duitku Sandbox secara penuh
     2. `PANDUAN_GOOGLE_ADS_UNTUK_TIM_IKLAN.md`
     3. `PANDUAN_TIKTOK_ADS_UNTUK_TIM_IKLAN.md`
 
+## 🛡️ 8. Perancangan Arsitektur Role-Based Access Control (RBAC)
+*   **Struktur Hirarki Perusahaan:** Mengonsep dan mendokumentasikan 5 peran (*role*) vital yang dibutuhkan untuk operasional agensi skala besar di file `STRUKTUR_ROLE_SISTEM.md`.
+*   **Pemisahan Tugas:** Merinci hak akses *database* spesifik untuk Klien (Pengguna), Tim Audit (*Compliance*), Tim Iklan (*Ads Ops*), Tim Keuangan (*Finance*), dan Pemilik (*Super Admin*).
+*   **Pembaruan Roadmap:** Memasukkan "Fase 6: Dasbor Admin & Role Management" ke dalam struktur besar `TODO.md` sebagai panduan pengembangan jangka panjang.
+
 ---
 
 ### ⏭️ Target Selanjutnya
-1. Pengujian Webhook *Live* dari Duitku setelah kode ini berlabuh di Cloudflare Pages.
+1. Pembuatan antarmuka (UI Modal) **Formulir Pengajuan Akun Iklan (Request Ads Account)** di halaman Layanan Iklan.
 2. Pembuatan fitur **Penarikan Saldo (Withdraw)** dari Saldo Utama.
 3. Pembuatan API proaktif untuk mengecek status transaksi Duitku (`check-status.get.ts`).

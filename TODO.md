@@ -295,6 +295,22 @@ Setiap view di `index.html` menjadi halaman Vue terpisah:
 
 ---
 
+## 🚀 FASE 6: Dasbor Admin & Role Management (RBAC)
+
+### 6.1 Database & Security (Supabase)
+- [ ] Tambahkan kolom `role` di tabel `users` (client, admin_compliance, admin_ads_ops, admin_finance, super_admin)
+- [ ] Konfigurasi ulang kebijakan *Row Level Security* (RLS) di setiap tabel berdasarkan `role`
+- [ ] Pembuatan middleware Nuxt untuk memblokir akses ke URL `/admin` bagi user biasa
+
+### 6.2 UI & Logika Dasbor Admin
+- [ ] Layout khusus Admin (Navigasi berbeda dengan dasbor Klien)
+- [ ] Halaman `admin/requests` (Untuk Tim Audit menyetujui formulir akun baru)
+- [ ] Halaman `admin/ads-ops` (Untuk Tim Iklan memasukkan ID Akun/Ad Account ID ke profil Klien)
+- [ ] Halaman `admin/finance` (Untuk Tim Keuangan memverifikasi Withdraw dan fee pencairan)
+- [ ] Halaman `admin/users` (Khusus Super Admin: Angkat/hapus jabatan karyawan)
+
+---
+
 ## 📌 Quick Win — Mulai Hari Ini
 
 Urutan yang disarankan untuk hari ini:
