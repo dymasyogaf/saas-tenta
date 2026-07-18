@@ -34,8 +34,25 @@ Sistem *Top-Up* saldo berhasil diintegrasikan dengan Duitku Sandbox secara penuh
 *   **Pilihan Metode Pembayaran ala Pro:** Menambahkan *Dropdown* pilihan metode pembayaran (BCA, Mandiri, BRI, OVO, ShopeePay, DANA, QRIS) di dalam UI Modal Tambah Saldo. Pelanggan kini dapat memilih cara bayar langsung dari dalam aplikasi.
 *   **Branding (Favicon):** Mengganti `favicon.ico` bawaan Nuxt menjadi logo resmi aplikasi (dari `icon-512.png`).
 
+## 💸 6. Sistem Alokasi Saldo & Rombak UI Manajemen Saldo
+*   **Perombakan Metrik:** Mengganti tampilan metrik logistik COD yang tidak relevan dengan metrik SaaS *Ads Agency* (Saldo Utama Belum Dialokasikan, *Ad Spend*, *Management Fee*, dan *Refund*).
+*   **Filter Kalender Reaktif:** Mengaktifkan tombol rentang tanggal (kalender) dengan popover kustom yang otomatis memfilter daftar mutasi transaksi berdasarkan tanggal tanpa me-refresh halaman.
+*   **Modal Alokasi Saldo:** Menambahkan fitur popup UI untuk memindahkan uang dari "Saldo Utama" ke platform iklan pilihan (Meta/TikTok/Google Ads) dengan validasi batas saldo (*Type Casting Fix*).
+*   **API Transfer Server-Side:** Membangun `api/saldo/transfer.post.ts` yang dikawal oleh *Supabase Service Role* untuk mengeksekusi pemotongan uang dan mencatat riwayat transaksi (`transfer`) dengan aman di *backend*.
+
+## 📊 7. Integrasi Proxy API 3 Platform Iklan (Fase 3.4)
+*   **Pembuatan API Proxy:** Membangun tiga jalur *backend* yang aman untuk menarik data performa (Ad Spend, Impresi, Klik) dari **Meta Graph API**, **Google Ads API (RESTful)**, dan **TikTok Business API**.
+*   **Mekanisme Mock (Dummy Data):** Menerapkan sistem *fallback* cerdas di mana jika token rahasia dari tim iklan belum tersedia di dalam file `.env`, *backend* akan otomatis menyemburkan data simulasi agar tabel dasbor tetap dapat diuji coba tanpa macet (*error*).
+*   **Penggabungan Data Multi-Platform:** Menulis fungsi cerdik di dalam *Pinia Store (`stores/ads.ts`)* yang mampu memanggil ketiga API raksasa tersebut secara asinkron, lalu menjumlahkan dan merapikan seluruh daftar kampanye menjadi satu kesatuan laporan yang utuh.
+*   **Sinkronisasi Layar Dasbor:** Metrik statis "Rp 0" dan daftar statis di halaman `index.vue` serta `topup.vue` kini sudah ditenagai oleh mesin *Ads Store* ini. Terdapat juga logika cerdas yang otomatis memilih logo yang tepat (Meta/Google/TikTok) berdasarkan awalan ID kampanyenya.
+*   **Dokumentasi Tim Iklan:** Berhasil menulis 3 buah dokumen panduan (*Markdown*) langkah demi langkah berbahasa non-teknis agar tim Pemasaran mudah mencari kunci API yang dibutuhkan:
+    1. `PANDUAN_META_ADS_UNTUK_TIM_IKLAN.md`
+    2. `PANDUAN_GOOGLE_ADS_UNTUK_TIM_IKLAN.md`
+    3. `PANDUAN_TIKTOK_ADS_UNTUK_TIM_IKLAN.md`
+
 ---
 
 ### ⏭️ Target Selanjutnya
 1. Pengujian Webhook *Live* dari Duitku setelah kode ini berlabuh di Cloudflare Pages.
-2. Pembuatan proxy integrasi API untuk Meta / TikTok / Google Ads (Fase 3.4).
+2. Pembuatan fitur **Penarikan Saldo (Withdraw)** dari Saldo Utama.
+3. Pembuatan API proaktif untuk mengecek status transaksi Duitku (`check-status.get.ts`).

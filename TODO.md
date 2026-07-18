@@ -8,7 +8,8 @@
 ## 🔥 Target Berikutnya (Prioritas Utama Pasca-Deploy)
 - [x] **Integrasi Saldo Iklan & Payment Gateway (Duidku)**
   - [x] Pembuatan skema koneksi API untuk Top Up.
-  - [ ] Pembangunan halaman riwayat saldo.
+  - [x] **Rombak Halaman Saldo (My Balance):** Mengganti UI laporan logistik (COD/Ongkir/Asuransi) menjadi metrik spesifik Ads Agency (Total Saldo Unallocated, Saldo Allocated/Terpakai, Ad Spend, Management Fee, dan Refund).
+  - [x] Pembangunan tabel riwayat mutasi saldo (Transaksi Top Up, Alokasi ke Iklan, & Pemotongan Fee).
 - [x] **Pembuatan Endpoint Callback Transaksi**
   - [x] Menangkap webhook sukses pembayaran dari Duidku secara *real-time*.
 
@@ -225,11 +226,11 @@ Setiap view di `index.html` menjadi halaman Vue terpisah:
 
 ### 3.4 Nuxt Server Routes — Ads API Proxy
 - [ ] `server/api/ads/meta/accounts.get.ts` — list Meta ad accounts
-- [ ] `server/api/ads/meta/campaigns.get.ts` — campaign performance
+- [x] ~~`server/api/ads/meta/campaigns.get.ts` — campaign performance~~ *(Menunggu API Key dari Tim Iklan)*
 - [ ] `server/api/ads/tiktok/accounts.get.ts` — list TikTok ad accounts
-- [ ] `server/api/ads/tiktok/campaigns.get.ts` — campaign performance
+- [x] ~~`server/api/ads/tiktok/campaigns.get.ts` — campaign performance~~ *(Menunggu API Key dari Tim Iklan)*
 - [ ] `server/api/ads/google/accounts.get.ts` — list Google ad accounts
-- [ ] `server/api/ads/google/campaigns.get.ts` — campaign performance
+- [x] ~~`server/api/ads/google/campaigns.get.ts` — campaign performance~~ *(Menunggu API Key dari Tim Iklan)*
 - [ ] Implementasi caching (Redis / in-memory) untuk API responses
 - [ ] Handle rate limiting per platform
 
@@ -240,10 +241,10 @@ Setiap view di `index.html` menjadi halaman Vue terpisah:
 - [x] ~~Implementasi countdown (350 detik sesuai mockup)~~
 
 ### 3.6 Nuxt Server Routes — Saldo & Escrow
-- [ ] `server/api/saldo/balance.get.ts` — ambil saldo user
-- [ ] `server/api/saldo/topup.post.ts` — request top-up (trigger Duidku payment)
+- [x] ~~`server/api/saldo/balance.get.ts` — ambil saldo user~~ (via Supabase client frontend)
+- [x] ~~`server/api/saldo/topup.post.ts` — request top-up~~ (di-handle oleh Duitku create-payment)
 - [ ] `server/api/saldo/withdraw.post.ts` — request penarikan
-- [ ] `server/api/saldo/transfer.post.ts` — pindah saldo antar akun
+- [x] ~~`server/api/saldo/transfer.post.ts` — pindah saldo antar akun~~ (Alokasi ke Akun Iklan)
 - [ ] Implementasi escrow logic (hold → release → refund)
 
 ---

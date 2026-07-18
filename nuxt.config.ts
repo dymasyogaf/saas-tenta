@@ -52,6 +52,7 @@ export default defineNuxtConfig({
     metaAppSecret: '',
     metaAccessToken: '',
     tiktokAppSecret: '',
+    tiktokAccessToken: '',
     googleAdsDevToken: '',
     googleClientSecret: '',
     // Public keys (exposed to client)

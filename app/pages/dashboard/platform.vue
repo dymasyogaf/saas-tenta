@@ -46,7 +46,7 @@
     </div>
 
     <div class="flex flex-col gap-4">
-      <PlatformCard
+      <DashboardPlatformCard
         v-for="platform in platforms"
         :key="platform.name"
         :platform="platform"
@@ -96,8 +96,7 @@ const platforms = [
   {
     name: 'TikTok Ads Whitelisted Account',
     logo: '/tiktok.svg',
-    logoClass: 'rounded-2xl bg-black p-3',
-    logoInvert: true,
+    logoClass: 'rounded-2xl p-2',
     status: 'Tidak Aktif',
     description: 'Scale up iklan pakai <strong>Tiktok Ads</strong> Whitelisted Account dari Tentaklik yang bisa gas kapan pun dan minim hambatan!',
   },

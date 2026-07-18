@@ -105,6 +105,48 @@ export const useSaldoStore = defineStore('saldo', {
       } finally {
         this.isLoading = false
       }
+    },
+    async allocate(amount: number, userValue: any, targetPlatform: string) {
+      this.isLoading = true
+      this.error = null
+      
+      let toast: any = null
+      try {
+        toast = useToast()
+      } catch (err) {}
+      
+      try {
+        if (!userValue) throw new Error('Sesi anda telah berakhir, silakan login ulang.')
+        const uid = userValue.id || userValue.sub
+        
+        const response = await $fetch<any>('/api/saldo/transfer', {
+          method: 'POST',
+          body: {
+            amount,
+            user_id: uid,
+            description: `Alokasi Saldo ke Akun ${targetPlatform}`
+          }
+        })
+        
+        if (response && response.success) {
+          if (toast) toast.addToast('Berhasil mengalokasikan saldo', 'success')
+          await this.fetchSaldo()
+          await this.fetchTransactions()
+          return true
+        } else {
+          throw new Error('Respons server tidak sesuai')
+        }
+      } catch (e: any) {
+        this.error = e.data?.message || e.statusMessage || e.message || 'Terjadi kesalahan'
+        if (toast) {
+          toast.addToast('Gagal Alokasi: ' + this.error, 'error')
+        } else {
+          alert('Gagal Alokasi: ' + this.error)
+        }
+        return false
+      } finally {
+        this.isLoading = false
+      }
     }
   }
 })
