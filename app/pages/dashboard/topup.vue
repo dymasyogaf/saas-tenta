@@ -235,9 +235,9 @@
                   </optgroup>
                   <optgroup label="E-Wallet & Retail">
                     <option value="OV">OVO</option>
-                    <option value="SP">ShopeePay</option>
+                    <option value="SA">ShopeePay App</option>
                     <option value="DA">DANA</option>
-                    <option value="QR">QRIS</option>
+                    <option value="SP">QRIS</option>
                   </optgroup>
                 </select>
                 <ChevronDown class="w-5 h-5 absolute right-4 top-1/2 -translate-y-1/2 text-ink-500 pointer-events-none" />
@@ -488,6 +488,26 @@ const submitAllocate = async () => {
 }
 
 onMounted(async () => {
+  // Cek apakah user baru saja kembali dari halaman Duitku (Return URL)
+  const route = useRoute()
+  const router = useRouter()
+  
+  if (route.query.merchantOrderId) {
+    try {
+      // Panggil API check-status yang baru kita buat untuk verifikasi proaktif
+      // Berguna terutama di localhost karena webhook tidak bisa masuk
+      await $fetch('/api/duidku/check-status', {
+        params: { orderId: route.query.merchantOrderId }
+      })
+      toast.addToast('Status transaksi berhasil disinkronisasi.', 'success')
+      
+      // Bersihkan URL agar tidak ter-trigger ulang saat refresh
+      router.replace({ query: {} })
+    } catch (error) {
+      console.error('Gagal sinkronisasi status:', error)
+    }
+  }
+
   saldoStore.fetchSaldo()
   saldoStore.fetchTransactions()
   await adsStore.fetchMetaPerformance()

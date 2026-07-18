@@ -80,5 +80,5 @@ Sistem *Top-Up* saldo berhasil diintegrasikan dengan Duitku Sandbox secara penuh
 ---
 
 ### ⏭️ Target Selanjutnya
-1. Pembuatan API proaktif untuk mengecek status transaksi Duitku (`check-status.get.ts`).
+1. ~~Pembuatan API proaktif untuk mengecek status transaksi Duitku (`check-status.get.ts`).~~ (Selesai)
 2. Pembuatan antarmuka **Dashboard Admin** spesifik untuk Tim Ads Ops (menyalurkan Ad Account ID) dan Finance (mengaudit *Withdrawal*).

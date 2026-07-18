@@ -238,7 +238,7 @@ Setiap view di `index.html` menjadi halaman Vue terpisah:
 ### 3.3 Nuxt Server Routes — Payment (Duidku)
 - [x] ~~`server/api/duidku/create-payment.post.ts` — buat request pembayaran (VA/QRIS/e-wallet)~~
 - [x] ~~`server/api/duidku/callback.post.ts` — terima callback pembayaran dari Duidku~~
-- [ ] `server/api/duidku/check-status.get.ts` — cek status transaksi
+- [x] ~~`server/api/duidku/check-status.get.ts` — cek status transaksi~~
 - [ ] Implementasi idempotency key untuk callback
 - [x] ~~Setup callback signature verification (Merchant Code + API Key hash)~~
 

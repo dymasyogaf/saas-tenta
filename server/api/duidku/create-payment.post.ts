@@ -58,7 +58,7 @@ export default defineEventHandler(async (event) => {
     merchantUserInfo: userId,
     customerVaName: userName || 'Member Tentaklik',
     email: userEmail,
-    phoneNumber: userPhone || '',
+    phoneNumber: userPhone || '081234567890',
     itemDetails: [
       {
         name: 'Top Up Saldo Iklan',
@@ -70,7 +70,7 @@ export default defineEventHandler(async (event) => {
       firstName: userName || 'Member',
       lastName: 'Tentaklik',
       email: userEmail,
-      phoneNumber: userPhone || '',
+      phoneNumber: userPhone || '081234567890',
     },
     callbackUrl,
     returnUrl,
@@ -95,6 +95,17 @@ export default defineEventHandler(async (event) => {
 
     if (result.statusCode === '00') {
       // 6. Simpan transaksi berstatus 'pending' ke Supabase
+      const methodNames: Record<string, string> = {
+        'BC': 'BCA Virtual Account',
+        'BM': 'Mandiri Virtual Account',
+        'BR': 'BRI Virtual Account',
+        'OV': 'OVO',
+        'SA': 'ShopeePay',
+        'DA': 'DANA',
+        'SP': 'QRIS',
+      }
+      const paymentName = methodNames[method] || 'Payment Gateway'
+
       const { error: dbError } = await supabase
         .from('transactions')
         .insert({
@@ -103,13 +114,12 @@ export default defineEventHandler(async (event) => {
           amount: paymentAmount,
           status: 'pending',
           payment_gateway_ref: result.reference,
-          description: `Top Up Saldo via Duitku (${method || 'Payment Page'})`
+          description: `Top Up Saldo via ${paymentName}`
         })
 
       if (dbError) {
         console.error('Error insert transaction:', dbError)
-        // Meski gagal simpan lokal, kita tetap bisa retur URL ke user, tapi amannya di-throw error
-        throw createError({ statusCode: 500, statusMessage: 'Gagal mencatat transaksi' })
+        throw createError({ statusCode: 500, statusMessage: 'Gagal mencatat transaksi di database internal' })
       }
 
       // Berhasil
@@ -121,14 +131,14 @@ export default defineEventHandler(async (event) => {
       }
     } else {
       console.error('Duitku Error:', result)
-      throw createError({ statusCode: 400, statusMessage: result.statusMessage || 'Gagal dari payment gateway' })
+      throw createError({ statusCode: 400, statusMessage: `Duitku: ${result.statusMessage || result.Message || 'Gagal dari payment gateway'}` })
     }
 
   } catch (error: any) {
     console.error('Error create payment:', error)
     throw createError({
       statusCode: error.statusCode || 500,
-      statusMessage: error.statusMessage || 'Terjadi kesalahan sistem'
+      statusMessage: error.statusMessage || error.message || 'Terjadi kesalahan saat memproses pembayaran'
     })
   }
 })
