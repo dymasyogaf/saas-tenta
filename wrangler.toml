@@ -1,6 +1,7 @@
 # Cloudflare Pages configuration
 name = "tentaklik-saas"
 compatibility_date = "2025-07-15"
+pages_build_output_dir = "dist"
 
 # CRITICAL: Enable Node.js compatibility for Supabase auth to work
 # Without this, Supabase client operations silently fail with empty error objects {}
