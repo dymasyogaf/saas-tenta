@@ -19,12 +19,14 @@
           <div class="w-10 h-8 bg-orange-500 rounded-md flex items-center justify-center text-white shrink-0">
             <Wallet class="w-5 h-5" />
           </div>
-          <h3 class="text-3xl font-display font-bold text-ink-900">Rp 0</h3>
+          <h3 class="text-3xl font-display font-bold text-ink-900">{{ formatRupiah(saldoStore.balance) }}</h3>
         </div>
         
         <div class="flex items-center gap-3 mb-6">
           <button class="flex-1 bg-white border-2 border-orange-500 text-orange-500 hover:bg-orange-50 font-bold py-2.5 rounded-lg text-sm transition-colors">Tarik Saldo</button>
-          <button class="flex-1 bg-orange-500 border-2 border-orange-500 text-white hover:bg-orange-600 font-bold py-2.5 rounded-lg text-sm transition-colors">Tambah Saldo</button>
+          <button @click="handleTopup" :disabled="saldoStore.isLoading" class="flex-1 bg-orange-500 border-2 border-orange-500 text-white hover:bg-orange-600 font-bold py-2.5 rounded-lg text-sm transition-colors disabled:opacity-50">
+            {{ saldoStore.isLoading ? 'Memproses...' : 'Tambah Saldo' }}
+          </button>
         </div>
         
         <hr class="border-ink-100 mb-6">
@@ -33,7 +35,7 @@
           <p class="text-sm font-medium text-ink-500">Saldo tertunda</p>
           <Info class="w-3.5 h-3.5 text-ink-400" />
         </div>
-        <p class="text-lg font-bold text-ink-900 mb-6">Rp 0</p>
+        <p class="text-lg font-bold text-ink-900 mb-6">{{ formatRupiah(saldoStore.pendingBalance) }}</p>
         
         <div class="flex items-center justify-between gap-4">
           <div class="flex-1">
@@ -225,11 +227,47 @@
         </table>
       </div>
     </div>
+    
+    <!-- Modal Top Up -->
+    <div v-if="isTopupModalOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-ink-900/50 backdrop-blur-sm p-4">
+      <div class="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden relative border border-ink-100">
+        <div class="p-6">
+          <h3 class="text-xl font-display font-bold text-ink-900 mb-2">Tambah Saldo Iklan</h3>
+          <p class="text-ink-500 text-sm mb-6">Masukkan nominal yang ingin ditambahkan. Pembayaran diproses aman oleh Duitku.</p>
+          
+          <div class="space-y-4">
+            <div>
+              <label class="block text-sm font-medium text-ink-700 mb-2">Nominal Top Up (Min Rp 10.000)</label>
+              <div class="relative">
+                <span class="absolute left-4 top-1/2 -translate-y-1/2 text-ink-500 font-medium text-lg">Rp</span>
+                <input type="number" v-model="topupAmount" class="w-full pl-12 pr-4 py-3 bg-white border-2 border-ink-200 rounded-xl focus:outline-none focus:border-orange-500 focus:ring-4 focus:ring-orange-500/20 font-bold text-ink-900 text-lg transition-all" placeholder="50000" />
+              </div>
+            </div>
+            
+            <div class="grid grid-cols-3 gap-2">
+              <button @click="topupAmount = 50000" class="py-2.5 bg-ink-50 border border-ink-200 rounded-xl text-sm font-bold text-ink-700 hover:bg-orange-50 hover:border-orange-300 hover:text-orange-600 transition-colors">50 Ribu</button>
+              <button @click="topupAmount = 100000" class="py-2.5 bg-ink-50 border border-ink-200 rounded-xl text-sm font-bold text-ink-700 hover:bg-orange-50 hover:border-orange-300 hover:text-orange-600 transition-colors">100 Ribu</button>
+              <button @click="topupAmount = 500000" class="py-2.5 bg-ink-50 border border-ink-200 rounded-xl text-sm font-bold text-ink-700 hover:bg-orange-50 hover:border-orange-300 hover:text-orange-600 transition-colors">500 Ribu</button>
+            </div>
+          </div>
+        </div>
+        
+        <div class="p-5 bg-ink-50 flex gap-3 border-t border-ink-100">
+          <button @click="isTopupModalOpen = false" class="flex-1 bg-white border-2 border-ink-200 text-ink-700 hover:bg-ink-100 font-bold py-3 rounded-xl transition-colors">Batal</button>
+          <button @click="submitTopup" :disabled="saldoStore.isLoading || !isValidTopup" class="flex-1 bg-orange-500 border-2 border-orange-500 text-white hover:bg-orange-600 font-bold py-3 rounded-xl transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+            <span v-if="saldoStore.isLoading" class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+            {{ saldoStore.isLoading ? 'Memproses...' : 'Lanjutkan' }}
+          </button>
+        </div>
+      </div>
+    </div>
+
   </div>
 </template>
 
 <script setup lang="ts">
 import { Calendar, Wallet, Info, Download, Search, ChevronDown } from 'lucide-vue-next'
+import { useSaldoStore } from '~/stores/saldo'
 
 definePageMeta({
   layout: 'dashboard',
@@ -244,4 +282,37 @@ const tabs = [
   { id: 'tambah-saldo', label: 'Riwayat Tambah Saldo' },
   { id: 'penarikan', label: 'Riwayat Penarikan' },
 ]
+
+const saldoStore = useSaldoStore()
+
+const formatRupiah = (angka: number) => {
+  return new Intl.NumberFormat('id-ID', {
+    style: 'currency',
+    currency: 'IDR',
+    minimumFractionDigits: 0
+  }).format(angka || 0)
+}
+
+const isTopupModalOpen = ref(false)
+const topupAmount = ref<number | ''>('')
+const user = useSupabaseUser()
+
+const isValidTopup = computed(() => {
+  return typeof topupAmount.value === 'number' && topupAmount.value >= 10000
+})
+
+const handleTopup = () => {
+  isTopupModalOpen.value = true
+  topupAmount.value = 50000
+}
+
+const submitTopup = async () => {
+  if (!isValidTopup.value) return
+  await saldoStore.topup(topupAmount.value as number, user.value)
+}
+
+onMounted(() => {
+  saldoStore.fetchSaldo()
+  saldoStore.fetchTransactions()
+})
 </script>

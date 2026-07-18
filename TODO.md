@@ -6,11 +6,11 @@
 ---
 
 ## 🔥 Target Berikutnya (Prioritas Utama Pasca-Deploy)
-- [ ] **Integrasi Saldo Iklan & Payment Gateway (Duidku)**
-  - [ ] Pembuatan skema koneksi API untuk Top Up.
+- [x] **Integrasi Saldo Iklan & Payment Gateway (Duidku)**
+  - [x] Pembuatan skema koneksi API untuk Top Up.
   - [ ] Pembangunan halaman riwayat saldo.
-- [ ] **Pembuatan Endpoint Callback Transaksi**
-  - [ ] Menangkap webhook sukses pembayaran dari Duidku secara *real-time*.
+- [x] **Pembuatan Endpoint Callback Transaksi**
+  - [x] Menangkap webhook sukses pembayaran dari Duidku secara *real-time*.
 
 ---
 
@@ -217,11 +217,11 @@ Setiap view di `index.html` menjadi halaman Vue terpisah:
 - [x] ~~Implementasi fungsi auth ke `pages/login.vue` & `pages/register.vue`~~
 
 ### 3.3 Nuxt Server Routes — Payment (Duidku)
-- [ ] `server/api/duidku/create-payment.post.ts` — buat request pembayaran (VA/QRIS/e-wallet)
-- [ ] `server/api/duidku/callback.post.ts` — terima callback pembayaran dari Duidku
+- [x] ~~`server/api/duidku/create-payment.post.ts` — buat request pembayaran (VA/QRIS/e-wallet)~~
+- [x] ~~`server/api/duidku/callback.post.ts` — terima callback pembayaran dari Duidku~~
 - [ ] `server/api/duidku/check-status.get.ts` — cek status transaksi
 - [ ] Implementasi idempotency key untuk callback
-- [ ] Setup callback signature verification (Merchant Code + API Key hash)
+- [x] ~~Setup callback signature verification (Merchant Code + API Key hash)~~
 
 ### 3.4 Nuxt Server Routes — Ads API Proxy
 - [ ] `server/api/ads/meta/accounts.get.ts` — list Meta ad accounts
@@ -252,7 +252,7 @@ Setiap view di `index.html` menjadi halaman Vue terpisah:
 
 ### 4.1 Stores
 - [ ] `stores/user.ts` — user profile, auth state
-- [ ] `stores/saldo.ts` — balance, transactions, mutations
+- [x] ~~`stores/saldo.ts` — balance, transactions, mutations~~
 - [ ] `stores/ads.ts` — ad accounts, campaigns, issues
 - [ ] `stores/notification.ts` — notifikasi list, unread count, realtime subscription
 
