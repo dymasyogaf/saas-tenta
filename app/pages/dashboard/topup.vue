@@ -89,7 +89,12 @@
               <div class="flex items-center gap-1 mb-1">
                 <p class="text-xs font-medium text-ink-500">Total Saldo Masuk (Top Up)</p>
               </div>
-              <p class="text-lg font-bold text-ink-900">{{ formatRupiah(saldoStore.balance) }}</p>
+              <template v-if="saldoStore.isFetchingSaldo">
+                <div class="inline-block w-20 h-6 bg-ink-200 rounded animate-pulse mt-1"></div>
+              </template>
+              <template v-else>
+                <p class="text-lg font-bold text-ink-900">{{ formatRupiah(saldoStore.balance) }}</p>
+              </template>
             </div>
             
             <div class="flex gap-4">

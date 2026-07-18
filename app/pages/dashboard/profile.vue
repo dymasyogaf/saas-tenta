@@ -61,13 +61,20 @@
               <div v-else class="flex flex-col sm:flex-row gap-3">
                 <input type="text" :value="fullName" class="flex-1 border border-ink-200 rounded-md px-3 py-2.5 text-sm text-ink-700 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 bg-white" />
                 
-                <div v-if="isProfileVerified" class="flex flex-col sm:flex-row items-center gap-2 shrink-0">
+                <div v-if="verificationStatus === 'verified'" class="flex flex-col sm:flex-row items-center gap-2 shrink-0">
                   <div class="flex w-full items-center justify-center gap-2 bg-green-50 text-green-600 px-4 py-2.5 rounded-md text-sm font-semibold border border-green-200">
                     <ShieldCheck class="w-4 h-4" /> Profile Terverifikasi
                   </div>
                   <button @click="resetVerification" class="text-xs text-ink-400 hover:text-red-500 underline mt-1 sm:mt-0">Reset (Dev)</button>
                 </div>
                 
+                <div v-else-if="verificationStatus === 'pending'" class="flex flex-col sm:flex-row items-center gap-2 shrink-0">
+                  <div class="flex w-full items-center justify-center gap-2 bg-orange-50 text-orange-600 px-4 py-2.5 rounded-md text-sm font-semibold border border-orange-200">
+                    <ShieldCheck class="w-4 h-4" /> Sedang Direview
+                  </div>
+                  <button @click="resetVerification" class="text-xs text-ink-400 hover:text-red-500 underline mt-1 sm:mt-0">Reset (Dev)</button>
+                </div>
+
                 <NuxtLink v-else to="/dashboard/verification" class="flex items-center justify-center gap-2 border border-orange-500 text-orange-500 px-4 py-2.5 rounded-md text-sm font-semibold hover:bg-orange-50 transition-colors shrink-0">
                   <ShieldCheck class="w-4 h-4" /> Verifikasi profile
                 </NuxtLink>
@@ -303,7 +310,7 @@ const activeTab = ref('profile')
 const { user } = useAuth()
 
 const fullName = computed(() => user.value?.user_metadata?.full_name || 'User')
-const isProfileVerified = computed(() => !!user.value?.user_metadata?.profile_verified)
+const verificationStatus = ref('unverified')
 const email = computed(() => user.value?.email || 'Belum diatur')
 // Anggap email otomatis terverifikasi selama user bisa login, sesuai request MVP.
 const isEmailVerified = computed(() => !!user.value?.email)
@@ -331,45 +338,49 @@ const isUpdating2FA = ref(false)
 const pendingPhone = ref('')
 
 const fetchProfile = async () => {
-  const supabase = useSupabaseClient()
-  
-  // Sinkronisasi paksa data user terbaru dari Auth Supabase
-  const { data: { user: freshUser } } = await supabase.auth.getUser()
-  if (freshUser) {
-    user.value = freshUser as any
-  }
-
-  // Use whatever ID field exists
-  const uid = (user.value as any)?.id || (user.value as any)?.sub
-  if (!uid) return
-
-  const { data, error } = await supabase
-    .from('users')
-    .select('phone_verified')
-    .eq('id', uid)
-    .single()
+  try {
+    const supabase = useSupabaseClient()
     
-  if (error) {
-    console.error('Supabase Profile Fetch Error:', error)
-    return
+    // Sinkronisasi paksa data user terbaru dari Auth Supabase
+    const { data: { user: freshUser } } = await supabase.auth.getUser()
+    if (freshUser) {
+      user.value = freshUser as any
+    }
+
+    // Use whatever ID field exists
+    const uid = (user.value as any)?.id || (user.value as any)?.sub
+    if (!uid) return
+
+    const { data, error } = await supabase
+      .from('users')
+      .select('phone_verified, verification_status')
+      .eq('id', uid)
+      .single()
+      
+    if (error) {
+      console.error('Supabase Profile Fetch Error:', error)
+      return
+    }
+    
+    if (data) {
+      isPhoneVerified.value = (data as any).phone_verified
+      if ((data as any).verification_status) {
+        verificationStatus.value = (data as any).verification_status
+      }
+    }
+    
+    if (user.value) {
+      is2FAEnabled.value = !!user.value.user_metadata?.is_2fa_enabled
+    }
+  } catch (error) {
+    console.error('Unexpected error fetching profile:', error)
+  } finally {
+    isLoadingPhone.value = false
   }
-  
-  if (data) {
-    isPhoneVerified.value = (data as any).phone_verified
-  }
-  
-  if (user.value) {
-    is2FAEnabled.value = !!user.value.user_metadata?.is_2fa_enabled
-  }
-  
-  isLoadingPhone.value = false
 }
 
 onMounted(() => {
-  if (user.value) {
-    is2FAEnabled.value = !!user.value.user_metadata?.is_2fa_enabled
-    fetchProfile()
-  }
+  fetchProfile()
 })
 
 const handleToggle2FA = async () => {
@@ -428,11 +439,9 @@ const handlePhoneRequested = (newPhone: string) => {
 
 const resetVerification = async () => {
   try {
+    const uid = (user.value as any)?.id || (user.value as any)?.sub
     const supabase = useSupabaseClient()
-    await supabase.auth.updateUser({
-      data: { profile_verified: false }
-    })
-    await supabase.auth.refreshSession()
+    await (supabase as any).from('users').update({ verification_status: 'unverified' }).eq('id', uid)
     addToast('Status verifikasi berhasil di-reset untuk testing!', 'success')
     window.location.reload()
   } catch (err: any) {

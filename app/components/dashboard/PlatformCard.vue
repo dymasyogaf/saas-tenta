@@ -12,7 +12,15 @@
       <div class="flex-1">
         <div class="flex flex-wrap items-center gap-3 mb-1.5">
           <h4 class="font-display font-bold text-lg text-ink-900">{{ platform.name }}</h4>
-          <span class="bg-ink-100 text-ink-600 border border-ink-200 text-xs font-bold px-2.5 py-1 rounded-md">
+          <span 
+            class="border text-xs font-bold px-2.5 py-1 rounded-md"
+            :class="{
+              'bg-ink-100 text-ink-600 border-ink-200': !platform.rawStatus,
+              'bg-orange-100 text-orange-600 border-orange-200': platform.rawStatus === 'pending_review',
+              'bg-green-100 text-green-700 border-green-200': platform.rawStatus === 'approved',
+              'bg-red-100 text-red-600 border-red-200': platform.rawStatus === 'rejected'
+            }"
+          >
             {{ platform.status }}
           </span>
         </div>
@@ -26,8 +34,18 @@
         </button>
       </div>
       <div class="shrink-0 mt-3 md:mt-0 w-full md:w-auto">
-        <button class="w-full md:w-auto bg-orange-500 text-white px-6 py-3 rounded-xl text-sm font-bold hover:bg-orange-600 transition-colors shadow-sm">
-          Dapatkan Ads Account
+        <button v-if="!platform.rawStatus" :disabled="isLocked" @click="!isLocked && $emit('request')" class="w-full md:w-auto px-6 py-3 rounded-xl text-sm font-bold transition-colors shadow-sm" :class="isLocked ? 'bg-ink-200 text-ink-500 cursor-not-allowed' : 'bg-orange-500 text-white hover:bg-orange-600'">
+          <span v-if="isLocked" class="flex items-center gap-2 justify-center"><ShieldAlert class="w-4 h-4" /> Terkunci</span>
+          <span v-else>Dapatkan Ads Account</span>
+        </button>
+        <button v-else-if="platform.rawStatus === 'pending_review'" disabled class="w-full md:w-auto bg-ink-200 text-ink-500 cursor-not-allowed px-6 py-3 rounded-xl text-sm font-bold shadow-sm">
+          Sedang Diproses
+        </button>
+        <button v-else-if="platform.rawStatus === 'approved'" @click="$emit('manage')" class="w-full md:w-auto bg-green-600 text-white px-6 py-3 rounded-xl text-sm font-bold hover:bg-green-700 transition-colors shadow-sm">
+          Top Up Saldo
+        </button>
+        <button v-else-if="platform.rawStatus === 'rejected'" @click="$emit('request')" class="w-full md:w-auto bg-red-50 text-red-600 border border-red-200 hover:bg-red-100 px-6 py-3 rounded-xl text-sm font-bold transition-colors shadow-sm">
+          Ajukan Ulang
         </button>
       </div>
     </div>
@@ -62,10 +80,11 @@ import {
   ChevronDown,
   ChevronUp,
   FileText,
-  IdCard,
+  ShieldCheck,
   Wallet,
   Settings,
   Megaphone,
+  ShieldAlert,
 } from 'lucide-vue-next'
 
 interface Platform {
@@ -74,12 +93,16 @@ interface Platform {
   logoClass?: string
   logoInvert?: boolean
   status: string
+  rawStatus?: string | null
   description: string
 }
 
 defineProps<{
   platform: Platform
+  isLocked?: boolean
 }>()
+
+defineEmits(['request', 'manage'])
 
 const showSteps = ref(false)
 
@@ -87,31 +110,31 @@ const steps = [
   {
     icon: FileText,
     title: 'Isi formulir pendaftaran',
-    desc: 'Lengkapi formulir dengan data diri sesuai KTP, detail iklan yang ingin dibuat, dan data akun iklan.',
+    desc: 'Lengkapi formulir dengan nama sesuai KTP, ID Business, dan setujui Syarat & Ketentuan.',
     colorClass: 'text-cyan-500 bg-cyan-50',
   },
   {
-    icon: IdCard,
-    title: 'Verifikasi data (eKYC)',
-    desc: 'Siapkan dokumen untuk eKYC seperti KTP dan kamera HP untuk mengambil foto selfie.',
+    icon: ShieldCheck,
+    title: 'Review Tim Internal',
+    desc: 'Tim Kepatuhan Tentaklik akan meninjau kelayakan pengajuan akun iklan Anda.',
     colorClass: 'text-pink-500 bg-pink-50',
-  },
-  {
-    icon: Wallet,
-    title: 'Top Up Saldo Akun',
-    desc: 'Top up saldomu terlebih dulu biar akun langsung siap digunakan.',
-    colorClass: 'text-teal-500 bg-teal-50',
   },
   {
     icon: Settings,
     title: 'Pembuatan Ad Account',
-    desc: 'Setelah eKYC diverifikasi, sistem kami akan membuatkan Ad Account untukmu.',
+    desc: 'Setelah disetujui, kami akan memproses penautan dan pembuatan akun iklan Whitelisted Anda.',
     colorClass: 'text-blue-500 bg-blue-50',
+  },
+  {
+    icon: Wallet,
+    title: 'Top Up Saldo Akun',
+    desc: 'Isi saldo (Top Up) akun Anda terlebih dahulu melalui dashboard agar iklan bisa berjalan.',
+    colorClass: 'text-teal-500 bg-teal-50',
   },
   {
     icon: Megaphone,
     title: 'Langsung gas ngiklan!',
-    desc: 'Jika akun berhasil dibuat tanpa hambatan, kamu bisa isi saldo lalu pakai akunnya buat ngiklan.',
+    desc: 'Akun siap digunakan! Anda bisa langsung menjalankan campaign iklan tanpa hambatan.',
     colorClass: 'text-orange-500 bg-orange-50',
   },
 ]

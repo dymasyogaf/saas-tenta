@@ -6,13 +6,19 @@ export const useSaldoStore = defineStore('saldo', {
     pendingBalance: 0,
     transactions: [] as any[],
     isLoading: false,
+    isFetchingSaldo: true,
+    isFetchingTransactions: true,
     error: null as string | null
   }),
 
   actions: {
     async fetchSaldo() {
+      this.isFetchingSaldo = true
       const user = useSupabaseUser()
-      if (!user.value) return
+      if (!user.value) {
+        this.isFetchingSaldo = false
+        return
+      }
 
       const supabase = useSupabaseClient<any>()
       
@@ -32,12 +38,18 @@ export const useSaldoStore = defineStore('saldo', {
         }
       } catch (e: any) {
         console.error('Failed to fetch saldo:', e.message)
+      } finally {
+        this.isFetchingSaldo = false
       }
     },
 
     async fetchTransactions() {
+      this.isFetchingTransactions = true
       const user = useSupabaseUser()
-      if (!user.value) return
+      if (!user.value) {
+        this.isFetchingTransactions = false
+        return
+      }
       
       const supabase = useSupabaseClient<any>()
       
@@ -56,6 +68,8 @@ export const useSaldoStore = defineStore('saldo', {
         }
       } catch (e: any) {
         console.error('Failed to fetch transactions:', e.message)
+      } finally {
+        this.isFetchingTransactions = false
       }
     },
 

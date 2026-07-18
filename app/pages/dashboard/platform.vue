@@ -40,27 +40,66 @@
       </div>
     </div>
 
+
+
     <!-- Platform List -->
     <div class="flex justify-between items-center mb-2">
       <h3 class="font-display font-bold text-xl md:text-2xl text-ink-900">Layanan iklan di Tentaklik</h3>
     </div>
 
     <div class="flex flex-col gap-4">
-      <DashboardPlatformCard
-        v-for="platform in platforms"
-        :key="platform.name"
-        :platform="platform"
-      />
+      <template v-if="isLoading">
+        <div v-for="i in 3" :key="'skeleton-card-' + i" class="bg-white border border-ink-100 rounded-2xl p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 animate-pulse shadow-sm">
+          <div class="flex items-center gap-4 w-full md:w-2/3">
+            <div class="w-16 h-16 bg-ink-200 rounded-2xl shrink-0"></div>
+            <div class="w-full space-y-2">
+              <div class="h-5 bg-ink-200 rounded w-1/3"></div>
+              <div class="h-4 bg-ink-200 rounded w-2/3 mt-2"></div>
+            </div>
+          </div>
+          <div class="shrink-0 w-full md:w-32 h-10 bg-ink-200 rounded-xl"></div>
+        </div>
+      </template>
+      <template v-else>
+        <DashboardPlatformCard
+          v-for="platform in platforms"
+          :key="platform.name"
+          :platform="platform"
+          :is-locked="verificationStatus !== 'verified'"
+          @request="openRequestModal(platform.name)"
+        />
+      </template>
     </div>
+
+    <!-- Modal Pengajuan Akun -->
+    <ModalRequestAdAccountModal 
+      v-model="isModalOpen"
+      :platformName="selectedPlatformName"
+      @success="fetchRequests"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
-import { Megaphone, GraduationCap, BarChart2, ShieldCheck, Wallet } from 'lucide-vue-next'
+import { Megaphone, GraduationCap, BarChart2, ShieldCheck, Wallet, ShieldAlert } from 'lucide-vue-next'
+import { ref, onMounted } from 'vue'
 
 definePageMeta({
   layout: 'dashboard',
 })
+
+const supabase = useSupabaseClient()
+const { user } = useAuth()
+
+const isModalOpen = ref(false)
+const selectedPlatformName = ref('')
+const verificationStatus = ref<string | null>(null)
+const isLoading = ref(true)
+
+const openRequestModal = (name: string) => {
+  selectedPlatformName.value = name
+  isModalOpen.value = true
+}
 
 const benefits = [
   {
@@ -85,27 +124,86 @@ const benefits = [
   },
 ]
 
-const platforms = [
+const platforms = ref<any[]>([
   {
+    dbName: 'Meta Ads',
     name: 'Facebook Ads Whitelisted Account (Meta)',
     logo: '/icon-meta-ads.png',
     logoClass: 'rounded-full',
     status: 'Tidak Aktif',
+    rawStatus: null,
     description: 'Scale up iklan pakai <strong>Meta Ads</strong> Whitelisted Account dari Tentaklik yang bisa gas kapan pun dan minim hambatan!',
   },
   {
+    dbName: 'TikTok Ads',
     name: 'TikTok Ads Whitelisted Account',
     logo: '/tiktok.svg',
     logoClass: 'rounded-2xl p-2',
     status: 'Tidak Aktif',
+    rawStatus: null,
     description: 'Scale up iklan pakai <strong>Tiktok Ads</strong> Whitelisted Account dari Tentaklik yang bisa gas kapan pun dan minim hambatan!',
   },
   {
+    dbName: 'Google Ads',
     name: 'Google Ads Whitelisted Account',
     logo: '/icon-google-ads.png',
     logoClass: 'rounded-full',
     status: 'Tidak Aktif',
+    rawStatus: null,
     description: 'Scale up iklan pakai <strong>Google Ads</strong> Whitelisted Account dari Tentaklik yang bisa gas kapan pun dan minim hambatan!',
   },
-]
+])
+
+const fetchRequests = async () => {
+  isLoading.value = true
+  if (!user.value) {
+    isLoading.value = false
+    return
+  }
+  
+  const uid = (user.value as any)?.id || (user.value as any)?.sub
+  
+  // Fetch verification status
+  const { data: profile } = await (supabase as any)
+    .from('users')
+    .select('verification_status')
+    .eq('id', uid)
+    .single()
+    
+  if (profile && profile.verification_status) {
+    verificationStatus.value = profile.verification_status
+  } else {
+    verificationStatus.value = 'unverified'
+  }
+  
+  // Fetch requests status
+  const { data, error } = await (supabase as any)
+    .from('ad_account_requests')
+    .select('platform, status')
+    .eq('user_id', uid)
+    
+  if (data) {
+    data.forEach((req: any) => {
+      const p = platforms.value.find(p => p.dbName === req.platform)
+      if (p) {
+        // If there are multiple requests, we only care about the most recent or active one
+        // Let's just override it for now, since we query them all
+        p.rawStatus = req.status
+        if (req.status === 'pending_review') {
+          p.status = 'Menunggu Review'
+        } else if (req.status === 'approved') {
+          p.status = 'Aktif'
+        } else if (req.status === 'rejected') {
+          p.status = 'Ditolak'
+        }
+      }
+    })
+  }
+  
+  isLoading.value = false
+}
+
+onMounted(() => {
+  fetchRequests()
+})
 </script>

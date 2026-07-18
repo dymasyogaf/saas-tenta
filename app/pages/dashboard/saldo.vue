@@ -64,7 +64,21 @@
           <Search class="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-ink-400" />
         </div>
       </div>
-      <EmptyState />
+      
+      <!-- Skeleton Loading for Table -->
+      <div v-if="saldoStore.isFetchingTransactions" class="space-y-4">
+        <div v-for="i in 5" :key="i" class="flex items-center justify-between p-4 bg-white border border-ink-100 rounded-xl animate-pulse">
+          <div class="flex items-center gap-4 w-1/2">
+            <div class="w-10 h-10 bg-ink-200 rounded-lg shrink-0"></div>
+            <div class="space-y-2 w-full">
+              <div class="h-4 bg-ink-200 rounded w-1/3"></div>
+              <div class="h-3 bg-ink-200 rounded w-1/4"></div>
+            </div>
+          </div>
+          <div class="h-8 bg-ink-200 rounded w-24"></div>
+        </div>
+      </div>
+      <EmptyState v-else />
     </div>
 
     <!-- Histori Top Up -->
@@ -89,7 +103,20 @@
           </div>
         </div>
       </div>
-      <EmptyState />
+      <!-- Skeleton Loading for Table -->
+      <div v-if="saldoStore.isFetchingTransactions" class="space-y-4">
+        <div v-for="i in 5" :key="i" class="flex items-center justify-between p-4 bg-white border border-ink-100 rounded-xl animate-pulse">
+          <div class="flex items-center gap-4 w-1/2">
+            <div class="w-10 h-10 bg-ink-200 rounded-lg shrink-0"></div>
+            <div class="space-y-2 w-full">
+              <div class="h-4 bg-ink-200 rounded w-1/3"></div>
+              <div class="h-3 bg-ink-200 rounded w-1/4"></div>
+            </div>
+          </div>
+          <div class="h-8 bg-ink-200 rounded w-24"></div>
+        </div>
+      </div>
+      <EmptyState v-else />
     </div>
 
     <!-- Histori Pindah Saldo -->
@@ -103,12 +130,38 @@
           <input type="text" placeholder="Cari ID Transfer Saldo" class="pl-9 pr-4 py-2 border border-ink-200 rounded-md text-sm w-full focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 text-ink-900 placeholder:text-ink-400 bg-white" />
         </div>
       </div>
-      <EmptyState />
+      <!-- Skeleton Loading for Table -->
+      <div v-if="saldoStore.isFetchingTransactions" class="space-y-4">
+        <div v-for="i in 5" :key="i" class="flex items-center justify-between p-4 bg-white border border-ink-100 rounded-xl animate-pulse">
+          <div class="flex items-center gap-4 w-1/2">
+            <div class="w-10 h-10 bg-ink-200 rounded-lg shrink-0"></div>
+            <div class="space-y-2 w-full">
+              <div class="h-4 bg-ink-200 rounded w-1/3"></div>
+              <div class="h-3 bg-ink-200 rounded w-1/4"></div>
+            </div>
+          </div>
+          <div class="h-8 bg-ink-200 rounded w-24"></div>
+        </div>
+      </div>
+      <EmptyState v-else />
     </div>
     
     <!-- Histori Akun Tambahan -->
     <div v-else-if="activeTab === 'histori-tambahan'">
-      <EmptyState />
+      <!-- Skeleton Loading for Table -->
+      <div v-if="saldoStore.isFetchingTransactions" class="space-y-4">
+        <div v-for="i in 5" :key="i" class="flex items-center justify-between p-4 bg-white border border-ink-100 rounded-xl animate-pulse">
+          <div class="flex items-center gap-4 w-1/2">
+            <div class="w-10 h-10 bg-ink-200 rounded-lg shrink-0"></div>
+            <div class="space-y-2 w-full">
+              <div class="h-4 bg-ink-200 rounded w-1/3"></div>
+              <div class="h-3 bg-ink-200 rounded w-1/4"></div>
+            </div>
+          </div>
+          <div class="h-8 bg-ink-200 rounded w-24"></div>
+        </div>
+      </div>
+      <EmptyState v-else />
     </div>
     
     <!-- Histori Akun Pengganti -->
@@ -119,7 +172,20 @@
           <Search class="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-ink-400" />
         </div>
       </div>
-      <EmptyState />
+      <!-- Skeleton Loading for Table -->
+      <div v-if="saldoStore.isFetchingTransactions" class="space-y-4">
+        <div v-for="i in 5" :key="i" class="flex items-center justify-between p-4 bg-white border border-ink-100 rounded-xl animate-pulse">
+          <div class="flex items-center gap-4 w-1/2">
+            <div class="w-10 h-10 bg-ink-200 rounded-lg shrink-0"></div>
+            <div class="space-y-2 w-full">
+              <div class="h-4 bg-ink-200 rounded w-1/3"></div>
+              <div class="h-3 bg-ink-200 rounded w-1/4"></div>
+            </div>
+          </div>
+          <div class="h-8 bg-ink-200 rounded w-24"></div>
+        </div>
+      </div>
+      <EmptyState v-else />
     </div>
 
   </div>
@@ -127,9 +193,17 @@
 
 <script setup lang="ts">
 import { Calendar, ChevronDown, Search, Download } from 'lucide-vue-next'
+import { ref, onMounted } from 'vue'
+import { useSaldoStore } from '~/stores/saldo'
 
 definePageMeta({
   layout: 'dashboard',
+})
+
+const saldoStore = useSaldoStore()
+
+onMounted(() => {
+  saldoStore.fetchTransactions()
 })
 
 const activeTab = ref('list-saldo')

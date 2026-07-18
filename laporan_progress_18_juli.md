@@ -55,9 +55,30 @@ Sistem *Top-Up* saldo berhasil diintegrasikan dengan Duitku Sandbox secara penuh
 *   **Pemisahan Tugas:** Merinci hak akses *database* spesifik untuk Klien (Pengguna), Tim Audit (*Compliance*), Tim Iklan (*Ads Ops*), Tim Keuangan (*Finance*), dan Pemilik (*Super Admin*).
 *   **Pembaruan Roadmap:** Memasukkan "Fase 6: Dasbor Admin & Role Management" ke dalam struktur besar `TODO.md` sebagai panduan pengembangan jangka panjang.
 
+## 📝 9. Sistem Formulir Pengajuan Akun Iklan (Request Ads Account)
+*   **Modal Form Dinamis:** Membangun UI berpusat di `RequestAdAccountModal.vue` yang beradaptasi secara otomatis dengan platform. Contoh: mode Google meminta "Shared Email", sedangkan mode TikTok meminta "ID Business Center".
+*   **Penyimpanan Database Fleksibel:** Menyimpan data formulir pendaftaran dinamis (seperti `shared_email` atau `bm_id`) menggunakan kolom `JSONB details` pada tabel `ad_account_requests`.
+*   **Native HTML5 Validation:** Mengalihkan logika pencegahan *spam* ke validasi bawaan *browser* (tooltip peringatan form) ketimbang mengunci tombol, memberikan *User Experience* (UX) yang lebih intuitif.
+*   **Status Dashboard Real-time:** Merekayasa ulang file `platform.vue` untuk menarik riwayat dari Supabase. Jika *user* sudah mendaftar, UI akan mematikan tombol pengajuan dan memunculkan *badge* "Menunggu Review" secara otomatis.
+*   **Pembaruan Teks UI:** Memperbarui konten antarmuka "Tahapan Pembuatan Akun" (`PlatformCard.vue`) agar mencerminkan proses internal Tentaklik terkini (sudah menghapus wajib eKYC).
+
+## 🔐 10. Sistem Keamanan & Verifikasi (eKYC)
+*   **Alur Peninjauan Otomatis:** Menghubungkan proses registrasi *User* dengan status `unverified`. Pendaftaran mewajibkan pengisian formulir data diri (KTP & Wajah), yang lalu mengubah status menjadi `pending`.
+*   **Validasi Formulir Ketat:** Menambahkan fitur otomatis *formatting* tanggal lahir di frontend, pembatasan ketat nomor NIK menjadi 16-20 digit, serta melimitasi berat unggahan KTP ke maksimal 2MB (dengan format JPG/PNG).
+*   **Dasbor Rahasia Tim Audit:** Berhasil menciptakan halaman `admin/verifications.vue` yang mencetak daftar tabel klien berstatus `pending`. Tersedia Modal popup elegan berisikan data NIK/Nama untuk dicocokkan, lengkap dengan opsi *Approve* (Setujui) dan *Reject* (Tolak).
+*   **Notifikasi In-App:** Mengotomatisasi sistem agar ketika Tim Audit mengeklik 'Approve/Reject', secara *real-time* sistem juga menginjeksikan data pesan ke tabel database `notifications` milik pengguna yang bersangkutan.
+
+## ✨ 11. Optimasi Antarmuka Kelas Enterprise (Skeleton Loader UI)
+*   **Komponen Banner Dinamis:** Mengekstrak *banner* peringatan merah "Unverified" menjadi satu buah Komponen Universal bernama `VerificationBanner.vue`. Disisipkan pada tingkat *Layout* (Bapak) sehingga tampil otomatis di seluruh halaman Dasbor, bebas kode redundan!
+*   **Animasi Ghost Loading (Skeleton):** Membasmi kutukan "Layout Shift" (halaman berkedip atau memunculkan tulisan *default* "Rp 0" saat ditarik data dari server).
+*   **Implementasi Menyeluruh:** Teknik "Blur/Shimmering" animasi abu-abu ini resmi dipasang di seantero sistem:
+    - *Card* Saldo & Kampanye Berjalan (`index.vue` dan `topup.vue`)
+    - Tabel Laporan Transaksi (`saldo.vue`)
+    - Daftar Pilihan Platform Iklan (`platform.vue`)
+    - Hingga Tabel dasbor antrean audit Tim Internal (`admin/verifications.vue`).
+
 ---
 
 ### ⏭️ Target Selanjutnya
-1. Pembuatan antarmuka (UI Modal) **Formulir Pengajuan Akun Iklan (Request Ads Account)** di halaman Layanan Iklan.
-2. Pembuatan fitur **Penarikan Saldo (Withdraw)** dari Saldo Utama.
-3. Pembuatan API proaktif untuk mengecek status transaksi Duitku (`check-status.get.ts`).
+1. Pembuatan API proaktif untuk mengecek status transaksi Duitku (`check-status.get.ts`).
+2. Pembuatan antarmuka **Dashboard Admin** spesifik untuk Tim Ads Ops (menyalurkan Ad Account ID) dan Finance (mengaudit *Withdrawal*).

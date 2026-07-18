@@ -162,7 +162,7 @@
               <div v-if="!selectedKTP">
                 <label class="bg-orange-500 hover:bg-orange-600 text-white font-bold py-2.5 px-6 rounded-md text-sm transition-colors shadow-sm inline-flex items-center gap-2 cursor-pointer w-full justify-center">
                   <Upload class="w-4 h-4" /> Upload KTP
-                  <input type="file" accept="image/*" class="hidden" @change="handleFileUpload($event, 'ktp')" />
+                  <input type="file" accept="image/png, image/jpeg, image/jpg" class="hidden" @change="handleFileUpload($event, 'ktp')" />
                 </label>
               </div>
               <div v-else class="flex flex-col items-start gap-3">
@@ -174,7 +174,7 @@
                 </div>
                 <label v-if="!isScanning" class="text-orange-500 hover:text-orange-600 font-bold text-sm cursor-pointer inline-flex items-center gap-1.5 transition-colors">
                   <Upload class="w-4 h-4" /> Ganti KTP
-                  <input type="file" accept="image/*" class="hidden" @change="handleFileUpload($event, 'ktp')" />
+                  <input type="file" accept="image/png, image/jpeg, image/jpg" class="hidden" @change="handleFileUpload($event, 'ktp')" />
                 </label>
               </div>
             </div>
@@ -185,7 +185,7 @@
               <div v-if="!selectedPasPhoto">
                 <label class="bg-orange-500 hover:bg-orange-600 text-white font-bold py-2.5 px-6 rounded-md text-sm transition-colors shadow-sm inline-flex items-center gap-2 cursor-pointer w-full justify-center">
                   <Upload class="w-4 h-4" /> Upload Pas Photo
-                  <input type="file" accept="image/*" class="hidden" @change="handleFileUpload($event, 'pasphoto')" />
+                  <input type="file" accept="image/png, image/jpeg, image/jpg" class="hidden" @change="handleFileUpload($event, 'pasphoto')" />
                 </label>
               </div>
               <div v-else class="flex flex-col items-start gap-3">
@@ -195,7 +195,7 @@
                 </div>
                 <label class="text-orange-500 hover:text-orange-600 font-bold text-sm cursor-pointer inline-flex items-center gap-1.5 transition-colors">
                   <Upload class="w-4 h-4" /> Ganti Pas Photo
-                  <input type="file" accept="image/*" class="hidden" @change="handleFileUpload($event, 'pasphoto')" />
+                  <input type="file" accept="image/png, image/jpeg, image/jpg" class="hidden" @change="handleFileUpload($event, 'pasphoto')" />
                 </label>
               </div>
             </div>
@@ -211,14 +211,14 @@
             <!-- NIK -->
             <div>
               <label class="block text-sm font-bold text-ink-900 mb-1">NIK</label>
-              <input v-model="formData.nik" type="text" maxlength="16" class="w-full border rounded-md px-3 py-2.5 text-sm text-ink-900 focus:outline-none focus:ring-1 bg-white transition-colors" :class="isNikValid ? 'border-ink-200 focus:border-orange-500 focus:ring-orange-500' : 'border-red-500 focus:border-red-500 focus:ring-red-500'" />
-              <p v-if="!isNikValid" class="text-xs text-red-500 mt-1 font-medium flex items-center gap-1"><AlertCircle class="w-3 h-3"/> NIK harus terdiri dari 16 digit angka.</p>
+              <input v-model="formData.nik" type="text" maxlength="20" class="w-full border rounded-md px-3 py-2.5 text-sm text-ink-900 focus:outline-none focus:ring-1 bg-white transition-colors" :class="isNikValid ? 'border-ink-200 focus:border-orange-500 focus:ring-orange-500' : 'border-red-500 focus:border-red-500 focus:ring-red-500'" />
+              <p v-if="!isNikValid" class="text-xs text-red-500 mt-1 font-medium flex items-center gap-1"><AlertCircle class="w-3 h-3"/> NIK harus terdiri dari 16-20 digit angka.</p>
             </div>
 
             <!-- Tanggal Lahir -->
             <div>
               <label class="block text-sm font-bold text-ink-900 mb-1">Tanggal Lahir <span class="text-ink-400 font-normal">(contoh: 25-02-1999)</span></label>
-              <input v-model="formData.dob" type="text" maxlength="10" class="w-full border rounded-md px-3 py-2.5 text-sm text-ink-900 focus:outline-none focus:ring-1 bg-white transition-colors" :class="isDobValid ? 'border-ink-200 focus:border-orange-500 focus:ring-orange-500' : 'border-red-500 focus:border-red-500 focus:ring-red-500'" placeholder="DD-MM-YYYY" />
+              <input v-model="formData.dob" @input="handleDobInput" type="text" maxlength="10" class="w-full border rounded-md px-3 py-2.5 text-sm text-ink-900 focus:outline-none focus:ring-1 bg-white transition-colors" :class="isDobValid ? 'border-ink-200 focus:border-orange-500 focus:ring-orange-500' : 'border-red-500 focus:border-red-500 focus:ring-red-500'" placeholder="DD-MM-YYYY" />
               <p v-if="!isDobValid" class="text-xs text-red-500 mt-1 font-medium flex items-center gap-1"><AlertCircle class="w-3 h-3"/> Format harus sesuai (Contoh: 25-02-1999).</p>
             </div>
 
@@ -354,6 +354,22 @@ const formData = ref({
   dob: ''
 })
 
+const handleDobInput = (e: Event) => {
+  const input = e.target as HTMLInputElement
+  let val = input.value.replace(/\D/g, '')
+  if (val.length > 8) val = val.substring(0, 8)
+  
+  let formatted = val
+  if (val.length > 4) {
+    formatted = `${val.substring(0, 2)}-${val.substring(2, 4)}-${val.substring(4, 8)}`
+  } else if (val.length > 2) {
+    formatted = `${val.substring(0, 2)}-${val.substring(2, 4)}`
+  }
+  
+  formData.value.dob = formatted
+  input.value = formatted
+}
+
 // Auto-fill phone from user_metadata
 const userPhone = computed(() => {
   return (user.value?.user_metadata as any)?.phone || ''
@@ -363,12 +379,12 @@ const selectedKTP = ref<File | null>(null)
 const selectedPasPhoto = ref<File | null>(null)
 const isScanning = ref(false)
 
-const isNikValid = computed(() => formData.value.nik.length === 0 || /^\d{16}$/.test(formData.value.nik))
+const isNikValid = computed(() => formData.value.nik.length === 0 || /^\d{16,20}$/.test(formData.value.nik))
 const isDobValid = computed(() => formData.value.dob.length === 0 || /^(0[1-9]|[12][0-9]|3[01])-(0[1-9]|1[012])-\d{4}$/.test(formData.value.dob))
 
 const isFormValid = computed(() => {
   return formData.value.name.trim().length > 2 && 
-         /^\d{16}$/.test(formData.value.nik) && 
+         /^\d{16,20}$/.test(formData.value.nik) && 
          /^(0[1-9]|[12][0-9]|3[01])-(0[1-9]|1[012])-\d{4}$/.test(formData.value.dob) &&
          selectedKTP.value !== null &&
          selectedPasPhoto.value !== null
@@ -377,11 +393,28 @@ const isFormValid = computed(() => {
 const handleFileUpload = (event: Event, type: 'ktp' | 'pasphoto') => {
   const target = event.target as HTMLInputElement
   if (target.files && target.files.length > 0) {
+    const file = target.files[0]
+    
+    // Validasi Format
+    if (!['image/jpeg', 'image/png', 'image/jpg'].includes(file.type)) {
+      addToast('Format file harus JPG atau PNG.', 'error')
+      target.value = ''
+      return
+    }
+
+    // Validasi Ukuran (2MB)
+    const maxSize = 2 * 1024 * 1024
+    if (file.size > maxSize) {
+      addToast('Ukuran file maksimal adalah 2MB.', 'error')
+      target.value = ''
+      return
+    }
+
     if (type === 'ktp') {
-      selectedKTP.value = target.files[0] || null
+      selectedKTP.value = file
       addToast('File KTP berhasil dipilih.', 'success')
     } else {
-      selectedPasPhoto.value = target.files[0] || null
+      selectedPasPhoto.value = file
       addToast(`Pas Photo berhasil dipilih.`, 'success')
     }
   }
@@ -454,13 +487,22 @@ const submitVerification = async () => {
       }
     })
     
-    // 3. Update Supabase Metadata
-    const { error: updateError } = await supabase.auth.updateUser({
-      data: { profile_verified: true }
-    })
+    // 3. Update Supabase Users Table
+    const { error: updateError } = await (supabase as any)
+      .from('users')
+      .update({ 
+        verification_status: 'pending',
+        verification_details: {
+          name: formData.value.name,
+          nik: formData.value.nik,
+          dob: formData.value.dob
+        }
+      })
+      .eq('id', user.value?.id || user.value?.sub)
+      
     if (updateError) throw updateError
     
-    addToast('Hore! Profile Anda telah berhasil diverifikasi!', 'success')
+    addToast('Pengajuan verifikasi berhasil dikirim. Tim Audit akan segera meninjau data Anda.', 'success')
     
     // 4. Redirect ke Dashboard
     router.push('/dashboard')

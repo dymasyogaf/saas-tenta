@@ -153,6 +153,7 @@
 
       <!-- Page Content (scrollable) -->
       <div class="flex-1 overflow-auto p-4 md:p-8">
+        <DashboardVerificationBanner />
         <slot />
       </div>
     </main>

@@ -78,6 +78,20 @@ CREATE TABLE IF NOT EXISTS public.ad_issues (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- Ad Account Requests (Pengajuan Akun Iklan)
+CREATE TABLE IF NOT EXISTS public.ad_account_requests (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id UUID REFERENCES public.users(id) ON DELETE CASCADE NOT NULL,
+  platform TEXT NOT NULL CHECK (platform IN ('Meta Ads', 'TikTok Ads', 'Google Ads')),
+  account_name TEXT NOT NULL,
+  target_url TEXT NOT NULL,
+  status TEXT DEFAULT 'pending_review' CHECK (status IN ('pending_review', 'processing', 'approved', 'rejected')),
+  rejection_reason TEXT,
+  details JSONB,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
 -- Notifications
 CREATE TABLE IF NOT EXISTS public.notifications (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
@@ -108,6 +122,7 @@ ALTER TABLE public.ad_accounts ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.saldo ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.transactions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.ad_issues ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.ad_account_requests ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.notifications ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.referral_codes ENABLE ROW LEVEL SECURITY;
 
@@ -137,6 +152,11 @@ CREATE POLICY "Users can view own transactions" ON public.transactions FOR SELEC
 
 -- Policies for Ad Issues
 CREATE POLICY "Users can view own ad issues" ON public.ad_issues FOR SELECT USING (auth.uid() = user_id);
+
+-- Policies for Ad Account Requests
+CREATE POLICY "Users can view own ad account requests" ON public.ad_account_requests FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "Users can insert own ad account requests" ON public.ad_account_requests FOR INSERT WITH CHECK (auth.uid() = user_id);
+-- Update only allowed for admin (handled via service role in server route if needed, or by admin compliance)
 
 -- Policies for Notifications
 CREATE POLICY "Users can view own notifications" ON public.notifications FOR SELECT USING (auth.uid() = user_id);

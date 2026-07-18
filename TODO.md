@@ -12,6 +12,24 @@
   - [x] Pembangunan tabel riwayat mutasi saldo (Transaksi Top Up, Alokasi ke Iklan, & Pemotongan Fee).
 - [x] **Pembuatan Endpoint Callback Transaksi**
   - [x] Menangkap webhook sukses pembayaran dari Duidku secara *real-time*.
+- [x] **Sistem Formulir Pengajuan Akun Iklan (Request Ads Account)**
+  - [x] Pembuatan modal form dinamis yang beradaptasi sesuai platform (Meta/Google/TikTok).
+  - [x] Menggunakan kolom JSONB Supabase untuk fleksibilitas schema data.
+  - [x] UI/UX interaktif di `platform.vue` yang menampilkan badge 'Menunggu Review' otomatis dan mencegah spam klik.
+- [x] **Sistem Keamanan & Verifikasi KYC (Know Your Customer)**
+  - [x] Mematikan / Lock tombol "Dapatkan Ads Account" di halaman platform iklan jika *user* belum melakukan verifikasi profil (KYC).
+  - [x] Memunculkan *banner* / peringatan merah yang mengarahkan *user* baru untuk melakukan pengisian formulir KTP & OTP (termasuk di halaman Beranda).
+  - [x] Merancang alur **Persetujuan (Approval)** di mana data verifikasi klien tidak langsung aktif, melainkan berubah menjadi status `pending` dan menunggu *Review* dari Tim Audit.
+  - [x] Membuat antarmuka rahasia `/admin/verifications` untuk Tim Audit agar bisa melihat data foto KTP klien dan memencet tombol *Approve/Reject*.
+  - [x] Mengirimkan notifikasi (toast/wa) secara otomatis kepada Klien yang akunnya telah disetujui (Gembok Ads Account terbuka).
+
+- [x] **Optimasi UI/UX & Performa Antarmuka**
+  - [x] Ekstraksi peringatan verifikasi (merah/oranye) menjadi komponen Vue global (`VerificationBanner.vue`) agar bisa dimasukkan ke dalam Layout Utama.
+  - [x] Implementasi fitur **Skeleton Loader / Blur Animation** di seluruh elemen yang bergantung pada penarikan data (Data Fetching).
+  - [x] Menerapkan Skeleton Loader untuk Kartu "Total Saldo", "Akun Berjalan", "Iklan Butuh Perhatian", "Laporan Kampanye" (di `index.vue`).
+  - [x] Menerapkan Skeleton Loader untuk status pengajuan Akun Iklan (di `platform.vue`).
+  - [x] Menerapkan Skeleton Loader model baris (tabel) pada seluruh histori transaksi (di `saldo.vue`).
+  - [x] Menerapkan Skeleton Loader model baris (tabel) pada antrean klien yang butuh persetujuan Audit (di `admin/verifications.vue`).
 
 ---
 
@@ -243,7 +261,6 @@ Setiap view di `index.html` menjadi halaman Vue terpisah:
 ### 3.6 Nuxt Server Routes — Saldo & Escrow
 - [x] ~~`server/api/saldo/balance.get.ts` — ambil saldo user~~ (via Supabase client frontend)
 - [x] ~~`server/api/saldo/topup.post.ts` — request top-up~~ (di-handle oleh Duitku create-payment)
-- [ ] `server/api/saldo/withdraw.post.ts` — request penarikan
 - [x] ~~`server/api/saldo/transfer.post.ts` — pindah saldo antar akun~~ (Alokasi ke Akun Iklan)
 - [ ] Implementasi escrow logic (hold → release → refund)
 

@@ -1,28 +1,44 @@
 <template>
   <div class="space-y-6 max-w-6xl mx-auto">
+
     <!-- Stats Cards -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
       <div class="bg-white p-6 rounded-2xl shadow-sm border border-ink-100">
         <p class="text-sm font-medium text-ink-500 mb-2">Total Saldo Aktif</p>
-        <h3 class="text-3xl font-display font-bold text-ink-900">{{ formatCurrency(saldoStore.balance) }}</h3>
-        <p class="text-sm text-green-600 mt-3 flex items-center gap-1 font-medium">
-          <TrendingUp class="w-4 h-4" /> +0% dari bulan lalu
-        </p>
+        <template v-if="saldoStore.isFetchingSaldo">
+          <div class="h-9 w-32 bg-ink-200 rounded-md animate-pulse mb-3 mt-1"></div>
+          <div class="h-4 w-24 bg-ink-200 rounded-md animate-pulse mt-4"></div>
+        </template>
+        <template v-else>
+          <h3 class="text-3xl font-display font-bold text-ink-900">{{ formatCurrency(saldoStore.balance) }}</h3>
+          <p class="text-sm text-green-600 mt-3 flex items-center gap-1 font-medium">
+            <TrendingUp class="w-4 h-4" /> +0% dari bulan lalu
+          </p>
+        </template>
       </div>
       <div class="bg-white p-6 rounded-2xl shadow-sm border border-ink-100">
         <p class="text-sm font-medium text-ink-500 mb-2">Akun Iklan Berjalan</p>
-        <h3 class="text-3xl font-display font-bold text-ink-900">
-          <span v-if="adsStore.isLoading" class="inline-block w-8 h-8 bg-ink-200 rounded animate-pulse"></span>
-          <template v-else>{{ adsStore.activeCampaigns }}</template>
-        </h3>
-        <p class="text-sm text-ink-500 mt-3">2 Meta, 1 Google, 1 TikTok</p>
+        <template v-if="adsStore.isLoading">
+          <div class="h-9 w-16 bg-ink-200 rounded-md animate-pulse mb-3 mt-1"></div>
+          <div class="h-4 w-40 bg-ink-200 rounded-md animate-pulse mt-4"></div>
+        </template>
+        <template v-else>
+          <h3 class="text-3xl font-display font-bold text-ink-900">{{ adsStore.activeCampaigns }}</h3>
+          <p class="text-sm text-ink-500 mt-3">2 Meta, 1 Google, 1 TikTok</p>
+        </template>
       </div>
       <div class="bg-white p-6 rounded-2xl shadow-sm border border-ink-100">
         <p class="text-sm font-medium text-ink-500 mb-2">Iklan Butuh Perhatian</p>
-        <h3 class="text-3xl font-display font-bold text-orange-600">2</h3>
-        <p class="text-sm text-orange-600 mt-3 flex items-center gap-1 font-medium">
-          <AlertCircle class="w-4 h-4" /> Cek segera
-        </p>
+        <template v-if="adsStore.isLoading">
+          <div class="h-9 w-16 bg-ink-200 rounded-md animate-pulse mb-3 mt-1"></div>
+          <div class="h-4 w-24 bg-ink-200 rounded-md animate-pulse mt-4"></div>
+        </template>
+        <template v-else>
+          <h3 class="text-3xl font-display font-bold text-orange-600">2</h3>
+          <p class="text-sm text-orange-600 mt-3 flex items-center gap-1 font-medium">
+            <AlertCircle class="w-4 h-4" /> Cek segera
+          </p>
+        </template>
       </div>
     </div>
 
@@ -34,9 +50,21 @@
       </div>
       <div class="p-6">
         <div class="space-y-4">
-          <div v-if="adsStore.isLoading" class="p-6 text-center space-y-3">
-            <div class="inline-block w-8 h-8 border-4 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
-            <p class="text-ink-500 font-medium">Menarik data dari Meta Ads...</p>
+          <div v-if="adsStore.isLoading" class="space-y-4">
+            <!-- Skeleton items -->
+            <div v-for="i in 3" :key="i" class="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 bg-ink-50 rounded-xl gap-4 animate-pulse">
+              <div class="flex items-center gap-4 w-full sm:w-1/2">
+                <div class="w-12 h-12 bg-ink-200 rounded-xl shrink-0"></div>
+                <div class="w-full space-y-2">
+                  <div class="h-5 bg-ink-200 rounded w-1/2"></div>
+                  <div class="h-4 bg-ink-200 rounded w-1/3"></div>
+                </div>
+              </div>
+              <div class="w-full sm:w-1/3 flex justify-between items-center border-t sm:border-0 border-ink-200 pt-3 sm:pt-0 mt-1 sm:mt-0">
+                <div class="h-6 bg-ink-200 rounded w-24"></div>
+                <div class="h-5 bg-ink-200 rounded w-16"></div>
+              </div>
+            </div>
           </div>
           <div v-else-if="adsStore.campaigns.length === 0" class="p-6 text-center">
             <p class="text-ink-500">Tidak ada kampanye aktif yang ditemukan.</p>
@@ -65,8 +93,8 @@
 </template>
 
 <script setup lang="ts">
-import { TrendingUp, AlertCircle } from 'lucide-vue-next'
-import { onMounted } from 'vue'
+import { TrendingUp, AlertCircle, ShieldAlert } from 'lucide-vue-next'
+import { onMounted, ref } from 'vue'
 import { useSaldoStore } from '~/stores/saldo'
 import { useAdsStore } from '~/stores/ads'
 
@@ -77,11 +105,34 @@ definePageMeta({
 const saldoStore = useSaldoStore()
 const adsStore = useAdsStore()
 
+const { user } = useAuth()
+const supabase = useSupabaseClient()
+const verificationStatus = ref<string | null>(null)
+
 onMounted(async () => {
   saldoStore.fetchSaldo()
-  await adsStore.fetchMetaPerformance()
-  await adsStore.fetchGooglePerformance()
-  await adsStore.fetchTikTokPerformance()
+  // Call API fetching asynchronously without blocking onMounted
+  adsStore.fetchMetaPerformance()
+  adsStore.fetchGooglePerformance()
+  adsStore.fetchTikTokPerformance()
+
+  // Fetch verification status
+  if (user.value) {
+    const uid = (user.value as any).id || (user.value as any).sub
+    if (uid) {
+      const { data } = await (supabase as any)
+        .from('users')
+        .select('verification_status')
+        .eq('id', uid)
+        .single()
+        
+      if (data && data.verification_status) {
+        verificationStatus.value = data.verification_status
+      } else {
+        verificationStatus.value = 'unverified'
+      }
+    }
+  }
 })
 
 const formatCurrency = (value: number) => {

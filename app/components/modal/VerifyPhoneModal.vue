@@ -1,6 +1,7 @@
 <template>
   <!-- Modal Verifikasi No Telepon -->
-  <div v-if="modelValue" class="fixed inset-0 z-[60]">
+  <Teleport to="body">
+    <div v-if="modelValue" class="fixed inset-0 z-[60]">
     <div class="fixed inset-0 bg-ink-900/50 transition-opacity" @click="close"></div>
     <div class="fixed inset-0 flex items-center justify-center p-4">
       <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden relative transform transition-all pt-10 pb-8 px-6 sm:px-10 text-center">
@@ -50,7 +51,8 @@
         </p>
       </div>
     </div>
-  </div>
+    </div>
+  </Teleport>
 </template>
 
 <script setup lang="ts">
