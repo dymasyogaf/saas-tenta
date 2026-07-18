@@ -38,16 +38,16 @@ export default defineEventHandler(async (event) => {
   const signatureString = `${merchantCode}${merchantOrderId}${paymentAmount}${apiKey}`
   const signature = crypto.createHash('md5').update(signatureString).digest('hex')
 
-  const baseUrl = isProduction ? 'https://passport.duitku.com' : 'https://sandbox.duitku.com'
-  const endpoint = `${baseUrl}/webapi/api/merchant/v2/inquiry`
+  const baseUrlDuitku = isProduction ? 'https://passport.duitku.com' : 'https://sandbox.duitku.com'
+  const endpoint = `${baseUrlDuitku}/webapi/api/merchant/v2/inquiry`
 
-  const callbackUrl = isProduction 
-    ? 'https://app.tentaklik.com/api/duidku/callback' 
-    : 'https://member.dymasyogaf.my.id/api/duidku/callback' // Update dengan ngrok/domain sandbox Anda
-    
-  const returnUrl = isProduction 
-    ? 'https://app.tentaklik.com/dashboard/topup' 
-    : 'http://localhost:3000/dashboard/topup'
+  // Buat URL secara dinamis sesuai lingkungan aplikasi saat ini (localhost atau domain live)
+  const appProtocol = getRequestProtocol(event) || 'https'
+  const appHost = getRequestHost(event)
+  const appBaseUrl = `${appProtocol}://${appHost}`
+
+  const callbackUrl = `${appBaseUrl}/api/duidku/callback`
+  const returnUrl = `${appBaseUrl}/dashboard/topup`
 
   const payload: any = {
     merchantCode,
@@ -78,7 +78,7 @@ export default defineEventHandler(async (event) => {
     expiryPeriod: 60 // 60 menit
   }
 
-  payload.paymentMethod = method || 'BC' // 'BC' adalah kode untuk BCA Virtual Account
+  payload.paymentMethod = method || 'OV' // 'OV' adalah kode untuk OVO
 
   // 5. Kirim Request ke Duitku
   try {
