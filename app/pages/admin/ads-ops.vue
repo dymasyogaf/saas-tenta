@@ -6,7 +6,7 @@
         <h2 class="text-2xl font-display font-bold text-slate-900">Manajemen Akun Iklan (Ads Ops)</h2>
         <p class="text-slate-500 text-sm mt-1">Buat akun iklan di platform, lalu masukkan ID-nya ke sini untuk dihubungkan ke dasbor Klien.</p>
       </div>
-      <button @click="refresh" class="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-lg text-sm font-bold text-slate-700 hover:bg-slate-50 transition-colors shadow-sm">
+      <button @click="() => refresh()" class="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-lg text-sm font-bold text-slate-700 hover:bg-slate-50 transition-colors shadow-sm">
         <RefreshCw class="w-4 h-4" :class="{ 'animate-spin': pending }" /> Segarkan Data
       </button>
     </div>
@@ -206,7 +206,7 @@ const isEditing = ref<Record<string, boolean>>({})
 
 // Fetch Data dari Server Endpoint (Bypass RLS)
 const { data: requests, pending, refresh } = useAsyncData('admin_adsops_list', async () => {
-  return (await $fetch('/api/admin/ads-ops')) as any[]
+  return (await ($fetch as any)('/api/admin/ads-ops')) as any[]
 }, { default: () => [] })
 
 // Inisialisasi Input Model jika data ditarik
