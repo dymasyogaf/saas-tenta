@@ -510,8 +510,6 @@ onMounted(async () => {
 
   saldoStore.fetchSaldo()
   saldoStore.fetchTransactions()
-  await adsStore.fetchMetaPerformance()
-  await adsStore.fetchGooglePerformance()
-  await adsStore.fetchTikTokPerformance()
+  await adsStore.fetchAllPerformance()
 })
 </script>

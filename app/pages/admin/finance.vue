@@ -6,7 +6,7 @@
         <h2 class="text-2xl font-display font-bold text-slate-900">Audit Keuangan & Mutasi (Finance)</h2>
         <p class="text-slate-500 text-sm mt-1">Pantau perputaran uang (Top Up) dan proses permintaan pencairan dana klien.</p>
       </div>
-      <button @click="refresh" class="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-lg text-sm font-bold text-slate-700 hover:bg-slate-50 transition-colors shadow-sm">
+      <button @click="() => refresh()" class="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-lg text-sm font-bold text-slate-700 hover:bg-slate-50 transition-colors shadow-sm">
         <RefreshCw class="w-4 h-4" :class="{ 'animate-spin': pending }" /> Segarkan Data
       </button>
     </div>
@@ -27,7 +27,7 @@
         class="pb-3 text-sm font-semibold transition-colors border-b-2 flex items-center gap-2"
         :class="activeTab === 'withdraw' ? 'border-emerald-500 text-emerald-600' : 'border-transparent text-slate-500 hover:text-slate-700'"
       >
-        Permintaan Pencairan 
+        Tugas Eksekusi (Withdraw & Alokasi) 
         <span v-if="pendingWithdraws.length > 0" class="bg-red-500 text-white py-0.5 px-2 rounded-full text-[10px] animate-pulse">{{ pendingWithdraws.length }}</span>
       </button>
       <button 
@@ -70,8 +70,13 @@
                 <p class="text-[10px] text-slate-400 mt-1">{{ new Date(tx.created_at).toLocaleString('id-ID') }}</p>
               </td>
               <td class="px-6 py-4">
-                <p class="text-xs font-semibold text-slate-800 uppercase">{{ tx.payment_gateway_ref || 'BANK TRANSFER' }}</p>
-                <p class="text-[11px] text-slate-500 mt-0.5">Silakan cek data rekening klien di profil jika kosong.</p>
+                <div class="flex items-center gap-1.5 mb-1">
+                  <span class="px-2 py-0.5 text-[10px] font-bold rounded" :class="tx.type === 'withdraw' ? 'bg-orange-100 text-orange-700' : 'bg-blue-100 text-blue-700'">
+                    {{ tx.type === 'withdraw' ? 'PENCAIRAN' : 'ALOKASI IKLAN' }}
+                  </span>
+                </div>
+                <p class="text-xs font-semibold text-slate-800 uppercase">{{ tx.type === 'transfer' ? tx.description : (tx.payment_gateway_ref || 'BANK TRANSFER') }}</p>
+                <p class="text-[11px] text-slate-500 mt-0.5">{{ tx.type === 'withdraw' ? 'Silakan cek data rekening klien.' : 'Isikan saldo riil ke platform tersebut.' }}</p>
               </td>
               <td class="px-6 py-4 text-right">
                 <p class="font-display font-bold text-slate-900 text-lg">{{ formatCurrency(tx.amount || 0) }}</p>
@@ -175,6 +180,33 @@
         </table>
       </div>
     </div>
+
+    <!-- Custom Confirmation Modal -->
+    <div v-if="isConfirmModalOpen" class="fixed inset-0 z-[100] flex items-center justify-center bg-ink-900/50 backdrop-blur-sm p-4">
+      <div class="bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden relative border border-ink-100 transform transition-all">
+        <div class="p-6 text-center">
+          <div class="w-16 h-16 rounded-full mx-auto flex items-center justify-center mb-4"
+               :class="confirmAction === 'approve' ? 'bg-emerald-100 text-emerald-600' : 'bg-red-100 text-red-600'">
+            <CheckCircle2 v-if="confirmAction === 'approve'" class="w-8 h-8" />
+            <WalletCards v-else class="w-8 h-8" />
+          </div>
+          <h3 class="text-xl font-display font-bold text-ink-900 mb-2">
+            {{ confirmAction === 'approve' ? 'Konfirmasi Persetujuan' : 'Tolak Permintaan' }}
+          </h3>
+          <p class="text-ink-500 text-sm mb-6">{{ confirmMessage }}</p>
+          
+          <div class="flex gap-3">
+            <button @click="isConfirmModalOpen = false" class="flex-1 bg-white border border-ink-200 text-ink-700 hover:bg-ink-50 font-bold py-2.5 rounded-xl transition-colors text-sm">
+              Batal
+            </button>
+            <button @click="executeProcessWithdraw" class="flex-1 text-white font-bold py-2.5 rounded-xl transition-all shadow-sm text-sm"
+                    :class="confirmAction === 'approve' ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-red-600 hover:bg-red-700'">
+              Ya, Lanjutkan
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -197,14 +229,14 @@ const { data: transactions, pending, refresh } = useAsyncData('admin_finance_lis
   return (await $fetch('/api/admin/finance')) as any[]
 }, { default: () => [] })
 
-// Filter Transaksi
+// Filter Transaksi (Withdraw & Transfer yang masih Pending)
 const pendingWithdraws = computed(() => {
-  return transactions.value.filter(tx => tx.type === 'withdraw' && tx.status === 'pending')
+  return transactions.value.filter(tx => ['withdraw', 'transfer'].includes(tx.type) && tx.status === 'pending')
 })
 
 const filteredHistory = computed(() => {
-  // Semua transaksi kecuali pending withdraw (karena sudah ada tab khusus)
-  let history = transactions.value.filter(tx => !(tx.type === 'withdraw' && tx.status === 'pending'))
+  // Semua transaksi kecuali pending tasks (sudah ada di tab Eksekusi)
+  let history = transactions.value.filter(tx => !(['withdraw', 'transfer'].includes(tx.type) && tx.status === 'pending'))
 
   // Terapkan filter pencarian nama
   if (searchQuery.value) {
@@ -220,28 +252,43 @@ const filteredHistory = computed(() => {
   return history
 })
 
-// Eksekusi API
-const processWithdraw = async (id: string, action: 'approve' | 'reject') => {
-  const confirmMsg = action === 'approve' 
-    ? 'Anda yakin sudah mentransfer dana ini ke rekening klien?' 
-    : 'Anda yakin ingin menolak pencairan dana ini?'
-    
-  if (!confirm(confirmMsg)) return
+// Modal Confirmation State
+const isConfirmModalOpen = ref(false)
+const confirmAction = ref<'approve' | 'reject'>('approve')
+const confirmId = ref<string>('')
+const confirmMessage = ref<string>('')
 
-  isSubmitting.value = id
+// Eksekusi API
+const processWithdraw = (id: string, action: 'approve' | 'reject') => {
+  const isTransfer = transactions.value.find(t => t.id === id)?.type === 'transfer'
+  
+  const msg = action === 'approve' 
+    ? (isTransfer ? 'Anda yakin sudah mentransfer dana riil ini ke akun iklan (BM) klien?' : 'Anda yakin sudah mentransfer dana ini ke rekening klien?')
+    : (isTransfer ? 'Anda yakin ingin menolak alokasi ini dan mengembalikan saldo?' : 'Anda yakin ingin menolak pencairan dana ini?')
+    
+  confirmAction.value = action
+  confirmId.value = id
+  confirmMessage.value = msg
+  isConfirmModalOpen.value = true
+}
+
+const executeProcessWithdraw = async () => {
+  isConfirmModalOpen.value = false
+  isSubmitting.value = confirmId.value
   const toast = useToast()
 
   try {
     const response = await $fetch('/api/admin/finance', {
       method: 'POST',
       body: {
-        transaction_id: id,
-        action: action
+        transaction_id: confirmId.value,
+        action: confirmAction.value
       }
     })
 
     toast.addToast((response as any).message, 'success')
     await refresh()
+    refreshNuxtData('admin-badges')
     
     // Pindah ke tab history untuk melihat hasil jika tidak ada pending lagi
     if (pendingWithdraws.value.length === 0) {

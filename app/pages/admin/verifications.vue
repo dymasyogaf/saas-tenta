@@ -235,6 +235,7 @@ const handleAction = async (newStatus: 'verified' | 'rejected') => {
     
     isReviewModalOpen.value = false
     await fetchPendingUsers() // Refresh data table
+    refreshNuxtData('admin-badges') // Refresh badge notifikasi global
     
   } catch (error: any) {
     addToast(error.message || `Gagal memproses pengajuan.`, 'error')

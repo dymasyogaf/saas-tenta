@@ -19,7 +19,7 @@ export default defineEventHandler(async (event) => {
     // 1. Cek saldo saat ini
     const { data: saldoData, error: fetchError } = await supabaseAdmin
       .from('saldo')
-      .select('balance')
+      .select('balance, pending_balance')
       .eq('user_id', user_id)
       .single()
       
@@ -31,27 +31,34 @@ export default defineEventHandler(async (event) => {
       throw createError({ statusCode: 400, message: 'Saldo utama tidak mencukupi' })
     }
     
-    // 2. Potong saldo
+    // 2. Potong saldo dan pindahkan ke pending_balance (Escrow Hold)
     const newBalance = saldoData.balance - amount
+    const newPendingBalance = (saldoData.pending_balance || 0) + amount
     const { error: updateError } = await supabaseAdmin
       .from('saldo')
-      .update({ balance: newBalance, updated_at: new Date().toISOString() })
+      .update({ 
+        balance: newBalance, 
+        pending_balance: newPendingBalance,
+        updated_at: new Date().toISOString() 
+      })
       .eq('user_id', user_id)
       
     if (updateError) {
-      throw createError({ statusCode: 500, message: 'Gagal memperbarui saldo' })
+      throw createError({ statusCode: 500, message: 'Gagal menahan (hold) saldo' })
     }
     
-    // 3. Catat transaksi transfer (alokasi)
-    const { error: insertError } = await supabaseAdmin
+    // 3. Catat transaksi transfer (alokasi) dengan status 'pending' (Hold)
+    const { data: insertedTrx, error: insertError } = await supabaseAdmin
       .from('transactions')
       .insert({
         user_id,
         type: 'transfer',
         amount: amount,
-        status: 'success',
-        description: description || 'Alokasi Saldo ke Akun Iklan',
+        status: 'pending', // Status 'pending' menandakan ini adalah dana Escrow
+        description: description || 'Hold: Alokasi Saldo ke Akun Iklan',
       })
+      .select()
+      .single()
       
     if (insertError) {
       console.error('Error inserting transaction:', insertError)

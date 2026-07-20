@@ -67,6 +67,7 @@
           :platform="platform"
           :is-locked="verificationStatus !== 'verified'"
           @request="openRequestModal(platform.name)"
+          @manage="openTopUpModal"
         />
       </template>
     </div>
@@ -99,6 +100,10 @@ const isLoading = ref(true)
 const openRequestModal = (name: string) => {
   selectedPlatformName.value = name
   isModalOpen.value = true
+}
+
+const openTopUpModal = () => {
+  navigateTo('/dashboard/topup')
 }
 
 const benefits = [
@@ -141,6 +146,7 @@ const platforms = ref<any[]>([
     logoClass: 'rounded-2xl p-2',
     status: 'Tidak Aktif',
     rawStatus: null,
+    isComingSoon: true,
     description: 'Scale up iklan pakai <strong>Tiktok Ads</strong> Whitelisted Account dari Tentaklik yang bisa gas kapan pun dan minim hambatan!',
   },
   {
@@ -176,21 +182,23 @@ const fetchRequests = async () => {
     verificationStatus.value = 'unverified'
   }
   
-  // Fetch requests status
+  // Fetch requests status (ambil yang terbaru)
   const { data, error } = await (supabase as any)
     .from('ad_account_requests')
     .select('platform, status')
     .eq('user_id', uid)
+    .order('created_at', { ascending: false })
     
   if (data) {
+    // Karena data diurutkan descending (terbaru di awal), kita hanya proses jika platform belum diset (agar tidak ditimpa yang lama)
     data.forEach((req: any) => {
       const p = platforms.value.find(p => p.dbName === req.platform)
-      if (p) {
-        // If there are multiple requests, we only care about the most recent or active one
-        // Let's just override it for now, since we query them all
+      if (p && !p.rawStatus) {
         p.rawStatus = req.status
         if (req.status === 'pending_review') {
-          p.status = 'Menunggu Review'
+          p.status = 'Sedang Review'
+        } else if (req.status === 'processing') {
+          p.status = 'Pembuatan Akun'
         } else if (req.status === 'approved') {
           p.status = 'Aktif'
         } else if (req.status === 'rejected') {

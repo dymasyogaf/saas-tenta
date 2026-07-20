@@ -29,8 +29,8 @@
           v-for="item in navItems"
           :key="item.to"
           :to="item.to"
-          class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-xl text-ink-600 hover:bg-orange-50 hover:text-orange-600 transition-colors text-left font-medium text-sm"
-          :class="{ active: isActiveRoute(item.to) }"
+          class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors text-left text-sm"
+          :class="isActiveRoute(item.to) ? 'bg-orange-50 text-orange-600 font-bold' : 'text-ink-600 hover:bg-orange-50 hover:text-orange-600 font-medium'"
           @click="isSidebarOpen = false"
         >
           <component :is="item.icon" class="w-5 h-5 shrink-0" />
@@ -140,6 +140,17 @@
                 </div>
               </NuxtLink>
               <div class="h-px bg-ink-100 my-1" />
+              
+              <!-- Link Beralih ke Admin -->
+              <NuxtLink
+                v-if="user?.user_metadata?.role && user.user_metadata.role !== 'client'"
+                to="/admin"
+                class="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-ink-50 transition-colors group text-left border-b border-ink-100"
+              >
+                <ShieldCheck class="w-4 h-4 text-ink-400 group-hover:text-orange-500" />
+                <span class="font-semibold text-ink-900 group-hover:text-orange-600">Beralih ke Admin</span>
+              </NuxtLink>
+
               <button
                 @click="handleLogout"
                 class="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-ink-50 transition-colors group text-left"
@@ -180,6 +191,7 @@ import {
   Settings,
   Gem,
   Menu,
+  ShieldCheck
 } from 'lucide-vue-next'
 
 // Auth state
@@ -213,7 +225,7 @@ const navItems = [
   { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { to: '/dashboard/platform', label: 'Platform Iklan', icon: MonitorPlay },
   { to: '/dashboard/saldo', label: 'Saldo Iklan', icon: Wallet },
-  { to: '/dashboard/bermasalah', label: 'Iklan Bermasalah', icon: TriangleAlert, badge: '2' },
+  { to: '/dashboard/bermasalah', label: 'Iklan Bermasalah', icon: TriangleAlert },
 ]
 
 // Active route detection

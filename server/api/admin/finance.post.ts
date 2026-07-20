@@ -20,8 +20,8 @@ export default defineEventHandler(async (event) => {
 
     if (fetchErr || !transaction) throw new Error('Data transaksi tidak ditemukan')
 
-    if (transaction.type !== 'withdraw') {
-      throw new Error('Hanya transaksi pencairan (withdraw) yang dapat diproses melalui panel ini')
+    if (transaction.type !== 'withdraw' && transaction.type !== 'transfer') {
+      throw new Error('Hanya transaksi pencairan (withdraw) dan alokasi iklan (transfer) yang dapat diproses')
     }
 
     if (transaction.status !== 'pending') {
@@ -41,13 +41,33 @@ export default defineEventHandler(async (event) => {
 
     if (updateErr) throw updateErr
 
-    // Catatan: Jika rejected, idealnya kita mengembalikan saldo ke balance. 
-    // Karena MVP withdraw di frontend belum ada, kita asumsikan untuk sekarang 
-    // hanya merubah status transaksi.
+    // Logika Escrow / Hold Saldo
+    if (transaction.type === 'transfer') {
+      // Ambil saldo user saat ini
+      const { data: saldoData } = await supabase
+        .from('saldo')
+        .select('balance, pending_balance')
+        .eq('user_id', transaction.user_id)
+        .single()
+        
+      if (saldoData) {
+        let newPending = (saldoData.pending_balance || 0) - transaction.amount
+        if (newPending < 0) newPending = 0 // Safety check
+        
+        if (action === 'approve') {
+          // Approve: Uang sudah dipindah ke Meta, hold dihapus
+          await supabase.from('saldo').update({ pending_balance: newPending }).eq('user_id', transaction.user_id)
+        } else {
+          // Reject: Kembalikan uang ke saldo utama
+          const newBalance = (saldoData.balance || 0) + transaction.amount
+          await supabase.from('saldo').update({ balance: newBalance, pending_balance: newPending }).eq('user_id', transaction.user_id)
+        }
+      }
+    }
 
     return { 
       success: true, 
-      message: action === 'approve' ? 'Pencairan berhasil disetujui' : 'Pencairan ditolak' 
+      message: action === 'approve' ? 'Transaksi disetujui dan dieksekusi' : 'Transaksi ditolak dan dana dikembalikan' 
     }
 
   } catch (error: any) {

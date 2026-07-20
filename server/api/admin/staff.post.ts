@@ -11,6 +11,11 @@ export default defineEventHandler(async (event) => {
       const { user_id, role } = body
       if (!user_id || !role) throw new Error('User ID dan Role wajib diisi')
 
+      // Update metadata auth supaya sinkron (penting untuk middleware)
+      await supabase.auth.admin.updateUserById(user_id, {
+        user_metadata: { role: role }
+      })
+
       // Update tabel public.users
       const { error } = await supabase
         .from('users')
@@ -51,6 +56,25 @@ export default defineEventHandler(async (event) => {
       }
 
       return { success: true, message: 'Berhasil membuat akun staf baru' }
+    }
+    
+    else if (action === 'revoke') {
+      const { user_id } = body
+      if (!user_id) throw new Error('User ID wajib diisi')
+
+      // Kembalikan ke client biasa di metadata
+      await supabase.auth.admin.updateUserById(user_id, {
+        user_metadata: { role: 'client' }
+      })
+
+      // Kembalikan ke client biasa di database
+      const { error } = await supabase
+        .from('users')
+        .update({ role: 'client' })
+        .eq('id', user_id)
+
+      if (error) throw error
+      return { success: true, message: 'Berhasil mencabut akses (dikembalikan ke klien biasa)' }
     }
     
     else {

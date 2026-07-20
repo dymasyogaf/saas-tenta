@@ -24,7 +24,7 @@
         </template>
         <template v-else>
           <h3 class="text-3xl font-display font-bold text-ink-900">{{ adsStore.activeCampaigns }}</h3>
-          <p class="text-sm text-ink-500 mt-3">2 Meta, 1 Google, 1 TikTok</p>
+          <p class="text-sm text-ink-500 mt-3">Sesuai ID Akun terinjeksi</p>
         </template>
       </div>
       <div class="bg-white p-6 rounded-2xl shadow-sm border border-ink-100">
@@ -34,9 +34,9 @@
           <div class="h-4 w-24 bg-ink-200 rounded-md animate-pulse mt-4"></div>
         </template>
         <template v-else>
-          <h3 class="text-3xl font-display font-bold text-orange-600">2</h3>
-          <p class="text-sm text-orange-600 mt-3 flex items-center gap-1 font-medium">
-            <AlertCircle class="w-4 h-4" /> Cek segera
+          <h3 class="text-3xl font-display font-bold text-ink-900">0</h3>
+          <p class="text-sm text-green-600 mt-3 flex items-center gap-1 font-medium">
+            <ShieldAlert class="w-4 h-4 text-green-500" /> Semua Iklan Aman
           </p>
         </template>
       </div>
@@ -112,9 +112,7 @@ const verificationStatus = ref<string | null>(null)
 onMounted(async () => {
   saldoStore.fetchSaldo()
   // Call API fetching asynchronously without blocking onMounted
-  adsStore.fetchMetaPerformance()
-  adsStore.fetchGooglePerformance()
-  adsStore.fetchTikTokPerformance()
+  adsStore.fetchAllPerformance()
 
   // Fetch verification status
   if (user.value) {

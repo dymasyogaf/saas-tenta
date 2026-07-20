@@ -11,74 +11,86 @@ export const useAdsStore = defineStore('ads', {
   }),
 
   actions: {
-    async fetchMetaPerformance(adAccountId: string = 'act_dummy123') {
+    async fetchAllPerformance() {
       this.isLoading = true
       this.error = null
-
-      try {
-        const response = await $fetch<any>('/api/ads/meta/campaigns', {
-          method: 'GET',
-          params: { ad_account_id: adAccountId }
-        })
-
-        if (response && response.success) {
-          this.totalSpend = response.data.totalSpend || 0
-          this.activeCampaigns = response.data.activeCampaigns || 0
-          this.campaigns = response.data.campaigns || []
-          this.dataSource = response.source || 'mock'
-        }
-      } catch (e: any) {
-        this.error = e.data?.message || e.statusMessage || e.message || 'Gagal mengambil data performa Meta Ads'
-        console.error('Failed to fetch ads performance:', this.error)
-      } finally {
+      this.totalSpend = 0
+      this.activeCampaigns = 0
+      this.campaigns = []
+      
+      const user = useSupabaseUser()
+      if (!user.value) {
         this.isLoading = false
+        return
       }
-    },
-    async fetchGooglePerformance(customerId: string = 'dummy_cust_123') {
-      this.isLoading = true
-      this.error = null
 
+      const supabase = useSupabaseClient<any>()
+      
       try {
-        const response = await $fetch<any>('/api/ads/google/campaigns', {
-          method: 'GET',
-          params: { customer_id: customerId }
+        const uid = user.value.id || (user.value as any).sub
+        const { data: accounts, error } = await supabase
+          .from('ad_account_requests')
+          .select('platform, details')
+          .eq('user_id', uid)
+          .eq('status', 'approved')
+
+        if (error) throw error
+        
+        if (!accounts || accounts.length === 0) {
+           this.isLoading = false
+           return
+        }
+
+        const promises = accounts.map(async (acc: any) => {
+           const adAccountId = acc.details?.ad_account_id
+           if (!adAccountId) return null
+
+           let endpoint = ''
+           let params = {}
+           if (acc.platform.includes('Meta')) {
+              endpoint = '/api/ads/meta/campaigns'
+              params = { ad_account_id: adAccountId }
+           } else if (acc.platform.includes('Google')) {
+              endpoint = '/api/ads/google/campaigns'
+              params = { customer_id: adAccountId }
+           } else if (acc.platform.includes('TikTok')) {
+              endpoint = '/api/ads/tiktok/campaigns'
+              params = { advertiser_id: adAccountId }
+           }
+
+           if (endpoint) {
+              return $fetch<any>(endpoint, { method: 'GET', params }).catch(() => null)
+           }
+           return null
         })
 
-        if (response && response.success) {
-          // Asumsi MVP: Kita tambahkan data Google ke state yang sudah ada
-          this.totalSpend += response.data.totalSpend || 0
-          this.activeCampaigns += response.data.activeCampaigns || 0
-          this.campaigns = [...this.campaigns, ...(response.data.campaigns || [])]
-          this.dataSource = response.source || 'mock'
-        }
-      } catch (e: any) {
-        this.error = e.data?.message || e.statusMessage || e.message || 'Gagal mengambil data performa Google Ads'
-        console.error('Failed to fetch Google ads performance:', this.error)
-      } finally {
-        this.isLoading = false
-      }
-    },
-    async fetchTikTokPerformance(advertiserId: string = 'dummy_tt_123') {
-      this.isLoading = true
-      this.error = null
+        const results = await Promise.all(promises)
+        
+        let totalSpend = 0
+        let activeCampaigns = 0
+        let allCampaigns: any[] = []
 
-      try {
-        const response = await $fetch<any>('/api/ads/tiktok/campaigns', {
-          method: 'GET',
-          params: { advertiser_id: advertiserId }
+        results.forEach(res => {
+           if (res && res.success && res.data) {
+              totalSpend += res.data.totalSpend || 0
+              activeCampaigns += res.data.activeCampaigns || 0
+              if (res.data.campaigns) {
+                 allCampaigns = [...allCampaigns, ...res.data.campaigns]
+              }
+           }
         })
 
-        if (response && response.success) {
-          this.totalSpend += response.data.totalSpend || 0
-          this.activeCampaigns += response.data.activeCampaigns || 0
-          this.campaigns = [...this.campaigns, ...(response.data.campaigns || [])]
-          this.dataSource = response.source || 'mock'
-        }
+        this.totalSpend = totalSpend
+        this.activeCampaigns = activeCampaigns
+        
+        // Sort campaigns by spend descending
+        this.campaigns = allCampaigns.sort((a, b) => (b.spend || 0) - (a.spend || 0))
+
       } catch (e: any) {
-        this.error = e.data?.message || e.statusMessage || e.message || 'Gagal mengambil data performa TikTok Ads'
-        console.error('Failed to fetch TikTok ads performance:', this.error)
+         console.error('Failed to fetch all performance:', e)
+         this.error = e.message
       } finally {
-        this.isLoading = false
+         this.isLoading = false
       }
     }
   }

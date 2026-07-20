@@ -57,7 +57,7 @@
            </div>
            <div class="overflow-hidden">
              <p class="text-sm font-bold text-white truncate">{{ userName }}</p>
-             <p class="text-[10px] text-ink-400 font-medium">Super Admin</p>
+             <p class="text-[10px] text-ink-400 font-medium">{{ getRoleName(user?.user_metadata?.role || 'super_admin') }}</p>
            </div>
         </div>
       </div>
@@ -174,38 +174,57 @@ const isSidebarOpen = ref(false)
 // Dropdown states
 const isProfileOpen = ref(false)
 
-const supabase = useSupabaseClient()
-const pendingKycCount = ref(0)
+const { data: badges } = useFetch('/api/admin/badges', { key: 'admin-badges' })
 
-onMounted(async () => {
-  try {
-    const { count } = await (supabase as any)
-      .from('users')
-      .select('*', { count: 'exact', head: true })
-      .eq('verification_status', 'pending')
-      
-    if (count !== null) {
-      pendingKycCount.value = count
-    }
-  } catch (error) {
-    console.error('Gagal mengambil jumlah antrean KYC:', error)
+const pendingKycCount = computed(() => badges.value?.kyc || 0)
+const pendingAdsCount = computed(() => badges.value?.ads || 0)
+const pendingFinanceCount = computed(() => badges.value?.finance || 0)
+
+const userRole = computed(() => user.value?.user_metadata?.role || 'admin')
+
+// Helper Konversi Jabatan
+const getRoleName = (role: string) => {
+  const map: Record<string, string> = {
+    'admin_compliance': 'Tim Audit (Kepatuhan)',
+    'admin_ads_ops': 'Tim Ops Iklan',
+    'admin_finance': 'Tim Keuangan',
+    'super_admin': 'Super Admin'
   }
-})
+  return map[role] || role
+}
 
 // Navigation items
-const navItems = computed(() => [
-  { to: '/admin', label: 'Dashboard Admin', icon: LayoutDashboard },
-  { 
-    to: '/admin/verifications', 
-    label: 'Tim Audit (eKYC)', 
-    icon: ShieldCheck, 
-    badge: pendingKycCount.value > 0 ? pendingKycCount.value.toString() : undefined 
-  },
-  { to: '/admin/ads-ops', label: 'Tim Ads Ops', icon: Megaphone },
-  { to: '/admin/finance', label: 'Tim Finance', icon: WalletCards },
-  { to: '/admin/clients', label: 'Daftar Klien', icon: Users },
-  { to: '/admin/users', label: 'Manajemen Akses', icon: UserCog },
-])
+const navItems = computed(() => {
+  const role = userRole.value
+  const items = [
+    { to: '/admin', label: 'Dashboard Admin', icon: LayoutDashboard },
+    { 
+      to: '/admin/verifications', 
+      label: 'Tim Audit (eKYC)', 
+      icon: ShieldCheck, 
+      badge: pendingKycCount.value > 0 ? pendingKycCount.value.toString() : undefined,
+      allowed: ['super_admin', 'admin_compliance']
+    },
+    { 
+      to: '/admin/ads-ops', 
+      label: 'Tim Ads Ops', 
+      icon: Megaphone, 
+      badge: pendingAdsCount.value > 0 ? pendingAdsCount.value.toString() : undefined,
+      allowed: ['super_admin', 'admin_ads_ops'] 
+    },
+    { 
+      to: '/admin/finance', 
+      label: 'Tim Finance', 
+      icon: WalletCards, 
+      badge: pendingFinanceCount.value > 0 ? pendingFinanceCount.value.toString() : undefined,
+      allowed: ['super_admin', 'admin_finance'] 
+    },
+    { to: '/admin/clients', label: 'Daftar Klien', icon: Users, allowed: ['super_admin', 'admin_finance', 'admin_ads_ops', 'admin_compliance'] },
+    { to: '/admin/users', label: 'Manajemen Akses', icon: UserCog, allowed: ['super_admin'] },
+  ]
+  
+  return items.filter(item => !item.allowed || item.allowed.includes(role))
+})
 
 // Active route detection
 const route = useRoute()

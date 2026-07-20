@@ -32,9 +32,9 @@ export default defineEventHandler(async (event) => {
       supabase.from('ad_account_requests').select('*', { count: 'exact', head: true }).eq('status', 'pending_review')
     )
 
-    // 3. Antrean Pencairan Dana (Withdraw)
+    // 3. Antrean Keuangan (Withdraw & Alokasi Transfer)
     const { count: withdrawCount } = await applyDateFilter(
-      supabase.from('transactions').select('*', { count: 'exact', head: true }).eq('type', 'withdraw').eq('status', 'pending')
+      supabase.from('transactions').select('*', { count: 'exact', head: true }).in('type', ['withdraw', 'transfer']).eq('status', 'pending')
     )
 
     // 4. Total Users
@@ -81,7 +81,7 @@ export default defineEventHandler(async (event) => {
         d.setDate(d.getDate() - i)
         
         const dayNames = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu']
-        chartLabels[6 - i] = i === 0 ? 'Hari Ini' : dayNames[d.getDay()]
+        chartLabels[6 - i] = i === 0 ? 'Hari Ini' : (dayNames[d.getDay()] || '')
         
         const dStart = new Date(d)
         dStart.setHours(0, 0, 0, 0)

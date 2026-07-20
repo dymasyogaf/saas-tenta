@@ -4,9 +4,9 @@
     <div class="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
       <h2 class="text-2xl font-display font-bold text-ink-900">Pusat Pemberitahuan</h2>
       <div class="flex gap-3">
-        <button class="bg-white border border-ink-200 text-ink-600 hover:text-ink-900 hover:border-ink-300 px-4 py-2.5 rounded-md font-medium text-sm flex items-center gap-2 transition-colors shadow-sm">
-          <Calendar class="w-4 h-4" /> 01 Jun 2026 - 16 Jul 2026
-        </button>
+        <div class="relative w-full sm:w-64">
+          <SharedDateRangePicker v-model="dateRange" />
+        </div>
         <button class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2.5 rounded-md font-semibold text-sm flex items-center gap-2 transition-colors shadow-sm">
           <Settings class="w-4 h-4" /> Pengaturan
         </button>
@@ -69,6 +69,22 @@ definePageMeta({
 })
 
 const activeTab = ref('notifikasi')
+
+const today = new Date()
+const thirtyDaysAgo = new Date()
+thirtyDaysAgo.setDate(today.getDate() - 30)
+
+const formatDateForInput = (d: Date) => {
+  const year = d.getFullYear()
+  const month = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
+const dateRange = ref({
+  start: formatDateForInput(thirtyDaysAgo),
+  end: formatDateForInput(today)
+})
 
 const tabs = [
   { id: 'notifikasi', label: 'Notifikasi' },

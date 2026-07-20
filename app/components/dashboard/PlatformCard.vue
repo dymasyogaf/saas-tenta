@@ -15,13 +15,15 @@
           <span 
             class="border text-xs font-bold px-2.5 py-1 rounded-md"
             :class="{
-              'bg-ink-100 text-ink-600 border-ink-200': !platform.rawStatus,
+              'bg-ink-100 text-ink-500 border-ink-200': platform.isComingSoon,
+              'bg-ink-100 text-ink-600 border-ink-200': !platform.isComingSoon && !platform.rawStatus,
               'bg-orange-100 text-orange-600 border-orange-200': platform.rawStatus === 'pending_review',
+              'bg-blue-100 text-blue-600 border-blue-200': platform.rawStatus === 'processing',
               'bg-green-100 text-green-700 border-green-200': platform.rawStatus === 'approved',
               'bg-red-100 text-red-600 border-red-200': platform.rawStatus === 'rejected'
             }"
           >
-            {{ platform.status }}
+            {{ platform.isComingSoon ? 'Segera Hadir' : platform.status }}
           </span>
         </div>
         <p class="text-sm text-ink-600 mb-3 leading-relaxed" v-html="platform.description" />
@@ -34,12 +36,15 @@
         </button>
       </div>
       <div class="shrink-0 mt-3 md:mt-0 w-full md:w-auto">
-        <button v-if="!platform.rawStatus" :disabled="isLocked" @click="!isLocked && $emit('request')" class="w-full md:w-auto px-6 py-3 rounded-xl text-sm font-bold transition-colors shadow-sm" :class="isLocked ? 'bg-ink-200 text-ink-500 cursor-not-allowed' : 'bg-orange-500 text-white hover:bg-orange-600'">
+        <button v-if="platform.isComingSoon" disabled class="w-full md:w-auto px-6 py-3 rounded-xl text-sm font-bold transition-colors shadow-sm bg-ink-100 text-ink-400 cursor-not-allowed">
+          Segera Hadir
+        </button>
+        <button v-else-if="!platform.rawStatus" :disabled="isLocked" @click="!isLocked && $emit('request')" class="w-full md:w-auto px-6 py-3 rounded-xl text-sm font-bold transition-colors shadow-sm" :class="isLocked ? 'bg-ink-200 text-ink-500 cursor-not-allowed' : 'bg-orange-500 text-white hover:bg-orange-600'">
           <span v-if="isLocked" class="flex items-center gap-2 justify-center"><ShieldAlert class="w-4 h-4" /> Terkunci</span>
           <span v-else>Dapatkan Ads Account</span>
         </button>
-        <button v-else-if="platform.rawStatus === 'pending_review'" disabled class="w-full md:w-auto bg-ink-200 text-ink-500 cursor-not-allowed px-6 py-3 rounded-xl text-sm font-bold shadow-sm">
-          Sedang Diproses
+        <button v-else-if="['pending_review', 'processing'].includes(platform.rawStatus)" disabled class="w-full md:w-auto bg-ink-200 text-ink-500 cursor-not-allowed px-6 py-3 rounded-xl text-sm font-bold shadow-sm">
+          {{ platform.status }}
         </button>
         <button v-else-if="platform.rawStatus === 'approved'" @click="$emit('manage')" class="w-full md:w-auto bg-green-600 text-white px-6 py-3 rounded-xl text-sm font-bold hover:bg-green-700 transition-colors shadow-sm">
           Top Up Saldo
@@ -95,6 +100,7 @@ interface Platform {
   status: string
   rawStatus?: string | null
   description: string
+  isComingSoon?: boolean
 }
 
 defineProps<{

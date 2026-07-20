@@ -84,17 +84,17 @@
         <p class="text-xs font-medium text-slate-500 mt-2">Menunggu eksekusi Tim Ads</p>
       </div>
 
-      <!-- Pending Withdrawal -->
+      <!-- Eksekusi Finance -->
       <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
         <div class="flex items-center gap-3 mb-2">
           <div class="w-8 h-8 rounded-lg bg-red-100 text-red-600 flex items-center justify-center">
             <WalletCards class="w-4 h-4" />
           </div>
-          <p class="text-sm font-bold text-slate-700">Pencairan Dana</p>
+          <p class="text-sm font-bold text-slate-700">Withdraw & Alokasi</p>
         </div>
         <div v-if="pending" class="h-9 w-16 bg-slate-200 rounded animate-pulse my-1"></div>
         <p v-else class="text-3xl font-display font-bold text-slate-900">{{ stats?.withdraw || 0 }}</p>
-        <p class="text-xs font-medium text-slate-500 mt-2">Menunggu transfer Finance</p>
+        <p class="text-xs font-medium text-slate-500 mt-2">Menunggu eksekusi Tim Finance</p>
       </div>
 
       <!-- Top Up Masuk -->

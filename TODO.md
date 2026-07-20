@@ -243,11 +243,11 @@ Setiap view di `index.html` menjadi halaman Vue terpisah:
 - [x] ~~Setup callback signature verification (Merchant Code + API Key hash)~~
 
 ### 3.4 Nuxt Server Routes — Ads API Proxy
-- [ ] `server/api/ads/meta/accounts.get.ts` — list Meta ad accounts
+- [x] ~~`server/api/ads/meta/accounts.get.ts` — list Meta ad accounts~~
 - [x] ~~`server/api/ads/meta/campaigns.get.ts` — campaign performance~~ *(Menunggu API Key dari Tim Iklan)*
-- [ ] `server/api/ads/tiktok/accounts.get.ts` — list TikTok ad accounts
+- [x] ~~`server/api/ads/tiktok/accounts.get.ts` — list TikTok ad accounts~~
 - [x] ~~`server/api/ads/tiktok/campaigns.get.ts` — campaign performance~~ *(Menunggu API Key dari Tim Iklan)*
-- [ ] `server/api/ads/google/accounts.get.ts` — list Google ad accounts
+- [x] ~~`server/api/ads/google/accounts.get.ts` — list Google ad accounts~~
 - [x] ~~`server/api/ads/google/campaigns.get.ts` — campaign performance~~ *(Menunggu API Key dari Tim Iklan)*
 - [ ] Implementasi caching (Redis / in-memory) untuk API responses
 - [ ] Handle rate limiting per platform
@@ -262,25 +262,25 @@ Setiap view di `index.html` menjadi halaman Vue terpisah:
 - [x] ~~`server/api/saldo/balance.get.ts` — ambil saldo user~~ (via Supabase client frontend)
 - [x] ~~`server/api/saldo/topup.post.ts` — request top-up~~ (di-handle oleh Duitku create-payment)
 - [x] ~~`server/api/saldo/transfer.post.ts` — pindah saldo antar akun~~ (Alokasi ke Akun Iklan)
-- [ ] Implementasi escrow logic (hold → release → refund)
+- [x] ~~Implementasi escrow logic (hold → release → refund)~~
 
 ---
 
 ## 🧪 FASE 4: Pinia Stores & Data Flow
 
 ### 4.1 Stores
-- [ ] `stores/user.ts` — user profile, auth state
+- [x] ~~`stores/user.ts` — user profile, auth state~~
 - [x] ~~`stores/saldo.ts` — balance, transactions, mutations~~
-- [ ] `stores/ads.ts` — ad accounts, campaigns, issues
-- [ ] `stores/notification.ts` — notifikasi list, unread count, realtime subscription
+- [x] ~~`stores/ads.ts` — ad accounts, campaigns, issues~~
+- [x] ~~`stores/notification.ts` — notifikasi list, unread count, realtime subscription~~
 
 ### 4.2 Composables
-- [ ] `composables/useAuth.ts` — login, register, logout, check session
-- [ ] `composables/useSaldo.ts` — top-up flow, withdraw flow
-- [ ] `composables/useAds.ts` — fetch campaigns, request new account
-- [ ] `composables/useToast.ts` — toast notification system
-- [ ] `composables/useModal.ts` — modal open/close management
-- [ ] `composables/useSidebar.ts` — sidebar toggle (mobile)
+- [x] ~~`composables/useAuth.ts` — login, register, logout, check session~~
+- [x] ~~`composables/useSaldo.ts` — top-up flow, withdraw flow~~
+- [x] ~~`composables/useAds.ts` — fetch campaigns, request new account~~
+- [x] ~~`composables/useToast.ts` — toast notification system~~
+- [x] ~~`composables/useModal.ts` — modal open/close management~~
+- [x] ~~`composables/useSidebar.ts` — sidebar toggle (mobile)~~
 
 ---
 
@@ -325,18 +325,19 @@ Setiap view di `index.html` menjadi halaman Vue terpisah:
 - [x] ~~Halaman `admin/verifications` (Tim Audit: Verifikasi eKYC, bypass RLS, sinkronisasi Supabase Storage & UI)~~
 - [x] ~~Halaman `admin/clients` (CRM Daftar Klien): Tabel pemantauan seluruh klien (Profil, KYC, Saldo Dompet, Jml Akun Iklan) beserta fitur Filter/Pencarian.~~
 - [x] ~~Halaman `admin/ads-ops` (Tim Iklan: Memasukkan ID Akun Meta/Google ke profil Klien)~~
-- [x] ~~Halaman `admin/finance` (Tim Keuangan: Memverifikasi Withdraw dan mutasi top-up)~~
+- [x] ~~Halaman `admin/finance` (Tim Keuangan: Memverifikasi Pencairan (Withdraw), Mutasi Top-up, dan Eksekusi Alokasi Iklan)~~
 - [x] ~~Halaman `admin/users` (Super Admin - Manajemen Staf Internal): Tabel karyawan dan fitur "Tambah Data Staf" (Opsi A: Cari dari Daftar Klien lalu ubah role, Opsi B: Buat Akun Baru via API bypass auth).~~
 
 ---
 
-## 📌 Quick Win — Mulai Hari Ini (19 Juli 2026)
+## 📌 Status Saat Ini — Mulai 20 Juli 2026
 
-Fase 6 (Dasbor Admin) & Fase 2 (Frontend) telah **selesai 100%**. Urutan yang disarankan untuk target berikutnya:
+Fase 3 (Backend API) & Fase 4 (Pinia & Data Flow) telah **selesai 100%**. 
+Urutan yang disarankan untuk target pamungkas berikutnya (Fase 5):
 
-1. **[1-2 jam]** Bangun & rapikan arsitektur Data Flow (Pinia Stores) di Fase 4 (`user.ts`, `ads.ts`, `notification.ts`).
-2. **[1 jam]** Sinkronisasi API Proxy untuk Meta/TikTok/Google Ads (Fase 3.4).
-3. **[2 jam]** Kembangkan sistem logika pencabutan / hold saldo (Escrow Logic) di transaksi iklan.
-4. **[1 jam]** Rapikan dan uji coba kembali seluruh alur end-to-end dari kacamata klien dan admin.
+1. **[1 jam]** Konfigurasi *Environment* Production untuk Cloudflare Pages & Proteksi Secrets.
+2. **[1 jam]** *Setup* URL Callback Duitku, Supabase Auth Redirects, dan Ads OAuth URL ke domain asli.
+3. **[1 jam]** Penerapan Keamanan Lanjutan: CORS, pembatasan Rate Limit di server routes, dan Sentry Error Tracking.
+4. **[2 jam]** Uji coba transaksi nyata (*End-to-end Live Testing*) di *Production*.
 
-> Total estimasi hari ini: ~4-6 jam untuk penyempurnaan integrasi Backend & Komunikasi Data! ✊
+> Total estimasi menuju rilis publik: ~5 jam untuk penyempurnaan infrastruktur *Deployment* & Keamanan! ✊

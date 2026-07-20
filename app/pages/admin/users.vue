@@ -82,7 +82,7 @@
                 {{ new Date(staff.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) }}
               </td>
               <td class="px-6 py-4 text-center">
-                <button class="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Cabut Akses (Pecat)">
+                <button @click="confirmRevoke(staff)" class="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Cabut Akses (Pecat)">
                   <Trash2 class="w-4 h-4" />
                 </button>
               </td>
@@ -98,11 +98,33 @@
       @success="refresh" 
     />
 
+    <!-- Delete Confirmation Modal -->
+    <div v-if="isDeleteModalOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" @click="isDeleteModalOpen = false"></div>
+      <div class="relative bg-white rounded-2xl p-6 w-full max-w-sm shadow-xl animate-in fade-in zoom-in duration-200">
+        <div class="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-4 text-red-600">
+          <TriangleAlert class="w-6 h-6" />
+        </div>
+        <h3 class="text-lg font-bold text-slate-900 text-center mb-2">Cabut Akses Admin?</h3>
+        <p class="text-sm text-slate-500 text-center mb-6">
+          Anda yakin ingin mencabut akses <span class="font-bold text-slate-700">{{ staffToDelete?.full_name || 'karyawan ini' }}</span>? Karyawan ini akan dikembalikan menjadi Klien biasa.
+        </p>
+        <div class="flex gap-3">
+          <button @click="isDeleteModalOpen = false" class="flex-1 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg font-semibold transition-colors">
+            Batal
+          </button>
+          <button @click="executeRevoke" class="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-semibold transition-colors shadow-sm">
+            Ya, Cabut
+          </button>
+        </div>
+      </div>
+    </div>
+
   </div>
 </template>
 
 <script setup lang="ts">
-import { UserPlus, ShieldAlert, ShieldX, Trash2 } from 'lucide-vue-next'
+import { UserPlus, ShieldAlert, ShieldX, Trash2, TriangleAlert } from 'lucide-vue-next'
 import AddStaffModal from '~/components/modal/AddStaffModal.vue'
 
 definePageMeta({
@@ -115,6 +137,34 @@ const isModalOpen = ref(false)
 const { data: staffList, pending, refresh } = useAsyncData('admin_staff_list', async () => {
   return (await $fetch('/api/admin/staff')) as any[]
 }, { default: () => [] })
+
+const { addToast } = useToast()
+
+const isDeleteModalOpen = ref(false)
+const staffToDelete = ref<any>(null)
+
+const confirmRevoke = (staff: any) => {
+  staffToDelete.value = staff
+  isDeleteModalOpen.value = true
+}
+
+const executeRevoke = async () => {
+  if (!staffToDelete.value) return
+  isDeleteModalOpen.value = false
+  
+  try {
+    await $fetch('/api/admin/staff', {
+      method: 'POST',
+      body: { action: 'revoke', user_id: staffToDelete.value.id }
+    })
+    addToast('Akses berhasil dicabut!', 'success')
+    refresh()
+  } catch (error: any) {
+    addToast(error.message || 'Gagal mencabut akses', 'error')
+  } finally {
+    staffToDelete.value = null
+  }
+}
 
 // Helper Konversi Jabatan
 const getRoleName = (role: string) => {

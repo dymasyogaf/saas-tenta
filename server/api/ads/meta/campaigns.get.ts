@@ -19,7 +19,7 @@ interface AdsResponse {
   }
 }
 
-export default defineEventHandler(async (event): Promise<AdsResponse> => {
+export default defineCachedEventHandler(async (event): Promise<AdsResponse> => {
   const config = useRuntimeConfig()
   const metaToken = config.metaAccessToken
   
@@ -112,5 +112,12 @@ export default defineEventHandler(async (event): Promise<AdsResponse> => {
       statusCode: error.response?.status || 500, 
       message: error.data?.error?.message || 'Gagal terhubung ke API Meta Ads' 
     })
+  }
+}, {
+  maxAge: 60 * 5, // Cache selama 5 menit
+  name: 'meta-ad-campaigns',
+  getKey: (event) => {
+    const query = getQuery(event)
+    return String(query.ad_account_id || 'unknown')
   }
 })

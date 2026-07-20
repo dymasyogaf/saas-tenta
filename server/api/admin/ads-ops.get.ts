@@ -4,8 +4,8 @@ export default defineEventHandler(async (event) => {
   const supabase = serverSupabaseServiceRole<any>(event)
   
   try {
-    // Ambil semua request yang sudah disetujui (Approved) oleh Tim Audit
-    // Karena hanya yang Approved yang boleh dibuatkan akun iklannya oleh Tim Ads Ops
+    // Ambil semua request (yang baru masuk ataupun yang sudah diproses)
+    // Tim Ads Ops akan melihat pending_review dan memprosesnya
     const { data, error } = await supabase
       .from('ad_account_requests')
       .select(`
@@ -18,7 +18,7 @@ export default defineEventHandler(async (event) => {
         created_at,
         users(full_name, email)
       `)
-      .eq('status', 'approved')
+      .in('status', ['pending_review', 'processing', 'approved'])
       .order('created_at', { ascending: false })
 
     if (error) throw error

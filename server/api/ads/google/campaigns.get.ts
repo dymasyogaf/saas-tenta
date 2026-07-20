@@ -19,17 +19,18 @@ interface AdsResponse {
   }
 }
 
-export default defineEventHandler(async (event): Promise<AdsResponse> => {
+export default defineCachedEventHandler(async (event): Promise<AdsResponse> => {
   const config = useRuntimeConfig()
   const googleDevToken = config.googleAdsDevToken
+  const accessToken = (config as any).googleAccessToken || ''
   
-  // Karena saat ini akun Google Ads masih disiapkan oleh tim,
-  // kita menyediakan mekanisme Mock (dummy) agar frontend tetap bisa di-build & test.
-  if (!googleDevToken || googleDevToken === 'your_google_dev_token' || googleDevToken === '') {
+  // Karena saat ini akun Google Ads masih disiapkan oleh tim (termasuk OAuth),
+  // jika OAuth Access Token belum ada, kita tampilkan data simulasi (Mock) agar UI tidak error.
+  if (!googleDevToken || !accessToken || googleDevToken === 'your_google_dev_token') {
     return {
       success: true,
       source: 'mock',
-      message: 'Menampilkan data simulasi (Token Google Ads belum diatur)',
+      message: 'Menampilkan data simulasi (OAuth Access Token Google belum diatur)',
       data: {
         totalSpend: 8450000,
         currency: 'IDR',
@@ -65,44 +66,73 @@ export default defineEventHandler(async (event): Promise<AdsResponse> => {
       throw createError({ statusCode: 400, message: 'Parameter customer_id wajib disertakan' })
     }
 
-    // CATATAN: Google Ads API menggunakan RESTful endpoint (Google Ads API v15/v16)
-    // Diperlukan Bearer Token (OAuth2) dan Developer-token di headers.
-    // Untuk referensi MVP, ini adalah kerangka dasar pemanggilan API Google:
+    const googleResponse: any = await $fetch(`https://googleads.googleapis.com/v16/customers/${customerId}/googleAds:searchStream`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+        'developer-token': googleDevToken,
+        'login-customer-id': customerId
+      },
+      body: {
+        query: `
+          SELECT 
+            campaign.id, 
+            campaign.name, 
+            metrics.cost_micros, 
+            metrics.impressions, 
+            metrics.clicks, 
+            campaign.status 
+          FROM campaign 
+          WHERE segments.date DURING LAST_30_DAYS
+        `
+      }
+    })
+
+    let totalSpend = 0
+    const campaigns: GoogleCampaignData[] = []
     
-    // const googleResponse: any = await $fetch(`https://googleads.googleapis.com/v16/customers/${customerId}/googleAds:searchStream`, {
-    //   method: 'POST',
-    //   headers: {
-    //     'Authorization': `Bearer ${config.googleAccessToken}`, // Membutuhkan OAuth flow
-    //     'developer-token': googleDevToken,
-    //     'login-customer-id': customerId
-    //   },
-    //   body: {
-    //     query: `
-    //       SELECT 
-    //         campaign.id, 
-    //         campaign.name, 
-    //         metrics.cost_micros, 
-    //         metrics.impressions, 
-    //         metrics.clicks, 
-    //         campaign.status 
-    //       FROM campaign 
-    //       WHERE segments.date DURING LAST_30_DAYS
-    //     `
-    //   }
-    // })
+    // Parsing response array dari stream Google Ads
+    if (Array.isArray(googleResponse)) {
+      googleResponse.forEach((batch: any) => {
+        if (batch.results) {
+          batch.results.forEach((row: any) => {
+            const cost = parseInt(row.metrics?.costMicros || '0') / 1000000 // Convert micros to standard
+            totalSpend += cost
+            campaigns.push({
+              id: row.campaign?.id,
+              name: row.campaign?.name,
+              spend: cost,
+              impressions: parseInt(row.metrics?.impressions || '0'),
+              clicks: parseInt(row.metrics?.clicks || '0'),
+              status: row.campaign?.status || 'UNKNOWN'
+            })
+          })
+        }
+      })
+    }
 
-    // const campaigns: GoogleCampaignData[] = [] // Parsing data dari stream...
-    // const totalSpend = 0
-
-    // Karena ini masih berupa kerangka sebelum token aktif,
-    // kita akan langsung mereturn pesan peringatan:
-    throw createError({ statusCode: 501, message: 'Fungsi Tarik Data Asli Google Ads belum terimplementasi penuh.' })
-
+    return {
+      success: true,
+      source: 'live',
+      data: {
+        totalSpend,
+        currency: 'IDR',
+        activeCampaigns: campaigns.length,
+        campaigns
+      }
+    }
   } catch (error: any) {
     console.error('Google Ads API Proxy Error:', error.message || error)
     throw createError({ 
       statusCode: error.response?.status || 500, 
       message: error.data?.error?.message || error.message || 'Gagal terhubung ke API Google Ads' 
     })
+  }
+}, {
+  maxAge: 60 * 5, // Cache 5 Menit
+  name: 'google-ad-campaigns',
+  getKey: (event) => {
+    const query = getQuery(event)
+    return String(query.customer_id || 'unknown')
   }
 })

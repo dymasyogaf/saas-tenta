@@ -7,10 +7,11 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
   }
 
   // Ambil data profil dari public.users untuk mendapatkan role terbaru
-  const supabase = useSupabaseClient()
+  const supabase = useSupabaseClient<any>()
+  let role = user.value.user_metadata?.role
+  
   try {
     // 1. Cek dari metadata sesi (paling cepat, kebal RLS)
-    let role = user.value.user_metadata?.role
 
     // 2. Jika di metadata tidak ada, baru coba tembak ke database
     if (!role || role === 'client') {
@@ -37,6 +38,32 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
     return navigateTo('/dashboard')
   }
 
-  // TODO: Tambahkan proteksi lebih spesifik per-tim
-  // Contoh: if (to.path.includes('/finance') && role !== 'admin_finance' && role !== 'super_admin') return abortNavigation()
+  // === RBAC (Role Based Access Control) Khusus Mode Admin ===
+  // super_admin bebas ke mana saja
+  if (role !== 'super_admin') {
+    const path = to.path
+
+    // Hanya super_admin yang boleh atur staf
+    if (path.startsWith('/admin/users')) {
+      return navigateTo('/admin')
+    }
+    
+    // Tim Finance
+    if (path.startsWith('/admin/finance') && role !== 'admin_finance') {
+      return navigateTo('/admin')
+    }
+
+    // Tim Ads Ops
+    if (path.startsWith('/admin/ads-ops') && role !== 'admin_ads_ops') {
+      return navigateTo('/admin')
+    }
+
+    // Tim Audit (eKYC)
+    if (path.startsWith('/admin/verifications') && role !== 'admin_compliance') {
+      return navigateTo('/admin')
+    }
+    
+    // Note: /admin (Dashboard) dan /admin/clients (Daftar Klien) 
+    // bisa diakses oleh semua staf untuk kemudahan koordinasi.
+  }
 })
