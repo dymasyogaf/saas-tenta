@@ -34,24 +34,58 @@ export default defineCachedEventHandler(async (event): Promise<AccountsResponse>
   }
 
   try {
-    // Google Ads API (REST) - Membutuhkan OAuth2 Access Token (disimpan di config atau header)
-    const gResponse: any = await $fetch(`https://googleads.googleapis.com/v16/customers:listAccessibleCustomers`, {
-      method: 'GET',
+    // ID MCC Target (MPC - TENTAKLIK)
+    const targetMccId = '7556022654'
+    // ID Root MCC (Media Pro Creative) yang memiliki otorisasi email
+    const loginCustomerId = '6445325844'
+
+    // GAQL Query untuk mengambil Akun Anak (Client Accounts)
+    const query = `
+      SELECT 
+        customer_client.id, 
+        customer_client.descriptive_name, 
+        customer_client.status, 
+        customer_client.currency_code 
+      FROM customer_client 
+      WHERE customer_client.level = 1 
+        AND customer_client.manager = false 
+        AND customer_client.status = 'ENABLED'
+    `
+
+    // Google Ads API (REST) - Menggunakan searchStream
+    const gResponse: any = await $fetch(`https://googleads.googleapis.com/v24/customers/${targetMccId}/googleAds:searchStream`, {
+      method: 'POST',
       headers: {
         'Authorization': `Bearer ${accessToken}`,
-        'developer-token': googleDevToken
+        'developer-token': googleDevToken,
+        'login-customer-id': loginCustomerId,
+        'Content-Type': 'application/json'
+      },
+      body: {
+        query
       }
     })
 
-    const accounts: GoogleAdAccountData[] = (gResponse.resourceNames || []).map((resourceName: string) => {
-      const id = resourceName.split('/')[1]
-      return {
-        id,
-        name: `Google Ad Account ${id}`,
-        status: 'ENABLED',
-        currency: 'IDR'
+    const accounts: GoogleAdAccountData[] = []
+    
+    // searchStream mengembalikan array of batch objects
+    if (Array.isArray(gResponse)) {
+      for (const batch of gResponse) {
+        if (batch.results) {
+          for (const row of batch.results) {
+            if (row.customerClient) {
+              const client = row.customerClient
+              accounts.push({
+                id: client.id.toString(),
+                name: client.descriptiveName || `Google Ad Account ${client.id}`,
+                status: client.status,
+                currency: client.currencyCode
+              })
+            }
+          }
+        }
       }
-    })
+    }
 
     return {
       success: true,
@@ -70,6 +104,6 @@ export default defineCachedEventHandler(async (event): Promise<AccountsResponse>
   }
 }, {
   maxAge: 60 * 5, // Cache 5 menit
-  name: 'google-ad-accounts',
+  name: 'google-ad-clients',
   getKey: (event) => 'all'
 })

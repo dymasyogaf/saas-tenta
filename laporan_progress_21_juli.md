@@ -9,6 +9,7 @@ Berikut adalah pencapaian krusial hari ini:
 
 ## 🔗 1. Integrasi Penuh Google Ads API (OAuth 2.0)
 *   **Production OAuth:** Berhasil menghubungkan aplikasi dengan Google Cloud Console berstatus *Publish/In Production*.
+*   **Google Ads Query Language (GAQL):** Mengimplementasikan kueri SQL Google (GAQL) pada fitur *Search Stream* untuk menarik secara cerdas daftar *Client Accounts* (Sub-Akun) di bawah naungan *Manager Account* (MCC) `MPC - TENTAKLIK`, bukan sekadar menampilkan ID *Root MCC*.
 *   **Refresh Token Dinamis:** Mengimplementasikan fungsi `getValidGoogleAccessToken()` yang secara cerdas menukar *Refresh Token* dengan *Access Token* baru di belakang layar agar sistem tidak pernah kedaluwarsa.
 *   **Pemusnahan Dummy:** Menghapus seluruh data simulasi. Sistem Google Ads kini 100% bergantung pada penarikan data metrik (seperti *Cost Micros*) langsung dari API Google yang sebenarnya.
 

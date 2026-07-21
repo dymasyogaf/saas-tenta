@@ -247,8 +247,8 @@ Setiap view di `index.html` menjadi halaman Vue terpisah:
 - [x] `server/api/ads/meta/campaigns.get.ts` — campaign performance (Dummy Removed)
 - [x] `server/api/ads/tiktok/accounts.get.ts` — list TikTok ad accounts
 - [x] `server/api/ads/tiktok/campaigns.get.ts` — campaign performance (Dummy Removed)
-- [x] `server/api/ads/google/accounts.get.ts` — list Google ad accounts (OAuth2 Integrated)
-- [x] `server/api/ads/google/campaigns.get.ts` — campaign performance (OAuth2 Integrated)
+- [x] `server/api/ads/google/accounts.get.ts` — list Google ad accounts (OAuth2 Integrated + GAQL for MCC Client Accounts)
+- [x] `server/api/ads/google/campaigns.get.ts` — campaign performance (OAuth2 Integrated + Root MCC Login-Customer-Id Header)
 - [ ] Implementasi caching (Redis / in-memory) untuk API responses
 - [ ] Handle rate limiting per platform
 

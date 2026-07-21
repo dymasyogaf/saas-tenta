@@ -50,12 +50,12 @@ export default defineCachedEventHandler(async (event): Promise<AdsResponse> => {
       throw createError({ statusCode: 400, message: 'Parameter customer_id wajib disertakan' })
     }
 
-    const googleResponse: any = await $fetch(`https://googleads.googleapis.com/v16/customers/${customerId}/googleAds:searchStream`, {
+    const googleResponse: any = await $fetch(`https://googleads.googleapis.com/v24/customers/${customerId}/googleAds:searchStream`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${accessToken}`,
         'developer-token': googleDevToken,
-        'login-customer-id': customerId
+        'login-customer-id': '6445325844'
       },
       body: {
         query: `
