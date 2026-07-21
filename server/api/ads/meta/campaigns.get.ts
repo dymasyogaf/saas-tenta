@@ -11,6 +11,7 @@ interface AdsResponse {
   success: boolean
   source?: string
   message?: string
+  fetchedAt?: string
   data?: {
     totalSpend: number
     currency: string
@@ -23,43 +24,18 @@ export default defineCachedEventHandler(async (event): Promise<AdsResponse> => {
   const config = useRuntimeConfig()
   const metaToken = config.metaAccessToken
   
-  // Karena saat ini akun developer Meta belum terhubung secara penuh,
-  // kita menyediakan mekanisme Mock (dummy) agar frontend tetap bisa di-build & test.
+  // Jika token belum diset, JANGAN kembalikan data dummy. Kembalikan 0 (Kosong).
   if (!metaToken || metaToken === 'your_meta_token' || metaToken === '') {
     return {
       success: true,
-      source: 'mock',
-      message: 'Menampilkan data simulasi (Token Meta belum diatur)',
+      source: 'live',
+      message: 'Token Meta belum diatur.',
+      fetchedAt: new Date().toISOString(),
       data: {
-        totalSpend: 15850000,
+        totalSpend: 0,
         currency: 'IDR',
-        activeCampaigns: 3,
-        campaigns: [
-          { 
-            id: 'meta_cmp_101', 
-            name: 'Promo Kemerdekaan - Broad Audience', 
-            spend: 5500000, 
-            impressions: 450000, 
-            clicks: 12500,
-            status: 'active' 
-          },
-          { 
-            id: 'meta_cmp_102', 
-            name: 'Retargeting - Add to Cart 30 Days', 
-            spend: 3150000, 
-            impressions: 120000, 
-            clicks: 4500,
-            status: 'active' 
-          },
-          { 
-            id: 'meta_cmp_103', 
-            name: 'Lookalike 1% - Top Spenders', 
-            spend: 7200000, 
-            impressions: 680000, 
-            clicks: 21000,
-            status: 'active' 
-          }
-        ]
+        activeCampaigns: 0,
+        campaigns: []
       }
     }
   }
@@ -98,6 +74,7 @@ export default defineCachedEventHandler(async (event): Promise<AdsResponse> => {
     return {
       success: true,
       source: 'live',
+      fetchedAt: new Date().toISOString(),
       data: {
         totalSpend,
         currency: 'IDR',

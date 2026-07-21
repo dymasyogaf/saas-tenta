@@ -11,6 +11,7 @@ interface AdsResponse {
   success: boolean
   source?: string
   message?: string
+  fetchedAt?: string
   data?: {
     totalSpend: number
     currency: string
@@ -22,37 +23,20 @@ interface AdsResponse {
 export default defineCachedEventHandler(async (event): Promise<AdsResponse> => {
   const config = useRuntimeConfig()
   const googleDevToken = config.googleAdsDevToken
-  const accessToken = (config as any).googleAccessToken || ''
+  const accessToken = await getValidGoogleAccessToken()
   
-  // Karena saat ini akun Google Ads masih disiapkan oleh tim (termasuk OAuth),
-  // jika OAuth Access Token belum ada, kita tampilkan data simulasi (Mock) agar UI tidak error.
+  // Jika token belum diset, JANGAN kembalikan data dummy. Kembalikan 0 (Kosong).
   if (!googleDevToken || !accessToken || googleDevToken === 'your_google_dev_token') {
     return {
       success: true,
-      source: 'mock',
-      message: 'Menampilkan data simulasi (OAuth Access Token Google belum diatur)',
+      source: 'empty',
+      message: 'OAuth Access Token Google belum diatur',
+      fetchedAt: new Date().toISOString(),
       data: {
-        totalSpend: 8450000,
+        totalSpend: 0,
         currency: 'IDR',
-        activeCampaigns: 2,
-        campaigns: [
-          { 
-            id: 'gads_cmp_201', 
-            name: 'Search - SaaS Keywords', 
-            spend: 5200000, 
-            impressions: 85000, 
-            clicks: 4200,
-            status: 'ENABLED' 
-          },
-          { 
-            id: 'gads_cmp_202', 
-            name: 'Performance Max - Retargeting', 
-            spend: 3250000, 
-            impressions: 210000, 
-            clicks: 1800,
-            status: 'ENABLED' 
-          }
-        ]
+        activeCampaigns: 0,
+        campaigns: []
       }
     }
   }
@@ -114,6 +98,7 @@ export default defineCachedEventHandler(async (event): Promise<AdsResponse> => {
     return {
       success: true,
       source: 'live',
+      fetchedAt: new Date().toISOString(),
       data: {
         totalSpend,
         currency: 'IDR',

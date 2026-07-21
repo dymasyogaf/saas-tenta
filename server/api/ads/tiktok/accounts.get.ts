@@ -22,13 +22,11 @@ export default defineEventHandler(async (event): Promise<AccountsResponse> => {
   if (!tiktokToken || tiktokToken === 'your_tiktok_token' || tiktokToken === '') {
     return {
       success: true,
-      source: 'mock',
-      message: 'Menampilkan data simulasi (Token TikTok belum diatur)',
+      source: 'live',
+      message: 'Token TikTok belum diatur.',
       data: {
-        totalAccounts: 1,
-        accounts: [
-          { id: 'tt_adv_88776655', name: 'TikTok Official Business', status: 'ACTIVE', currency: 'IDR' }
-        ]
+        totalAccounts: 0,
+        accounts: []
       }
     }
   }

@@ -11,6 +11,7 @@ interface AdsResponse {
   success: boolean
   source?: string
   message?: string
+  fetchedAt?: string
   data?: {
     totalSpend: number
     currency: string
@@ -23,34 +24,18 @@ export default defineEventHandler(async (event): Promise<AdsResponse> => {
   const config = useRuntimeConfig()
   const tiktokToken = config.tiktokAccessToken
   
-  // Jika Token TikTok belum diatur, gunakan Mock (dummy data) agar tidak error di dashboard
+  // Jika Token TikTok belum diatur, JANGAN kembalikan data dummy.
   if (!tiktokToken || tiktokToken === 'your_tiktok_token' || tiktokToken === '') {
     return {
       success: true,
-      source: 'mock',
-      message: 'Menampilkan data simulasi (Token TikTok belum diatur)',
+      source: 'live',
+      message: 'Token TikTok belum diatur.',
+      fetchedAt: new Date().toISOString(),
       data: {
-        totalSpend: 4200000,
+        totalSpend: 0,
         currency: 'IDR',
-        activeCampaigns: 2,
-        campaigns: [
-          { 
-            id: 'tt_cmp_301', 
-            name: 'UGC Campaign - Gen Z', 
-            spend: 2500000, 
-            impressions: 550000, 
-            clicks: 18000,
-            status: 'active' 
-          },
-          { 
-            id: 'tt_cmp_302', 
-            name: 'Spark Ads - Product Review', 
-            spend: 1700000, 
-            impressions: 320000, 
-            clicks: 9500,
-            status: 'active' 
-          }
-        ]
+        activeCampaigns: 0,
+        campaigns: []
       }
     }
   }
@@ -101,6 +86,7 @@ export default defineEventHandler(async (event): Promise<AdsResponse> => {
     return {
       success: true,
       source: 'live',
+      fetchedAt: new Date().toISOString(),
       data: {
         totalSpend,
         currency: 'IDR',

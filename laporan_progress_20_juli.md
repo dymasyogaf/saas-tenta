@@ -16,18 +16,16 @@ Berikut adalah detail fitur dan infrastruktur kokoh yang telah diimplementasikan
 *   **Proteksi Rate Limit:** Mengganti seluruh fungsi *fetch* API iklan dengan `defineCachedEventHandler` bawaan Nitro/Nuxt.
 *   **Efisiensi Tarikan:** Data kampanye dan akun kini dikunci di RAM server selama 5 Menit. Meskipun *user* me-*refresh* dasbor 1.000 kali berturut-turut, permintaan yang dikirimkan ke Meta/Google tetap hanya **1 kali**, melindungi aplikasi dari pemblokiran permanen oleh platform.
 
-## 💰 3. Arsitektur Escrow Logic (Penahanan Saldo)
-*   **Hold (Tahan):** Merombak *endpoint* `transfer.post.ts`. Kini, saat klien mengalokasikan uang ke akun iklan, uang tersebut tidak hilang melainkan dikunci sebagai `pending_balance` (Escrow) dengan status transaksi 'pending'.
-*   **Release & Refund (Penyelesaian):** Membangun *endpoint* canggih `server/api/saldo/settle.post.ts`. Ketika tagihan resmi iklan keluar, sistem mampu:
-    1. Memotong saldo yang dikunci menjadi pengeluaran aktual (*Expense*).
-    2. Mengembalikan uang sisa otomatis (*Refund*) ke dompet utama klien jika biaya aslinya lebih murah dari jumlah yang di-Hold.
+## 💰 3. Arsitektur Alokasi Saldo V2 (Otomatisasi Penuh)
+*   **Alokasi Instan:** Merombak *endpoint* `transfer.post.ts` dengan mengeliminasi sistem Escrow. Kini, saat klien mengalokasikan uang ke akun iklan, uang tersebut akan **langsung memotong saldo utama** dan **otomatis menambahkan Limit** pada tabel akun iklan yang dituju.
+*   **Validasi Keamanan:** Sistem mencegah klien melakukan alokasi jika belum memiliki Akun Iklan aktif yang telah disetujui, serta melarang nominal alokasi yang melebihi saldo tersedia.
+*   **Settlement Otomatis:** Menghilangkan ketergantungan pada *Admin Finance*. Sistem mutasi sekarang mencatat pengeluaran (*Expense*) dengan status `success` dalam hitungan detik.
 
 ## 🧠 4. Manajemen State Terpusat (Pinia & Composables)
 *   **Toko Data Global:** Membuat `stores/user.ts` (penyimpan status profil dan otorisasi keamanan klien) serta `stores/notification.ts` (pusat notifikasi *real-time* berbasis WebSocket dari Supabase).
 *   **Alat Bantu Pintar:** Menciptakan `useAds.ts`, `useSidebar.ts`, dan `useModal.ts` agar pemanggilan API iklan dan interaksi visual bisa diatur dari satu titik, tanpa mengotori masing-masing *file Vue component*.
 
 ## 👔 5. Sinkronisasi Operasional Admin (Finance & Ads Ops)
-*   **Alur Kerja Finance (Escrow):** Merombak Dashboard Finance Admin agar terhubung langsung dengan sistem `pending_balance` klien. Tim Finance kini bisa menyetujui "Alokasi Iklan" secara riil, memindahkan dana Escrow menjadi dana terpakai yang aman.
 *   **Notifikasi Sidebar Cerdas:** Memperbaiki sistem *badge* pada navigasi Admin. Berkat integrasi `refreshNuxtData`, angka antrean pada menu (Finance, Ads Ops, Audit) kini tersinkronisasi dan hilang secara otomatis pasca eksekusi tanpa perlu *refresh* halaman manual.
 *   **Modern UI/UX Modals:** Menggantikan dialog statis bawaan browser (`alert`/`confirm`) dengan *Custom Vue Modals* bersistem efek blur dan animasi Tailwind yang premium, memperkuat identitas *Enterprise* SaaS.
 
@@ -38,4 +36,4 @@ Pondasi *Frontend* dan *Backend Engine* telah sepenuhnya rampung. Kita kini siap
 Prioritas yang harus dieksekusi selanjutnya:
 1. Konfigurasi rahasia (*Environment Variables*) untuk Cloudflare Pages.
 2. Pengalihan URL Callback sistem bayar (Duitku) dan Auth (Supabase) menuju alamat domain *Production* sesungguhnya.
-3. Pemberlakuan keamanan server tingkat lanjut (*CORS, Sentry/Analytics, dan Server Rate Limit*).
+3. Pemberlakuan keamanan server tingkat lanjut (*CORS, Nuxt Security/Rate Limit, dan Analytics*).

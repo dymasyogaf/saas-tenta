@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia'
+import { useAdsStore } from './ads'
 
 export const useSaldoStore = defineStore('saldo', {
   state: () => ({
@@ -120,7 +121,7 @@ export const useSaldoStore = defineStore('saldo', {
         this.isLoading = false
       }
     },
-    async allocate(amount: number, userValue: any, targetPlatform: string) {
+    async allocate(amount: number, userValue: any, adAccountId: string, platform: string) {
       this.isLoading = true
       this.error = null
       
@@ -138,7 +139,8 @@ export const useSaldoStore = defineStore('saldo', {
           body: {
             amount,
             user_id: uid,
-            description: `Alokasi Saldo ke Akun ${targetPlatform}`
+            ad_account_id: adAccountId,
+            description: `Alokasi Saldo ke Akun ${platform}`
           }
         })
         
@@ -146,6 +148,8 @@ export const useSaldoStore = defineStore('saldo', {
           if (toast) toast.addToast('Berhasil mengalokasikan saldo', 'success')
           await this.fetchSaldo()
           await this.fetchTransactions()
+          const adsStore = useAdsStore()
+          await adsStore.fetchAdAccounts()
           return true
         } else {
           throw new Error('Respons server tidak sesuai')

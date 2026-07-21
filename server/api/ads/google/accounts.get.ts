@@ -18,19 +18,17 @@ interface AccountsResponse {
 export default defineCachedEventHandler(async (event): Promise<AccountsResponse> => {
   const config = useRuntimeConfig()
   const googleDevToken = config.googleAdsDevToken
-  const accessToken = (config as any).googleAccessToken || ''
+  const accessToken = await getValidGoogleAccessToken()
   
-  // Jika salah satu token (Developer Token atau OAuth Access Token) belum diset, tampilkan MOCK
+  // Jika token belum diset, JANGAN kembalikan data dummy. Kembalikan array kosong.
   if (!googleDevToken || !accessToken || googleDevToken === 'your_google_dev_token') {
     return {
       success: true,
-      source: 'mock',
-      message: 'Menampilkan data simulasi (OAuth Access Token Google belum diatur)',
+      source: 'empty',
+      message: 'OAuth Access Token Google belum diatur',
       data: {
-        totalAccounts: 1,
-        accounts: [
-          { id: '123-456-7890', name: 'SaaS Google Account', status: 'ENABLED', currency: 'IDR' }
-        ]
+        totalAccounts: 0,
+        accounts: []
       }
     }
   }

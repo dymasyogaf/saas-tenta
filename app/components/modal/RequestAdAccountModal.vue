@@ -43,34 +43,41 @@
                 </div>
               </div>
               
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                <div>
-                  <label class="block text-sm font-bold text-ink-900 mb-2">Tipe akun <span class="text-red-500">*</span></label>
-                  <select v-model="form.accountType" required class="w-full px-4 py-2.5 border border-ink-200 rounded-lg text-sm focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 text-ink-900 bg-white">
-                    <option value="" disabled>Pilih tipe akun</option>
-                    <option value="Personal">Personal</option>
-                    <option value="Corporate">Corporate / Perusahaan</option>
-                  </select>
-                </div>
-                
-                <div>
-                  <label class="block text-sm font-bold text-ink-900 mb-2">Kategori Bisnis <span class="text-red-500">*</span></label>
-                  <select v-model="form.adCategory" required class="w-full px-4 py-2.5 border border-ink-200 rounded-lg text-sm focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 text-ink-900 bg-white">
-                    <option value="" disabled>— Pilih kategori —</option>
-                    <option value="UMKM">UMKM</option>
-                    <option value="Produk Kecantikan">Produk Kecantikan</option>
-                    <option value="Kesehatan">Kesehatan</option>
-                    <option value="Konsultan Pendidikan">Konsultan Pendidikan</option>
-                    <option value="Fashion">Fashion</option>
-                    <option value="NGO / Yayasan">NGO / Yayasan</option>
-                    <option value="Lainnya">Lainnya</option>
-                  </select>
-                </div>
+              <div>
+                <label class="block text-sm font-bold text-ink-900 mb-2">Kategori Bisnis <span class="text-red-500">*</span></label>
+                <select v-model="form.adCategory" required class="w-full px-4 py-2.5 border border-ink-200 rounded-lg text-sm focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 text-ink-900 bg-white">
+                  <option value="" disabled>— Pilih kategori —</option>
+                  <option value="UMKM">UMKM</option>
+                  <option value="Produk Kecantikan">Produk Kecantikan</option>
+                  <option value="Kesehatan">Kesehatan</option>
+                  <option value="Konsultan Pendidikan">Konsultan Pendidikan</option>
+                  <option value="Fashion">Fashion</option>
+                  <option value="Lainnya">Lainnya</option>
+                </select>
+              </div>
+
+              <div v-if="platformName.includes('Meta')">
+                <label class="block text-sm font-bold text-ink-900 mb-2">Link Instagram / Facebook Page <span class="text-red-500">*</span></label>
+                <input 
+                  v-model="form.socialLink" 
+                  @blur="formatSocialUrl"
+                  type="url" 
+                  required 
+                  placeholder="https://instagram.com/akunbisnis" 
+                  class="w-full px-4 py-2.5 border border-ink-200 rounded-lg text-sm focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 text-ink-900" 
+                />
               </div>
 
               <div>
-                <label class="block text-sm font-bold text-ink-900 mb-2">Target Website (URL) <span class="text-red-500">*</span></label>
-                <input v-model="form.targetUrl" type="url" required placeholder="https://domain-anda.com" class="w-full px-4 py-2.5 border border-ink-200 rounded-lg text-sm focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 text-ink-900" />
+                <label class="block text-sm font-bold text-ink-900 mb-2">Target Website (URL) <span v-if="!platformName.includes('Meta')" class="text-red-500">*</span><span v-else class="text-ink-400 font-normal ml-1">(Opsional)</span></label>
+                <input 
+                  v-model="form.targetUrl" 
+                  @blur="formatUrl"
+                  type="url" 
+                  :required="!platformName.includes('Meta')" 
+                  placeholder="https://domain-anda.com" 
+                  class="w-full px-4 py-2.5 border border-ink-200 rounded-lg text-sm focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 text-ink-900" 
+                />
               </div>
             </div>
 
@@ -200,9 +207,9 @@ const showInstructionBm = ref(false)
 const form = reactive({
   fullName: '',
   bmId: '',
-  accountType: '',
   adCategory: '',
   targetUrl: '',
+  socialLink: '',
   agree2fa1: false,
   agree2fa2: false,
   agreePolicy: false,
@@ -217,11 +224,14 @@ const platformLogo = computed(() => {
 })
 
 const isFormValid = computed(() => {
+  const isUrlValid = props.platformName.includes('Meta') ? true : form.targetUrl.trim() !== ''
+  const isSocialValid = props.platformName.includes('Meta') ? form.socialLink.trim() !== '' : true
+
   return form.fullName.trim() !== '' && 
          form.bmId.trim() !== '' && 
-         form.accountType !== '' &&
          form.adCategory !== '' &&
-         form.targetUrl.trim() !== '' && 
+         isUrlValid &&
+         isSocialValid &&
          form.agree2fa1 && 
          form.agree2fa2 &&
          form.agreePolicy &&
@@ -234,14 +244,28 @@ const closeModal = () => {
   setTimeout(() => {
     form.fullName = ''
     form.bmId = ''
-    form.accountType = ''
     form.adCategory = ''
     form.targetUrl = ''
+    form.socialLink = ''
     form.agree2fa1 = false
     form.agree2fa2 = false
     form.agreePolicy = false
     form.agreeTc = false
   }, 300)
+}
+
+const formatUrl = () => {
+  let url = form.targetUrl.trim()
+  if (url && !/^https?:\/\//i.test(url)) {
+    form.targetUrl = 'https://' + url
+  }
+}
+
+const formatSocialUrl = () => {
+  let url = form.socialLink.trim()
+  if (url && !/^https?:\/\//i.test(url)) {
+    form.socialLink = 'https://' + url
+  }
 }
 
 const submitForm = async () => {
@@ -268,7 +292,7 @@ const submitForm = async () => {
         details: {
           full_name: form.fullName,
           ...(props.platformName.includes('Google') ? { shared_email: form.bmId } : { bm_id: form.bmId }),
-          account_type: form.accountType,
+          ...(props.platformName.includes('Meta') ? { social_link: form.socialLink } : {}),
           ad_category: form.adCategory
         }
       })

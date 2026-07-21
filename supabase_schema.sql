@@ -39,6 +39,10 @@ CREATE TABLE IF NOT EXISTS public.ad_accounts (
   account_id TEXT NOT NULL,
   account_name TEXT,
   status TEXT DEFAULT 'pending' CHECK (status IN ('active', 'inactive', 'pending', 'banned')),
+  saldo NUMERIC DEFAULT 0,
+  limit_amount NUMERIC DEFAULT 0,
+  assignee TEXT,
+  notifikasi_aktif BOOLEAN DEFAULT true,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );

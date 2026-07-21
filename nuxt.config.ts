@@ -54,7 +54,9 @@ export default defineNuxtConfig({
     tiktokAppSecret: '',
     tiktokAccessToken: '',
     googleAdsDevToken: '',
+    googleClientId: '',
     googleClientSecret: '',
+    googleRefreshToken: '',
     // Public keys (exposed to client)
     public: {
       appName: 'Tentaklik',

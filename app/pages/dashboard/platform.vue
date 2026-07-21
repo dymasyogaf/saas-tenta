@@ -43,8 +43,12 @@
 
 
     <!-- Platform List -->
-    <div class="flex justify-between items-center mb-2">
+    <div class="flex flex-col sm:flex-row sm:justify-between items-start sm:items-center mb-4 gap-4">
       <h3 class="font-display font-bold text-xl md:text-2xl text-ink-900">Layanan iklan di Tentaklik</h3>
+      
+      <button @click="resetDev" class="flex items-center gap-2 px-4 py-2 bg-red-50 border border-red-200 rounded-lg text-sm font-bold text-red-600 hover:bg-red-100 transition-colors shadow-sm shrink-0">
+        <Trash2 class="w-4 h-4" /> Reset Dev (Wipe Data)
+      </button>
     </div>
 
     <div class="flex flex-col gap-4">
@@ -82,7 +86,7 @@
 </template>
 
 <script setup lang="ts">
-import { Megaphone, GraduationCap, BarChart2, ShieldCheck, Wallet, ShieldAlert } from 'lucide-vue-next'
+import { Megaphone, GraduationCap, BarChart2, ShieldCheck, Wallet, ShieldAlert, Trash2 } from 'lucide-vue-next'
 import { ref, onMounted } from 'vue'
 
 definePageMeta({
@@ -209,6 +213,26 @@ const fetchRequests = async () => {
   }
   
   isLoading.value = false
+}
+
+const resetDev = async () => {
+  if (!confirm('🔥 PERINGATAN DEV: Aksi ini akan menghapus SEMUA data Pengajuan dan Akun Iklan. Lanjutkan?')) return
+  try {
+    const res = await $fetch('/api/dev/reset-ads', { method: 'POST' })
+    alert((res as any).message)
+    
+    // Kembalikan ke tampilan default
+    platforms.value.forEach(p => {
+      p.rawStatus = null
+      p.status = 'Tidak Aktif'
+    })
+    
+    // Refresh saldo global jika perlu
+    refreshNuxtData()
+    fetchRequests()
+  } catch(e: any) {
+    alert(e.data?.statusMessage || 'Gagal mereset data')
+  }
 }
 
 onMounted(() => {

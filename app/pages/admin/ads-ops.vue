@@ -6,9 +6,14 @@
         <h2 class="text-2xl font-display font-bold text-slate-900">Manajemen Akun Iklan (Ads Ops)</h2>
         <p class="text-slate-500 text-sm mt-1">Buat akun iklan di platform, lalu masukkan ID-nya ke sini untuk dihubungkan ke dasbor Klien.</p>
       </div>
-      <button @click="() => refresh()" class="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-lg text-sm font-bold text-slate-700 hover:bg-slate-50 transition-colors shadow-sm">
-        <RefreshCw class="w-4 h-4" :class="{ 'animate-spin': pending }" /> Segarkan Data
-      </button>
+      <div class="flex flex-col sm:flex-row items-center gap-3">
+        <button @click="resetDev" class="flex items-center justify-center gap-2 px-4 py-2 bg-red-50 border border-red-200 rounded-lg text-sm font-bold text-red-600 hover:bg-red-100 transition-colors shadow-sm w-full sm:w-auto">
+          <Trash2 class="w-4 h-4" /> Reset Dev (Wipe Data)
+        </button>
+        <button @click="() => refresh()" class="flex items-center justify-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-lg text-sm font-bold text-slate-700 hover:bg-slate-50 transition-colors shadow-sm w-full sm:w-auto">
+          <RefreshCw class="w-4 h-4" :class="{ 'animate-spin': pending }" /> Segarkan Data
+        </button>
+      </div>
     </div>
 
     <!-- Alert Info -->
@@ -95,8 +100,15 @@
                 <p class="font-bold text-slate-900">{{ req.users?.full_name || 'Tanpa Nama' }}</p>
                 <div class="flex items-center gap-1 mt-1 text-slate-500">
                   <Link class="w-3 h-3" />
-                  <a :href="req.target_url" target="_blank" class="text-xs hover:text-blue-600 hover:underline line-clamp-1 max-w-[200px]">
+                  <a v-if="req.target_url" :href="req.target_url" target="_blank" class="text-xs hover:text-blue-600 hover:underline line-clamp-1 max-w-[200px]">
                     {{ req.target_url }}
+                  </a>
+                  <span v-else class="text-xs italic text-slate-400">Tanpa Web</span>
+                </div>
+                <div v-if="req.details?.social_link" class="flex items-center gap-1 mt-1 text-slate-500">
+                  <span class="text-[10px] font-bold text-blue-500 uppercase px-1 py-0.5 bg-blue-50 rounded">Sosmed</span>
+                  <a :href="req.details.social_link" target="_blank" class="text-xs hover:text-blue-600 hover:underline line-clamp-1 max-w-[150px]">
+                    {{ req.details.social_link }}
                   </a>
                 </div>
                 <p class="text-[10px] text-slate-400 mt-2">Diajukan: {{ new Date(req.created_at).toLocaleDateString('id-ID') }}</p>
@@ -121,7 +133,6 @@
                     <p v-if="req.details?.bm_id"><span class="font-semibold">BM ID:</span> {{ req.details.bm_id }}</p>
                   </template>
 
-                  <p><span class="font-semibold">Tipe Akun:</span> {{ req.details?.account_type || '-' }}</p>
                   <p><span class="font-semibold">Kategori:</span> {{ req.details?.ad_category || '-' }}</p>
                 </div>
               </td>
@@ -131,6 +142,7 @@
                 <div v-if="activeTab !== 'new'" class="relative">
                   <input 
                     v-model="inputModels[req.id]"
+                    @input="formatInput(req.id, req.platform)"
                     type="text" 
                     placeholder="Misal: act_123456789" 
                     class="w-full pl-9 pr-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 bg-white"
@@ -191,7 +203,7 @@
 </template>
 
 <script setup lang="ts">
-import { RefreshCw, Megaphone, Link, Hash, CheckCircle2, Edit2 } from 'lucide-vue-next'
+import { RefreshCw, Megaphone, Link, Hash, CheckCircle2, Edit2, Trash2 } from 'lucide-vue-next'
 import { ref, computed, watch } from 'vue'
 
 definePageMeta({
@@ -251,9 +263,41 @@ const startEdit = (id: string) => {
   isEditing.value[id] = true
 }
 
+const formatInput = (id: string, platform: string) => {
+  let val = inputModels.value[id] || ''
+  const platStr = (platform || '').toLowerCase()
+  
+  if (platStr.includes('google') || platStr.includes('tiktok')) {
+    // Google & TikTok: Hanya angka murni (langsung hapus strip & spasi)
+    val = val.replace(/[^0-9]/g, '')
+  } else if (platStr.includes('meta') || platStr.includes('facebook')) {
+    // Meta: Hapus spasi dan strip
+    val = val.replace(/[\s-]/g, '')
+    // Jika diketik angka pertama kali, otomatis tambahkan 'act_' di depannya
+    if (/^[0-9]/.test(val)) {
+      val = 'act_' + val
+    }
+  }
+  
+  inputModels.value[id] = val
+}
+
 const cancelEdit = (id: string, originalValue: string) => {
   isEditing.value[id] = false
   inputModels.value[id] = originalValue || ''
+}
+
+const resetDev = async () => {
+  if (!confirm('🔥 PERINGATAN DEV: Aksi ini akan menghapus SEMUA data Pengajuan (ad_account_requests) dan Akun Iklan (ad_accounts) di database. Lanjutkan?')) return
+  const toast = useToast()
+  try {
+    const res = await $fetch('/api/dev/reset-ads', { method: 'POST' })
+    toast.addToast((res as any).message, 'success')
+    await refresh()
+    refreshNuxtData('admin-badges')
+  } catch(e: any) {
+    toast.addToast(e.data?.statusMessage || 'Gagal mereset data', 'error')
+  }
 }
 
 const processAction = async (id: string, action: 'approve' | 'reject' | 'save_id') => {

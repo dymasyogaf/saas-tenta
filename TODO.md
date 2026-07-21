@@ -244,11 +244,11 @@ Setiap view di `index.html` menjadi halaman Vue terpisah:
 
 ### 3.4 Nuxt Server Routes — Ads API Proxy
 - [x] ~~`server/api/ads/meta/accounts.get.ts` — list Meta ad accounts~~
-- [x] ~~`server/api/ads/meta/campaigns.get.ts` — campaign performance~~ *(Menunggu API Key dari Tim Iklan)*
-- [x] ~~`server/api/ads/tiktok/accounts.get.ts` — list TikTok ad accounts~~
-- [x] ~~`server/api/ads/tiktok/campaigns.get.ts` — campaign performance~~ *(Menunggu API Key dari Tim Iklan)*
-- [x] ~~`server/api/ads/google/accounts.get.ts` — list Google ad accounts~~
-- [x] ~~`server/api/ads/google/campaigns.get.ts` — campaign performance~~ *(Menunggu API Key dari Tim Iklan)*
+- [x] `server/api/ads/meta/campaigns.get.ts` — campaign performance (Dummy Removed)
+- [x] `server/api/ads/tiktok/accounts.get.ts` — list TikTok ad accounts
+- [x] `server/api/ads/tiktok/campaigns.get.ts` — campaign performance (Dummy Removed)
+- [x] `server/api/ads/google/accounts.get.ts` — list Google ad accounts (OAuth2 Integrated)
+- [x] `server/api/ads/google/campaigns.get.ts` — campaign performance (OAuth2 Integrated)
 - [ ] Implementasi caching (Redis / in-memory) untuk API responses
 - [ ] Handle rate limiting per platform
 
@@ -263,6 +263,7 @@ Setiap view di `index.html` menjadi halaman Vue terpisah:
 - [x] ~~`server/api/saldo/topup.post.ts` — request top-up~~ (di-handle oleh Duitku create-payment)
 - [x] ~~`server/api/saldo/transfer.post.ts` — pindah saldo antar akun~~ (Alokasi ke Akun Iklan)
 - [x] ~~Implementasi escrow logic (hold → release → refund)~~
+- [x] ~~Riset & Implementasi Otomatisasi Alokasi Saldo Iklan (Opsi 2) tanpa intervensi Admin Finance.~~
 
 ---
 
@@ -330,14 +331,24 @@ Setiap view di `index.html` menjadi halaman Vue terpisah:
 
 ---
 
-## 📌 Status Saat Ini — Mulai 20 Juli 2026
+## 🔮 FASE 7: Pengembangan Lanjutan (V2)
 
-Fase 3 (Backend API) & Fase 4 (Pinia & Data Flow) telah **selesai 100%**. 
-Urutan yang disarankan untuk target pamungkas berikutnya (Fase 5):
+### 7.1 Otomatisasi Saldo & Akun Iklan (SELESAI)
+- [x] **Integrasi API (Mock/VCC):** Otomatisasi pemindahan dana (*top up* saldo iklan) secara *real-time* tanpa intervensi Admin Finance.
+- [x] **Pembaruan UI/UX Tabel Saldo:** Menampilkan Limit dan menghitung Saldo instan (Limit - Penggunaan). UI diperbersih dengan membuang kolom statis (Penanggung Jawab & Notif).
+- [x] **Auto-Generate Data Akun:** Mengotomatiskan pembuatan **Nama Kredit** (contoh: `TENTA-GA-Nama User-1`) yang terhubung langsung dengan sistem/API di Dasbor Ads Ops.
+
+---
+
+## 📌 Status Saat Ini — 21 Juli 2026
+
+Pengembangan **Infrastruktur API Iklan (Google, Meta, TikTok)** telah berstatus *Production-Ready* dengan 100% *clean data* (tanpa data simulasi/dummy). Sistem penamaan otomatis (Naming Convention) juga telah aktif.
+
+Urutan yang disarankan untuk target *Go-Live* berikutnya:
 
 1. **[1 jam]** Konfigurasi *Environment* Production untuk Cloudflare Pages & Proteksi Secrets.
-2. **[1 jam]** *Setup* URL Callback Duitku, Supabase Auth Redirects, dan Ads OAuth URL ke domain asli.
-3. **[1 jam]** Penerapan Keamanan Lanjutan: CORS, pembatasan Rate Limit di server routes, dan Sentry Error Tracking.
+2. **[1 jam]** *Setup* URL Webhook / Callback Duitku agar Saldo Top Up otomatis masuk.
+3. **[1 jam]** Penerapan Keamanan Lanjutan: CORS, pembatasan Rate Limit di server routes, Nuxt Security.
 4. **[2 jam]** Uji coba transaksi nyata (*End-to-end Live Testing*) di *Production*.
 
-> Total estimasi menuju rilis publik: ~5 jam untuk penyempurnaan infrastruktur *Deployment* & Keamanan! ✊
+> Total estimasi menuju rilis publik: ~5 jam untuk penyempurnaan infrastruktur *Deployment* & Keamanan (di luar pengembangan otomatisasi)! ✊

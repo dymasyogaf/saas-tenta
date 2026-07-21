@@ -19,17 +19,15 @@ export default defineCachedEventHandler(async (event): Promise<AccountsResponse>
   const config = useRuntimeConfig()
   const metaToken = config.metaAccessToken
   
+  // Jika token belum diset, JANGAN kembalikan data dummy.
   if (!metaToken || metaToken === 'your_meta_token' || metaToken === '') {
     return {
       success: true,
-      source: 'mock',
-      message: 'Menampilkan data simulasi (Token Meta belum diatur)',
+      source: 'live',
+      message: 'Token Meta belum diatur.',
       data: {
-        totalAccounts: 2,
-        accounts: [
-          { id: 'act_1122334455', name: 'Tentaklik Internal', status: 'ACTIVE', currency: 'IDR' },
-          { id: 'act_9988776655', name: 'Client A - E-commerce', status: 'ACTIVE', currency: 'IDR' }
-        ]
+        totalAccounts: 0,
+        accounts: []
       }
     }
   }

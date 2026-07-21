@@ -24,7 +24,7 @@ export default defineEventHandler(async (event) => {
     if (error) throw error
 
     // Jika foreign key users() gagal/tidak ada, kita bisa fetch manual
-    let requests = data || []
+    let requests: any[] = data || []
     
     // Validasi apakah users() terisi. Jika tidak, fetch manual (jaga-jaga jika RLS/FK error)
     if (requests.length > 0 && !requests[0].users) {

@@ -280,12 +280,13 @@
             </div>
             
             <div class="mt-4">
-              <label class="block text-sm font-medium text-ink-700 mb-2">Target Platform Iklan</label>
+              <label class="block text-sm font-medium text-ink-700 mb-2">Target Akun Iklan</label>
               <div class="relative">
-                <select v-model="selectedTargetPlatform" class="w-full appearance-none pl-4 pr-10 py-3 bg-white border-2 border-ink-200 rounded-xl focus:outline-none focus:border-orange-500 focus:ring-4 focus:ring-orange-500/20 font-bold text-ink-900 text-sm transition-all cursor-pointer">
-                  <option value="Meta Ads">Meta Ads (Facebook/Instagram)</option>
-                  <option value="TikTok Ads">TikTok Ads</option>
-                  <option value="Google Ads">Google Ads</option>
+                <select v-model="selectedAdAccount" class="w-full appearance-none pl-4 pr-10 py-3 bg-white border-2 border-ink-200 rounded-xl focus:outline-none focus:border-orange-500 focus:ring-4 focus:ring-orange-500/20 font-bold text-ink-900 text-sm transition-all cursor-pointer">
+                  <option value="">-- Pilih Akun Iklan --</option>
+                  <option v-for="acc in adsStore.adAccounts" :key="acc.id" :value="acc.id">
+                    {{ acc.name }} ({{ acc.platform }}) - {{ acc.account_id }}
+                  </option>
                 </select>
                 <ChevronDown class="w-5 h-5 absolute right-4 top-1/2 -translate-y-1/2 text-ink-500 pointer-events-none" />
               </div>
@@ -461,11 +462,11 @@ const submitTopup = async () => {
 
 const isAllocateModalOpen = ref(false)
 const allocateAmount = ref<number | ''>('')
-const selectedTargetPlatform = ref('Meta Ads')
+const selectedAdAccount = ref('')
 
 const isValidAllocate = computed(() => {
   const amt = Number(allocateAmount.value)
-  return !isNaN(amt) && amt >= 10000 && amt <= saldoStore.balance
+  return !isNaN(amt) && amt >= 10000 && amt <= saldoStore.balance && selectedAdAccount.value !== ''
 })
 
 const handleAllocate = () => {
@@ -473,15 +474,22 @@ const handleAllocate = () => {
     toast.addToast('Saldo Anda kurang dari batas minimum (Rp 10.000). Silakan top up.', 'error')
     return
   }
+  if (adsStore.adAccounts.length === 0) {
+    toast.addToast('Anda belum memiliki Akun Iklan yang aktif.', 'error')
+    return
+  }
   isAllocateModalOpen.value = true
   allocateAmount.value = Math.min(50000, saldoStore.balance)
+  selectedAdAccount.value = adsStore.adAccounts[0]?.id || ''
 }
 
 const submitAllocate = async () => {
-  console.log('submitAllocate triggered. Valid:', isValidAllocate.value)
   if (!isValidAllocate.value) return
   
-  const success = await saldoStore.allocate(Number(allocateAmount.value), user.value, selectedTargetPlatform.value)
+  const targetAcc = adsStore.adAccounts.find(a => a.id === selectedAdAccount.value)
+  if (!targetAcc) return
+
+  const success = await saldoStore.allocate(Number(allocateAmount.value), user.value, targetAcc.account_id, targetAcc.platform)
   if (success) {
     isAllocateModalOpen.value = false
   }
