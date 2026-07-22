@@ -267,16 +267,9 @@ const formatInput = (id: string, platform: string) => {
   let val = inputModels.value[id] || ''
   const platStr = (platform || '').toLowerCase()
   
-  if (platStr.includes('google') || platStr.includes('tiktok')) {
-    // Google & TikTok: Hanya angka murni (langsung hapus strip & spasi)
+  if (platStr.includes('google') || platStr.includes('tiktok') || platStr.includes('meta') || platStr.includes('facebook')) {
+    // Semua platform sekarang hanya angka murni (langsung hapus strip, spasi, & huruf)
     val = val.replace(/[^0-9]/g, '')
-  } else if (platStr.includes('meta') || platStr.includes('facebook')) {
-    // Meta: Hapus spasi dan strip
-    val = val.replace(/[\s-]/g, '')
-    // Jika diketik angka pertama kali, otomatis tambahkan 'act_' di depannya
-    if (/^[0-9]/.test(val)) {
-      val = 'act_' + val
-    }
   }
   
   inputModels.value[id] = val

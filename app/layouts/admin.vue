@@ -146,7 +146,8 @@ import {
   UserCog,
   ChevronDown,
   Menu,
-  LogOut
+  LogOut,
+  Headset
 } from 'lucide-vue-next'
 
 // Auth state
@@ -219,6 +220,7 @@ const navItems = computed(() => {
       badge: pendingFinanceCount.value > 0 ? pendingFinanceCount.value.toString() : undefined,
       allowed: ['super_admin', 'admin_finance'] 
     },
+    { to: '/admin/support', label: 'Tiket Bantuan', icon: Headset, allowed: ['super_admin', 'admin_compliance'] },
     { to: '/admin/clients', label: 'Daftar Klien', icon: Users, allowed: ['super_admin', 'admin_finance', 'admin_ads_ops', 'admin_compliance'] },
     { to: '/admin/users', label: 'Manajemen Akses', icon: UserCog, allowed: ['super_admin'] },
   ]
@@ -245,6 +247,7 @@ const pageTitle = computed(() => {
     '/admin/finance': 'Audit Keuangan & Mutasi',
     '/admin/clients': 'Daftar Klien (CRM)',
     '/admin/users': 'Manajemen Pengguna',
+    '/admin/support': 'Tiket Pusat Bantuan',
   }
   return titles[route.path] || 'Panel Admin'
 })

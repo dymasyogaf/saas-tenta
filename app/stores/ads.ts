@@ -49,19 +49,25 @@ export const useAdsStore = defineStore('ads', {
 
            let endpoint = ''
            let params = {}
+           let platform = ''
            if (acc.platform.includes('Meta')) {
               endpoint = '/api/ads/meta/campaigns'
               params = { ad_account_id: adAccountId }
+              platform = 'meta'
            } else if (acc.platform.includes('Google')) {
               endpoint = '/api/ads/google/campaigns'
               params = { customer_id: adAccountId }
+              platform = 'google'
            } else if (acc.platform.includes('TikTok')) {
               endpoint = '/api/ads/tiktok/campaigns'
               params = { advertiser_id: adAccountId }
+              platform = 'tiktok'
            }
 
            if (endpoint) {
-              return $fetch<any>(endpoint, { method: 'GET', params }).catch(() => null)
+              const res = await $fetch<any>(endpoint, { method: 'GET', params }).catch(() => null)
+              if (res) res._platform = platform
+              return res
            }
            return null
         })
@@ -77,7 +83,8 @@ export const useAdsStore = defineStore('ads', {
               totalSpend += res.data.totalSpend || 0
               activeCampaigns += res.data.activeCampaigns || 0
               if (res.data.campaigns) {
-                 allCampaigns = [...allCampaigns, ...res.data.campaigns]
+                 const tagged = res.data.campaigns.map((c: any) => ({ ...c, platform: res._platform || 'meta' }))
+                 allCampaigns = [...allCampaigns, ...tagged]
               }
            }
         })

@@ -56,11 +56,8 @@ export default defineEventHandler(async (event) => {
       } else {
         // Meta (Facebook)
         dbPlatform = 'meta'
-        cleanAdAccountId = cleanAdAccountId.replace(/\s+/g, '')
-        // Beberapa endpoint Meta API mewajibkan prefix 'act_'
-        if (!cleanAdAccountId.startsWith('act_')) {
-          cleanAdAccountId = 'act_' + cleanAdAccountId.replace(/[^0-9]/g, '')
-        }
+        // Meta sekarang juga dipaksa hanya angka murni
+        cleanAdAccountId = cleanAdAccountId.replace(/[^0-9]/g, '')
       }
 
       const updatedDetails = {

@@ -43,11 +43,17 @@ export default defineCachedEventHandler(async (event): Promise<AdsResponse> => {
   // JIKA TOKEN SUDAH ADA, EKSEKUSI KE GRAPH API META
   try {
     const query = getQuery(event)
-    const adAccountId = query.ad_account_id as string | undefined
+    const adAccountIdParam = query.ad_account_id as string | undefined
     
-    if (!adAccountId) {
+    if (!adAccountIdParam) {
       throw createError({ statusCode: 400, message: 'Parameter ad_account_id wajib disertakan' })
     }
+
+    // Pastikan ID memiliki prefix 'act_' saat melakukan request ke Facebook API
+    // Hal ini memungkinkan frontend hanya mengirimkan angka (number only)
+    const adAccountId = adAccountIdParam.startsWith('act_') 
+      ? adAccountIdParam 
+      : `act_${adAccountIdParam}`
 
     const metaResponse: any = await $fetch(`https://graph.facebook.com/v19.0/${adAccountId}/insights`, {
       params: {

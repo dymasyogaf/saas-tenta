@@ -175,6 +175,9 @@
       class="fixed inset-0 z-40"
       @click="isNotifOpen = false; isProfileOpen = false"
     />
+
+    <!-- Floating WhatsApp -->
+    <SharedFloatingWhatsApp />
   </div>
 </template>
 
@@ -191,7 +194,8 @@ import {
   Settings,
   Gem,
   Menu,
-  ShieldCheck
+  ShieldCheck,
+  Headset
 } from 'lucide-vue-next'
 
 // Auth state
@@ -221,11 +225,19 @@ const isNotifOpen = ref(false)
 const isProfileOpen = ref(false)
 
 // Navigation items
-const navItems = [
+interface NavItem {
+  to: string
+  label: string
+  icon: any
+  badge?: string
+}
+
+const navItems: NavItem[] = [
   { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { to: '/dashboard/platform', label: 'Platform Iklan', icon: MonitorPlay },
   { to: '/dashboard/saldo', label: 'Saldo Iklan', icon: Wallet },
   { to: '/dashboard/bermasalah', label: 'Iklan Bermasalah', icon: TriangleAlert },
+  { to: '/dashboard/support', label: 'Bantuan (CS)', icon: Headset },
 ]
 
 // Active route detection
@@ -248,6 +260,7 @@ const pageTitle = computed(() => {
     '/dashboard/notifikasi': 'Pusat Pemberitahuan',
     '/dashboard/topup': 'My Balance by Pivot',
     '/dashboard/profile': 'Profile',
+    '/dashboard/support': 'Pusat Bantuan',
   }
   return titles[route.path] || 'Dashboard'
 })

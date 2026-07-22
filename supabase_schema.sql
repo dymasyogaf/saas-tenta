@@ -117,6 +117,20 @@ CREATE TABLE IF NOT EXISTS public.referral_codes (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- Support Tickets
+CREATE TABLE IF NOT EXISTS public.support_tickets (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id UUID REFERENCES public.users(id) ON DELETE CASCADE NOT NULL,
+  ticket_number TEXT NOT NULL UNIQUE,
+  subject TEXT NOT NULL,
+  category TEXT NOT NULL CHECK (category IN ('top_up', 'ad_account', 'technical', 'other')),
+  description TEXT NOT NULL,
+  status TEXT DEFAULT 'open' CHECK (status IN ('open', 'resolved', 'closed')),
+  attachments JSONB DEFAULT '[]'::jsonb,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
 -- 2. Create Row Level Security (RLS) Policies
 
 -- Enable RLS for all tables
@@ -169,6 +183,12 @@ CREATE POLICY "Users can update own notifications" ON public.notifications FOR U
 -- Policies for Referral Codes
 CREATE POLICY "Users can view own referral codes" ON public.referral_codes FOR SELECT USING (auth.uid() = user_id);
 
+-- Policies for Support Tickets
+ALTER TABLE public.support_tickets ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Users can view own support tickets" ON public.support_tickets FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "Users can insert own support tickets" ON public.support_tickets FOR INSERT WITH CHECK (auth.uid() = user_id);
+-- Admin can view/update all (handled by service role)
+
 -- 3. Trigger to Auto-create User Profile and Saldo
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$
@@ -196,3 +216,16 @@ CREATE OR REPLACE TRIGGER on_auth_user_created
 
 -- 4. Enable Realtime for Notifications
 ALTER PUBLICATION supabase_realtime ADD TABLE public.notifications;
+
+-- 5. Setup Storage for Support Tickets
+INSERT INTO storage.buckets (id, name, public) 
+VALUES ('support_attachments', 'support_attachments', true)
+ON CONFLICT (id) DO NOTHING;
+
+CREATE POLICY "Users can upload their own ticket attachments" 
+ON storage.objects FOR INSERT 
+WITH CHECK (bucket_id = 'support_attachments' AND auth.uid() = owner);
+
+CREATE POLICY "Anyone can view ticket attachments" 
+ON storage.objects FOR SELECT 
+USING (bucket_id = 'support_attachments');

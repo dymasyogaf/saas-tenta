@@ -51,6 +51,7 @@ export default defineNuxtConfig({
     fonnteApiToken: '',
     metaAppSecret: '',
     metaAccessToken: '',
+    metaTargetAccountId: '',
     tiktokAppSecret: '',
     tiktokAccessToken: '',
     googleAdsDevToken: '',

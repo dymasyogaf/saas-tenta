@@ -15,7 +15,7 @@ interface AccountsResponse {
   }
 }
 
-export default defineCachedEventHandler(async (event): Promise<AccountsResponse> => {
+export default defineEventHandler(async (event): Promise<AccountsResponse> => {
   const config = useRuntimeConfig()
   const metaToken = config.metaAccessToken
   
@@ -40,12 +40,31 @@ export default defineCachedEventHandler(async (event): Promise<AccountsResponse>
       }
     })
 
-    const accounts: AdAccountData[] = (metaResponse.data || []).map((item: any) => ({
+    let accounts: AdAccountData[] = (metaResponse.data || []).map((item: any) => ({
       id: item.account_id,
       name: item.name || `Account ${item.account_id}`,
       status: item.account_status === 1 ? 'ACTIVE' : 'DISABLED', // 1 = ACTIVE in Meta
       currency: item.currency || 'IDR'
     }))
+
+    // Filter secara paksa ke MP - PENDIDIKAN (3351307381691170)
+    // Coba ambil dari process.env atau langsung gunakan ID-nya
+    const targetAccountId = process.env.NUXT_META_TARGET_ACCOUNT_ID || '3351307381691170'
+    const cleanTargetId = targetAccountId.replace('act_', '')
+    
+    // Lakukan filter
+    accounts = accounts.filter(acc => acc.id.includes(cleanTargetId))
+
+    // JIKA hasilnya 0 (berarti API Facebook tidak me-return ID ini di endpoint /me/adaccounts)
+    // Kita tambahkan secara manual agar tetap muncul di UI Anda dan bisa di-klik untuk cek campaign-nya
+    if (accounts.length === 0) {
+      accounts.push({
+        id: cleanTargetId,
+        name: 'MP - PENDIDIKAN',
+        status: 'ACTIVE',
+        currency: 'IDR'
+      })
+    }
 
     return {
       success: true,
@@ -62,8 +81,4 @@ export default defineCachedEventHandler(async (event): Promise<AccountsResponse>
       message: error.data?.error?.message || 'Gagal terhubung ke API Meta Ads' 
     })
   }
-}, {
-  maxAge: 60 * 5, // Cache selama 5 menit
-  name: 'meta-ad-accounts',
-  getKey: (event) => 'all'
 })

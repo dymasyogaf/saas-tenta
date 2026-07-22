@@ -4,7 +4,15 @@ interface GoogleCampaignData {
   spend: number
   impressions: number
   clicks: number
+  ctr: number
+  averageCpc: number
+  conversions: number
+  conversionsValue: number
+  costPerConversion: number
   status: string
+  campaignType: string
+  biddingStrategy: string
+  dailyBudget: number
 }
 
 interface AdsResponse {
@@ -14,6 +22,9 @@ interface AdsResponse {
   fetchedAt?: string
   data?: {
     totalSpend: number
+    totalConversions: number
+    totalConversionsValue: number
+    averageCtr: number
     currency: string
     activeCampaigns: number
     campaigns: GoogleCampaignData[]
@@ -34,6 +45,9 @@ export default defineCachedEventHandler(async (event): Promise<AdsResponse> => {
       fetchedAt: new Date().toISOString(),
       data: {
         totalSpend: 0,
+        totalConversions: 0,
+        totalConversionsValue: 0,
+        averageCtr: 0,
         currency: 'IDR',
         activeCampaigns: 0,
         campaigns: []
@@ -62,10 +76,18 @@ export default defineCachedEventHandler(async (event): Promise<AdsResponse> => {
           SELECT 
             campaign.id, 
             campaign.name, 
+            campaign.status,
+            campaign.advertising_channel_type,
+            campaign.bidding_strategy_type,
+            campaign_budget.amount_micros,
             metrics.cost_micros, 
             metrics.impressions, 
-            metrics.clicks, 
-            campaign.status 
+            metrics.clicks,
+            metrics.ctr,
+            metrics.average_cpc,
+            metrics.conversions,
+            metrics.conversions_value,
+            metrics.cost_per_conversion
           FROM campaign 
           WHERE segments.date DURING LAST_30_DAYS
         `
@@ -73,6 +95,10 @@ export default defineCachedEventHandler(async (event): Promise<AdsResponse> => {
     })
 
     let totalSpend = 0
+    let totalConversions = 0
+    let totalConversionsValue = 0
+    let totalImpressions = 0
+    let totalClicks = 0
     const campaigns: GoogleCampaignData[] = []
     
     // Parsing response array dari stream Google Ads
@@ -80,20 +106,45 @@ export default defineCachedEventHandler(async (event): Promise<AdsResponse> => {
       googleResponse.forEach((batch: any) => {
         if (batch.results) {
           batch.results.forEach((row: any) => {
-            const cost = parseInt(row.metrics?.costMicros || '0') / 1000000 // Convert micros to standard
+            const cost = parseInt(row.metrics?.costMicros || '0') / 1000000
+            const impressions = parseInt(row.metrics?.impressions || '0')
+            const clicks = parseInt(row.metrics?.clicks || '0')
+            const conversions = parseFloat(row.metrics?.conversions || '0')
+            const conversionsValue = parseFloat(row.metrics?.conversionsValue || '0')
+            const ctr = parseFloat(row.metrics?.ctr || '0')
+            const averageCpc = parseInt(row.metrics?.averageCpc || '0') / 1000000
+            const costPerConversion = parseFloat(row.metrics?.costPerConversion || '0') / 1000000
+            const dailyBudget = parseInt(row.campaignBudget?.amountMicros || '0') / 1000000
+
             totalSpend += cost
+            totalConversions += conversions
+            totalConversionsValue += conversionsValue
+            totalImpressions += impressions
+            totalClicks += clicks
+
             campaigns.push({
               id: row.campaign?.id,
               name: row.campaign?.name,
               spend: cost,
-              impressions: parseInt(row.metrics?.impressions || '0'),
-              clicks: parseInt(row.metrics?.clicks || '0'),
-              status: row.campaign?.status || 'UNKNOWN'
+              impressions,
+              clicks,
+              ctr: ctr * 100, // API returns decimal (0.05 = 5%), convert to percentage
+              averageCpc,
+              conversions,
+              conversionsValue,
+              costPerConversion,
+              status: row.campaign?.status || 'UNKNOWN',
+              campaignType: row.campaign?.advertisingChannelType || 'UNKNOWN',
+              biddingStrategy: row.campaign?.biddingStrategyType || 'UNKNOWN',
+              dailyBudget
             })
           })
         }
       })
     }
+
+    // Hitung rata-rata CTR keseluruhan
+    const averageCtr = totalImpressions > 0 ? (totalClicks / totalImpressions) * 100 : 0
 
     return {
       success: true,
@@ -101,6 +152,9 @@ export default defineCachedEventHandler(async (event): Promise<AdsResponse> => {
       fetchedAt: new Date().toISOString(),
       data: {
         totalSpend,
+        totalConversions,
+        totalConversionsValue,
+        averageCtr,
         currency: 'IDR',
         activeCampaigns: campaigns.length,
         campaigns
@@ -121,3 +175,4 @@ export default defineCachedEventHandler(async (event): Promise<AdsResponse> => {
     return String(query.customer_id || 'unknown')
   }
 })
+

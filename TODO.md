@@ -1,7 +1,7 @@
 # 📋 Tentaklik SaaS — Master To-Do List
 
 > Dokumen ini dihasilkan dari analisis `persiapan.md` + mockup HTML yang sudah ada.
-> Terakhir diperbarui: 19 Juli 2026
+> Terakhir diperbarui: 22 Juli 2026
 
 ---
 
@@ -214,6 +214,11 @@ Setiap view di `index.html` menjadi halaman Vue terpisah:
 - [x] ~~Sinkronisasi update email dari `auth.users` ke `public.users` saat user mengganti email di `EmailModal.vue`.~~
 - [x] ~~Pembersihan data hantu (*ghost users*) menggunakan mekanisme `ON DELETE CASCADE` dari Supabase Auth.~~
 
+### 2.10 Bug Fixes & Refinements (22 Juli) ✅
+- [x] ~~Filtering Meta Ad Accounts menggunakan Environment Variable (Target Account ID).~~
+- [x] ~~Normalisasi format ID Meta Ads menjadi angka murni (*number only*) di UI dan pemindahan injeksi prefix `act_` ke backend API proxy.~~
+- [x] ~~Pembuatan *endpoint backdoor* (`force-verify`) untuk membypass sistem KYC/Verifikasi di area development.~~
+
 ---
 
 ## 🔒 FASE 3: Backend — Supabase & Server Routes
@@ -340,9 +345,28 @@ Setiap view di `index.html` menjadi halaman Vue terpisah:
 
 ---
 
-## 📌 Status Saat Ini — 21 Juli 2026
+## 🎧 FASE 8: Sistem Pusat Bantuan (Support Tickets)
 
-Pengembangan **Infrastruktur API Iklan (Google, Meta, TikTok)** telah berstatus *Production-Ready* dengan 100% *clean data* (tanpa data simulasi/dummy). Sistem penamaan otomatis (Naming Convention) juga telah aktif.
+### 8.1 Desain Frontend & UI/UX (SELESAI)
+- [x] **Perombakan Layout Klien (`app/pages/dashboard/support.vue`):** Desain tabel yang modern (Subjek Ikon, Badge Outline/Filled, Relative Time) dan layout Full Page untuk form "Buat Tiket Baru" menggantikan sistem modal/pop-up.
+- [x] **Integrasi Rich Text Editor:** Penambahan library `@vueup/vue-quill` sebagai komponen `<ClientOnly>` untuk memberikan editor teks lengkap saat Klien mendeskripsikan keluhan.
+- [x] **Halaman Chat Klien (`app/pages/dashboard/support/[id].vue`):** Antarmuka obrolan dengan tim support, dilengkapi dengan mock data untuk pratinjau desain.
+- [x] **Sinkronisasi Dasbor Admin (`app/pages/admin/support/index.vue` & `[id].vue`):** Penambahan tombol "Balas", penyesuaian desain tabel agar sama persis dengan klien (dengan tambahan kolom KLIEN), dan penyediaan fitur ganti status (In Progress, Ditunda, Dijawab) dari dalam laman obrolan.
+- [x] **Template Teks Balasan Cepat (Admin):** Pembuatan tombol otomatis pengetik *Template Selesai* dan *Template Kurang Info*, lengkap dengan *Signature* Tanda Tangan PT Media Pro Indonesia.
+- [x] **Penyelesaian Bug Routing:** Perubahan struktur file `support.vue` menjadi `support/index.vue` untuk memfasilitasi sub-route `[id].vue`.
+
+### 8.2 Integrasi Backend & Database (BELUM SELESAI)
+- [ ] **Skema Database (`supabase_schema.sql`):** Modifikasi tabel `support_tickets` untuk menampung field `priority` (low, normal, high). Pembuatan tabel `ticket_replies` untuk menampung data obrolan.
+- [ ] **Update Endpoint Pembuatan Tiket (`server/api/support/tickets.post.ts`):** Menggabungkan input `priority` dan memastikan *rich text html* tersimpan dengan aman (XSS Sanitization).
+- [ ] **Endpoint Penarikan Detail Tiket & Balasan:** Membangun rute GET untuk memuat percakapan secara *real-time* untuk klien dan admin.
+- [ ] **Endpoint Pengiriman Balasan Admin & Klien:** Rute POST untuk memasukkan komentar baru ke tabel `ticket_replies`.
+- [ ] **Implementasi Lampiran Berkas:** Logika *upload* untuk menyimpan bukti komplain (PDF/Gambar) ke Supabase Storage dan menghubungkan URL-nya.
+
+---
+
+## 📌 Status Saat Ini — 22 Juli 2026
+
+Pengembangan **Infrastruktur API Iklan (Google, Meta, TikTok)** telah berstatus *Production-Ready* dengan 100% *clean data* (tanpa data simulasi/dummy). Sistem penamaan otomatis (Naming Convention) juga telah aktif, dan koneksi token Meta telah terkalibrasi khusus untuk akun Business Manager.
 
 Urutan yang disarankan untuk target *Go-Live* berikutnya:
 
