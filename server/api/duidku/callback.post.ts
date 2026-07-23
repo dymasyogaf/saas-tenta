@@ -40,6 +40,38 @@ export default defineEventHandler(async (event) => {
   const supabase = serverSupabaseServiceRole<any>(event)
 
   try {
+    // Cek apakah ini transaksi Subscription (Sewa Akun)
+    if (merchantOrderId.startsWith('SUB-')) {
+      const requestId = merchantOrderId.replace('SUB-', '')
+      
+      if (resultCode === '00') {
+        // Success
+        await supabase
+          .from('ad_account_requests')
+          .update({ status: 'pending_review', updated_at: new Date().toISOString() })
+          .eq('id', requestId)
+        
+        console.log(`[DUITKU SUCCESS] Subscription paid for request ${requestId}`)
+      } else {
+        // Failed
+        await supabase
+          .from('ad_account_requests')
+          .update({ status: 'rejected', updated_at: new Date().toISOString() })
+          .eq('id', requestId)
+        
+        console.log(`[DUITKU FAILED] Subscription failed for request ${requestId}`)
+      }
+      
+      // Update transaction log if it exists
+      await supabase
+        .from('transactions')
+        .update({ status: resultCode === '00' ? 'success' : 'failed', updated_at: new Date().toISOString() })
+        .eq('reference_id', merchantOrderId)
+
+      return { statusCode: 200, message: 'OK' }
+    }
+
+    // Alur Top Up Biasa
     // Ambil data transaksi dari database
     const { data: transaction, error: fetchTxError } = await supabase
       .from('transactions')
@@ -80,7 +112,9 @@ export default defineEventHandler(async (event) => {
         
       if (fetchSaldoError) throw fetchSaldoError
 
-      const newBalance = Number(saldoData.balance) + Number(amount)
+      // Gunakan transaction.amount (saldo bersih) BUKAN amount (total bayar + fee)
+      const netAmount = transaction.amount || 0;
+      const newBalance = Number(saldoData.balance) + Number(netAmount)
       
       const { error: updateSaldoError } = await supabase
         .from('saldo')
@@ -89,7 +123,26 @@ export default defineEventHandler(async (event) => {
 
       if (updateSaldoError) throw updateSaldoError
 
-      console.log(`[DUITKU SUCCESS] Topup Rp${amount} applied to user ${transaction.user_id}`)
+      // C. Update Paket User
+      if (transaction.package_selected) {
+        let weeklyLimit = 0;
+        if (transaction.package_selected === 'starter') weeklyLimit = 5000000;
+        else if (transaction.package_selected === 'growth') weeklyLimit = 15000000;
+        else if (transaction.package_selected === 'scale') weeklyLimit = 999999999; // Unlimited/High limit
+
+        const { error: updateUserError } = await supabase
+          .from('users')
+          .update({
+            active_package: transaction.package_selected,
+            package_weekly_limit: weeklyLimit,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', transaction.user_id)
+
+        if (updateUserError) console.error('Failed to update user package:', updateUserError)
+      }
+
+      console.log(`[DUITKU SUCCESS] Topup Rp${netAmount} applied to user ${transaction.user_id} (Package: ${transaction.package_selected})`)
       
     } else {
       // PEMBAYARAN GAGAL / EXPIRED

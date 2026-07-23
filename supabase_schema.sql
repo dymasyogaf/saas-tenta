@@ -15,6 +15,8 @@ CREATE TABLE IF NOT EXISTS public.users (
   phone_verified BOOLEAN DEFAULT false,
   otp_code TEXT,
   otp_expires_at TIMESTAMPTZ,
+  active_package TEXT,
+  package_weekly_limit NUMERIC DEFAULT 0,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -65,6 +67,8 @@ CREATE TABLE IF NOT EXISTS public.transactions (
   status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'success', 'failed', 'cancelled')),
   payment_gateway_ref TEXT, -- Reference from Duidku
   description TEXT,
+  package_selected TEXT,
+  fee_amount NUMERIC DEFAULT 0,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );

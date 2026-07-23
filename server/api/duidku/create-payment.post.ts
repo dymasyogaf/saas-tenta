@@ -4,13 +4,39 @@ import crypto from 'node:crypto'
 export default defineEventHandler(async (event) => {
   // 1. Ambil body dari request frontend
   const body = await readBody(event)
-  const { amount, method } = body
+  const { amount, method, packageType } = body
 
   if (!amount || amount < 10000) {
     throw createError({ statusCode: 400, statusMessage: 'Minimal top-up Rp 10.000' })
   }
 
-  // 2. Autentikasi User (Ambil dari Supabase session/token yang aktif di headers)
+  // Validasi Paket dan Hitung Fee
+  let feePercentage = 0;
+  let minAmount = 0;
+  let maxAmount = Infinity;
+
+  if (packageType === 'starter') {
+    feePercentage = 0.05; // 5%
+    minAmount = 300000;
+    maxAmount = 5000000;
+  } else if (packageType === 'growth') {
+    feePercentage = 0.045; // 4.5%
+    minAmount = 300000;
+    maxAmount = 15000000;
+  } else if (packageType === 'scale') {
+    feePercentage = 0.035; // 3.5%
+    minAmount = 300000;
+  } else {
+    throw createError({ statusCode: 400, statusMessage: 'Paket tidak valid. Pilih Starter, Growth, atau Scale.' })
+  }
+
+  const netAmount = parseInt(amount);
+  if (netAmount < minAmount || netAmount > maxAmount) {
+    throw createError({ statusCode: 400, statusMessage: `Nominal untuk paket ${packageType} harus antara ${minAmount} dan ${maxAmount}` })
+  }
+
+  const feeAmount = Math.round(netAmount * feePercentage);
+  const paymentAmount = netAmount + feeAmount;
   // Catatan: Karena ini di backend Nuxt (Nitro), kita bisa baca headers token
   // Namun untuk keamanan penuh, kita gunakan service_role untuk menulis ke tabel transactions
   const supabase = serverSupabaseServiceRole<any>(event)
@@ -32,7 +58,6 @@ export default defineEventHandler(async (event) => {
   
   // 4. Siapkan Data Transaksi
   const merchantOrderId = `TP-${Date.now()}-${Math.floor(Math.random() * 1000)}`
-  const paymentAmount = parseInt(amount)
   
   // Signature = MD5(merchantCode + merchantOrderId + paymentAmount + apiKey)
   const signatureString = `${merchantCode}${merchantOrderId}${paymentAmount}${apiKey}`
@@ -111,10 +136,12 @@ export default defineEventHandler(async (event) => {
         .insert({
           user_id: userId,
           type: 'topup',
-          amount: paymentAmount,
+          amount: netAmount, // Simpan saldo bersih
+          fee_amount: feeAmount,
+          package_selected: packageType,
           status: 'pending',
           payment_gateway_ref: result.reference,
-          description: `Top Up Saldo via ${paymentName}`
+          description: `Top Up Saldo via ${paymentName} (Paket ${packageType})`
         })
 
       if (dbError) {

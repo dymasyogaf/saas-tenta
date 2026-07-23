@@ -48,19 +48,32 @@
         
         <hr class="border-ink-100 mb-6">
         
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <p class="text-sm font-medium text-ink-500">Paket Aktif Saat Ini</p>
+            <p class="text-lg font-bold text-ink-900 capitalize">{{ saldoStore.activePackage || 'Belum Ada' }}</p>
+          </div>
+          <div class="text-right">
+            <p class="text-sm font-medium text-ink-500">Limit Mingguan</p>
+            <p class="text-lg font-bold text-ink-900">{{ saldoStore.weeklyLimit ? formatRupiah(saldoStore.weeklyLimit) : '-' }}</p>
+          </div>
+        </div>
+        
         <div class="flex items-center gap-1 mb-2">
           <p class="text-sm font-medium text-ink-500">Top-Up Tertunda / Pending</p>
           <Info class="w-3.5 h-3.5 text-ink-400" />
         </div>
-        <p class="text-lg font-bold text-ink-900 mb-6">{{ formatRupiah(saldoStore.pendingBalance) }}</p>
-        
-        <div class="flex items-center justify-between gap-4">
-          <div class="flex-1">
-            <div class="flex items-center gap-1 mb-1">
-              <p class="text-xs font-medium text-ink-500">Saldo di Akun Iklan (Terpakai)</p>
-              <Info class="w-3 h-3 text-ink-400" />
-            </div>
-            <p class="text-base font-bold text-ink-900">Rp 0</p>
+        <p class="text-lg font-bold text-ink-900 mb-4">{{ formatRupiah(saldoStore.pendingBalance) }}</p>
+
+        <!-- Info Sewa -->
+        <div class="bg-orange-50 border border-orange-200 rounded-xl p-4 mt-auto">
+          <p class="text-xs font-medium text-orange-600 mb-1">Masa Aktif Sewa (Terdekat)</p>
+          <div v-if="nearestExpiry">
+            <p class="text-sm font-bold text-ink-900">{{ nearestExpiry.name }}</p>
+            <p class="text-xs text-ink-600 font-medium">Berakhir pada: {{ formatDate(nearestExpiry.subscription_expires_at) }}</p>
+          </div>
+          <div v-else>
+            <p class="text-sm font-bold text-ink-900">Belum Ada Langganan</p>
           </div>
         </div>
       </div>
@@ -204,28 +217,95 @@
     
     <!-- Modal Top Up -->
     <div v-if="isTopupModalOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-ink-900/50 backdrop-blur-sm p-4">
-      <div class="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden relative border border-ink-100">
-        <div class="p-6">
-          <h3 class="text-xl font-display font-bold text-ink-900 mb-2">Tambah Saldo Iklan</h3>
-          <p class="text-ink-500 text-sm mb-6">Masukkan nominal yang ingin ditambahkan. Pembayaran diproses aman oleh Duitku.</p>
-          
-          <div class="space-y-4">
-            <div>
-              <label class="block text-sm font-medium text-ink-700 mb-2">Nominal Top Up (Min Rp 10.000)</label>
-              <div class="relative">
-                <span class="absolute left-4 top-1/2 -translate-y-1/2 text-ink-500 font-medium text-lg">Rp</span>
-                <input type="number" v-model.number="topupAmount" class="w-full pl-12 pr-4 py-3 bg-white border-2 border-ink-200 rounded-xl focus:outline-none focus:border-orange-500 focus:ring-4 focus:ring-orange-500/20 font-bold text-ink-900 text-lg transition-all" placeholder="50000" />
+      <div class="bg-white rounded-2xl shadow-xl w-full max-w-3xl overflow-hidden relative border border-ink-100 flex flex-col max-h-[90vh]">
+        <div class="p-6 border-b border-ink-100 flex justify-between items-center">
+          <div>
+            <h3 class="text-xl font-display font-bold text-ink-900">Tambah Saldo Iklan</h3>
+            <p class="text-ink-500 text-sm mt-1">Pilih paket dan nominal top up.</p>
+          </div>
+          <button @click="isTopupModalOpen = false" class="text-ink-400 hover:text-ink-700 bg-ink-50 p-2 rounded-full">
+            <span class="sr-only">Close</span>
+            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+          </button>
+        </div>
+        
+        <div class="p-6 overflow-y-auto">
+          <!-- Wizard Step 1: Pilih Paket -->
+          <div v-if="topupStep === 1" class="space-y-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <!-- Starter -->
+              <div @click="selectedPackage = 'starter'" :class="['border-2 rounded-xl p-5 cursor-pointer transition-all', selectedPackage === 'starter' ? 'border-orange-500 bg-orange-50' : 'border-ink-100 hover:border-ink-300']">
+                <h4 class="font-bold text-lg text-ink-900 mb-2">Starter</h4>
+                <p class="text-3xl font-display font-bold text-ink-900 mb-4">5% <span class="text-sm font-medium text-ink-500">fee topup</span></p>
+                <ul class="space-y-2 text-sm text-ink-700">
+                  <li class="flex items-start gap-2"><svg class="w-5 h-5 text-orange-500 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg> Sekali topup 300rb - 5jt</li>
+                  <li class="flex items-start gap-2"><svg class="w-5 h-5 text-orange-500 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg> Akun Whitelist Resmi</li>
+                  <li class="flex items-start gap-2"><svg class="w-5 h-5 text-orange-500 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg> Support prioritas standar</li>
+                </ul>
+              </div>
+
+              <!-- Growth -->
+              <div @click="selectedPackage = 'growth'" :class="['border-2 rounded-xl p-5 cursor-pointer transition-all relative', selectedPackage === 'growth' ? 'border-orange-500 bg-orange-50' : 'border-ink-100 hover:border-ink-300']">
+                <div class="absolute -top-3 inset-x-0 flex justify-center"><span class="bg-orange-500 text-white text-xs font-bold px-3 py-1 rounded-full">Paling Populer</span></div>
+                <h4 class="font-bold text-lg text-ink-900 mb-2 mt-2">Growth</h4>
+                <p class="text-3xl font-display font-bold text-ink-900 mb-4">4.5% <span class="text-sm font-medium text-ink-500">fee topup</span></p>
+                <ul class="space-y-2 text-sm text-ink-700">
+                  <li class="flex items-start gap-2"><svg class="w-5 h-5 text-orange-500 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg> Sekali topup 5jt - 15jt</li>
+                  <li class="flex items-start gap-2"><svg class="w-5 h-5 text-orange-500 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg> Akun Whitelist Resmi</li>
+                  <li class="flex items-start gap-2"><svg class="w-5 h-5 text-orange-500 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg> Support prioritas (VIP)</li>
+                </ul>
+              </div>
+
+              <!-- Scale -->
+              <div @click="selectedPackage = 'scale'" :class="['border-2 rounded-xl p-5 cursor-pointer transition-all', selectedPackage === 'scale' ? 'border-orange-500 bg-orange-50' : 'border-ink-100 hover:border-ink-300']">
+                <h4 class="font-bold text-lg text-ink-900 mb-2">Scale</h4>
+                <p class="text-3xl font-display font-bold text-ink-900 mb-4">3.5% <span class="text-sm font-medium text-ink-500">fee topup</span></p>
+                <ul class="space-y-2 text-sm text-ink-700">
+                  <li class="flex items-start gap-2"><svg class="w-5 h-5 text-orange-500 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg> Topup di atas 15jt</li>
+                  <li class="flex items-start gap-2"><svg class="w-5 h-5 text-orange-500 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg> Akun Whitelist Resmi</li>
+                  <li class="flex items-start gap-2"><svg class="w-5 h-5 text-orange-500 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg> Support prioritas (VVIP)</li>
+                </ul>
               </div>
             </div>
             
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
-              <button @click="topupAmount = 50000" class="py-2.5 bg-ink-50 border border-ink-200 rounded-xl text-sm font-bold text-ink-700 hover:bg-orange-50 hover:border-orange-300 hover:text-orange-600 transition-colors">50 Ribu</button>
-              <button @click="topupAmount = 100000" class="py-2.5 bg-ink-50 border border-ink-200 rounded-xl text-sm font-bold text-ink-700 hover:bg-orange-50 hover:border-orange-300 hover:text-orange-600 transition-colors">100 Ribu</button>
-              <button @click="topupAmount = 500000" class="py-2.5 bg-ink-50 border border-ink-200 rounded-xl text-sm font-bold text-ink-700 hover:bg-orange-50 hover:border-orange-300 hover:text-orange-600 transition-colors">500 Ribu</button>
+            <div class="mt-6 flex justify-end">
+              <button @click="topupStep = 2" class="bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-8 rounded-xl transition-all shadow-sm">Lanjutkan</button>
+            </div>
+          </div>
+
+          <!-- Wizard Step 2: Nominal & Metode -->
+          <div v-if="topupStep === 2" class="space-y-6 max-w-md mx-auto">
+            <div>
+              <div class="flex items-center gap-2 mb-2 text-orange-600 font-bold text-sm cursor-pointer hover:underline w-max" @click="topupStep = 1">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg> Kembali ke Pilih Paket
+              </div>
+              <label class="block text-sm font-medium text-ink-700 mb-2">Nominal Top Up (Paket {{ selectedPackage.charAt(0).toUpperCase() + selectedPackage.slice(1) }})</label>
+              <p class="text-xs text-ink-500 mb-2">Rentang: {{ formatRupiah(packageInfo.min) }} - {{ packageInfo.max === Infinity ? 'Tak Terbatas' : formatRupiah(packageInfo.max) }}</p>
+              <div class="relative">
+                <span class="absolute left-4 top-1/2 -translate-y-1/2 text-ink-500 font-medium text-lg">Rp</span>
+                <input type="text" v-model="formattedTopupAmount" class="w-full pl-12 pr-4 py-3 bg-white border-2 border-ink-200 rounded-xl focus:outline-none focus:border-orange-500 focus:ring-4 focus:ring-orange-500/20 font-bold text-ink-900 text-lg transition-all" />
+              </div>
+              <p v-if="!isValidTopup && topupAmount" class="text-xs font-medium text-red-500 mt-1">Nominal tidak sesuai dengan limit paket yang dipilih.</p>
             </div>
             
-            <div class="mt-4">
-              <label class="block text-sm font-medium text-ink-700 mb-2">Pilih Metode Pembayaran</label>
+            <div class="bg-ink-50 rounded-xl p-4 border border-ink-100 space-y-2">
+              <div class="flex justify-between text-sm">
+                <span class="text-ink-500">Saldo Masuk:</span>
+                <span class="font-bold text-ink-900">{{ formatRupiah(Number(topupAmount) || 0) }}</span>
+              </div>
+              <div class="flex justify-between text-sm">
+                <span class="text-ink-500">Fee Top Up ({{ packageInfo.fee * 100 }}%):</span>
+                <span class="font-bold text-ink-900">{{ formatRupiah(feeAmount) }}</span>
+              </div>
+              <hr class="border-ink-200 my-2">
+              <div class="flex justify-between text-base">
+                <span class="font-bold text-ink-900">Total Pembayaran:</span>
+                <span class="font-bold text-orange-600">{{ formatRupiah(totalAmount) }}</span>
+              </div>
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-ink-700 mb-2">Metode Pembayaran</label>
               <div class="relative">
                 <select v-model="selectedMethod" class="w-full appearance-none pl-4 pr-10 py-3 bg-white border-2 border-ink-200 rounded-xl focus:outline-none focus:border-orange-500 focus:ring-4 focus:ring-orange-500/20 font-bold text-ink-900 text-sm transition-all cursor-pointer">
                   <optgroup label="Virtual Account">
@@ -246,11 +326,11 @@
           </div>
         </div>
         
-        <div class="p-5 bg-ink-50 flex gap-3 border-t border-ink-100">
+        <div v-if="topupStep === 2" class="p-5 bg-ink-50 flex gap-3 border-t border-ink-100 shrink-0 mt-auto">
           <button @click="isTopupModalOpen = false" class="flex-1 bg-white border-2 border-ink-200 text-ink-700 hover:bg-ink-100 font-bold py-3 rounded-xl transition-colors">Batal</button>
           <button @click="submitTopup" :disabled="saldoStore.isLoading || !isValidTopup" class="flex-1 bg-orange-500 border-2 border-orange-500 text-white hover:bg-orange-600 font-bold py-3 rounded-xl transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
             <span v-if="saldoStore.isLoading" class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
-            {{ saldoStore.isLoading ? 'Memproses...' : 'Lanjutkan' }}
+            {{ saldoStore.isLoading ? 'Memproses...' : `Bayar ${formatRupiah(totalAmount)}` }}
           </button>
         </div>
       </div>
@@ -440,24 +520,67 @@ const downloadReport = () => {
 }
 
 const isTopupModalOpen = ref(false)
+const topupStep = ref(1)
+const selectedPackage = ref('starter')
 const topupAmount = ref<number | ''>('')
 const selectedMethod = ref('OV')
 const user = useSupabaseUser()
 
+const nearestExpiry = computed(() => {
+  if (!adsStore.adAccounts || adsStore.adAccounts.length === 0) return null;
+  const accountsWithExpiry = adsStore.adAccounts.filter(a => a.subscription_expires_at);
+  if (accountsWithExpiry.length === 0) return null;
+  
+  const sorted = [...accountsWithExpiry].sort((a, b) => new Date(a.subscription_expires_at).getTime() - new Date(b.subscription_expires_at).getTime());
+  
+  return sorted[0];
+})
+
+const formattedTopupAmount = computed({
+  get: () => {
+    if (!topupAmount.value) return ''
+    return new Intl.NumberFormat('id-ID').format(Number(topupAmount.value))
+  },
+  set: (val: string) => {
+    const numericString = val.replace(/\D/g, '')
+    topupAmount.value = numericString ? Number(numericString) : ''
+  }
+})
+
+const packageInfo = computed(() => {
+  if (selectedPackage.value === 'starter') return { fee: 0.05, min: 300000, max: 5000000 }
+  if (selectedPackage.value === 'growth') return { fee: 0.045, min: 300000, max: 15000000 }
+  if (selectedPackage.value === 'scale') return { fee: 0.035, min: 300000, max: Infinity }
+  return { fee: 0, min: 0, max: 0 }
+})
+
 const isValidTopup = computed(() => {
   const amt = Number(topupAmount.value)
-  return !isNaN(amt) && amt >= 10000
+  return !isNaN(amt) && amt >= packageInfo.value.min && amt <= packageInfo.value.max
+})
+
+const feeAmount = computed(() => {
+  return Math.round(Number(topupAmount.value) * packageInfo.value.fee)
+})
+
+const totalAmount = computed(() => {
+  return Number(topupAmount.value) + feeAmount.value
 })
 
 const handleTopup = () => {
   isTopupModalOpen.value = true
-  topupAmount.value = 50000
+  topupStep.value = 1
+  selectedPackage.value = 'starter'
+  topupAmount.value = 300000
   selectedMethod.value = 'OV'
 }
 
 const submitTopup = async () => {
   if (!isValidTopup.value) return
-  await saldoStore.topup(topupAmount.value as number, user.value, selectedMethod.value)
+  await saldoStore.topup(topupAmount.value as number, user.value, selectedMethod.value, selectedPackage.value)
+  if (!saldoStore.error) {
+    isTopupModalOpen.value = false
+  }
 }
 
 const isAllocateModalOpen = ref(false)

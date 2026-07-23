@@ -22,12 +22,12 @@
         <!-- Body -->
         <div class="p-6 overflow-y-auto bg-ink-50/50">
           <!-- Step 1: Pilih Platform -->
-          <div v-if="!activePlatformName" class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <button @click="activePlatformName = 'Meta Ads'" class="bg-white border border-ink-200 p-6 rounded-xl hover:border-orange-500 hover:shadow-md transition-all text-center flex flex-col items-center gap-4">
+          <div v-if="step === 1" class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <button @click="selectPlatform('Meta Ads')" class="bg-white border border-ink-200 p-6 rounded-xl hover:border-orange-500 hover:shadow-md transition-all text-center flex flex-col items-center gap-4">
               <img src="/icon-meta-ads.png" class="w-12 h-12 object-contain" />
               <span class="font-bold text-ink-900">Meta Ads</span>
             </button>
-            <button @click="activePlatformName = 'Google Ads'" class="bg-white border border-ink-200 p-6 rounded-xl hover:border-orange-500 hover:shadow-md transition-all text-center flex flex-col items-center gap-4">
+            <button @click="selectPlatform('Google Ads')" class="bg-white border border-ink-200 p-6 rounded-xl hover:border-orange-500 hover:shadow-md transition-all text-center flex flex-col items-center gap-4">
               <img src="/icon-google-ads.png" class="w-12 h-12 object-contain" />
               <span class="font-bold text-ink-900">Google Ads</span>
             </button>
@@ -41,7 +41,7 @@
           </div>
 
           <!-- Step 2: Form -->
-          <form v-else id="requestAdForm" @submit.prevent="submitForm" class="space-y-8">
+          <form v-else-if="step === 2" id="requestAdForm" @submit.prevent="step = 3" class="space-y-8">
             
             <!-- Section 1: Informasi Detail -->
             <div class="bg-white p-6 rounded-xl border border-ink-200 shadow-sm space-y-5">
@@ -183,22 +183,85 @@
             </div>
 
           </form>
+
+          <!-- Step 3: Pilih Durasi Sewa -->
+          <div v-else-if="step === 3" class="space-y-6 max-w-2xl mx-auto py-4">
+            <div class="text-center mb-6">
+              <h4 class="font-bold text-xl text-ink-900 mb-2">Pilih Durasi Sewa Akun</h4>
+              <p class="text-ink-500 text-sm">Pilih masa aktif untuk akun iklan Anda sebelum mengajukan pembuatan akun.</p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <!-- 1 Bulan -->
+              <div @click="form.subscriptionMonths = 1; form.rentalFee = 150000" :class="['border-2 rounded-xl p-5 cursor-pointer transition-all text-center', form.subscriptionMonths === 1 ? 'border-orange-500 bg-orange-50' : 'border-ink-100 hover:border-ink-300']">
+                <h5 class="font-bold text-ink-900 mb-1">1 Bulan</h5>
+                <p class="text-2xl font-bold text-orange-600 mb-2">Rp 150.000</p>
+                <p class="text-xs text-ink-500">Normal</p>
+              </div>
+              
+              <!-- 3 Bulan -->
+              <div @click="form.subscriptionMonths = 3; form.rentalFee = 350000" :class="['border-2 rounded-xl p-5 cursor-pointer transition-all relative text-center', form.subscriptionMonths === 3 ? 'border-orange-500 bg-orange-50' : 'border-ink-100 hover:border-ink-300']">
+                <div class="absolute -top-3 inset-x-0 flex justify-center"><span class="bg-orange-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">Hemat 22%</span></div>
+                <h5 class="font-bold text-ink-900 mb-1 mt-1">3 Bulan</h5>
+                <p class="text-2xl font-bold text-orange-600 mb-2">Rp 350.000</p>
+                <p class="text-xs text-ink-500 line-through">Rp 450.000</p>
+              </div>
+              
+              <!-- 6 Bulan -->
+              <div @click="form.subscriptionMonths = 6; form.rentalFee = 792000" :class="['border-2 rounded-xl p-5 cursor-pointer transition-all relative text-center', form.subscriptionMonths === 6 ? 'border-orange-500 bg-orange-50' : 'border-ink-100 hover:border-ink-300']">
+                <div class="absolute -top-3 inset-x-0 flex justify-center"><span class="bg-green-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">Hemat 12%</span></div>
+                <h5 class="font-bold text-ink-900 mb-1 mt-1">6 Bulan</h5>
+                <p class="text-2xl font-bold text-orange-600 mb-2">Rp 792.000</p>
+                <p class="text-xs text-ink-500 line-through">Rp 900.000</p>
+              </div>
+            </div>
+
+            <div class="mt-8">
+              <label class="block text-sm font-medium text-ink-700 mb-2">Metode Pembayaran</label>
+              <div class="relative">
+                <select v-model="form.paymentMethod" class="w-full appearance-none pl-4 pr-10 py-3 bg-white border-2 border-ink-200 rounded-xl focus:outline-none focus:border-orange-500 focus:ring-4 focus:ring-orange-500/20 font-bold text-ink-900 text-sm transition-all cursor-pointer">
+                  <optgroup label="Virtual Account">
+                    <option value="BC">BCA Virtual Account</option>
+                    <option value="BM">Mandiri Virtual Account</option>
+                    <option value="BR">BRI Virtual Account</option>
+                  </optgroup>
+                  <optgroup label="E-Wallet & Retail">
+                    <option value="OV">OVO</option>
+                    <option value="SA">ShopeePay App</option>
+                    <option value="DA">DANA</option>
+                    <option value="SP">QRIS</option>
+                  </optgroup>
+                </select>
+                <svg class="w-5 h-5 absolute right-4 top-1/2 -translate-y-1/2 text-ink-500 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+              </div>
+            </div>
+          </div>
         </div>
         
         <!-- Footer -->
         <div class="px-6 py-4 bg-white flex justify-end gap-3 border-t border-ink-100 shrink-0">
-          <button @click="(!props.platformName && activePlatformName) ? (activePlatformName = '') : closeModal()" type="button" class="px-6 py-2.5 bg-white border border-ink-200 text-ink-700 hover:bg-ink-50 font-bold rounded-xl text-sm transition-colors shadow-sm">
-            {{ (!props.platformName && activePlatformName) ? 'Kembali' : 'Batal' }}
+          <button @click="goBack" type="button" class="px-6 py-2.5 bg-white border border-ink-200 text-ink-700 hover:bg-ink-50 font-bold rounded-xl text-sm transition-colors shadow-sm">
+            {{ step > 1 ? 'Kembali' : 'Batal' }}
           </button>
+          
           <button 
-            v-if="activePlatformName"
+            v-if="step === 2"
             type="submit"
             form="requestAdForm"
+            :disabled="!isFormValid" 
+            class="px-8 py-2.5 bg-orange-500 border border-orange-500 text-white hover:bg-orange-600 font-bold rounded-xl text-sm transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+          >
+            Lanjutkan
+          </button>
+
+          <button 
+            v-if="step === 3"
+            @click="submitPayment"
             :disabled="isSubmitting" 
             class="px-8 py-2.5 bg-orange-500 border border-orange-500 text-white hover:bg-orange-600 font-bold rounded-xl text-sm transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
             <span v-if="isSubmitting" class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
-            {{ isSubmitting ? 'Memproses...' : 'Kirim Pengajuan' }}
+            {{ isSubmitting ? 'Memproses...' : 'Bayar Sekarang' }}
           </button>
         </div>
       </div>
@@ -224,10 +287,28 @@ const supabase = useSupabaseClient()
 const { user } = useAuth()
 
 const activePlatformName = ref(props.platformName || '')
+const step = ref(props.platformName ? 2 : 1)
 
 watch(() => props.platformName, (newVal) => {
   activePlatformName.value = newVal || ''
+  step.value = newVal ? 2 : 1
 })
+
+const selectPlatform = (name: string) => {
+  activePlatformName.value = name
+  step.value = 2
+}
+
+const goBack = () => {
+  if (step.value === 3) {
+    step.value = 2
+  } else if (step.value === 2 && !props.platformName) {
+    step.value = 1
+    activePlatformName.value = ''
+  } else {
+    closeModal()
+  }
+}
 
 const isSubmitting = ref(false)
 const showInstructionBm = ref(false)
@@ -241,7 +322,10 @@ const form = reactive({
   agree2fa1: false,
   agree2fa2: false,
   agreePolicy: false,
-  agreeTc: false
+  agreeTc: false,
+  subscriptionMonths: 1,
+  rentalFee: 150000,
+  paymentMethod: 'OV'
 })
 
 const platformLogo = computed(() => {
@@ -296,7 +380,7 @@ const formatSocialUrl = () => {
   }
 }
 
-const submitForm = async () => {
+const submitPayment = async () => {
   if (!isFormValid.value) return
   
   isSubmitting.value = true
@@ -304,38 +388,61 @@ const submitForm = async () => {
   try {
     const uid = (user.value as any)?.id || (user.value as any)?.sub
     if (!uid) throw new Error('User tidak ditemukan. Silakan login kembali.')
+    const email = (user.value as any)?.email
+    const meta = (user.value as any)?.user_metadata || {}
 
     let dbPlatform = 'Meta Ads'
     if (activePlatformName.value.includes('TikTok')) dbPlatform = 'TikTok Ads'
     if (activePlatformName.value.includes('Google')) dbPlatform = 'Google Ads'
     
-    const { error } = await (supabase as any)
-      .from('ad_account_requests')
-      .insert({
-        user_id: uid,
-        platform: dbPlatform,
-        account_name: form.fullName, // Temporary mapping to existing column
-        target_url: form.targetUrl,
-        status: 'pending_review',
-        details: {
-          full_name: form.fullName,
-          ...(activePlatformName.value.includes('Google') ? { shared_email: form.bmId } : { bm_id: form.bmId }),
-          ...(activePlatformName.value.includes('Meta') ? { social_link: form.socialLink } : {}),
-          ad_category: form.adCategory
-        }
-      })
+    // 1. Catat ke tabel ad_account_requests
+    const requestPayload = {
+      userId: uid,
+      platform: dbPlatform,
+      accountName: form.fullName,
+      targetUrl: form.targetUrl,
+      subscriptionMonths: form.subscriptionMonths,
+      rentalFee: form.rentalFee,
+      details: {
+        full_name: form.fullName,
+        ...(activePlatformName.value.includes('Google') ? { shared_email: form.bmId } : { bm_id: form.bmId }),
+        ...(activePlatformName.value.includes('Meta') ? { social_link: form.socialLink } : {}),
+        ad_category: form.adCategory
+      }
+    }
+    
+    const requestResponse = await $fetch<any>('/api/ads/request', {
+      method: 'POST',
+      body: requestPayload
+    })
 
-    if (error) {
-      throw new Error(error.message)
+    if (!requestResponse || !requestResponse.requestId) {
+      throw new Error('Gagal mencatat pengajuan')
     }
 
-    toast.addToast('Pengajuan akun iklan berhasil dikirim! Tim Kepatuhan akan segera meninjau.', 'success')
-    emit('success')
-    closeModal()
+    // 2. Buat Payment Duitku
+    const paymentResponse = await $fetch<any>('/api/duidku/create-subscription', {
+      method: 'POST',
+      body: {
+        requestId: requestResponse.requestId,
+        amount: form.rentalFee,
+        method: form.paymentMethod,
+        userId: uid,
+        userEmail: email,
+        userName: meta.full_name || form.fullName,
+        userPhone: meta.phone || '0800000000'
+      }
+    })
+
+    if (paymentResponse && paymentResponse.paymentUrl) {
+      // Redirect ke Duitku
+      window.location.href = paymentResponse.paymentUrl
+    } else {
+      throw new Error('Gagal mendapatkan link pembayaran')
+    }
     
   } catch (err: any) {
-    toast.addToast(err.message || 'Gagal mengirim pengajuan.', 'error')
-  } finally {
+    toast.addToast(err.message || err.data?.statusMessage || 'Gagal memproses pembayaran.', 'error')
     isSubmitting.value = false
   }
 }

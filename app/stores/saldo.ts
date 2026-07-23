@@ -5,6 +5,8 @@ export const useSaldoStore = defineStore('saldo', {
   state: () => ({
     balance: 0,
     pendingBalance: 0,
+    activePackage: null as string | null,
+    weeklyLimit: 0 as number,
     transactions: [] as any[],
     isLoading: false,
     isFetchingSaldo: true,
@@ -27,7 +29,7 @@ export const useSaldoStore = defineStore('saldo', {
         const uid = user.value.id || (user.value as any).sub
         const { data, error } = await supabase
           .from('saldo')
-          .select('balance, pending_balance')
+          .select('balance, pending_balance, user_id')
           .eq('user_id', uid)
           .single()
           
@@ -36,6 +38,18 @@ export const useSaldoStore = defineStore('saldo', {
         if (data) {
           this.balance = data.balance
           this.pendingBalance = data.pending_balance
+
+          // Ambil info paket dari tabel users
+          const { data: userData, error: userError } = await supabase
+            .from('users')
+            .select('active_package, package_weekly_limit')
+            .eq('id', data.user_id)
+            .single()
+            
+          if (!userError && userData) {
+            this.activePackage = userData.active_package
+            this.weeklyLimit = userData.package_weekly_limit
+          }
         }
       } catch (e: any) {
         console.error('Failed to fetch saldo:', e.message)
@@ -74,7 +88,7 @@ export const useSaldoStore = defineStore('saldo', {
       }
     },
 
-    async topup(amount: number, userValue: any, method?: string) {
+    async topup(amount: number, userValue: any, method: string, packageType: string) {
       this.isLoading = true
       this.error = null
       
@@ -97,6 +111,7 @@ export const useSaldoStore = defineStore('saldo', {
           body: {
             amount,
             method, // <- Metode yang dipilih dari Modal
+            packageType, // <- Paket yang dipilih
             userId: uid,
             userEmail: email,
             userName: meta.full_name || 'Member',
