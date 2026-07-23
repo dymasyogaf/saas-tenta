@@ -220,6 +220,7 @@ import {
   AlertCircle
 } from 'lucide-vue-next'
 
+
 definePageMeta({ layout: 'admin' })
 
 const route = useRoute()
@@ -232,7 +233,7 @@ const ticketId = route.params.id
 const { data: ticket, pending } = useFetch<any>(`/api/admin/tickets/${ticketId}`)
 
 // Mocked Replies for Frontend Design purpose
-const replies = ref([
+const replies = ref<any[]>([
   // Kosong atau bisa ditambah dummy
 ])
 

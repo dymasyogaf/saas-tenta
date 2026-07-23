@@ -229,6 +229,7 @@
 <script setup lang="ts">
 import { Ticket, X, Image, Search, ArrowLeft, Paperclip, Send, MessageCircle, Eye } from 'lucide-vue-next'
 
+
 definePageMeta({ layout: 'dashboard' })
 
 const toast = useToast()

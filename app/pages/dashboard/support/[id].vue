@@ -8,28 +8,28 @@
       <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 pl-2">
         <div>
           <div class="flex items-center gap-3 mb-2">
-            <h1 class="text-2xl font-bold text-ink-900">{{ ticket?.subject || 'Memuat tiket...' }}</h1>
-            <span v-if="ticket" :class="getStatusOutlineClass(ticket.status)">
-              {{ getStatusLabel(ticket.status).toUpperCase() }}
+            <h1 class="text-2xl font-bold text-ink-900">{{ ticketData?.subject || 'Memuat tiket...' }}</h1>
+            <span v-if="ticketData" :class="getStatusOutlineClass(ticketData.status)">
+              {{ getStatusLabel(ticketData.status).toUpperCase() }}
             </span>
-            <span v-if="ticket" :class="getPriorityClass(ticket.priority || 'normal')">
-              {{ (ticket.priority || 'NORMAL').toUpperCase() }}
+            <span v-if="ticketData" :class="getPriorityClass(ticketData.priority || 'normal')">
+              {{ (ticketData.priority || 'NORMAL').toUpperCase() }}
             </span>
           </div>
           <div class="flex flex-wrap items-center gap-3 text-sm text-ink-500 font-medium">
             <div class="flex items-center gap-1.5">
               <Building2 class="w-4 h-4" />
-              Departemen: {{ getCategoryLabel(ticket?.category || '') }}
+              Departemen: {{ getCategoryLabel(ticketData?.category || '') }}
             </div>
             <span class="w-1 h-1 bg-ink-300 rounded-full"></span>
-            <div class="font-bold text-ink-700">#{{ ticket?.ticket_number }}</div>
+            <div class="font-bold text-ink-700">#{{ ticketData?.ticket_number }}</div>
             <span class="w-1 h-1 bg-ink-300 rounded-full"></span>
             <div class="flex items-center gap-1.5">
               <Calendar class="w-4 h-4" />
-              {{ formatDate(ticket?.created_at) }}
+              {{ formatDate(ticketData?.created_at) }}
             </div>
             <span class="w-1 h-1 bg-ink-300 rounded-full"></span>
-            <div>{{ formatRelativeTime(ticket?.created_at) }}</div>
+            <div>{{ formatRelativeTime(ticketData?.created_at) }}</div>
           </div>
         </div>
 
@@ -38,7 +38,7 @@
             <ArrowLeft class="w-4 h-4" />
             Kembali
           </NuxtLink>
-          <button class="inline-flex items-center gap-2 px-5 py-2.5 bg-red-400 hover:bg-red-500 text-white rounded-xl text-sm font-bold transition-colors shadow-sm">
+          <button @click="closeTicket" class="inline-flex items-center gap-2 px-5 py-2.5 bg-red-400 hover:bg-red-500 text-white rounded-xl text-sm font-bold transition-colors shadow-sm">
             <Lock class="w-4 h-4" />
             Tutup Tiket
           </button>
@@ -55,7 +55,7 @@
       <div class="p-6 bg-ink-50/30">
         <div class="max-w-xs">
           <p class="text-xs font-bold text-ink-500 mb-1 uppercase tracking-wider">DEPARTEMEN</p>
-          <p class="font-semibold text-ink-900">{{ getCategoryLabel(ticket?.category || '') }}</p>
+          <p class="font-semibold text-ink-900">{{ getCategoryLabel(ticketData?.category || '') }}</p>
         </div>
       </div>
     </div>
@@ -92,11 +92,11 @@
               
               <div class="flex justify-between items-center mb-4 text-sm">
                 <span class="font-bold text-ink-900">{{ userName }}</span>
-                <span class="text-ink-400 font-medium">{{ formatDate(ticket?.created_at) }}</span>
+                <span class="text-ink-400 font-medium">{{ formatDate(ticketData?.created_at) }}</span>
               </div>
-              <div class="prose prose-sm max-w-none text-ink-700" v-html="ticket?.description"></div>
+              <div class="prose prose-sm max-w-none text-ink-700" v-html="ticketData?.description"></div>
             </div>
-            <div class="mt-2 text-xs text-ink-400 font-medium pl-2">{{ formatRelativeTime(ticket?.created_at) }}</div>
+            <div class="mt-2 text-xs text-ink-400 font-medium pl-2">{{ formatRelativeTime(ticketData?.created_at) }}</div>
           </div>
         </div>
 
@@ -160,14 +160,24 @@
           </ClientOnly>
         </div>
         
+        <div v-if="selectedFiles.length > 0" class="mb-4 flex flex-wrap gap-2">
+          <div v-for="(file, idx) in selectedFiles" :key="idx" class="flex items-center gap-2 px-3 py-1.5 bg-ink-50 border border-ink-200 rounded-lg text-xs font-medium text-ink-700">
+            <span class="truncate max-w-[200px]">{{ file.name }}</span>
+            <button type="button" @click="removeImage(idx)" class="text-red-500 hover:text-red-600 p-0.5 hover:bg-red-50 rounded">
+              <X class="w-3 h-3" />
+            </button>
+          </div>
+        </div>
+
         <div class="flex justify-between items-center">
-          <button class="inline-flex items-center gap-2 px-5 py-2.5 bg-red-400 hover:bg-red-500 text-white rounded-xl text-sm font-bold transition-colors shadow-sm">
+          <input ref="fileInput" type="file" multiple accept="image/*,.pdf" class="hidden" @change="handleFileChange">
+          <button @click="triggerFileInput" type="button" class="inline-flex items-center gap-2 px-5 py-2.5 bg-ink-100 hover:bg-ink-200 text-ink-700 rounded-xl text-sm font-bold transition-colors shadow-sm">
             <Paperclip class="w-4 h-4" />
             Tambah Lampiran
           </button>
-          <button class="inline-flex items-center gap-2 px-5 py-2.5 bg-red-400 hover:bg-red-500 text-white rounded-xl text-sm font-bold transition-colors shadow-sm">
+          <button @click="sendReply" :disabled="isSubmitting" class="inline-flex items-center gap-2 px-5 py-2.5 bg-orange-500 hover:bg-orange-600 text-white rounded-xl text-sm font-bold transition-colors shadow-sm disabled:opacity-50">
             <Send class="w-4 h-4" />
-            Kirim Balasan
+            {{ isSubmitting ? 'Mengirim...' : 'Kirim Balasan' }}
           </button>
         </div>
       </div>
@@ -188,8 +198,10 @@ import {
   ChevronRight,
   CornerDownRight,
   Paperclip,
-  Send
+  Send,
+  X
 } from 'lucide-vue-next'
+
 
 definePageMeta({ layout: 'dashboard' })
 
@@ -200,20 +212,14 @@ const { user } = useAuth()
 const ticketId = route.params.id
 
 // Fetch ticket data
-const { data: ticket, pending } = useFetch<any>(`/api/support/tickets/${ticketId}`)
+const { data: ticketResponse, pending, refresh } = useFetch<any>(`/api/support/tickets/${ticketId}`)
 
-// Mocked Replies for Frontend Design purpose
-const replies = ref([
-  {
-    id: 1,
-    is_staff: true,
-    sender_name: 'Kang Ivan',
-    content: '<p>Selamat siang,</p><p>Invoicenya sudah terbit, silahkan di cek di Billing <strong>INV-6TMAH2</strong>, jika login sebagai Team pastikan permission nya sudah di allow untuk billing.</p><p><br></p><p>--</p><p>Regards.</p>',
-    created_at: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString() // 2 hours ago
-  }
-])
+const ticketData = computed(() => ticketResponse.value?.data)
+const replies = computed(() => ticketData.value?.replies || [])
 
 const replyContent = ref('')
+const isSubmitting = ref(false)
+const toast = useToast()
 
 // Helpers
 const userName = computed(() => user.value?.user_metadata?.full_name || user.value?.email || 'Klien')
@@ -222,5 +228,84 @@ const userInitials = computed(() => {
   return name.substring(0, 2).toUpperCase()
 })
 
+const closeTicket = async () => {
+  try {
+    await $fetch(`/api/support/tickets/${ticketId}/close`, { method: 'POST' })
+    toast.addToast('Tiket ditutup', 'success')
+    refresh()
+  } catch (error: any) {
+    toast.addToast(error.statusMessage || 'Gagal menutup tiket', 'error')
+  }
+}
 
+const fileInput = ref<HTMLInputElement | null>(null)
+const selectedFiles = ref<File[]>([])
+const previewUrls = ref<string[]>([])
+
+const triggerFileInput = () => {
+  fileInput.value?.click()
+}
+
+const handleFileChange = (e: Event) => {
+  const target = e.target as HTMLInputElement
+  if (!target.files) return
+
+  const files = Array.from(target.files)
+  
+  for (const file of files) {
+    if (file.size > 5 * 1024 * 1024) {
+      toast.addToast(`File ${file.name} terlalu besar (Max 5MB)`, 'error')
+      continue
+    }
+    selectedFiles.value.push(file)
+    previewUrls.value.push(URL.createObjectURL(file))
+  }
+  
+  if (target) target.value = ''
+}
+
+const removeImage = (index: number) => {
+  selectedFiles.value.splice(index, 1)
+  previewUrls.value.splice(index, 1)
+}
+
+const sendReply = async () => {
+  const rawText = replyContent.value.replace(/<[^>]*>?/gm, '').trim()
+  if (!rawText && !selectedFiles.value.length) return toast.addToast('Pesan tidak boleh kosong', 'error')
+  
+  isSubmitting.value = true
+  try {
+    let attachmentUrls: string[] = []
+    
+    if (selectedFiles.value.length > 0) {
+      toast.addToast('Mengunggah lampiran...', 'info')
+      for (const file of selectedFiles.value) {
+        const ext = file.name.split('.').pop()
+        const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${ext}`
+        
+        const { data, error } = await supabase.storage.from('support_attachments').upload(fileName, file)
+        
+        if (!error && data) {
+          const { data: publicData } = supabase.storage.from('support_attachments').getPublicUrl(data.path)
+          attachmentUrls.push(publicData.publicUrl)
+        }
+      }
+    }
+
+    await $fetch(`/api/support/tickets/${ticketId}/reply`, {
+      method: 'POST',
+      body: { content: replyContent.value, attachments: attachmentUrls }
+    })
+    
+    replyContent.value = ''
+    selectedFiles.value = []
+    previewUrls.value = []
+    toast.addToast('Balasan terkirim', 'success')
+    refresh()
+  } catch (error: any) {
+    toast.addToast(error.statusMessage || 'Gagal mengirim balasan', 'error')
+  } finally {
+    isSubmitting.value = false
+  }
+}
 </script>

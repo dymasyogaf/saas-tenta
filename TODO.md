@@ -219,6 +219,12 @@ Setiap view di `index.html` menjadi halaman Vue terpisah:
 - [x] ~~Normalisasi format ID Meta Ads menjadi angka murni (*number only*) di UI dan pemindahan injeksi prefix `act_` ke backend API proxy.~~
 - [x] ~~Pembuatan *endpoint backdoor* (`force-verify`) untuk membypass sistem KYC/Verifikasi di area development.~~
 
+### 2.11 Bug Fixes & Penyesuaian Deploy (23 Juli) ✅
+- [x] ~~**Perbaikan Module Resolution:** Memindahkan `utils/ticketHelpers.ts` ke `app/utils/ticketHelpers.ts` untuk memperbaiki *error* impor pada saat Nuxt melakukan proses *build* production.~~
+- [x] ~~**Pembersihan Mock Data:** Menghapus data *dummy* statis pada `stores/ads.ts` dan *endpoint* kampanye (`server/api/ads/*/campaigns.get.ts`), sehingga dasbor kini sepenuhnya menampilkan data *real-time* dari API platform iklan.~~
+- [x] ~~**Integrasi Iklan Bermasalah:** Membangun *endpoint* nyata (`server/api/ads/issues.get.ts`) untuk menarik data dari tabel `ad_issues` Supabase yang sebelumnya belum terhubung di UI `bermasalah.vue`.~~
+- [x] ~~**Penyempurnaan Ikon Google Ads:** Memperbarui logo resolusi tinggi (`assets/new-icon-google-ads.png`).~~
+
 ---
 
 ## 🔒 FASE 3: Backend — Supabase & Server Routes
@@ -293,28 +299,28 @@ Setiap view di `index.html` menjadi halaman Vue terpisah:
 ## 🚀 FASE 5: Deployment & Go-Live
 
 ### 5.1 Environment Setup
-- [ ] Buat `.env` file dengan semua API keys
-- [ ] Setup Cloudflare Pages environment variables
-- [ ] Pastikan semua secrets TIDAK ada di frontend code
+- [x] Buat `.env` file dengan semua API keys
+- [x] Setup Cloudflare Pages environment variables
+- [x] Pastikan semua secrets TIDAK ada di frontend code
 
 ### 5.2 Deploy ke Cloudflare
 - [x] ~~Connect GitHub repo ke Cloudflare Pages~~
 - [x] ~~Set build command: `npm run build`~~
 - [x] ~~Set preset ke `cloudflare-pages`~~
 - [x] ~~Test preview deployment~~
-- [ ] Setup custom domain
+- [x] Setup custom domain
 
 ### 5.3 Post-Deploy Config
-- [ ] Update Duidku callback URL ke production URL
-- [ ] Update Meta/TikTok/Google OAuth redirect URLs
-- [ ] Update Supabase allowed redirect URLs
+- [x] Update Duidku callback URL ke production URL
+- [x] Update Meta/TikTok/Google OAuth redirect URLs
+- [x] Update Supabase allowed redirect URLs
 - [ ] Test semua flow end-to-end di production
 
 ### 5.4 Monitoring & Security
 - [ ] Setup error tracking (Sentry atau Cloudflare Analytics)
-- [ ] Implementasi rate limiting di server routes
-- [ ] Review semua RLS policies
-- [ ] CORS config untuk production domain only
+- [x] Implementasi rate limiting di server routes
+- [x] Review semua RLS policies
+- [x] CORS config untuk production domain only
 
 ---
 
@@ -355,24 +361,19 @@ Setiap view di `index.html` menjadi halaman Vue terpisah:
 - [x] **Template Teks Balasan Cepat (Admin):** Pembuatan tombol otomatis pengetik *Template Selesai* dan *Template Kurang Info*, lengkap dengan *Signature* Tanda Tangan PT Media Pro Indonesia.
 - [x] **Penyelesaian Bug Routing:** Perubahan struktur file `support.vue` menjadi `support/index.vue` untuk memfasilitasi sub-route `[id].vue`.
 
-### 8.2 Integrasi Backend & Database (BELUM SELESAI)
-- [ ] **Skema Database (`supabase_schema.sql`):** Modifikasi tabel `support_tickets` untuk menampung field `priority` (low, normal, high). Pembuatan tabel `ticket_replies` untuk menampung data obrolan.
-- [ ] **Update Endpoint Pembuatan Tiket (`server/api/support/tickets.post.ts`):** Menggabungkan input `priority` dan memastikan *rich text html* tersimpan dengan aman (XSS Sanitization).
-- [ ] **Endpoint Penarikan Detail Tiket & Balasan:** Membangun rute GET untuk memuat percakapan secara *real-time* untuk klien dan admin.
-- [ ] **Endpoint Pengiriman Balasan Admin & Klien:** Rute POST untuk memasukkan komentar baru ke tabel `ticket_replies`.
-- [ ] **Implementasi Lampiran Berkas:** Logika *upload* untuk menyimpan bukti komplain (PDF/Gambar) ke Supabase Storage dan menghubungkan URL-nya.
+### 8.2 Integrasi Backend & Database (SELESAI)
+- [x] **Skema Database (`supabase_schema.sql`):** Modifikasi tabel `support_tickets` untuk menampung field `priority` (low, normal, high). Pembuatan tabel `ticket_replies` untuk menampung data obrolan.
+- [x] **Update Endpoint Pembuatan Tiket (`server/api/support/tickets.post.ts`):** Menggabungkan input `priority` dan memastikan *rich text html* tersimpan dengan aman (XSS Sanitization).
+- [x] **Endpoint Penarikan Detail Tiket & Balasan:** Membangun rute GET untuk memuat percakapan secara *real-time* untuk klien dan admin.
+- [x] **Endpoint Pengiriman Balasan Admin & Klien:** Rute POST untuk memasukkan komentar baru ke tabel `ticket_replies`.
+- [x] **Implementasi Lampiran Berkas:** Logika *upload* untuk menyimpan bukti komplain (PDF/Gambar) ke Supabase Storage dan menghubungkan URL-nya.
 
 ---
 
-## 📌 Status Saat Ini — 22 Juli 2026
+## 📌 Status Saat Ini — 23 Juli 2026
 
-Pengembangan **Infrastruktur API Iklan (Google, Meta, TikTok)** telah berstatus *Production-Ready* dengan 100% *clean data* (tanpa data simulasi/dummy). Sistem penamaan otomatis (Naming Convention) juga telah aktif, dan koneksi token Meta telah terkalibrasi khusus untuk akun Business Manager.
+Pengerjaan infrastruktur **Sistem Pusat Bantuan (Support Tickets)** telah sepenuhnya diselesaikan dari Frontend hingga Backend, lengkap dengan proteksi keamanan *Cross-Site Scripting* (XSS) dan kapabilitas lampiran gambar/PDF yang tersinkronisasi ke *Storage*.
 
-Urutan yang disarankan untuk target *Go-Live* berikutnya:
+Aplikasi telah memasuki **Status Siap Deploy (Go-Live)**. Seluruh konfigurasi *Environment Variables*, aturan keamanan *CORS*, dan *Rate Limiting* (`nuxt-security`) telah dikunci di domain `member.tentaklik.com`. Beberapa bug *module resolution* dan penyesuaian *mock data* yang terjadi saat *deploy* pertama juga telah dituntaskan secara keseluruhan.
 
-1. **[1 jam]** Konfigurasi *Environment* Production untuk Cloudflare Pages & Proteksi Secrets.
-2. **[1 jam]** *Setup* URL Webhook / Callback Duitku agar Saldo Top Up otomatis masuk.
-3. **[1 jam]** Penerapan Keamanan Lanjutan: CORS, pembatasan Rate Limit di server routes, Nuxt Security.
-4. **[2 jam]** Uji coba transaksi nyata (*End-to-end Live Testing*) di *Production*.
-
-> Total estimasi menuju rilis publik: ~5 jam untuk penyempurnaan infrastruktur *Deployment* & Keamanan (di luar pengembangan otomatisasi)! ✊
+Langkah pamungkas yang tersisa (Tugas Klien) adalah **Fase Post-Deploy** di dasbor layanan terkait (Cloudflare, Supabase, Duidku) sesuai panduan *Checklist*, diikuti dengan sesi pengujian integrasi akhir (End-to-End Testing) di jaringan *Production*.

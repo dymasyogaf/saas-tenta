@@ -160,10 +160,14 @@ export const useAdsStore = defineStore('ads', {
                 if (res && res.success && res.data) {
                    const penggunaan = res.data.totalSpend || 0
                    const limit = this.adAccounts[index].limit || 0
-                   const saldo = limit - penggunaan
+                   const api_balance = res.data.api_balance
+                   
+                   // Gunakan API balance (jika ada), jika tidak gunakan Limit - Penggunaan
+                   const saldo = api_balance !== undefined ? api_balance : (limit - penggunaan)
                    
                    this.adAccounts[index].penggunaan = penggunaan
                    this.adAccounts[index].saldo = saldo
+                   this.adAccounts[index].api_balance_active = api_balance !== undefined
                    this.adAccounts[index].alert_saldo = (saldo < limit * 0.1 && limit > 0) ? 'Segera Top Up' : null
                    this.adAccounts[index].updated_at = new Date().toISOString()
                 }
@@ -206,10 +210,14 @@ export const useAdsStore = defineStore('ads', {
                 if (res && res.success && res.data) {
                    const penggunaan = res.data.totalSpend || 0
                    const limit = this.adAccounts[index].limit || 0
-                   const saldo = limit - penggunaan
+                   const api_balance = res.data.api_balance
+                   
+                   // Gunakan API balance (jika ada), jika tidak gunakan Limit - Penggunaan
+                   const saldo = api_balance !== undefined ? api_balance : (limit - penggunaan)
                    
                    this.adAccounts[index].penggunaan = penggunaan
                    this.adAccounts[index].saldo = saldo
+                   this.adAccounts[index].api_balance_active = api_balance !== undefined // Tandai UI
                    this.adAccounts[index].alert_saldo = (saldo < limit * 0.1 && limit > 0) ? 'Segera Top Up' : null
                    this.adAccounts[index].updated_at = new Date().toISOString() // Real-time UX
                 }

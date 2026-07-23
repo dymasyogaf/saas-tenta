@@ -158,7 +158,7 @@
           <div class="grid grid-cols-1 md:grid-cols-2 gap-8 pb-4">
             <!-- Upload KTP -->
             <div>
-              <label class="block text-sm font-bold text-ink-900 mb-3">Foto KTP</label>
+              <label class="block text-sm font-bold text-ink-900 mb-3">Foto KTP/Paspor</label>
               <div v-if="!selectedKTP">
                 <label class="bg-orange-500 hover:bg-orange-600 text-white font-bold py-2.5 px-6 rounded-md text-sm transition-colors shadow-sm inline-flex items-center gap-2 cursor-pointer w-full justify-center">
                   <Upload class="w-4 h-4" /> Upload KTP
@@ -173,7 +173,7 @@
                   <span class="text-sm font-medium truncate">{{ isScanning ? 'Membaca KTP (OCR)...' : selectedKTP.name }}</span>
                 </div>
                 <label v-if="!isScanning" class="text-orange-500 hover:text-orange-600 font-bold text-sm cursor-pointer inline-flex items-center gap-1.5 transition-colors">
-                  <Upload class="w-4 h-4" /> Ganti KTP
+                  <Upload class="w-4 h-4" /> Ganti
                   <input type="file" accept="image/png, image/jpeg, image/jpg" class="hidden" @change="handleFileUpload($event, 'ktp')" />
                 </label>
               </div>
@@ -194,7 +194,7 @@
                   <span class="text-sm font-medium truncate">{{ selectedPasPhoto.name }}</span>
                 </div>
                 <label class="text-orange-500 hover:text-orange-600 font-bold text-sm cursor-pointer inline-flex items-center gap-1.5 transition-colors">
-                  <Upload class="w-4 h-4" /> Ganti Pas Photo
+                  <Upload class="w-4 h-4" /> Ganti
                   <input type="file" accept="image/png, image/jpeg, image/jpg" class="hidden" @change="handleFileUpload($event, 'pasphoto')" />
                 </label>
               </div>
@@ -210,9 +210,9 @@
 
             <!-- NIK -->
             <div>
-              <label class="block text-sm font-bold text-ink-900 mb-1">NIK</label>
+              <label class="block text-sm font-bold text-ink-900 mb-1">NIK/No.Paspor</label>
               <input v-model="formData.nik" type="text" maxlength="20" class="w-full border rounded-md px-3 py-2.5 text-sm text-ink-900 focus:outline-none focus:ring-1 bg-white transition-colors" :class="isNikValid ? 'border-ink-200 focus:border-orange-500 focus:ring-orange-500' : 'border-red-500 focus:border-red-500 focus:ring-red-500'" />
-              <p v-if="!isNikValid" class="text-xs text-red-500 mt-1 font-medium flex items-center gap-1"><AlertCircle class="w-3 h-3"/> NIK harus terdiri dari 16-20 digit angka.</p>
+              <p v-if="!isNikValid" class="text-xs text-red-500 mt-1 font-medium flex items-center gap-1"><AlertCircle class="w-3 h-3"/> NIK/No.Paspor harus terdiri dari 8-20 digit angka.</p>
             </div>
 
             <!-- Tanggal Lahir -->
@@ -264,7 +264,7 @@
               <span class="col-span-2 text-ink-900 text-sm font-bold">{{ formData.name }}</span>
             </div>
             <div class="grid grid-cols-3 border-b border-ink-50 pb-4">
-              <span class="col-span-1 text-ink-500 text-sm font-medium">NIK</span>
+              <span class="col-span-1 text-ink-500 text-sm font-medium">NIK/No.Paspor</span>
               <span class="col-span-2 text-ink-900 text-sm font-bold">{{ formData.nik }}</span>
             </div>
             <div class="grid grid-cols-3 border-b border-ink-50 pb-4">
@@ -379,12 +379,12 @@ const selectedKTP = ref<File | null>(null)
 const selectedPasPhoto = ref<File | null>(null)
 const isScanning = ref(false)
 
-const isNikValid = computed(() => formData.value.nik.length === 0 || /^\d{16,20}$/.test(formData.value.nik))
+const isNikValid = computed(() => formData.value.nik.length === 0 || /^\d{8,20}$/.test(formData.value.nik))
 const isDobValid = computed(() => formData.value.dob.length === 0 || /^(0[1-9]|[12][0-9]|3[01])-(0[1-9]|1[012])-\d{4}$/.test(formData.value.dob))
 
 const isFormValid = computed(() => {
   return formData.value.name.trim().length > 2 && 
-         /^\d{16,20}$/.test(formData.value.nik) && 
+         /^\d{8,20}$/.test(formData.value.nik) && 
          /^(0[1-9]|[12][0-9]|3[01])-(0[1-9]|1[012])-\d{4}$/.test(formData.value.dob) &&
          selectedKTP.value !== null &&
          selectedPasPhoto.value !== null

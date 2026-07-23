@@ -186,12 +186,22 @@
                   <button v-if="isEditing[req.id]" @click="cancelEdit(req.id, req.details?.ad_account_id)" class="text-[10px] text-slate-500 hover:text-slate-700 mt-2 font-medium">Batal</button>
                 </template>
                 <template v-else>
-                  <button 
-                    @click="startEdit(req.id)"
-                    class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-lg transition-colors flex items-center justify-center w-full gap-2"
-                  >
-                    <Edit2 class="w-3 h-3" /> Edit ID
-                  </button>
+                  <div class="flex flex-col gap-2">
+                    <button 
+                      @click="startEdit(req.id)"
+                      class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-lg transition-colors flex items-center justify-center w-full gap-2"
+                    >
+                      <Edit2 class="w-3 h-3" /> Edit ID
+                    </button>
+                    <button 
+                      @click="processAction(req.id, 'delete')"
+                      :disabled="isSubmitting === req.id"
+                      class="px-4 py-2 bg-red-50 hover:bg-red-100 disabled:opacity-50 text-red-600 text-xs font-bold rounded-lg transition-colors flex items-center justify-center w-full gap-2"
+                    >
+                      <span v-if="isSubmitting === req.id && currentAction === 'delete'" class="w-3 h-3 border-2 border-red-600/30 border-t-red-600 rounded-full animate-spin"></span>
+                      <Trash2 v-else class="w-3 h-3" /> Hapus
+                    </button>
+                  </div>
                 </template>
               </td>
             </tr>
@@ -213,6 +223,7 @@ definePageMeta({
 
 const activeTab = ref('new')
 const isSubmitting = ref<string | null>(null)
+const currentAction = ref<string | null>(null)
 const inputModels = ref<Record<string, string>>({})
 const isEditing = ref<Record<string, boolean>>({})
 
@@ -293,12 +304,13 @@ const resetDev = async () => {
   }
 }
 
-const processAction = async (id: string, action: 'approve' | 'reject' | 'save_id') => {
+const processAction = async (id: string, action: 'approve' | 'reject' | 'save_id' | 'delete') => {
   let adAccountId = undefined
-
   let rejectReason = undefined
 
-  if (action === 'save_id') {
+  if (action === 'delete') {
+    if (!confirm('Apakah Anda yakin ingin menghapus pengajuan dan ID akun ini dari database secara permanen?')) return
+  } else if (action === 'save_id') {
     adAccountId = inputModels.value[id]?.trim()
     if (!adAccountId) return
   } else if (action === 'reject') {
@@ -308,6 +320,7 @@ const processAction = async (id: string, action: 'approve' | 'reject' | 'save_id
   }
 
   isSubmitting.value = id
+  currentAction.value = action
   const toast = useToast()
 
   try {
@@ -329,6 +342,7 @@ const processAction = async (id: string, action: 'approve' | 'reject' | 'save_id
     toast.addToast(error.data?.statusMessage || 'Gagal memproses aksi', 'error')
   } finally {
     isSubmitting.value = null
+    currentAction.value = null
   }
 }
 </script>

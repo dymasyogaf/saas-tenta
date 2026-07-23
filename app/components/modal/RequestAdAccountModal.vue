@@ -5,12 +5,13 @@
         <!-- Header -->
         <div class="px-6 py-4 border-b border-ink-100 flex items-center justify-between bg-white shrink-0">
           <div class="flex items-center gap-3">
-            <div class="w-12 h-12 bg-white border border-ink-100 rounded-xl shadow-sm flex items-center justify-center overflow-hidden">
+            <div v-if="activePlatformName" class="w-12 h-12 bg-white border border-ink-100 rounded-xl shadow-sm flex items-center justify-center overflow-hidden">
               <img :src="platformLogo" class="w-7 h-7 object-contain" />
             </div>
             <div>
               <h3 class="font-display font-bold text-ink-900">Pengajuan Akun Iklan Baru</h3>
-              <p class="text-xs text-ink-500">Lengkapi formulir pendaftaran untuk {{ platformName }}</p>
+              <p v-if="activePlatformName" class="text-xs text-ink-500">Lengkapi formulir pendaftaran untuk {{ activePlatformName }}</p>
+              <p v-else class="text-xs text-ink-500">Pilih platform iklan yang ingin Anda tambahkan</p>
             </div>
           </div>
           <button @click="closeModal" class="text-ink-400 hover:text-ink-600 transition-colors bg-ink-50 p-2 rounded-lg">
@@ -20,7 +21,27 @@
         
         <!-- Body -->
         <div class="p-6 overflow-y-auto bg-ink-50/50">
-          <form id="requestAdForm" @submit.prevent="submitForm" class="space-y-8">
+          <!-- Step 1: Pilih Platform -->
+          <div v-if="!activePlatformName" class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <button @click="activePlatformName = 'Meta Ads'" class="bg-white border border-ink-200 p-6 rounded-xl hover:border-orange-500 hover:shadow-md transition-all text-center flex flex-col items-center gap-4">
+              <img src="/icon-meta-ads.png" class="w-12 h-12 object-contain" />
+              <span class="font-bold text-ink-900">Meta Ads</span>
+            </button>
+            <button @click="activePlatformName = 'Google Ads'" class="bg-white border border-ink-200 p-6 rounded-xl hover:border-orange-500 hover:shadow-md transition-all text-center flex flex-col items-center gap-4">
+              <img src="/icon-google-ads.png" class="w-12 h-12 object-contain" />
+              <span class="font-bold text-ink-900">Google Ads</span>
+            </button>
+            <button disabled class="relative bg-white border border-ink-200 p-6 rounded-xl text-center flex flex-col items-center gap-4 opacity-70 cursor-not-allowed overflow-hidden group">
+              <div class="absolute inset-0 bg-ink-900/5 flex flex-col items-center justify-center backdrop-blur-[2px] z-10 transition-all">
+                <span class="bg-ink-900 text-white text-xs font-black px-4 py-2 rounded-full uppercase tracking-widest shadow-lg transform -rotate-12 group-hover:scale-110 transition-transform">Coming Soon</span>
+              </div>
+              <img src="/tiktok.svg" class="w-12 h-12 object-contain grayscale" />
+              <span class="font-bold text-ink-900">TikTok Ads</span>
+            </button>
+          </div>
+
+          <!-- Step 2: Form -->
+          <form v-else id="requestAdForm" @submit.prevent="submitForm" class="space-y-8">
             
             <!-- Section 1: Informasi Detail -->
             <div class="bg-white p-6 rounded-xl border border-ink-200 shadow-sm space-y-5">
@@ -33,13 +54,13 @@
 
               <div>
                 <label class="block text-sm font-bold text-ink-900 mb-2">
-                  <template v-if="platformName.includes('Google')">Shared Email</template>
-                  <template v-else>ID {{ platformName.includes('TikTok') ? 'Business Center' : 'Business Manager' }}</template>
+                  <template v-if="activePlatformName.includes('Google')">Shared Email</template>
+                  <template v-else>ID {{ activePlatformName.includes('TikTok') ? 'Business Center' : 'Business Manager' }}</template>
                   <span class="text-red-500">*</span>
                 </label>
                 <div class="flex flex-col sm:flex-row sm:items-center gap-3">
-                  <input v-model="form.bmId" :type="platformName.includes('Google') ? 'email' : 'text'" required :placeholder="platformName.includes('Google') ? 'Masukkan Shared Email' : 'Masukkan ID ' + (platformName.includes('TikTok') ? 'Business Center' : 'Business Manager')" class="w-full sm:flex-1 px-4 py-2.5 border border-ink-200 rounded-lg text-sm focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 text-ink-900" />
-                  <button v-if="!platformName.includes('Google')" type="button" @click="showInstructionBm = true" class="text-sm font-semibold text-orange-500 hover:text-orange-600 whitespace-nowrap text-left transition-colors">Lihat cara mendapatkan ID {{ platformName.includes('TikTok') ? 'Business Center' : 'Business Manager' }}</button>
+                  <input v-model="form.bmId" :type="activePlatformName.includes('Google') ? 'email' : 'text'" required :placeholder="activePlatformName.includes('Google') ? 'Masukkan Shared Email' : 'Masukkan ID ' + (activePlatformName.includes('TikTok') ? 'Business Center' : 'Business Manager')" class="w-full sm:flex-1 px-4 py-2.5 border border-ink-200 rounded-lg text-sm focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 text-ink-900" />
+                  <button v-if="!activePlatformName.includes('Google')" type="button" @click="showInstructionBm = true" class="text-sm font-semibold text-orange-500 hover:text-orange-600 whitespace-nowrap text-left transition-colors">Lihat cara mendapatkan ID {{ activePlatformName.includes('TikTok') ? 'Business Center' : 'Business Manager' }}</button>
                 </div>
               </div>
               
@@ -56,7 +77,7 @@
                 </select>
               </div>
 
-              <div v-if="platformName.includes('Meta')">
+              <div v-if="activePlatformName.includes('Meta')">
                 <label class="block text-sm font-bold text-ink-900 mb-2">Link Instagram / Facebook Page <span class="text-red-500">*</span></label>
                 <input 
                   v-model="form.socialLink" 
@@ -69,12 +90,12 @@
               </div>
 
               <div>
-                <label class="block text-sm font-bold text-ink-900 mb-2">Target Website (URL) <span v-if="!platformName.includes('Meta')" class="text-red-500">*</span><span v-else class="text-ink-400 font-normal ml-1">(Opsional)</span></label>
+                <label class="block text-sm font-bold text-ink-900 mb-2">Target Website (URL) <span v-if="!activePlatformName.includes('Meta')" class="text-red-500">*</span><span v-else class="text-ink-400 font-normal ml-1">(Opsional)</span></label>
                 <input 
                   v-model="form.targetUrl" 
                   @blur="formatUrl"
                   type="url" 
-                  :required="!platformName.includes('Meta')" 
+                  :required="!activePlatformName.includes('Meta')" 
                   placeholder="https://domain-anda.com" 
                   class="w-full px-4 py-2.5 border border-ink-200 rounded-lg text-sm focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 text-ink-900" 
                 />
@@ -102,7 +123,7 @@
 
             <!-- Section 3: Kebijakan Platform -->
             <div class="bg-white p-6 rounded-xl border border-ink-200 shadow-sm space-y-4">
-              <h4 class="font-bold text-ink-900 text-lg mb-2">Kebijakan {{ platformName.includes('Meta') ? 'Facebook' : platformName }}</h4>
+              <h4 class="font-bold text-ink-900 text-lg mb-2">Kebijakan {{ activePlatformName.includes('Meta') ? 'Facebook' : activePlatformName }}</h4>
               <div class="bg-ink-50 p-4 rounded-lg border border-ink-100">
                 <label class="flex items-start gap-3 cursor-pointer group">
                   <input type="checkbox" v-model="form.agreePolicy" required class="mt-1 w-4 h-4 text-orange-500 border-ink-300 rounded focus:ring-orange-500 shrink-0" />
@@ -166,10 +187,11 @@
         
         <!-- Footer -->
         <div class="px-6 py-4 bg-white flex justify-end gap-3 border-t border-ink-100 shrink-0">
-          <button @click="closeModal" class="px-6 py-2.5 bg-white border border-ink-200 text-ink-700 hover:bg-ink-50 font-bold rounded-xl text-sm transition-colors shadow-sm">
-            Batal
+          <button @click="(!props.platformName && activePlatformName) ? (activePlatformName = '') : closeModal()" type="button" class="px-6 py-2.5 bg-white border border-ink-200 text-ink-700 hover:bg-ink-50 font-bold rounded-xl text-sm transition-colors shadow-sm">
+            {{ (!props.platformName && activePlatformName) ? 'Kembali' : 'Batal' }}
           </button>
           <button 
+            v-if="activePlatformName"
             type="submit"
             form="requestAdForm"
             :disabled="isSubmitting" 
@@ -184,7 +206,7 @@
   </Teleport>
 
   <!-- Modal Instruksi -->
-  <ModalInstructionBmModal v-model="showInstructionBm" :platformName="platformName" />
+  <ModalInstructionBmModal v-model="showInstructionBm" :platformName="activePlatformName" />
 </template>
 
 <script setup lang="ts">
@@ -192,7 +214,7 @@ import { X, MonitorPlay } from 'lucide-vue-next'
 
 const props = defineProps<{
   modelValue: boolean
-  platformName: string
+  platformName?: string
 }>()
 
 const emit = defineEmits(['update:modelValue', 'success'])
@@ -200,6 +222,12 @@ const emit = defineEmits(['update:modelValue', 'success'])
 const toast = useToast()
 const supabase = useSupabaseClient()
 const { user } = useAuth()
+
+const activePlatformName = ref(props.platformName || '')
+
+watch(() => props.platformName, (newVal) => {
+  activePlatformName.value = newVal || ''
+})
 
 const isSubmitting = ref(false)
 const showInstructionBm = ref(false)
@@ -217,15 +245,15 @@ const form = reactive({
 })
 
 const platformLogo = computed(() => {
-  if (props.platformName.includes('Meta')) return '/icon-meta-ads.png'
-  if (props.platformName.includes('TikTok')) return '/tiktok.svg'
-  if (props.platformName.includes('Google')) return '/icon-google-ads.png'
+  if (activePlatformName.value.includes('Meta')) return '/icon-meta-ads.png'
+  if (activePlatformName.value.includes('TikTok')) return '/tiktok.svg'
+  if (activePlatformName.value.includes('Google')) return '/icon-google-ads.png'
   return '/icon-meta-ads.png'
 })
 
 const isFormValid = computed(() => {
-  const isUrlValid = props.platformName.includes('Meta') ? true : form.targetUrl.trim() !== ''
-  const isSocialValid = props.platformName.includes('Meta') ? form.socialLink.trim() !== '' : true
+  const isUrlValid = activePlatformName.value.includes('Meta') ? true : form.targetUrl.trim() !== ''
+  const isSocialValid = activePlatformName.value.includes('Meta') ? form.socialLink.trim() !== '' : true
 
   return form.fullName.trim() !== '' && 
          form.bmId.trim() !== '' && 
@@ -278,8 +306,8 @@ const submitForm = async () => {
     if (!uid) throw new Error('User tidak ditemukan. Silakan login kembali.')
 
     let dbPlatform = 'Meta Ads'
-    if (props.platformName.includes('TikTok')) dbPlatform = 'TikTok Ads'
-    if (props.platformName.includes('Google')) dbPlatform = 'Google Ads'
+    if (activePlatformName.value.includes('TikTok')) dbPlatform = 'TikTok Ads'
+    if (activePlatformName.value.includes('Google')) dbPlatform = 'Google Ads'
     
     const { error } = await (supabase as any)
       .from('ad_account_requests')
@@ -291,8 +319,8 @@ const submitForm = async () => {
         status: 'pending_review',
         details: {
           full_name: form.fullName,
-          ...(props.platformName.includes('Google') ? { shared_email: form.bmId } : { bm_id: form.bmId }),
-          ...(props.platformName.includes('Meta') ? { social_link: form.socialLink } : {}),
+          ...(activePlatformName.value.includes('Google') ? { shared_email: form.bmId } : { bm_id: form.bmId }),
+          ...(activePlatformName.value.includes('Meta') ? { social_link: form.socialLink } : {}),
           ad_category: form.adCategory
         }
       })

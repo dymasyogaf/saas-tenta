@@ -64,6 +64,30 @@ export default defineCachedEventHandler(async (event): Promise<AdsResponse> => {
       }
     })
 
+    // Ambil info saldo akun (Prepaid / Spend Cap)
+    let api_balance: number | undefined = undefined
+    try {
+      const accountInfo: any = await $fetch(`https://graph.facebook.com/v19.0/${adAccountId}`, {
+        params: {
+          fields: 'balance,spend_cap,amount_spent',
+          access_token: metaToken
+        }
+      })
+      
+      // Hitung dari spend_cap jika balance tidak ada
+      if (accountInfo.balance !== undefined && accountInfo.balance !== '0') {
+        api_balance = parseFloat(accountInfo.balance) / 100
+      } else if (accountInfo.spend_cap !== undefined && accountInfo.amount_spent !== undefined) {
+        const cap = parseFloat(accountInfo.spend_cap)
+        const spent = parseFloat(accountInfo.amount_spent)
+        if (cap > 0) {
+          api_balance = (cap - spent) / 100
+        }
+      }
+    } catch (e) {
+      console.warn('Gagal mengambil balance/spend_cap:', e)
+    }
+
     let totalSpend = 0
     const campaigns: CampaignData[] = (metaResponse.data || []).map((item: any) => {
       totalSpend += parseFloat(item.spend || '0')
@@ -83,6 +107,7 @@ export default defineCachedEventHandler(async (event): Promise<AdsResponse> => {
       fetchedAt: new Date().toISOString(),
       data: {
         totalSpend,
+        api_balance,
         currency: 'IDR',
         activeCampaigns: campaigns.length,
         campaigns

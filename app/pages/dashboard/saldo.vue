@@ -56,14 +56,24 @@
     <!-- List Saldo -->
     <div v-if="activeTab === 'list-saldo'">
       <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
-        <button 
-          @click="syncAds"
-          :disabled="adsStore.isFetchingAccounts"
-          class="flex items-center gap-2 px-4 py-2 bg-blue-50 border border-blue-200 text-blue-600 rounded-md text-sm font-bold hover:bg-blue-100 transition-colors disabled:opacity-50"
-        >
-          <RefreshCw class="w-4 h-4" :class="{ 'animate-spin': adsStore.isFetchingAccounts }" />
-          Sync Sekarang
-        </button>
+        <div class="flex flex-col sm:flex-row gap-3">
+          <button 
+            @click="syncAds"
+            :disabled="adsStore.isFetchingAccounts"
+            class="flex items-center justify-center gap-2 px-4 py-2 bg-blue-50 border border-blue-200 text-blue-600 rounded-md text-sm font-bold hover:bg-blue-100 transition-colors disabled:opacity-50"
+          >
+            <RefreshCw class="w-4 h-4" :class="{ 'animate-spin': adsStore.isFetchingAccounts }" />
+            Sync Sekarang
+          </button>
+          
+          <button 
+            @click="isRequestModalOpen = true"
+            class="flex items-center justify-center gap-2 px-4 py-2 bg-orange-500 border border-orange-600 text-white rounded-md text-sm font-bold hover:bg-orange-600 transition-colors shadow-sm"
+          >
+            <PlusCircle class="w-4 h-4" />
+            Tambah Akun
+          </button>
+        </div>
         <div class="relative w-full lg:w-72">
           <input type="text" placeholder="Cari ID Kredit atau Nama Kredit" class="pl-4 pr-10 py-2 border border-ink-200 rounded-md text-sm w-full focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 text-ink-900 placeholder:text-ink-400 bg-white" />
           <Search class="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-ink-400" />
@@ -122,6 +132,10 @@
               <td class="py-4 px-5">
                 <div class="flex items-center gap-2 whitespace-nowrap">
                   <span class="font-bold text-[14px]">{{ formatCurrency(account.saldo) }}</span>
+                  <span v-if="account.api_balance_active" class="bg-green-50 text-green-600 border border-green-100 text-[10px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider flex items-center gap-1" title="Saldo Real-Time dari API">
+                    <span class="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>
+                    Live
+                  </span>
                   <span v-if="account.alert_saldo" class="bg-red-50 text-red-500 border border-red-100 text-[11px] font-bold px-2.5 py-0.5 rounded-full">{{ account.alert_saldo }}</span>
                 </div>
               </td>
@@ -232,7 +246,7 @@
             </div>
           </div>
         </div>
-        <EmptyState v-else />
+        <SharedEmptyState v-else />
       </template>
     </div>
 
@@ -301,7 +315,7 @@
             </div>
           </div>
         </div>
-        <EmptyState v-else />
+        <SharedEmptyState v-else />
       </template>
     </div>
     
@@ -320,7 +334,7 @@
           <div class="h-8 bg-ink-200 rounded w-24"></div>
         </div>
       </div>
-      <EmptyState />
+      <SharedEmptyState />
     </div>
     
     <!-- Histori Akun Pengganti -->
@@ -344,9 +358,14 @@
           <div class="h-8 bg-ink-200 rounded w-24"></div>
         </div>
       </div>
-      <EmptyState />
+      <SharedEmptyState />
     </div>
 
+    <!-- Modal Pengajuan Akun -->
+    <ModalRequestAdAccountModal 
+      v-model="isRequestModalOpen"
+      platformName=""
+    />
   </div>
 </template>
 
@@ -360,6 +379,8 @@ import { useToast } from '~/composables/useToast'
 definePageMeta({
   layout: 'dashboard',
 })
+
+const isRequestModalOpen = ref(false)
 
 const saldoStore = useSaldoStore()
 const adsStore = useAdsStore()

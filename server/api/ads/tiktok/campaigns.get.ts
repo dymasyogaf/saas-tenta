@@ -83,12 +83,37 @@ export default defineEventHandler(async (event): Promise<AdsResponse> => {
       }
     })
 
+    // Ambil info saldo akun (Advertiser Balance)
+    let api_balance: number | undefined = undefined
+    try {
+      const balanceResponse: any = await $fetch(`https://business-api.tiktok.com/open_api/v1.3/advertiser/balance/get/`, {
+        method: 'GET',
+        headers: {
+          'Access-Token': tiktokToken
+        },
+        params: {
+          advertiser_id: advertiserId
+        }
+      })
+      
+      if (balanceResponse.code === 0 && balanceResponse.data) {
+        // Asumsi data.balance_list atau data.valid_balance (struktur standar TikTok API)
+        const balanceInfo = balanceResponse.data.balance_list ? balanceResponse.data.balance_list[0] : balanceResponse.data
+        if (balanceInfo && balanceInfo.valid_balance !== undefined) {
+          api_balance = parseFloat(balanceInfo.valid_balance)
+        }
+      }
+    } catch (e) {
+      console.warn('Gagal mengambil balance TikTok:', e)
+    }
+
     return {
       success: true,
       source: 'live',
       fetchedAt: new Date().toISOString(),
       data: {
         totalSpend,
+        api_balance,
         currency: 'IDR',
         activeCampaigns: campaigns.length,
         campaigns

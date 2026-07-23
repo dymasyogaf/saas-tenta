@@ -125,10 +125,23 @@ CREATE TABLE IF NOT EXISTS public.support_tickets (
   subject TEXT NOT NULL,
   category TEXT NOT NULL CHECK (category IN ('top_up', 'ad_account', 'technical', 'other')),
   description TEXT NOT NULL,
-  status TEXT DEFAULT 'open' CHECK (status IN ('open', 'resolved', 'closed')),
+  status TEXT DEFAULT 'open' CHECK (status IN ('open', 'resolved', 'closed', 'in_progress', 'pending')),
+  priority TEXT DEFAULT 'normal' CHECK (priority IN ('low', 'normal', 'high')),
   attachments JSONB DEFAULT '[]'::jsonb,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Ticket Replies (Percakapan)
+CREATE TABLE IF NOT EXISTS public.ticket_replies (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  ticket_id UUID REFERENCES public.support_tickets(id) ON DELETE CASCADE NOT NULL,
+  user_id UUID REFERENCES public.users(id) ON DELETE SET NULL, -- bisa NULL jika admin (tergantung implementasi, atau auth.users.id)
+  sender_name TEXT NOT NULL,
+  content TEXT NOT NULL,
+  is_staff BOOLEAN DEFAULT false,
+  attachments JSONB DEFAULT '[]'::jsonb,
+  created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- 2. Create Row Level Security (RLS) Policies
@@ -188,6 +201,15 @@ ALTER TABLE public.support_tickets ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Users can view own support tickets" ON public.support_tickets FOR SELECT USING (auth.uid() = user_id);
 CREATE POLICY "Users can insert own support tickets" ON public.support_tickets FOR INSERT WITH CHECK (auth.uid() = user_id);
 -- Admin can view/update all (handled by service role)
+
+-- Policies for Ticket Replies
+ALTER TABLE public.ticket_replies ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Users can view replies of their tickets" ON public.ticket_replies FOR SELECT USING (
+  ticket_id IN (SELECT id FROM public.support_tickets WHERE user_id = auth.uid())
+);
+CREATE POLICY "Users can insert replies to their tickets" ON public.ticket_replies FOR INSERT WITH CHECK (
+  ticket_id IN (SELECT id FROM public.support_tickets WHERE user_id = auth.uid())
+);
 
 -- 3. Trigger to Auto-create User Profile and Saldo
 CREATE OR REPLACE FUNCTION public.handle_new_user()

@@ -7,7 +7,31 @@ export default defineNuxtConfig({
     '@nuxtjs/tailwindcss',
     '@nuxtjs/supabase',
     '@vee-validate/nuxt',
+    'nuxt-security',
   ],
+
+  // Security Configuration
+  security: {
+    headers: {
+      crossOriginEmbedderPolicy: 'unsafe-none',
+      crossOriginResourcePolicy: 'cross-origin',
+      xFrameOptions: 'DENY',
+      contentSecurityPolicy: {
+        'img-src': ["'self'", "data:", "https://pjmsnphhnporuownasxe.supabase.co"],
+      }
+    },
+    corsHandler: {
+      origin: process.env.NODE_ENV === 'production' ? ['https://member.tentaklik.com'] : '*',
+      methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+      allowHeaders: ['*'],
+      credentials: true
+    },
+    rateLimiter: {
+      tokensPerInterval: 150,
+      interval: 60000,
+      headers: false,
+    }
+  },
 
   // Supabase config
   supabase: {

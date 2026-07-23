@@ -128,6 +128,31 @@ export default defineEventHandler(async (event) => {
       return { success: true, message: 'ID Akun Iklan berhasil disimpan dan akun aktif' }
     }
 
+    if (action === 'delete') {
+      const { data: request } = await supabase
+        .from('ad_account_requests')
+        .select('details')
+        .eq('id', request_id)
+        .single()
+      
+      const accountId = request?.details?.ad_account_id
+      if (accountId) {
+        await supabase
+          .from('ad_accounts')
+          .delete()
+          .eq('account_id', accountId)
+      }
+
+      const { error } = await supabase
+        .from('ad_account_requests')
+        .delete()
+        .eq('id', request_id)
+        
+      if (error) throw error
+      
+      return { success: true, message: 'Akun iklan dan pengajuan berhasil dihapus' }
+    }
+
     throw new Error('Aksi tidak valid')
 
   } catch (error: any) {

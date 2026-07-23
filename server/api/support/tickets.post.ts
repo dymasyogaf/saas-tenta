@@ -1,15 +1,25 @@
 import { serverSupabaseUser, serverSupabaseServiceRole } from '#supabase/server'
+import sanitizeHtml from 'sanitize-html'
 
 export default defineEventHandler(async (event) => {
   const user = await serverSupabaseUser(event)
   if (!user) throw createError({ statusCode: 401, statusMessage: 'Unauthorized' })
 
   const body = await readBody(event)
-  const { subject, category, description, attachments } = body
+  const { subject, category, description, priority, attachments } = body
   
   if (!subject || !category || !description) {
     throw createError({ statusCode: 400, statusMessage: 'Semua field wajib diisi' })
   }
+
+  // Sanitasi HTML untuk mencegah XSS
+  const safeDescription = sanitizeHtml(description, {
+    allowedTags: sanitizeHtml.defaults.allowedTags.concat(['u']),
+    allowedAttributes: {
+      ...sanitizeHtml.defaults.allowedAttributes,
+      '*': ['class', 'style']
+    }
+  })
 
   const supabase = await serverSupabaseServiceRole<any>(event)
   
@@ -26,8 +36,9 @@ export default defineEventHandler(async (event) => {
         ticket_number: ticketNumber,
         subject,
         category,
-        description,
+        description: safeDescription,
         status: 'open',
+        priority: priority || 'normal',
         attachments: attachments || []
       })
       .select()

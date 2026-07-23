@@ -146,12 +146,49 @@ export default defineCachedEventHandler(async (event): Promise<AdsResponse> => {
     // Hitung rata-rata CTR keseluruhan
     const averageCtr = totalImpressions > 0 ? (totalClicks / totalImpressions) * 100 : 0
 
+    // Ambil info saldo akun (Account Budget)
+    let api_balance: number | undefined = undefined
+    try {
+      const budgetResponse: any = await $fetch(`https://googleads.googleapis.com/v24/customers/${customerId}/googleAds:searchStream`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'developer-token': googleDevToken,
+          'login-customer-id': '6445325844' // Ganti jika berbeda
+        },
+        body: {
+          query: `
+            SELECT 
+              account_budget.approved_spending_limit_micros, 
+              account_budget.amount_served_micros 
+            FROM account_budget 
+            WHERE account_budget.status = 'APPROVED'
+          `
+        }
+      })
+      
+      if (Array.isArray(budgetResponse) && budgetResponse[0]?.results) {
+        let totalBudget = 0
+        let totalServed = 0
+        budgetResponse[0].results.forEach((row: any) => {
+          totalBudget += parseInt(row.accountBudget?.approvedSpendingLimitMicros || '0') / 1000000
+          totalServed += parseInt(row.accountBudget?.amountServedMicros || '0') / 1000000
+        })
+        if (totalBudget > 0) {
+          api_balance = totalBudget - totalServed
+        }
+      }
+    } catch (e) {
+      console.warn('Gagal mengambil account budget Google:', e)
+    }
+
     return {
       success: true,
       source: 'live',
       fetchedAt: new Date().toISOString(),
       data: {
         totalSpend,
+        api_balance,
         totalConversions,
         totalConversionsValue,
         averageCtr,
