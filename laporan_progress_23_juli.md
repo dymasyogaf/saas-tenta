@@ -23,7 +23,18 @@
 - **Pembersihan Mock Data:** Menghapus data percobaan (*dummy*) pada modul Kampanye Iklan dan menggantinya dengan integrasi API yang membaca secara langsung data asli (`server/api/ads/*/campaigns.get.ts`), sehingga masalah "Data tidak muncul saat di-deploy" telah teratasi sepenuhnya.
 - **Integrasi Iklan Bermasalah:** Membangun titik akhir (API) `issues.get.ts` agar tabel Iklan Bermasalah terhubung secara sukses dengan basis data (Supabase).
 
-## 📌 Kesimpulan & Langkah Selanjutnya
-Modul Pusat Bantuan secara paripurna telah terintegrasi (Frontend + Backend), kode aplikasi telah dilindungi standar keamanan yang matang untuk *Production*, dan beberapa kendala (bug) minor pada saat *deploy* pertama berhasil diselesaikan dengan baik. Aplikasi berstatus **Siap Diluncurkan (Go-Live Ready)**. 
+### 5. 💳 Sistem Berlangganan (Sewa) Akun Iklan
+- **Paket Sewa Bertingkat:** Menambahkan opsi sewa akun (1 bulan, 3 bulan, dan 6 bulan) dengan kalkulasi diskon otomatis pada *Wizard* Pengajuan Akun Baru (`RequestAdAccountModal.vue`).
+- **Pembaruan Skema Database:** Menyesuaikan aturan batasan (constraint) pada tabel `ad_account_requests` untuk menerima status `payment_pending`. Menambahkan kolom penyimpan masa sewa dan biaya (`subscription_months`, `rental_fee`), serta rekam jejak kedaluwarsa (`subscription_expires_at`) di `ad_accounts`.
+- **Integrasi Webhook Duitku (Langganan):** Membedakan alur pembayaran *Top Up* dengan *Sewa Akun*. Transaksi sewa sekarang menggunakan kode prefix khusus (`SUB-{id}`) dan setelah sukses dibayar, status pengajuan otomatis berpindah ke `pending_review` agar ditindaklanjuti oleh Admin.
+- **UI Masa Aktif Sewa:** Dashboard Klien kini mendeteksi dan menampilkan peringatan **Masa Aktif Sewa (Terdekat)** secara dinamis.
 
-Langkah yang tersisa sepenuhnya bergantung pada Klien untuk mengeksekusi panduan pasca-deploy di dasbor layanan eksternal (Supabase, Duidku, dll.), lalu melanjutkannya dengan Sesi Uji Coba Transaksi *Live* (End-to-End Testing).
+### 6. 💰 Penyesuaian Aturan Minimum Pengisian Saldo (Top-Up)
+- **Minimum Rp 300.000 Flat:** Batas paling bawah pengisian saldo melalui *Payment Gateway* telah disamakan menjadi Rp 300.000 untuk *semua* tingkatan paket (Starter, Growth, dan Scale), meskipun batas maksimal pengeluaran (*weekly limit*) tetap mengikuti hierarki paket Klien.
+
+## 📌 Kesimpulan & Langkah Selanjutnya
+Modul Pusat Bantuan secara paripurna telah terintegrasi (Frontend + Backend), kode aplikasi telah dilindungi standar keamanan yang matang untuk *Production*, dan beberapa kendala (bug) minor pada saat *deploy* pertama berhasil diselesaikan dengan baik. 
+
+Fitur **Sewa Akun Iklan** (Subscription) serta pembaruan logika **Top-Up** juga telah dirampungkan secara _End-to-End_ dan masuk ke _main branch_ (Siap Diluncurkan).
+
+Langkah yang tersisa sepenuhnya bergantung pada Klien untuk mengeksekusi panduan pasca-deploy di dasbor layanan eksternal (Supabase, Duidku, dll.), serta menjalankan _script_ migrasi terbaru (`alter_db_v2.sql`), lalu melanjutkannya dengan Sesi Uji Coba Transaksi *Live*.
