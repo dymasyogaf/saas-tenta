@@ -13,6 +13,7 @@ interface AdsResponse {
   message?: string
   fetchedAt?: string
   debug_error?: string
+  debug_info?: any
   data?: {
     totalSpend: number
     currency: string
@@ -92,6 +93,7 @@ export default defineCachedEventHandler(async (event): Promise<AdsResponse> => {
     let api_budget_total: number | undefined = undefined
     let api_amount_spent: number | undefined = undefined
     let debug_error: string | undefined = undefined
+    let debug_info: any = {}
 
     try {
       const accountInfo: any = await $fetch(`https://graph.facebook.com/v19.0/${adAccountId}`, {
@@ -101,6 +103,8 @@ export default defineCachedEventHandler(async (event): Promise<AdsResponse> => {
         }
       })
       
+      debug_info = accountInfo // SIMPAN RAW RESPONSE DARI META
+
       // Hitung dari spend_cap jika balance tidak ada
       if (accountInfo.balance !== undefined && accountInfo.balance !== '0') {
         api_balance = parseFloat(accountInfo.balance) / 100
@@ -158,6 +162,8 @@ export default defineCachedEventHandler(async (event): Promise<AdsResponse> => {
         api_balance,
         api_budget_total,
         api_amount_spent,
+        debug_error,
+        debug_info,
         currency: 'IDR',
         activeCampaigns: campaigns.length,
         campaigns
@@ -176,6 +182,6 @@ export default defineCachedEventHandler(async (event): Promise<AdsResponse> => {
   name: 'meta-ad-campaigns',
   getKey: (event) => {
     const query = getQuery(event)
-    return String(query.ad_account_id || 'unknown') + '_' + String(query.start_date || '') + '_' + String(query.end_date || '') + '_v3'
+    return String(query.ad_account_id || 'unknown') + '_' + String(query.start_date || '') + '_' + String(query.end_date || '') + '_v4'
   }
 })
