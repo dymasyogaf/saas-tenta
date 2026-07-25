@@ -59,6 +59,8 @@ export default defineCachedEventHandler(async (event): Promise<AdsResponse> => {
   try {
     const query = getQuery(event)
     const customerId = query.customer_id as string | undefined
+    const startDate = query.start_date as string | undefined
+    const endDate = query.end_date as string | undefined
     
     if (!customerId) {
       throw createError({ statusCode: 400, message: 'Parameter customer_id wajib disertakan' })
@@ -89,7 +91,7 @@ export default defineCachedEventHandler(async (event): Promise<AdsResponse> => {
             metrics.conversions_value,
             metrics.cost_per_conversion
           FROM campaign 
-          WHERE segments.date DURING LAST_30_DAYS
+          WHERE ${startDate && endDate ? `segments.date BETWEEN '${startDate}' AND '${endDate}'` : 'segments.date DURING LAST_30_DAYS'}
         `
       }
     })
@@ -148,6 +150,8 @@ export default defineCachedEventHandler(async (event): Promise<AdsResponse> => {
 
     // Ambil info saldo akun (Account Budget)
     let api_balance: number | undefined = undefined
+    let api_budget_total: number | undefined = undefined
+    let api_amount_spent: number | undefined = undefined
     try {
       const budgetResponse: any = await $fetch(`https://googleads.googleapis.com/v24/customers/${customerId}/googleAds:searchStream`, {
         method: 'POST',
@@ -176,6 +180,8 @@ export default defineCachedEventHandler(async (event): Promise<AdsResponse> => {
         })
         if (totalBudget > 0) {
           api_balance = totalBudget - totalServed
+          api_budget_total = totalBudget
+          api_amount_spent = totalServed
         }
       }
     } catch (e) {
@@ -189,6 +195,8 @@ export default defineCachedEventHandler(async (event): Promise<AdsResponse> => {
       data: {
         totalSpend,
         api_balance,
+        api_budget_total,
+        api_amount_spent,
         totalConversions,
         totalConversionsValue,
         averageCtr,
@@ -209,7 +217,7 @@ export default defineCachedEventHandler(async (event): Promise<AdsResponse> => {
   name: 'google-ad-campaigns',
   getKey: (event) => {
     const query = getQuery(event)
-    return String(query.customer_id || 'unknown')
+    return String(query.customer_id || 'unknown') + '_' + String(query.start_date || '') + '_' + String(query.end_date || '')
   }
 })
 

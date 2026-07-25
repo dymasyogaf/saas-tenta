@@ -139,16 +139,27 @@
 
               <!-- Input Ad Account ID -->
               <td class="px-6 py-4">
-                <div v-if="activeTab !== 'new'" class="relative">
-                  <input 
-                    v-model="inputModels[req.id]"
-                    @input="formatInput(req.id, req.platform)"
-                    type="text" 
-                    placeholder="Misal: act_123456789" 
-                    class="w-full pl-9 pr-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 bg-white"
-                    :disabled="isSubmitting === req.id || (activeTab === 'completed' && !isEditing[req.id])"
-                  />
-                  <Hash class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                <div v-if="activeTab !== 'new'" class="space-y-3">
+                  <div class="relative">
+                    <input 
+                      v-model="inputModels[req.id]"
+                      @input="formatInput(req.id, req.platform)"
+                      type="text" 
+                      placeholder="ID: Misal 123456789" 
+                      class="w-full pl-9 pr-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 bg-white"
+                      :disabled="isSubmitting === req.id || (activeTab === 'completed' && !isEditing[req.id])"
+                    />
+                    <Hash class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                  </div>
+                  <div class="relative" v-if="!req.platform.toLowerCase().includes('google')">
+                    <input 
+                      v-model="nameInputModels[req.id]"
+                      type="text" 
+                      placeholder="Nama: Dymas Yoga 1" 
+                      class="w-full pl-3 pr-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 bg-white"
+                      :disabled="isSubmitting === req.id || (activeTab === 'completed' && !isEditing[req.id])"
+                    />
+                  </div>
                 </div>
                 <div v-else class="text-xs text-slate-400 italic">Menunggu persetujuan...</div>
               </td>
@@ -225,6 +236,7 @@ const activeTab = ref('new')
 const isSubmitting = ref<string | null>(null)
 const currentAction = ref<string | null>(null)
 const inputModels = ref<Record<string, string>>({})
+const nameInputModels = ref<Record<string, string>>({})
 const isEditing = ref<Record<string, boolean>>({})
 
 // Fetch Data dari Server Endpoint (Bypass RLS)
@@ -239,6 +251,9 @@ watch(requests, (newVals) => {
       // Set default input text dari database jika sudah ada
       if (!inputModels.value[req.id]) {
         inputModels.value[req.id] = req.details?.ad_account_id || ''
+      }
+      if (!nameInputModels.value[req.id]) {
+        nameInputModels.value[req.id] = req.details?.ad_account_name || ''
       }
     })
   }
@@ -286,9 +301,10 @@ const formatInput = (id: string, platform: string) => {
   inputModels.value[id] = val
 }
 
-const cancelEdit = (id: string, originalValue: string) => {
+const cancelEdit = (id: string, originalValue: string, originalNameValue: string = '') => {
   isEditing.value[id] = false
   inputModels.value[id] = originalValue || ''
+  nameInputModels.value[id] = originalNameValue || ''
 }
 
 const resetDev = async () => {
@@ -306,13 +322,27 @@ const resetDev = async () => {
 
 const processAction = async (id: string, action: 'approve' | 'reject' | 'save_id' | 'delete') => {
   let adAccountId = undefined
+  let adAccountName = undefined
   let rejectReason = undefined
 
   if (action === 'delete') {
     if (!confirm('Apakah Anda yakin ingin menghapus pengajuan dan ID akun ini dari database secara permanen?')) return
   } else if (action === 'save_id') {
+    const req = requests.value.find((r: any) => r.id === id)
+    const isGoogle = req?.platform?.toLowerCase().includes('google')
+    
     adAccountId = inputModels.value[id]?.trim()
-    if (!adAccountId) return
+    adAccountName = nameInputModels.value[id]?.trim()
+    
+    if (!adAccountId) {
+      useToast().addToast('Harap isi ID Akun!', 'error')
+      return
+    }
+    
+    if (!isGoogle && !adAccountName) {
+      useToast().addToast('Harap isi Nama Akun!', 'error')
+      return
+    }
   } else if (action === 'reject') {
     const promptRes = prompt('Masukkan alasan penolakan (opsional):')
     if (promptRes === null) return // dibatalkan
@@ -330,6 +360,7 @@ const processAction = async (id: string, action: 'approve' | 'reject' | 'save_id
         action: action,
         request_id: id,
         ad_account_id: adAccountId,
+        ad_account_name: adAccountName,
         reason: rejectReason
       }
     })

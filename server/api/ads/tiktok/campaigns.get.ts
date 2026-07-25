@@ -44,6 +44,8 @@ export default defineEventHandler(async (event): Promise<AdsResponse> => {
   try {
     const query = getQuery(event)
     const advertiserId = query.advertiser_id as string | undefined
+    const startDate = query.start_date as string | undefined
+    const endDate = query.end_date as string | undefined
     
     if (!advertiserId) {
       throw createError({ statusCode: 400, message: 'Parameter advertiser_id wajib disertakan' })
@@ -57,7 +59,8 @@ export default defineEventHandler(async (event): Promise<AdsResponse> => {
       },
       params: {
         advertiser_id: advertiserId,
-        page_size: 100
+        page_size: 100,
+        ...(startDate && endDate ? { filtering: JSON.stringify({ stat_time_day: [startDate, endDate] }) } : {})
       }
     })
 

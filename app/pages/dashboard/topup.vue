@@ -20,7 +20,7 @@
                 <label class="block text-xs font-medium text-ink-500 mb-1">Sampai Tanggal</label>
                 <input type="date" v-model="endDate" class="w-full bg-white border border-ink-200 text-ink-900 px-3 py-2 rounded-md text-sm focus:border-orange-500 focus:ring-1 focus:ring-orange-500 focus:outline-none" />
               </div>
-              <button @click="isDatePopoverOpen = false" class="w-full bg-orange-500 text-white font-bold py-2 rounded-md text-sm mt-2 hover:bg-orange-600 transition-colors">Terapkan</button>
+              <button @click="applyDateFilter" class="w-full bg-orange-500 text-white font-bold py-2 rounded-md text-sm mt-2 hover:bg-orange-600 transition-colors">Terapkan</button>
             </div>
           </div>
         </div>
@@ -31,7 +31,7 @@
     <div class="flex flex-col lg:flex-row gap-6 mb-8">
       <!-- Left Card: Saldo -->
       <div class="bg-white border border-ink-100 rounded-xl p-6 lg:w-1/3 shadow-sm flex flex-col">
-        <p class="text-sm font-medium text-ink-500 mb-2">Saldo Utama (Belum Dialokasikan)</p>
+        <p class="text-sm font-medium text-ink-500 mb-2">Saldo Utama</p>
         <div class="flex items-center gap-3 mb-6">
           <div class="w-10 h-8 bg-orange-500 rounded-md flex items-center justify-center text-white shrink-0">
             <Wallet class="w-5 h-5" />
@@ -40,8 +40,7 @@
         </div>
         
         <div class="flex items-center gap-3 mb-6">
-          <button @click="handleAllocate" :disabled="saldoStore.isLoading" class="flex-1 bg-white border-2 border-orange-500 text-orange-500 hover:bg-orange-50 font-bold py-2.5 rounded-lg text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed">Alokasikan</button>
-          <button @click="handleTopup" :disabled="saldoStore.isLoading" class="flex-1 bg-orange-500 border-2 border-orange-500 text-white hover:bg-orange-600 font-bold py-2.5 rounded-lg text-sm transition-colors disabled:opacity-50">
+          <button @click="handleTopup" :disabled="saldoStore.isLoading" class="w-full bg-orange-500 border-2 border-orange-500 text-white hover:bg-orange-600 font-bold py-2.5 rounded-lg text-sm transition-colors disabled:opacity-50">
             {{ saldoStore.isLoading ? 'Memproses...' : 'Tambah Saldo' }}
           </button>
         </div>
@@ -336,54 +335,6 @@
       </div>
     </div>
 
-    <!-- Modal Alokasi -->
-    <div v-if="isAllocateModalOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-ink-900/50 backdrop-blur-sm p-4">
-      <div class="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden relative border border-ink-100">
-        <div class="p-6">
-          <h3 class="text-xl font-display font-bold text-ink-900 mb-2">Alokasikan Saldo Iklan</h3>
-          <p class="text-ink-500 text-sm mb-6">Pindahkan saldo utama Anda ke akun iklan pilihan Anda. Maksimal sesuai saldo Anda saat ini.</p>
-          
-          <div class="space-y-4">
-            <div>
-              <label class="block text-sm font-medium text-ink-700 mb-2">Nominal Alokasi (Min Rp 10.000)</label>
-              <div class="relative">
-                <span class="absolute left-4 top-1/2 -translate-y-1/2 text-ink-500 font-medium text-lg">Rp</span>
-                <input type="number" v-model.number="allocateAmount" class="w-full pl-12 pr-4 py-3 bg-white border-2 border-ink-200 rounded-xl focus:outline-none focus:border-orange-500 focus:ring-4 focus:ring-orange-500/20 font-bold text-ink-900 text-lg transition-all" placeholder="50000" />
-              </div>
-              <p class="text-xs text-ink-500 mt-2">Saldo tersedia: <span class="font-bold text-orange-600">{{ formatRupiah(saldoStore.balance) }}</span></p>
-            </div>
-            
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
-              <button @click="allocateAmount = Math.min(50000, saldoStore.balance)" class="py-2.5 bg-ink-50 border border-ink-200 rounded-xl text-sm font-bold text-ink-700 hover:bg-orange-50 hover:border-orange-300 hover:text-orange-600 transition-colors">50 Ribu</button>
-              <button @click="allocateAmount = Math.min(100000, saldoStore.balance)" class="py-2.5 bg-ink-50 border border-ink-200 rounded-xl text-sm font-bold text-ink-700 hover:bg-orange-50 hover:border-orange-300 hover:text-orange-600 transition-colors">100 Ribu</button>
-              <button @click="allocateAmount = saldoStore.balance" class="py-2.5 bg-ink-50 border border-ink-200 rounded-xl text-sm font-bold text-ink-700 hover:bg-orange-50 hover:border-orange-300 hover:text-orange-600 transition-colors">Semua</button>
-            </div>
-            
-            <div class="mt-4">
-              <label class="block text-sm font-medium text-ink-700 mb-2">Target Akun Iklan</label>
-              <div class="relative">
-                <select v-model="selectedAdAccount" class="w-full appearance-none pl-4 pr-10 py-3 bg-white border-2 border-ink-200 rounded-xl focus:outline-none focus:border-orange-500 focus:ring-4 focus:ring-orange-500/20 font-bold text-ink-900 text-sm transition-all cursor-pointer">
-                  <option value="">-- Pilih Akun Iklan --</option>
-                  <option v-for="acc in adsStore.adAccounts" :key="acc.id" :value="acc.id">
-                    {{ acc.name }} ({{ acc.platform }}) - {{ acc.account_id }}
-                  </option>
-                </select>
-                <ChevronDown class="w-5 h-5 absolute right-4 top-1/2 -translate-y-1/2 text-ink-500 pointer-events-none" />
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        <div class="p-5 bg-ink-50 flex gap-3 border-t border-ink-100">
-          <button @click="isAllocateModalOpen = false" class="flex-1 bg-white border-2 border-ink-200 text-ink-700 hover:bg-ink-100 font-bold py-3 rounded-xl transition-colors">Batal</button>
-          <button @click="submitAllocate" :disabled="saldoStore.isLoading || !isValidAllocate" class="flex-1 bg-orange-500 border-2 border-orange-500 text-white hover:bg-orange-600 font-bold py-3 rounded-xl transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
-            <span v-if="saldoStore.isLoading" class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
-            {{ saldoStore.isLoading ? 'Memproses...' : 'Alokasikan' }}
-          </button>
-        </div>
-      </div>
-    </div>
-
   </div>
 </template>
 
@@ -423,10 +374,14 @@ const formattedDateRange = computed(() => {
   return `${startStr} - ${endStr}`
 })
 
+const applyDateFilter = async () => {
+  isDatePopoverOpen.value = false
+  await adsStore.fetchAllPerformance(startDate.value, endDate.value)
+}
+
 const tabs = [
   { id: 'semua', label: 'Semua Transaksi' },
-  { id: 'topup', label: 'Riwayat Top Up' },
-  { id: 'alokasi', label: 'Riwayat Alokasi Iklan' },
+  { id: 'topup', label: 'Riwayat Top Up' }
 ]
 
 const formatRupiah = (angka: number) => {
@@ -549,9 +504,13 @@ const formattedTopupAmount = computed({
 
 const packageInfo = computed(() => {
   if (selectedPackage.value === 'starter') return { fee: 0.05, min: 300000, max: 5000000 }
-  if (selectedPackage.value === 'growth') return { fee: 0.045, min: 300000, max: 15000000 }
-  if (selectedPackage.value === 'scale') return { fee: 0.035, min: 300000, max: Infinity }
+  if (selectedPackage.value === 'growth') return { fee: 0.045, min: 5000000, max: 15000000 }
+  if (selectedPackage.value === 'scale') return { fee: 0.035, min: 15000000, max: Infinity }
   return { fee: 0, min: 0, max: 0 }
+})
+
+watch(selectedPackage, () => {
+  topupAmount.value = packageInfo.value.min
 })
 
 const isValidTopup = computed(() => {
@@ -583,41 +542,6 @@ const submitTopup = async () => {
   }
 }
 
-const isAllocateModalOpen = ref(false)
-const allocateAmount = ref<number | ''>('')
-const selectedAdAccount = ref('')
-
-const isValidAllocate = computed(() => {
-  const amt = Number(allocateAmount.value)
-  return !isNaN(amt) && amt >= 10000 && amt <= saldoStore.balance && selectedAdAccount.value !== ''
-})
-
-const handleAllocate = () => {
-  if (saldoStore.balance < 10000) {
-    toast.addToast('Saldo Anda kurang dari batas minimum (Rp 10.000). Silakan top up.', 'error')
-    return
-  }
-  if (adsStore.adAccounts.length === 0) {
-    toast.addToast('Anda belum memiliki Akun Iklan yang aktif.', 'error')
-    return
-  }
-  isAllocateModalOpen.value = true
-  allocateAmount.value = Math.min(50000, saldoStore.balance)
-  selectedAdAccount.value = adsStore.adAccounts[0]?.id || ''
-}
-
-const submitAllocate = async () => {
-  if (!isValidAllocate.value) return
-  
-  const targetAcc = adsStore.adAccounts.find(a => a.id === selectedAdAccount.value)
-  if (!targetAcc) return
-
-  const success = await saldoStore.allocate(Number(allocateAmount.value), user.value, targetAcc.account_id, targetAcc.platform)
-  if (success) {
-    isAllocateModalOpen.value = false
-  }
-}
-
 onMounted(async () => {
   // Cek apakah user baru saja kembali dari halaman Duitku (Return URL)
   const route = useRoute()
@@ -641,6 +565,6 @@ onMounted(async () => {
 
   saldoStore.fetchSaldo()
   saldoStore.fetchTransactions()
-  await adsStore.fetchAllPerformance()
+  await adsStore.fetchAllPerformance(startDate.value, endDate.value)
 })
 </script>

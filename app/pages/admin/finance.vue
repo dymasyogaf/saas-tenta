@@ -27,7 +27,7 @@
         class="pb-3 text-sm font-semibold transition-colors border-b-2 flex items-center gap-2"
         :class="activeTab === 'withdraw' ? 'border-emerald-500 text-emerald-600' : 'border-transparent text-slate-500 hover:text-slate-700'"
       >
-        Tugas Eksekusi (Withdraw & Alokasi) 
+        Tugas Eksekusi (Withdraw) 
         <span v-if="pendingWithdraws.length > 0" class="bg-red-500 text-white py-0.5 px-2 rounded-full text-[10px] animate-pulse">{{ pendingWithdraws.length }}</span>
       </button>
       <button 
@@ -71,12 +71,12 @@
               </td>
               <td class="px-6 py-4">
                 <div class="flex items-center gap-1.5 mb-1">
-                  <span class="px-2 py-0.5 text-[10px] font-bold rounded" :class="tx.type === 'withdraw' ? 'bg-orange-100 text-orange-700' : 'bg-blue-100 text-blue-700'">
-                    {{ tx.type === 'withdraw' ? 'PENCAIRAN' : 'ALOKASI IKLAN' }}
+                  <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-orange-100 text-orange-700">
+                    PENCAIRAN
                   </span>
                 </div>
-                <p class="text-xs font-semibold text-slate-800 uppercase">{{ tx.type === 'transfer' ? tx.description : (tx.payment_gateway_ref || 'BANK TRANSFER') }}</p>
-                <p class="text-[11px] text-slate-500 mt-0.5">{{ tx.type === 'withdraw' ? 'Silakan cek data rekening klien.' : 'Isikan saldo riil ke platform tersebut.' }}</p>
+                <p class="text-xs font-semibold text-slate-800 uppercase">{{ tx.payment_gateway_ref || 'BANK TRANSFER' }}</p>
+                <p class="text-[11px] text-slate-500 mt-0.5">Silakan cek data rekening klien.</p>
               </td>
               <td class="px-6 py-4 text-right">
                 <p class="font-display font-bold text-slate-900 text-lg">{{ formatCurrency(tx.amount || 0) }}</p>
@@ -117,7 +117,6 @@
         <select v-model="typeFilter" class="bg-white border border-slate-200 rounded-lg text-sm px-3 py-2 focus:outline-none focus:border-emerald-500">
           <option value="all">Semua Jenis Transaksi</option>
           <option value="topup">Top Up Masuk</option>
-          <option value="transfer">Alokasi / Transfer Iklan</option>
           <option value="withdraw">Pencairan Keluar</option>
         </select>
       </div>
@@ -151,7 +150,6 @@
                 <span class="text-[11px] font-bold uppercase tracking-wider"
                   :class="{
                     'text-emerald-600': tx.type === 'topup',
-                    'text-blue-600': tx.type === 'transfer',
                     'text-orange-600': tx.type === 'withdraw',
                   }">
                   {{ tx.type }}
@@ -229,14 +227,14 @@ const { data: transactions, pending, refresh } = useAsyncData('admin_finance_lis
   return (await $fetch('/api/admin/finance')) as any[]
 }, { default: () => [] })
 
-// Filter Transaksi (Withdraw & Transfer yang masih Pending)
+// Filter Transaksi (Withdraw yang masih Pending)
 const pendingWithdraws = computed(() => {
-  return transactions.value.filter(tx => ['withdraw', 'transfer'].includes(tx.type) && tx.status === 'pending')
+  return transactions.value.filter(tx => tx.type === 'withdraw' && tx.status === 'pending')
 })
 
 const filteredHistory = computed(() => {
   // Semua transaksi kecuali pending tasks (sudah ada di tab Eksekusi)
-  let history = transactions.value.filter(tx => !(['withdraw', 'transfer'].includes(tx.type) && tx.status === 'pending'))
+  let history = transactions.value.filter(tx => !(tx.type === 'withdraw' && tx.status === 'pending'))
 
   // Terapkan filter pencarian nama
   if (searchQuery.value) {
@@ -260,11 +258,9 @@ const confirmMessage = ref<string>('')
 
 // Eksekusi API
 const processWithdraw = (id: string, action: 'approve' | 'reject') => {
-  const isTransfer = transactions.value.find(t => t.id === id)?.type === 'transfer'
-  
   const msg = action === 'approve' 
-    ? (isTransfer ? 'Anda yakin sudah mentransfer dana riil ini ke akun iklan (BM) klien?' : 'Anda yakin sudah mentransfer dana ini ke rekening klien?')
-    : (isTransfer ? 'Anda yakin ingin menolak alokasi ini dan mengembalikan saldo?' : 'Anda yakin ingin menolak pencairan dana ini?')
+    ? 'Anda yakin sudah mentransfer dana ini ke rekening klien?'
+    : 'Anda yakin ingin menolak pencairan dana ini?'
     
   confirmAction.value = action
   confirmId.value = id

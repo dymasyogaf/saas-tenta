@@ -216,24 +216,14 @@
               </div>
             </div>
 
-            <div class="mt-8">
-              <label class="block text-sm font-medium text-ink-700 mb-2">Metode Pembayaran</label>
-              <div class="relative">
-                <select v-model="form.paymentMethod" class="w-full appearance-none pl-4 pr-10 py-3 bg-white border-2 border-ink-200 rounded-xl focus:outline-none focus:border-orange-500 focus:ring-4 focus:ring-orange-500/20 font-bold text-ink-900 text-sm transition-all cursor-pointer">
-                  <optgroup label="Virtual Account">
-                    <option value="BC">BCA Virtual Account</option>
-                    <option value="BM">Mandiri Virtual Account</option>
-                    <option value="BR">BRI Virtual Account</option>
-                  </optgroup>
-                  <optgroup label="E-Wallet & Retail">
-                    <option value="OV">OVO</option>
-                    <option value="SA">ShopeePay App</option>
-                    <option value="DA">DANA</option>
-                    <option value="SP">QRIS</option>
-                  </optgroup>
-                </select>
-                <svg class="w-5 h-5 absolute right-4 top-1/2 -translate-y-1/2 text-ink-500 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+            <div class="mt-8 bg-ink-50 rounded-xl p-4 border border-ink-100 flex items-center justify-between">
+              <div>
+                <p class="text-sm text-ink-500 mb-1">Sisa Saldo Bersih Anda</p>
+                <p class="font-bold text-xl text-ink-900" :class="{'text-red-500': netBalance < form.rentalFee}">Rp {{ netBalance.toLocaleString('id-ID') }}</p>
               </div>
+              <button type="button" v-if="netBalance < form.rentalFee" @click="() => navigateTo('/dashboard/topup')" class="px-4 py-2 bg-white border border-orange-200 text-orange-600 font-bold rounded-lg text-xs hover:bg-orange-50 transition-colors shadow-sm">
+                Top Up Sekarang
+              </button>
             </div>
           </div>
         </div>
@@ -257,11 +247,12 @@
           <button 
             v-if="step === 3"
             @click="submitPayment"
-            :disabled="isSubmitting" 
+            :disabled="isSubmitting || netBalance < form.rentalFee" 
             class="px-8 py-2.5 bg-orange-500 border border-orange-500 text-white hover:bg-orange-600 font-bold rounded-xl text-sm transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
             <span v-if="isSubmitting" class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
-            {{ isSubmitting ? 'Memproses...' : 'Bayar Sekarang' }}
+            <template v-else-if="netBalance < form.rentalFee">Saldo Tidak Mencukupi</template>
+            <template v-else>Bayar Sekarang</template>
           </button>
         </div>
       </div>
@@ -289,9 +280,34 @@ const { user } = useAuth()
 const activePlatformName = ref(props.platformName || '')
 const step = ref(props.platformName ? 2 : 1)
 
+const saldo = ref(0)
+const pendingSaldo = ref(0)
+const netBalance = computed(() => saldo.value - pendingSaldo.value)
+
+const fetchBalance = async () => {
+  if (!user.value) return
+  const uid = (user.value as any)?.id || (user.value as any)?.sub
+  const { data } = await (supabase as any)
+    .from('saldo')
+    .select('balance, pending_balance')
+    .eq('user_id', uid)
+    .single()
+    
+  if (data) {
+    saldo.value = Number(data.balance)
+    pendingSaldo.value = Number(data.pending_balance)
+  }
+}
+
 watch(() => props.platformName, (newVal) => {
   activePlatformName.value = newVal || ''
   step.value = newVal ? 2 : 1
+})
+
+watch(step, (newStep) => {
+  if (newStep === 3) {
+    fetchBalance()
+  }
 })
 
 const selectPlatform = (name: string) => {
@@ -382,20 +398,21 @@ const formatSocialUrl = () => {
 
 const submitPayment = async () => {
   if (!isFormValid.value) return
+  if (netBalance.value < form.rentalFee) {
+    toast.addToast('Saldo tidak mencukupi. Silakan top up terlebih dahulu.', 'error')
+    return
+  }
   
   isSubmitting.value = true
   
   try {
     const uid = (user.value as any)?.id || (user.value as any)?.sub
     if (!uid) throw new Error('User tidak ditemukan. Silakan login kembali.')
-    const email = (user.value as any)?.email
-    const meta = (user.value as any)?.user_metadata || {}
 
     let dbPlatform = 'Meta Ads'
     if (activePlatformName.value.includes('TikTok')) dbPlatform = 'TikTok Ads'
     if (activePlatformName.value.includes('Google')) dbPlatform = 'Google Ads'
     
-    // 1. Catat ke tabel ad_account_requests
     const requestPayload = {
       userId: uid,
       platform: dbPlatform,
@@ -420,29 +437,13 @@ const submitPayment = async () => {
       throw new Error('Gagal mencatat pengajuan')
     }
 
-    // 2. Buat Payment Duitku
-    const paymentResponse = await $fetch<any>('/api/duidku/create-subscription', {
-      method: 'POST',
-      body: {
-        requestId: requestResponse.requestId,
-        amount: form.rentalFee,
-        method: form.paymentMethod,
-        userId: uid,
-        userEmail: email,
-        userName: meta.full_name || form.fullName,
-        userPhone: meta.phone || '0800000000'
-      }
-    })
-
-    if (paymentResponse && paymentResponse.paymentUrl) {
-      // Redirect ke Duitku
-      window.location.href = paymentResponse.paymentUrl
-    } else {
-      throw new Error('Gagal mendapatkan link pembayaran')
-    }
+    toast.addToast('Pengajuan akun berhasil dibuat. Saldo Anda ditahan sementara.', 'success')
+    emit('success')
+    closeModal()
     
   } catch (err: any) {
     toast.addToast(err.message || err.data?.statusMessage || 'Gagal memproses pembayaran.', 'error')
+  } finally {
     isSubmitting.value = false
   }
 }

@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia'
+import { useSaldoStore } from './saldo'
 
 export const useAdsStore = defineStore('ads', {
   state: () => ({
@@ -13,7 +14,7 @@ export const useAdsStore = defineStore('ads', {
   }),
 
   actions: {
-    async fetchAllPerformance() {
+    async fetchAllPerformance(startDate?: string, endDate?: string) {
       this.isLoading = true
       this.error = null
       this.totalSpend = 0
@@ -52,15 +53,15 @@ export const useAdsStore = defineStore('ads', {
            let platform = ''
            if (acc.platform.includes('Meta')) {
               endpoint = '/api/ads/meta/campaigns'
-              params = { ad_account_id: adAccountId }
+              params = { ad_account_id: adAccountId, start_date: startDate, end_date: endDate }
               platform = 'meta'
            } else if (acc.platform.includes('Google')) {
               endpoint = '/api/ads/google/campaigns'
-              params = { customer_id: adAccountId }
+              params = { customer_id: adAccountId, start_date: startDate, end_date: endDate }
               platform = 'google'
            } else if (acc.platform.includes('TikTok')) {
               endpoint = '/api/ads/tiktok/campaigns'
-              params = { advertiser_id: adAccountId }
+              params = { advertiser_id: adAccountId, start_date: startDate, end_date: endDate }
               platform = 'tiktok'
            }
 
@@ -124,8 +125,13 @@ export const useAdsStore = defineStore('ads', {
         if (error) throw error
         if (!accounts) return
         
+        const saldoStore = useSaldoStore()
+        if (!saldoStore.weeklyLimit && !saldoStore.activePackage) {
+           await saldoStore.fetchSaldo()
+        }
+        
         this.adAccounts = accounts.map(acc => {
-          const limit = acc.limit_amount || 0
+          const limit = saldoStore.weeklyLimit || 0
           const penggunaan = 0 // Akan di-update via live fetch
           const saldo = limit - penggunaan
           return {
@@ -159,8 +165,11 @@ export const useAdsStore = defineStore('ads', {
                 const res = await $fetch<any>(endpoint, { params })
                 if (res && res.success && res.data) {
                    const penggunaan = res.data.totalSpend || 0
-                   const limit = this.adAccounts[index].limit || 0
+                   const saldoStore = useSaldoStore()
+                   const limit = saldoStore.weeklyLimit || 0
                    const api_balance = res.data.api_balance
+                   const api_budget_total = res.data.api_budget_total
+                   const api_amount_spent = res.data.api_amount_spent
                    
                    // Gunakan API balance (jika ada), jika tidak gunakan Limit - Penggunaan
                    const saldo = api_balance !== undefined ? api_balance : (limit - penggunaan)
@@ -168,6 +177,8 @@ export const useAdsStore = defineStore('ads', {
                    this.adAccounts[index].penggunaan = penggunaan
                    this.adAccounts[index].saldo = saldo
                    this.adAccounts[index].api_balance_active = api_balance !== undefined
+                   this.adAccounts[index].api_budget_total = api_budget_total
+                   this.adAccounts[index].api_amount_spent = api_amount_spent
                    this.adAccounts[index].alert_saldo = (saldo < limit * 0.1 && limit > 0) ? 'Segera Top Up' : null
                    this.adAccounts[index].updated_at = new Date().toISOString()
                 }
@@ -186,22 +197,22 @@ export const useAdsStore = defineStore('ads', {
       }
     },
 
-    async fetchLiveSpendOnly() {
+    async fetchLiveSpendOnly(startDate?: string, endDate?: string) {
       this.isFetchingAccounts = true
       
       try {
         const promises = this.adAccounts.map(async (acc, index) => {
           let endpoint = ''
-          let params = {}
+          let params: any = {}
           if (acc.platform.toLowerCase() === 'meta') {
              endpoint = '/api/ads/meta/campaigns'
-             params = { ad_account_id: acc.account_id }
+             params = { ad_account_id: acc.account_id, start_date: startDate, end_date: endDate }
           } else if (acc.platform.toLowerCase() === 'google') {
              endpoint = '/api/ads/google/campaigns'
-             params = { customer_id: acc.account_id }
+             params = { customer_id: acc.account_id, start_date: startDate, end_date: endDate }
           } else if (acc.platform.toLowerCase() === 'tiktok') {
              endpoint = '/api/ads/tiktok/campaigns'
-             params = { advertiser_id: acc.account_id }
+             params = { advertiser_id: acc.account_id, start_date: startDate, end_date: endDate }
           }
           
           if (endpoint) {
@@ -211,13 +222,23 @@ export const useAdsStore = defineStore('ads', {
                    const penggunaan = res.data.totalSpend || 0
                    const limit = this.adAccounts[index].limit || 0
                    const api_balance = res.data.api_balance
+                   const api_budget_total = res.data.api_budget_total
+                   const api_amount_spent = res.data.api_amount_spent
                    
                    // Gunakan API balance (jika ada), jika tidak gunakan Limit - Penggunaan
                    const saldo = api_balance !== undefined ? api_balance : (limit - penggunaan)
                    
                    this.adAccounts[index].penggunaan = penggunaan
-                   this.adAccounts[index].saldo = saldo
+                   
+                   // Jika sedang difilter tanggalnya, JANGAN ubah saldo (biarkan sisa keseluruhan)
+                   // kecuali ada api_balance yang memang akurat secara lifetime
+                   if (!startDate || api_balance !== undefined) {
+                     this.adAccounts[index].saldo = saldo
+                   }
+                   
                    this.adAccounts[index].api_balance_active = api_balance !== undefined // Tandai UI
+                   this.adAccounts[index].api_budget_total = api_budget_total
+                   this.adAccounts[index].api_amount_spent = api_amount_spent
                    this.adAccounts[index].alert_saldo = (saldo < limit * 0.1 && limit > 0) ? 'Segera Top Up' : null
                    this.adAccounts[index].updated_at = new Date().toISOString() // Real-time UX
                 }

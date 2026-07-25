@@ -16,12 +16,6 @@
           </div>
           
           <div class="space-y-4">
-            <div class="flex justify-between items-center">
-              <span class="text-sm text-ink-500 font-medium">Layanan Aktif:</span>
-              <span class="flex items-center gap-1.5 px-3 py-1 rounded-full border border-orange-500 text-orange-500 text-xs font-bold bg-white">
-                <Gem class="w-3 h-3" /> GRATIS
-              </span>
-            </div>
           </div>
         </div>
         
@@ -187,69 +181,73 @@
           </div>
         </div>
         
-        <!-- Bank Content -->
-        <div v-else-if="activeTab === 'bank'" class="bg-white border border-ink-100 rounded-2xl shadow-sm">
-          <div class="px-6 py-5 border-b border-ink-100">
-            <h3 class="font-bold text-ink-900 text-base">Bank</h3>
-          </div>
-          <div class="p-6">
-            <p class="text-ink-900 text-sm mb-6 leading-relaxed">Penarikan My Balance akan ditransfer ke Bank di bawah ini. Mohon pastikan data yang diinput sudah benar</p>
-            <div class="space-y-6">
-              <div>
-                <label class="block text-sm text-ink-900 mb-2">Nama pemilik rekening</label>
-                <input type="text" class="w-full border border-ink-100 rounded-md px-3 py-2 text-sm text-ink-700 bg-ink-50/30 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500" value="">
-              </div>
-              <div>
-                <label class="block text-sm text-ink-900 mb-2">Bank</label>
-                <input type="text" class="w-full border border-ink-100 rounded-md px-3 py-2 text-sm text-ink-700 bg-ink-50/30 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500" value="">
-              </div>
-              <div>
-                <label class="block text-sm text-ink-900 mb-2">Nomor rekening</label>
-                <input type="text" class="w-full border border-ink-100 rounded-md px-3 py-2 text-sm text-ink-700 bg-ink-50/30 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500" value="">
-              </div>
-            </div>
-          </div>
-          <div class="px-6 py-4 flex justify-end border-t border-ink-100">
-            <button class="bg-orange-500 hover:bg-orange-600 text-white font-bold py-2.5 px-6 rounded-md text-sm transition-colors">
-              Ubah Data Bank
-            </button>
-          </div>
-        </div>
-
         <!-- Layanan Aktif Content -->
         <div v-else-if="activeTab === 'layanan'" class="bg-white border border-ink-100 rounded-2xl shadow-sm">
           <div class="px-6 py-5 border-b border-ink-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <h3 class="font-bold text-ink-900 text-base">Layananku</h3>
+            <h3 class="font-bold text-ink-900 text-base">Layanan Aktif</h3>
             <div class="flex items-center gap-3">
-              <button class="border border-orange-500 text-orange-500 font-bold py-2 px-4 rounded-md text-sm hover:bg-orange-50 transition-colors">
-                Eksplor Layanan
-              </button>
-              <button class="flex items-center gap-2 border border-orange-500 text-orange-500 font-bold py-2 px-4 rounded-md text-sm hover:bg-orange-50 transition-colors">
-                <Receipt class="w-4 h-4" /> Halaman Invoice
-              </button>
+              <NuxtLink to="/dashboard/topup" class="border border-orange-500 text-orange-500 font-bold py-2 px-4 rounded-md text-sm hover:bg-orange-50 transition-colors">
+                Ubah Paket
+              </NuxtLink>
             </div>
           </div>
           
-          <div class="p-6">
+          <div class="p-6 space-y-6">
+            <!-- Paket Saat Ini -->
+            <div class="border border-ink-100 rounded-xl p-5 bg-orange-50/50">
+              <div class="flex items-center gap-3 mb-2">
+                <Gem class="w-5 h-5 text-orange-500" />
+                <span class="font-bold text-ink-900 text-lg">Paket {{ activePackage.charAt(0).toUpperCase() + activePackage.slice(1) }}</span>
+                <span class="px-3 py-1 bg-green-100 text-green-600 text-xs font-bold rounded-md uppercase tracking-wider">Aktif</span>
+              </div>
+              <p class="text-sm text-ink-500">Anda sedang berlangganan paket {{ activePackage.charAt(0).toUpperCase() + activePackage.slice(1) }}. Anda dapat melihat detail limit dan biaya (*fee*) pada halaman <NuxtLink to="/dashboard/topup" class="text-orange-500 font-bold hover:underline">Top Up</NuxtLink>.</p>
+            </div>
+
+            <!-- Sewa Akun Iklan -->
             <div class="border border-ink-100 rounded-xl p-5">
               <div class="flex flex-wrap items-center gap-3 mb-5">
-                <span class="font-bold text-ink-900">Ads Platform</span>
-                <span class="text-ink-500 text-sm">Ads Whitelisted</span>
-                <span class="px-3 py-1 bg-ink-100 text-ink-500 text-xs font-bold rounded-md">Subscription Inactive</span>
+                <span class="font-bold text-ink-900">Sewa Akun Iklan</span>
+                <span class="px-3 py-1 bg-ink-100 text-ink-500 text-xs font-bold rounded-md">{{ adsStore.adAccounts.length }} Akun</span>
               </div>
               
-              <div class="space-y-3">
-                <div class="flex items-center gap-3 p-4 border border-ink-100 rounded-lg">
-                  <div class="w-8 h-8 flex items-center justify-center shrink-0">
-                    <img src="/icon-meta-ads.png" alt="Meta" class="w-full h-full object-contain">
+              <div v-if="adsStore.isFetchingAccounts" class="flex justify-center p-4">
+                <Loader2 class="w-6 h-6 text-orange-500 animate-spin" />
+              </div>
+              <div v-else-if="adsStore.adAccounts.length === 0" class="text-center p-4 text-ink-500 text-sm">
+                Belum ada akun iklan yang disewa.
+              </div>
+              <div v-else class="space-y-3">
+                <div v-for="account in adsStore.adAccounts" :key="account.id" class="flex items-center justify-between p-4 border border-ink-100 rounded-lg hover:border-orange-200 transition-colors">
+                  <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 flex items-center justify-center shrink-0">
+                      <svg v-if="account.platform === 'Meta'" viewBox="0 0 28 28" class="w-6 h-6 text-blue-600" fill="currentColor">
+                        <path d="M19.34 6.8c-1.93 0-3.34.73-4.26 1.7a6.02 6.02 0 0 0-3.51-1.55c-1.75-.26-3.42.23-4.68 1.24-1.59 1.3-2.39 3.28-2.39 5.39 0 4.15 3 6.6 6.35 6.6 1.93 0 3.34-.73 4.26-1.7a6.02 6.02 0 0 0 3.51 1.55c1.75.26 3.42-.23 4.68-1.24 1.59-1.3 2.39-3.28 2.39-5.39 0-4.15-3-6.6-6.35-6.6zm-8.5 11.38c-2.24 0-4.35-1.64-4.35-4.6 0-1.43.54-2.74 1.56-3.57.82-.67 1.9-1 3.02-.93 1.2.08 2.31.73 3.05 1.83.15.23.29.48.41.75-1.05 1.53-1.69 3.24-1.76 4.96-.55 1.05-1.44 1.56-2.32 1.56zm12.84-4.6c0 1.43-.54 2.74-1.56 3.57-.82.67-1.9 1-3.02.93-1.2-.08-2.31-.73-3.05-1.83-.15-.23-.29-.48-.41-.75 1.05-1.53 1.69-3.24 1.76-4.96.55-1.05 1.44-1.56 2.32-1.56 2.24 0 4.35 1.64 4.35 4.6z"/>
+                      </svg>
+                      <svg v-else-if="account.platform === 'Google'" viewBox="0 0 24 24" class="w-5 h-5">
+                        <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                        <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                        <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+                        <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                      </svg>
+                      <div v-else class="w-6 h-6 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center shrink-0 border border-blue-100">
+                        <span class="text-[11px] font-bold">T</span>
+                      </div>
+                    </div>
+                    <div>
+                      <span class="font-bold text-ink-900 text-sm block">{{ account.name }}</span>
+                      <span class="text-[11px] text-ink-500">ID: {{ account.account_id }}</span>
+                    </div>
                   </div>
-                  <span class="font-bold text-ink-900 text-sm">Facebook Whitelisted</span>
-                </div>
-                <div class="flex items-center gap-3 p-4 border border-ink-100 rounded-lg">
-                  <div class="w-8 h-8 rounded-full border border-ink-100 flex items-center justify-center p-1.5 bg-black">
-                    <img src="/tiktok.svg" alt="TikTok" class="w-full h-full object-contain filter brightness-0 invert">
+                  <div class="text-right">
+                    <div v-if="account.subscription_expires_at">
+                      <span class="text-[10px] text-ink-500">Masa Aktif</span>
+                      <p class="font-bold text-ink-900 text-xs">{{ calculateDaysLeft(account.subscription_expires_at) }}</p>
+                    </div>
+                    <div v-else>
+                      <span class="text-[10px] text-ink-500">Masa Aktif</span>
+                      <p class="font-bold text-ink-900 text-xs">-</p>
+                    </div>
                   </div>
-                  <span class="font-bold text-ink-900 text-sm">Tiktok Whitelisted</span>
                 </div>
               </div>
             </div>
@@ -301,13 +299,17 @@ import {
   AlertCircle, Lock, Receipt, Loader2
 } from 'lucide-vue-next'
 
+import { useAdsStore } from '~/stores/ads'
+
 definePageMeta({
   layout: 'dashboard',
 })
 
 const activeTab = ref('profile')
+const activePackage = ref('starter')
 
 const { user } = useAuth()
+const adsStore = useAdsStore()
 
 const fullName = computed(() => user.value?.user_metadata?.full_name || 'User')
 const verificationStatus = ref('unverified')
@@ -353,7 +355,7 @@ const fetchProfile = async () => {
 
     const { data, error } = await supabase
       .from('users')
-      .select('phone_verified, verification_status')
+      .select('phone_verified, verification_status, active_package')
       .eq('id', uid)
       .single()
       
@@ -367,6 +369,7 @@ const fetchProfile = async () => {
       if ((data as any).verification_status) {
         verificationStatus.value = (data as any).verification_status
       }
+      activePackage.value = (data as any).active_package || 'starter'
     }
     
     if (user.value) {
@@ -381,7 +384,20 @@ const fetchProfile = async () => {
 
 onMounted(() => {
   fetchProfile()
+  adsStore.fetchAdAccounts()
 })
+
+const calculateDaysLeft = (dateStr: string) => {
+  if (!dateStr) return '-'
+  const end = new Date(dateStr)
+  const today = new Date()
+  end.setHours(0, 0, 0, 0)
+  today.setHours(0, 0, 0, 0)
+  const diffTime = end.getTime() - today.getTime()
+  if (diffTime <= 0) return 'Kedaluwarsa'
+  const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24))
+  return diffDays + ' Hari'
+}
 
 const handleToggle2FA = async () => {
   isUpdating2FA.value = true
@@ -451,7 +467,6 @@ const resetVerification = async () => {
 
 const tabs = [
   { id: 'profile', label: 'Profile' },
-  { id: 'bank', label: 'Bank' },
   { id: 'layanan', label: 'Layanan Aktif' },
   { id: 'referral', label: 'Kode Referral' },
 ]

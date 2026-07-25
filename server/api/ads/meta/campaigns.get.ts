@@ -44,6 +44,8 @@ export default defineCachedEventHandler(async (event): Promise<AdsResponse> => {
   try {
     const query = getQuery(event)
     const adAccountIdParam = query.ad_account_id as string | undefined
+    const startDate = query.start_date as string | undefined
+    const endDate = query.end_date as string | undefined
     
     if (!adAccountIdParam) {
       throw createError({ statusCode: 400, message: 'Parameter ad_account_id wajib disertakan' })
@@ -55,17 +57,24 @@ export default defineCachedEventHandler(async (event): Promise<AdsResponse> => {
       ? adAccountIdParam 
       : `act_${adAccountIdParam}`
 
+    let timeRangeParam: any = { date_preset: 'last_30d' }
+    if (startDate && endDate) {
+      timeRangeParam = { time_range: JSON.stringify({ since: startDate, until: endDate }) }
+    }
+
     const metaResponse: any = await $fetch(`https://graph.facebook.com/v19.0/${adAccountId}/insights`, {
       params: {
         fields: 'campaign_id,campaign_name,spend,impressions,clicks',
         level: 'campaign',
-        date_preset: 'last_30d',
+        ...timeRangeParam,
         access_token: metaToken
       }
     })
 
     // Ambil info saldo akun (Prepaid / Spend Cap)
     let api_balance: number | undefined = undefined
+    let api_budget_total: number | undefined = undefined
+    let api_amount_spent: number | undefined = undefined
     try {
       const accountInfo: any = await $fetch(`https://graph.facebook.com/v19.0/${adAccountId}`, {
         params: {
@@ -77,11 +86,22 @@ export default defineCachedEventHandler(async (event): Promise<AdsResponse> => {
       // Hitung dari spend_cap jika balance tidak ada
       if (accountInfo.balance !== undefined && accountInfo.balance !== '0') {
         api_balance = parseFloat(accountInfo.balance) / 100
+        // Jika spend_cap tersedia, hitung total budget & spent
+        if (accountInfo.spend_cap !== undefined && accountInfo.amount_spent !== undefined) {
+          const cap = parseFloat(accountInfo.spend_cap)
+          const spent = parseFloat(accountInfo.amount_spent)
+          if (cap > 0) {
+            api_budget_total = cap / 100
+            api_amount_spent = spent / 100
+          }
+        }
       } else if (accountInfo.spend_cap !== undefined && accountInfo.amount_spent !== undefined) {
         const cap = parseFloat(accountInfo.spend_cap)
         const spent = parseFloat(accountInfo.amount_spent)
         if (cap > 0) {
           api_balance = (cap - spent) / 100
+          api_budget_total = cap / 100
+          api_amount_spent = spent / 100
         }
       }
     } catch (e) {
@@ -108,6 +128,8 @@ export default defineCachedEventHandler(async (event): Promise<AdsResponse> => {
       data: {
         totalSpend,
         api_balance,
+        api_budget_total,
+        api_amount_spent,
         currency: 'IDR',
         activeCampaigns: campaigns.length,
         campaigns
@@ -126,6 +148,6 @@ export default defineCachedEventHandler(async (event): Promise<AdsResponse> => {
   name: 'meta-ad-campaigns',
   getKey: (event) => {
     const query = getQuery(event)
-    return String(query.ad_account_id || 'unknown')
+    return String(query.ad_account_id || 'unknown') + '_' + String(query.start_date || '') + '_' + String(query.end_date || '')
   }
 })

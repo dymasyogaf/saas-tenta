@@ -36,7 +36,9 @@
   "devDependencies": {
     "@types/node": "^26.1.1",
     "@types/sanitize-html": "^2.16.1",
+    "typescript": "^7.0.2",
     "vite": "^8.1.5",
+    "vue-tsc": "^3.3.8",
     "wrangler": "^4.112.0"
   }
 }

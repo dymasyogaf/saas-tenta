@@ -135,8 +135,8 @@
                 @click="isProfileOpen = false"
               >
                 <span class="font-semibold text-ink-900 group-hover:text-orange-600">Profil</span>
-                <div class="flex items-center gap-1.5 px-2 py-1 rounded-full border border-orange-500 text-orange-600 bg-orange-50 text-[10px] font-bold">
-                  <Gem class="w-3 h-3" /> GRATIS
+                <div class="flex items-center gap-1.5 px-2 py-1 rounded-full border border-orange-500 text-orange-600 bg-orange-50 text-[10px] font-bold uppercase tracking-wider">
+                  <Gem class="w-3 h-3" /> {{ saldoStore.activePackage || 'GRATIS' }}
                 </div>
               </NuxtLink>
               <div class="h-px bg-ink-100 my-1" />
@@ -182,6 +182,8 @@
 </template>
 
 <script setup lang="ts">
+import { onMounted } from 'vue'
+import { useSaldoStore } from '~/stores/saldo'
 import {
   LayoutDashboard,
   MonitorPlay,
@@ -201,6 +203,14 @@ import {
 // Auth state
 const { user, logout } = useAuth()
 const router = useRouter()
+const saldoStore = useSaldoStore()
+
+onMounted(() => {
+  // Hanya fetch jika belum ada (untuk menghindari double fetch di halaman saldo/topup)
+  if (saldoStore.activePackage === null) {
+    saldoStore.fetchSaldo()
+  }
+})
 
 const userName = computed(() => {
   return user.value?.user_metadata?.full_name || user.value?.email || 'User'

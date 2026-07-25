@@ -5,7 +5,7 @@
       
       <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3">
         <!-- Date Filter -->
-        <div v-if="['histori-topup', 'histori-pindah', 'histori-tambahan', 'histori-pengganti'].includes(activeTab)" class="block">
+        <div v-if="['list-saldo', 'histori-topup', 'histori-pindah', 'histori-tambahan', 'histori-pengganti'].includes(activeTab)" class="block">
           <SharedDateRangePicker v-model="dateRange" />
         </div>
         
@@ -75,7 +75,7 @@
           </button>
         </div>
         <div class="relative w-full lg:w-72">
-          <input type="text" placeholder="Cari ID Kredit atau Nama Kredit" class="pl-4 pr-10 py-2 border border-ink-200 rounded-md text-sm w-full focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 text-ink-900 placeholder:text-ink-400 bg-white" />
+          <input type="text" placeholder="Cari ID Akun atau Nama Akun" class="pl-4 pr-10 py-2 border border-ink-200 rounded-md text-sm w-full focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 text-ink-900 placeholder:text-ink-400 bg-white" />
           <Search class="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-ink-400" />
         </div>
       </div>
@@ -84,13 +84,62 @@
         <table class="w-full min-w-[1200px] text-left border-collapse">
           <thead>
             <tr class="border-b border-ink-200 bg-ink-50/50 text-[11px] font-bold text-ink-500 uppercase tracking-wider">
-              <th class="py-4 px-5 whitespace-nowrap">ID Kredit</th>
-              <th class="py-4 px-5 whitespace-nowrap">Nama Kredit</th>
-              <th class="py-4 px-5 whitespace-nowrap">Platform</th>
-              <th class="py-4 px-5 whitespace-nowrap">Saldo</th>
-              <th class="py-4 px-5 whitespace-nowrap">Limit</th>
-              <th class="py-4 px-5 whitespace-nowrap">Penggunaan</th>
-              <th class="py-4 px-5 whitespace-nowrap">Update Terakhir</th>
+              <th class="py-4 px-5 whitespace-nowrap">
+                <div class="flex items-center gap-1.5 w-max">
+                  ID Akun
+                  <SharedTooltip text="ID unik akun iklan (misalnya Ad Account ID Meta/Google) atau kode referensi transaksi sewa yang terdaftar di platform.">
+                    <Info class="w-3.5 h-3.5 text-ink-400 hover:text-ink-600 transition-colors cursor-help" />
+                  </SharedTooltip>
+                </div>
+              </th>
+              <th class="py-4 px-5 whitespace-nowrap">
+                <div class="flex items-center gap-1.5 w-max">
+                  Nama Akun
+                  <SharedTooltip text="Nama profil atau identitas akun iklan yang disewa.">
+                    <Info class="w-3.5 h-3.5 text-ink-400 hover:text-ink-600 transition-colors cursor-help" />
+                  </SharedTooltip>
+                </div>
+              </th>
+              <th class="py-4 px-5 whitespace-nowrap">
+                <div class="flex items-center gap-1.5 w-max">
+                  Platform
+                  <SharedTooltip text="Penyedia jaringan iklan tempat akun tersebut berjalan.">
+                    <Info class="w-3.5 h-3.5 text-ink-400 hover:text-ink-600 transition-colors cursor-help" />
+                  </SharedTooltip>
+                </div>
+              </th>
+              <th class="py-4 px-5 whitespace-nowrap">
+                <div class="flex items-center gap-1.5 w-max">
+                  Sisa Anggaran
+                  <SharedTooltip text="Sisa anggaran iklan (Account Budget) yang tersedia di platform. Data diambil langsung dari API Google/Meta Ads secara real-time.">
+                    <Info class="w-3.5 h-3.5 text-ink-400 hover:text-ink-600 transition-colors cursor-help" />
+                  </SharedTooltip>
+                </div>
+              </th>
+              <th class="py-4 px-5 whitespace-nowrap">
+                <div class="flex items-center gap-1.5 w-max">
+                  Limit Mingguan
+                  <SharedTooltip text="Batas pengeluaran dalam seminggu sesuai paket yang dipilih beserta sisa rasio pemakaiannya (Ad Spend / Limit).">
+                    <Info class="w-3.5 h-3.5 text-ink-400 hover:text-ink-600 transition-colors cursor-help" />
+                  </SharedTooltip>
+                </div>
+              </th>
+              <th class="py-4 px-5 whitespace-nowrap">
+                <div class="flex items-center gap-1.5 w-max">
+                  Spend Harian
+                  <SharedTooltip text="Batas maksimal pengeluaran harian yang diizinkan untuk akun ini.">
+                    <Info class="w-3.5 h-3.5 text-ink-400 hover:text-ink-600 transition-colors cursor-help" />
+                  </SharedTooltip>
+                </div>
+              </th>
+              <th class="py-4 px-5 whitespace-nowrap">
+                <div class="flex items-center gap-1.5 w-max">
+                  Update Terakhir
+                  <SharedTooltip text="Waktu terakhir sistem memicu sinkronisasi data dari jaringan iklan. Data otomatis di-update setiap 5 menit.">
+                    <Info class="w-3.5 h-3.5 text-ink-400 hover:text-ink-600 transition-colors cursor-help" />
+                  </SharedTooltip>
+                </div>
+              </th>
             </tr>
           </thead>
           <tbody class="text-[13px] text-ink-900 divide-y divide-ink-100">
@@ -107,7 +156,12 @@
             <!-- Actual Data -->
             <tr v-else-if="adsStore.adAccounts.length > 0" v-for="account in adsStore.adAccounts" :key="account.id" class="hover:bg-ink-50/50 transition-colors group">
               <td class="py-4 px-5 font-medium text-ink-600 whitespace-nowrap">{{ account.account_id }}</td>
-              <td class="py-4 px-5 font-medium text-ink-900 whitespace-nowrap">{{ account.name }}</td>
+              <td class="py-4 px-5 font-medium text-ink-900 whitespace-nowrap">
+                <div>{{ account.name }}</div>
+                <div v-if="account.subscription_expires_at" class="text-[10px] text-ink-500 mt-1">
+                  Sisa Sewa: <span class="font-bold">{{ calculateDaysLeft(account.subscription_expires_at) }}</span>
+                </div>
+              </td>
               <td class="py-4 px-5">
                 <div class="flex items-center gap-2.5 font-bold text-ink-800">
                   <div v-if="account.platform === 'Meta'" class="w-6 h-6 flex items-center justify-center shrink-0">
@@ -129,18 +183,86 @@
                   {{ account.platform }}
                 </div>
               </td>
-              <td class="py-4 px-5">
-                <div class="flex items-center gap-2 whitespace-nowrap">
-                  <span class="font-bold text-[14px]">{{ formatCurrency(account.saldo) }}</span>
-                  <span v-if="account.api_balance_active" class="bg-green-50 text-green-600 border border-green-100 text-[10px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider flex items-center gap-1" title="Saldo Real-Time dari API">
-                    <span class="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>
+              <td class="py-4 px-5 min-w-[200px]">
+                <!-- Nominal & API indicator -->
+                <div class="flex items-center gap-2 whitespace-nowrap mb-1.5">
+                  <span class="font-bold text-[14px]" :class="getBudgetColor(account)">
+                    {{ formatCurrency(Math.max(0, account.saldo)) }}
+                  </span>
+                  <span v-if="account.api_balance_active" class="inline-flex items-center gap-1 text-[9px] font-bold text-emerald-600" title="Sinkron dari API platform">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
                     Live
                   </span>
-                  <span v-if="account.alert_saldo" class="bg-red-50 text-red-500 border border-red-100 text-[11px] font-bold px-2.5 py-0.5 rounded-full">{{ account.alert_saldo }}</span>
+                </div>
+
+                <!-- Progress bar -->
+                <div class="w-full bg-ink-100 rounded-full h-1.5 overflow-hidden">
+                  <div 
+                    class="h-full rounded-full transition-all duration-500"
+                    :class="getBudgetBarColor(account)"
+                    :style="{ width: getBudgetUsagePercent(account) + '%' }"
+                  ></div>
+                </div>
+
+                <!-- Info text: terpakai / total -->
+                <div class="flex items-center justify-between mt-1">
+                  <span class="text-[10px] text-ink-400 font-medium">
+                    {{ formatCompact(getBudgetSpent(account)) }} / {{ formatCompact(getBudgetTotal(account)) }} terpakai
+                  </span>
+                  <span class="text-[10px] font-bold" :class="getBudgetColor(account)">
+                    {{ getBudgetUsagePercent(account) }}%
+                  </span>
+                </div>
+
+                <!-- Warning states -->
+                <div v-if="account.saldo <= 0" class="mt-1.5">
+                  <NuxtLink to="/dashboard/topup" class="inline-flex items-center gap-1 bg-red-50 text-red-600 border border-red-100 text-[10px] font-bold px-2 py-1 rounded-md hover:bg-red-100 transition-colors">
+                    <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                    Anggaran Habis — Top Up
+                  </NuxtLink>
+                </div>
+                <div v-else-if="account.saldo <= (0.2 * getBudgetTotal(account))" class="mt-1.5">
+                  <span class="inline-flex items-center gap-1 text-[10px] font-bold text-amber-600">
+                    <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                    Anggaran Menipis
+                  </span>
                 </div>
               </td>
-              <td class="py-4 px-5 font-medium text-ink-700 whitespace-nowrap">{{ formatCurrency(account.limit) }}</td>
-              <td class="py-4 px-5 font-medium text-ink-700 whitespace-nowrap">{{ formatCurrency(account.penggunaan) }}</td>
+              <td class="py-4 px-5 min-w-[200px]">
+                <!-- Nominal limit -->
+                <div class="flex items-center gap-2 whitespace-nowrap mb-1.5">
+                  <span class="font-bold text-[14px]" :class="getLimitColor(account)">
+                    {{ formatCurrency(account.limit) }}
+                  </span>
+                </div>
+
+                <!-- Progress bar -->
+                <div class="w-full bg-ink-100 rounded-full h-1.5 overflow-hidden">
+                  <div 
+                    class="h-full rounded-full transition-all duration-500"
+                    :class="getLimitBarColor(account)"
+                    :style="{ width: getLimitUsagePercent(account) + '%' }"
+                  ></div>
+                </div>
+
+                <!-- Info text: terpakai / total -->
+                <div class="flex items-center justify-between mt-1">
+                  <span class="text-[10px] text-ink-400 font-medium">
+                    {{ formatCompact(account.penggunaan) }} / {{ formatCompact(account.limit) }} terpakai
+                  </span>
+                  <span class="text-[10px] font-bold" :class="getLimitColor(account)">
+                    {{ getLimitUsagePercent(account) }}%
+                  </span>
+                </div>
+              </td>
+              <td class="py-4 px-5 whitespace-nowrap">
+                <div class="flex items-center gap-2">
+                  <span class="font-bold text-[13px] text-ink-900">{{ account.daily_limit ? formatCurrency(account.daily_limit) : 'Belum Diatur' }}</span>
+                  <button @click="openDailyLimitModal(account)" class="text-ink-400 hover:text-orange-500 transition-colors p-1" title="Atur Spend Harian">
+                    <svg class="w-3.5 h-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4 Z"></path></svg>
+                  </button>
+                </div>
+              </td>
               <td class="py-4 px-5 text-ink-500 text-[13px] whitespace-nowrap">{{ formatLastUpdated(account.updated_at) }}</td>
             </tr>
             <!-- Empty State -->
@@ -341,7 +463,7 @@
     <div v-else-if="activeTab === 'histori-pengganti'">
       <div class="flex justify-end mb-4">
         <div class="relative w-full md:w-72">
-          <input type="text" placeholder="Cari ID Kredit atau Nama Kredit" class="pl-4 pr-10 py-2 border border-ink-200 rounded-md text-sm w-full focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 text-ink-900 placeholder:text-ink-400 bg-white" />
+          <input type="text" placeholder="Cari ID Akun atau Nama Akun" class="pl-4 pr-10 py-2 border border-ink-200 rounded-md text-sm w-full focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 text-ink-900 placeholder:text-ink-400 bg-white" />
           <Search class="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-ink-400" />
         </div>
       </div>
@@ -366,11 +488,37 @@
       v-model="isRequestModalOpen"
       platformName=""
     />
+
+    <!-- Modal Set Daily Limit -->
+    <div v-if="isDailyLimitModalOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-ink-900/50 backdrop-blur-sm">
+      <div class="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden relative">
+        <div class="px-6 pt-6 pb-4 border-b border-ink-100 flex justify-between items-center">
+          <h3 class="text-xl font-display font-bold text-ink-900">Atur Spend Harian</h3>
+          <button @click="isDailyLimitModalOpen = false" class="text-ink-400 hover:text-ink-600 transition-colors">
+            <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+          </button>
+        </div>
+        <div class="p-6">
+          <label class="block text-sm font-medium text-ink-700 mb-2">Limit Pengeluaran Harian (Rp)</label>
+          <div class="relative">
+            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-ink-500 font-medium">Rp</span>
+            <input type="text" v-model="formattedDailyLimitInput" class="w-full pl-11 pr-4 py-2.5 border border-ink-200 rounded-lg text-ink-900 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 font-medium" placeholder="100.000" />
+          </div>
+          <p class="text-[11px] text-ink-500 mt-2">Batas harian yang Anda atur akan membatasi pengeluaran iklan Anda setiap harinya di platform terkait.</p>
+        </div>
+        <div class="px-6 py-4 bg-ink-50 flex gap-3 justify-end border-t border-ink-100">
+          <button @click="isDailyLimitModalOpen = false" class="px-4 py-2 text-sm font-bold text-ink-600 hover:bg-ink-200 rounded-lg transition-colors">Batal</button>
+          <button @click="saveDailyLimit" :disabled="isSavingDailyLimit" class="px-4 py-2 text-sm font-bold text-white bg-orange-500 hover:bg-orange-600 rounded-lg transition-colors disabled:opacity-50">
+            {{ isSavingDailyLimit ? 'Menyimpan...' : 'Simpan Limit' }}
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { Calendar, ChevronDown, Search, Download, ArrowDown, ArrowUpRight, CreditCard, PlusCircle, ChevronLeft, ChevronRight, RefreshCw } from 'lucide-vue-next'
+import { Calendar, ChevronDown, Search, Download, ArrowDown, ArrowUpRight, CreditCard, PlusCircle, ChevronLeft, ChevronRight, RefreshCw, Info } from 'lucide-vue-next'
 import { ref, onMounted, computed } from 'vue'
 import { useSaldoStore } from '~/stores/saldo'
 import { useAdsStore } from '~/stores/ads'
@@ -389,6 +537,73 @@ const formatCurrency = (value: number) => {
   return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(value || 0)
 }
 
+const formatCompact = (value: number) => {
+  if (!value || value <= 0) return 'Rp 0'
+  if (value >= 1000000) return `Rp ${(value / 1000000).toFixed(1).replace('.0', '')}jt`
+  if (value >= 1000) return `Rp ${(value / 1000).toFixed(0)}rb`
+  return `Rp ${value}`
+}
+
+const getBudgetTotal = (account: any) => {
+  // Prioritas: api_budget_total (dari platform API), fallback ke penggunaan + saldo
+  if (account.api_budget_total !== undefined && account.api_budget_total > 0) {
+    return account.api_budget_total
+  }
+  return (account.penggunaan || 0) + Math.max(0, account.saldo || 0)
+}
+
+const getBudgetSpent = (account: any) => {
+  // Prioritas: api_amount_spent (dari platform API), fallback ke penggunaan
+  if (account.api_amount_spent !== undefined && account.api_amount_spent > 0) {
+    return account.api_amount_spent
+  }
+  return account.penggunaan || 0
+}
+
+const getBudgetUsagePercent = (account: any) => {
+  const total = getBudgetTotal(account)
+  const spent = getBudgetSpent(account)
+  if (total <= 0) return 100
+  return Math.min(100, Math.round((spent / total) * 100))
+}
+
+const getBudgetColor = (account: any) => {
+  const pct = getBudgetUsagePercent(account)
+  if (pct >= 100 || account.saldo <= 0) return 'text-red-500'
+  if (pct >= 80) return 'text-amber-500'
+  return 'text-ink-900'
+}
+
+const getBudgetBarColor = (account: any) => {
+  const pct = getBudgetUsagePercent(account)
+  if (pct >= 100 || account.saldo <= 0) return 'bg-red-500'
+  if (pct >= 80) return 'bg-amber-400'
+  if (pct >= 50) return 'bg-blue-500'
+  return 'bg-emerald-500'
+}
+
+const getLimitUsagePercent = (account: any) => {
+  const limit = account.limit || 0
+  const spent = account.penggunaan || 0
+  if (limit <= 0) return 0
+  return Math.min(100, Math.round((spent / limit) * 100))
+}
+
+const getLimitColor = (account: any) => {
+  const pct = getLimitUsagePercent(account)
+  if (pct >= 100) return 'text-red-500'
+  if (pct >= 80) return 'text-amber-500'
+  return 'text-ink-900'
+}
+
+const getLimitBarColor = (account: any) => {
+  const pct = getLimitUsagePercent(account)
+  if (pct >= 100) return 'bg-red-500'
+  if (pct >= 80) return 'bg-amber-400'
+  if (pct >= 50) return 'bg-blue-500'
+  return 'bg-emerald-500'
+}
+
 const formatLastUpdated = (dateStr: string) => {
   if (!dateStr) return '-'
   const d = new Date(dateStr)
@@ -402,7 +617,23 @@ const formatLastUpdated = (dateStr: string) => {
   }).format(d)
 }
 
-const syncAds = () => {
+const calculateDaysLeft = (dateStr: string) => {
+  if (!dateStr) return '-'
+  const end = new Date(dateStr)
+  const today = new Date()
+  
+  // Hilangkan jam/menit agar perhitungannya murni selisih hari (kalender)
+  end.setHours(0, 0, 0, 0)
+  today.setHours(0, 0, 0, 0)
+  
+  const diffTime = end.getTime() - today.getTime()
+  if (diffTime <= 0) return 'Kedaluwarsa'
+  
+  const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24))
+  return diffDays + ' Hari'
+}
+
+const syncAds = async () => {
   const lastSync = localStorage.getItem('last_ads_sync')
   if (lastSync) {
     const timeDiff = new Date().getTime() - new Date(lastSync).getTime()
@@ -424,12 +655,64 @@ const syncAds = () => {
   }
 
   localStorage.setItem('last_ads_sync', new Date().toISOString())
-  adsStore.fetchLiveSpendOnly()
+  
+  const toast = useToast()
+  if (dateRange.value.start && dateRange.value.end) {
+    await adsStore.fetchLiveSpendOnly(dateRange.value.start, dateRange.value.end)
+  } else {
+    await adsStore.fetchLiveSpendOnly()
+  }
+  toast.addToast('Data penggunaan dan saldo berhasil di-sync dari platform', 'success')
 }
 
 const showPicComingSoon = () => {
   const toast = useToast()
   toast.addToast('Fitur manajemen PIC / Tim sedang dalam tahap pengembangan.', 'info')
+}
+
+const isDailyLimitModalOpen = ref(false)
+const dailyLimitInput = ref<number | null>(null)
+const selectedAccountForLimit = ref<any>(null)
+const isSavingDailyLimit = ref(false)
+
+const formattedDailyLimitInput = computed({
+  get: () => {
+    if (!dailyLimitInput.value) return ''
+    return new Intl.NumberFormat('id-ID').format(Number(dailyLimitInput.value))
+  },
+  set: (val: string) => {
+    const numericString = val.replace(/\D/g, '')
+    dailyLimitInput.value = numericString ? Number(numericString) : null
+  }
+})
+
+const openDailyLimitModal = (account: any) => {
+  selectedAccountForLimit.value = account
+  dailyLimitInput.value = account.daily_limit || null
+  isDailyLimitModalOpen.value = true
+}
+
+const saveDailyLimit = async () => {
+  if (!selectedAccountForLimit.value) return
+  isSavingDailyLimit.value = true
+  try {
+    await $fetch('/api/ads/set-daily-limit', {
+      method: 'POST',
+      body: {
+        accountId: selectedAccountForLimit.value.id,
+        dailyLimit: dailyLimitInput.value
+      }
+    })
+    const toast = useToast()
+    toast.addToast('Limit harian berhasil diatur', 'success')
+    isDailyLimitModalOpen.value = false
+    adsStore.fetchAdAccounts() // refresh
+  } catch (err: any) {
+    const toast = useToast()
+    toast.addToast(err.statusMessage || 'Gagal mengatur limit harian', 'error')
+  } finally {
+    isSavingDailyLimit.value = false
+  }
 }
 
 const activeTab = ref('list-saldo')
@@ -445,10 +728,20 @@ const formatDateForInput = (d: Date) => {
   return `${year}-${month}-${day}`
 }
 
-const dateRange = ref({
-  start: formatDateForInput(thirtyDaysAgo),
-  end: formatDateForInput(today)
+const dateRange = ref({ start: '', end: '' })
+
+watch(dateRange, (newVal) => {
+  if (activeTab.value === 'list-saldo' && newVal.start && newVal.end) {
+    adsStore.fetchLiveSpendOnly(newVal.start, newVal.end)
+  }
 })
+
+const tabs = [
+  { id: 'list-saldo', label: 'List Saldo' },
+  { id: 'histori-topup', label: 'Histori Top Up' },
+  { id: 'histori-tambahan', label: 'Histori Akun Tambahan' },
+  { id: 'histori-pengganti', label: 'Histori Akun Pengganti' },
+]
 
 const filteredTransactions = computed(() => {
   if (!saldoStore.transactions) return []
@@ -470,8 +763,8 @@ const filteredTransactions = computed(() => {
   
   if (activeTab.value === 'histori-topup') {
     return result.filter((t: any) => t.type === 'topup')
-  } else if (activeTab.value === 'histori-pindah') {
-    return result.filter((t: any) => t.type === 'transfer' || t.type === 'payment' || t.type === 'refund')
+  } else if (activeTab.value === 'histori-tambahan') {
+    return result.filter((t: any) => t.type === 'tambahan')
   }
   
   return result
@@ -481,13 +774,4 @@ onMounted(() => {
   saldoStore.fetchTransactions()
   adsStore.fetchAdAccounts()
 })
-
-
-const tabs = [
-  { id: 'list-saldo', label: 'List Saldo' },
-  { id: 'histori-topup', label: 'Histori Top Up' },
-  { id: 'histori-pindah', label: 'Histori Pindah Saldo' },
-  { id: 'histori-tambahan', label: 'Histori Akun Tambahan' },
-  { id: 'histori-pengganti', label: 'Histori Akun Pengganti' },
-]
 </script>
