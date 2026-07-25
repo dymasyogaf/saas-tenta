@@ -129,9 +129,59 @@ export default defineEventHandler(async (event) => {
         .single()
 
       if (!existingAcc) {
-        let formattedAccountName = ad_account_name ? ad_account_name.trim() : `Ad Account ${cleanAdAccountId}`
+        let formattedAccountName = `Ad Account ${cleanAdAccountId}`
         
-        if (dbPlatform === 'google') {
+        if (dbPlatform === 'meta') {
+          // AUTO-FETCH: Ambil nama akun dari Meta Graph API
+          try {
+            const config = useRuntimeConfig()
+            const metaToken = config.metaAccessToken
+            
+            if (metaToken && metaToken !== 'your_meta_token' && metaToken !== '') {
+              const metaAccResponse: any = await $fetch(`https://graph.facebook.com/v19.0/act_${cleanAdAccountId}`, {
+                params: {
+                  fields: 'name',
+                  access_token: metaToken
+                }
+              })
+              
+              if (metaAccResponse?.name) {
+                formattedAccountName = metaAccResponse.name
+              }
+            }
+          } catch (e: any) {
+            console.error('Gagal mengambil nama dari Meta Ads API:', e.message || e)
+          }
+        } else if (dbPlatform === 'tiktok') {
+          // AUTO-FETCH: Ambil nama akun dari TikTok Business API
+          try {
+            const config = useRuntimeConfig()
+            const tiktokToken = config.tiktokAccessToken
+            
+            if (tiktokToken && tiktokToken !== 'your_tiktok_token' && tiktokToken !== '') {
+              const ttResponse: any = await $fetch(`https://business-api.tiktok.com/open_api/v1.3/advertiser/info/`, {
+                method: 'GET',
+                headers: {
+                  'Access-Token': tiktokToken
+                },
+                params: {
+                  advertiser_ids: JSON.stringify([cleanAdAccountId]),
+                  fields: JSON.stringify(['name'])
+                }
+              })
+              
+              if (ttResponse.code === 0 && ttResponse.data?.list?.length > 0) {
+                const advName = ttResponse.data.list[0].name
+                if (advName) {
+                  formattedAccountName = advName
+                }
+              }
+            }
+          } catch (e: any) {
+            console.error('Gagal mengambil nama dari TikTok Ads API:', e.message || e)
+          }
+        } else if (dbPlatform === 'google') {
+          // AUTO-FETCH: Ambil nama akun dari Google Ads API (sudah ada sebelumnya)
           try {
             const config = useRuntimeConfig()
             const googleDevToken = config.googleAdsDevToken

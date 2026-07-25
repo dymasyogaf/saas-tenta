@@ -17,6 +17,9 @@ interface AdsResponse {
     currency: string
     activeCampaigns: number
     campaigns: CampaignData[]
+    api_balance?: number
+    api_budget_total?: number
+    api_amount_spent?: number
   }
 }
 
@@ -62,10 +65,22 @@ export default defineCachedEventHandler(async (event): Promise<AdsResponse> => {
       timeRangeParam = { time_range: JSON.stringify({ since: startDate, until: endDate }) }
     }
 
-    const metaResponse: any = await $fetch(`https://graph.facebook.com/v19.0/${adAccountId}/insights`, {
+    // Untuk mendapatkan status campaign yang akurat, kita harus tembak endpoint /campaigns
+    // dan mengambil data performa melalui field nested 'insights'
+    let insightsField = 'insights'
+    if (timeRangeParam.time_range) {
+      // time_range is an object {since, until} as JSON string. URL encode it for the nested field.
+      // Alternatively, pass it in the main params, but for nested insights we can pass it as a field param: insights.time_range({'since':'...','until':'...'})
+      // To keep it simple, we use the global time_range param which Meta will apply to nested insights if we don't specify date_preset.
+      insightsField = 'insights{spend,reach,inline_link_clicks,cost_per_inline_link_click,purchase_roas}'
+    } else {
+      // Default fallback
+      insightsField = 'insights.date_preset(last_30d){spend,reach,inline_link_clicks,cost_per_inline_link_click,purchase_roas}'
+    }
+
+    const metaResponse: any = await $fetch(`https://graph.facebook.com/v19.0/${adAccountId}/campaigns`, {
       params: {
-        fields: 'campaign_id,campaign_name,spend,impressions,clicks',
-        level: 'campaign',
+        fields: `id,name,effective_status,${insightsField}`,
         ...timeRangeParam,
         access_token: metaToken
       }
@@ -109,15 +124,24 @@ export default defineCachedEventHandler(async (event): Promise<AdsResponse> => {
     }
 
     let totalSpend = 0
-    const campaigns: CampaignData[] = (metaResponse.data || []).map((item: any) => {
-      totalSpend += parseFloat(item.spend || '0')
+    // Filter out campaigns that don't have insights (no delivery in the time range)
+    const campaignsWithInsights = (metaResponse.data || []).filter((item: any) => item.insights && item.insights.data && item.insights.data.length > 0)
+
+    const campaigns: CampaignData[] = campaignsWithInsights.map((item: any) => {
+      const insight = item.insights.data[0]
+      totalSpend += parseFloat(insight.spend || '0')
+      
       return {
-        id: item.campaign_id,
-        name: item.campaign_name,
-        spend: parseFloat(item.spend || '0'),
-        impressions: parseInt(item.impressions || '0', 10),
-        clicks: parseInt(item.clicks || '0', 10),
-        status: 'unknown'
+        id: item.id,
+        name: item.name || 'Unknown Campaign',
+        spend: parseFloat(insight.spend || '0'),
+        impressions: 0,
+        clicks: 0,
+        reach: parseInt(insight.reach || '0', 10),
+        linkClicks: parseInt(insight.inline_link_clicks || '0', 10),
+        cpcLink: parseFloat(insight.cost_per_inline_link_click || '0'),
+        roas: insight.purchase_roas && insight.purchase_roas.length > 0 ? parseFloat(insight.purchase_roas[0].value || '0') : 0,
+        status: item.effective_status || 'unknown'
       }
     })
 
@@ -148,6 +172,6 @@ export default defineCachedEventHandler(async (event): Promise<AdsResponse> => {
   name: 'meta-ad-campaigns',
   getKey: (event) => {
     const query = getQuery(event)
-    return String(query.ad_account_id || 'unknown') + '_' + String(query.start_date || '') + '_' + String(query.end_date || '')
+    return String(query.ad_account_id || 'unknown') + '_' + String(query.start_date || '') + '_' + String(query.end_date || '') + '_v2'
   }
 })

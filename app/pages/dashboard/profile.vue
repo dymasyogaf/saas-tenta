@@ -305,7 +305,8 @@ definePageMeta({
   layout: 'dashboard',
 })
 
-const activeTab = ref('profile')
+const route = useRoute()
+const activeTab = ref((route.query.tab as string) || 'profile')
 const activePackage = ref('starter')
 
 const { user } = useAuth()

@@ -63,9 +63,25 @@
 
     <!-- Campaign Performance Table -->
     <div class="bg-white rounded-2xl shadow-sm border border-ink-100 overflow-hidden">
-      <div class="px-6 py-5 border-b border-ink-100 flex justify-between items-center">
+      <div class="px-6 py-5 border-b border-ink-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <h4 class="font-display font-bold text-lg text-ink-900">Performa Kampanye Teratas</h4>
-        <button class="text-sm text-orange-500 font-bold hover:text-orange-600">Lihat Semua</button>
+        <div class="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
+          <!-- Platform Filter -->
+          <div class="relative w-full sm:w-44">
+            <select v-model="selectedPlatform" class="w-full appearance-none bg-white border border-ink-200 text-ink-700 py-2 pl-3 pr-8 rounded-lg text-sm focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 shadow-sm cursor-pointer">
+              <option value="all">Semua Iklan</option>
+              <option value="meta">Meta Ads</option>
+              <option value="tiktok">TikTok Ads</option>
+              <option value="google">Google Ads</option>
+            </select>
+            <ChevronDown class="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-ink-400 pointer-events-none" />
+          </div>
+          
+          <!-- Date Filter -->
+          <div class="w-full sm:w-auto">
+            <SharedDateRangePicker v-model="dateRange" />
+          </div>
+        </div>
       </div>
       <div class="p-6">
         <div class="space-y-4">
@@ -86,12 +102,12 @@
               </div>
             </div>
           </div>
-          <div v-else-if="adsStore.campaigns.length === 0" class="p-6 text-center">
+          <div v-else-if="displayedCampaigns.length === 0" class="p-6 text-center">
             <p class="text-ink-500">Tidak ada kampanye aktif yang ditemukan.</p>
           </div>
           
           <template v-else>
-            <div v-for="cmp in adsStore.campaigns" :key="cmp.id" class="p-4 bg-ink-50 rounded-xl hover:bg-ink-100 transition-colors">
+            <div v-for="cmp in displayedCampaigns" :key="cmp.id" class="p-4 bg-ink-50 rounded-xl hover:bg-ink-100 transition-colors">
               <!-- Top: Campaign Info -->
               <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div class="flex items-center gap-4">
@@ -115,7 +131,30 @@
               </div>
 
               <!-- Bottom: Metrics Grid -->
-              <div class="grid grid-cols-2 sm:grid-cols-5 gap-3 mt-4 pt-3 border-t border-ink-200/60">
+              <!-- Meta Ads Metrics -->
+              <div v-if="cmp.platform === 'meta'" class="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-4 pt-3 border-t border-ink-200/60">
+                <div>
+                  <p class="text-xs text-ink-400 font-medium">Reach</p>
+                  <p class="font-display font-bold text-ink-900">{{ cmp.reach?.toLocaleString('id-ID') || '0' }}</p>
+                </div>
+                <div>
+                  <p class="text-xs text-ink-400 font-medium">Link Clicks</p>
+                  <p class="font-display font-bold text-green-600">{{ cmp.linkClicks?.toLocaleString('id-ID') || '0' }}</p>
+                </div>
+                <div>
+                  <p class="text-xs text-ink-400 font-medium">CPC (Link)</p>
+                  <p class="font-display font-bold text-ink-900">{{ formatCurrency(cmp.cpcLink || 0) }}</p>
+                </div>
+                <div>
+                  <p class="text-xs text-ink-400 font-medium">ROAS</p>
+                  <p class="font-display font-bold" :class="(cmp.roas || 0) > 1 ? 'text-green-600' : 'text-ink-400'">
+                    {{ (cmp.roas || 0).toFixed(2) }}x
+                  </p>
+                </div>
+              </div>
+
+              <!-- Google & TikTok Metrics -->
+              <div v-else class="grid grid-cols-2 sm:grid-cols-5 gap-3 mt-4 pt-3 border-t border-ink-200/60">
                 <div>
                   <p class="text-xs text-ink-400 font-medium">Impresi</p>
                   <p class="font-display font-bold text-ink-900">{{ cmp.impressions?.toLocaleString('id-ID') || '0' }}</p>
@@ -150,8 +189,8 @@
 </template>
 
 <script setup lang="ts">
-import { TrendingUp, Activity, Target, ShieldAlert } from 'lucide-vue-next'
-import { onMounted, ref, computed } from 'vue'
+import { TrendingUp, Activity, Target, ShieldAlert, ChevronDown } from 'lucide-vue-next'
+import { onMounted, ref, computed, watch } from 'vue'
 import { useSaldoStore } from '~/stores/saldo'
 import { useAdsStore } from '~/stores/ads'
 
@@ -170,6 +209,26 @@ const verificationStatus = ref<string | null>(null)
 const totalConversions = computed(() => {
   return adsStore.campaigns.reduce((sum: number, c: any) => sum + (c.conversions || 0), 0)
 })
+
+// Filter states
+const selectedPlatform = ref('all')
+const dateRange = ref({ start: '', end: '' })
+
+// Computed filtered campaigns
+const displayedCampaigns = computed(() => {
+  let filtered = adsStore.campaigns || []
+  if (selectedPlatform.value !== 'all') {
+    filtered = filtered.filter((c: any) => c.platform === selectedPlatform.value)
+  }
+  return filtered
+})
+
+// Refetch on date change
+watch(dateRange, (newDate) => {
+  if (newDate && newDate.start && newDate.end) {
+    adsStore.fetchAllPerformance(newDate.start, newDate.end)
+  }
+}, { deep: true })
 
 onMounted(async () => {
   saldoStore.fetchSaldo()
@@ -205,8 +264,10 @@ const formatCurrency = (value: number) => {
 const statusBadge = (status: string) => {
   const map: Record<string, { label: string; class: string }> = {
     'ENABLED': { label: 'Aktif', class: 'bg-green-100 text-green-700' },
+    'ACTIVE': { label: 'Aktif', class: 'bg-green-100 text-green-700' },
     'PAUSED': { label: 'Dijeda', class: 'bg-yellow-100 text-yellow-700' },
     'REMOVED': { label: 'Dihapus', class: 'bg-red-100 text-red-700' },
+    'ARCHIVED': { label: 'Diarsipkan', class: 'bg-ink-100 text-ink-700' },
   }
   return map[status] || { label: status || 'N/A', class: 'bg-ink-200 text-ink-600' }
 }

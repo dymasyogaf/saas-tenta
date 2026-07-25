@@ -64,12 +64,22 @@
         </div>
         <p class="text-lg font-bold text-ink-900 mb-4">{{ formatRupiah(saldoStore.pendingBalance) }}</p>
 
-        <!-- Info Sewa -->
         <div class="bg-orange-50 border border-orange-200 rounded-xl p-4 mt-auto">
-          <p class="text-xs font-medium text-orange-600 mb-1">Masa Aktif Sewa (Terdekat)</p>
-          <div v-if="nearestExpiry">
-            <p class="text-sm font-bold text-ink-900">{{ nearestExpiry.name }}</p>
-            <p class="text-xs text-ink-600 font-medium">Berakhir pada: {{ formatDate(nearestExpiry.subscription_expires_at) }}</p>
+          <p class="text-xs font-medium text-orange-600 mb-1">Masa Aktif Sewa</p>
+          <div v-if="activeRentals.accounts.length > 0" class="space-y-2.5">
+            <div v-for="acc in activeRentals.accounts" :key="acc.account_id" class="flex items-center justify-between">
+              <div>
+                <p class="text-sm font-bold text-ink-900">{{ acc.name }}</p>
+                <p class="text-xs text-ink-600 font-medium">Berakhir pada: {{ formatDate(acc.subscription_expires_at) }}</p>
+              </div>
+            </div>
+            <NuxtLink 
+              v-if="activeRentals.total > 2"
+              to="/dashboard/profile?tab=layanan"
+              class="block text-center text-xs font-semibold text-orange-600 hover:text-orange-700 pt-1 border-t border-orange-200 mt-2"
+            >
+              Lihat semua ({{ activeRentals.total }} akun) →
+            </NuxtLink>
           </div>
           <div v-else>
             <p class="text-sm font-bold text-ink-900">Belum Ada Langganan</p>
@@ -481,14 +491,17 @@ const topupAmount = ref<number | ''>('')
 const selectedMethod = ref('OV')
 const user = useSupabaseUser()
 
-const nearestExpiry = computed(() => {
-  if (!adsStore.adAccounts || adsStore.adAccounts.length === 0) return null;
+const activeRentals = computed(() => {
+  if (!adsStore.adAccounts || adsStore.adAccounts.length === 0) return { accounts: [], total: 0 };
   const accountsWithExpiry = adsStore.adAccounts.filter(a => a.subscription_expires_at);
-  if (accountsWithExpiry.length === 0) return null;
+  if (accountsWithExpiry.length === 0) return { accounts: [], total: 0 };
   
   const sorted = [...accountsWithExpiry].sort((a, b) => new Date(a.subscription_expires_at).getTime() - new Date(b.subscription_expires_at).getTime());
   
-  return sorted[0];
+  return {
+    accounts: sorted.slice(0, 2),
+    total: sorted.length
+  };
 })
 
 const formattedTopupAmount = computed({
