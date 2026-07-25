@@ -12,6 +12,7 @@ interface AdsResponse {
   source?: string
   message?: string
   fetchedAt?: string
+  debug_error?: string
   data?: {
     totalSpend: number
     currency: string
@@ -90,6 +91,8 @@ export default defineCachedEventHandler(async (event): Promise<AdsResponse> => {
     let api_balance: number | undefined = undefined
     let api_budget_total: number | undefined = undefined
     let api_amount_spent: number | undefined = undefined
+    let debug_error: string | undefined = undefined
+
     try {
       const accountInfo: any = await $fetch(`https://graph.facebook.com/v19.0/${adAccountId}`, {
         params: {
@@ -119,8 +122,9 @@ export default defineCachedEventHandler(async (event): Promise<AdsResponse> => {
           api_amount_spent = spent / 100
         }
       }
-    } catch (e) {
+    } catch (e: any) {
       console.warn('Gagal mengambil balance/spend_cap:', e)
+      debug_error = e.message || String(e)
     }
 
     let totalSpend = 0
@@ -172,6 +176,6 @@ export default defineCachedEventHandler(async (event): Promise<AdsResponse> => {
   name: 'meta-ad-campaigns',
   getKey: (event) => {
     const query = getQuery(event)
-    return String(query.ad_account_id || 'unknown') + '_' + String(query.start_date || '') + '_' + String(query.end_date || '') + '_v2'
+    return String(query.ad_account_id || 'unknown') + '_' + String(query.start_date || '') + '_' + String(query.end_date || '') + '_v3'
   }
 })
