@@ -95,6 +95,7 @@ export default defineCachedEventHandler(async (event): Promise<AdsResponse> => {
     let debug_error: string | undefined = undefined
     let debug_info: any = {}
 
+    let parsedAccountInfo: any = {}
     try {
       const accountInfo: any = await $fetch(`https://graph.facebook.com/v19.0/${adAccountId}`, {
         params: {
@@ -103,23 +104,22 @@ export default defineCachedEventHandler(async (event): Promise<AdsResponse> => {
         }
       })
       
-      debug_info = accountInfo // SIMPAN RAW RESPONSE DARI META
+      parsedAccountInfo = typeof accountInfo === 'string' ? JSON.parse(accountInfo) : accountInfo
 
       // Hitung dari spend_cap jika balance tidak ada
-      if (accountInfo.balance !== undefined && accountInfo.balance !== '0') {
-        api_balance = parseFloat(accountInfo.balance) / 100
-        // Jika spend_cap tersedia, hitung total budget & spent
-        if (accountInfo.spend_cap !== undefined && accountInfo.amount_spent !== undefined) {
-          const cap = parseFloat(accountInfo.spend_cap)
-          const spent = parseFloat(accountInfo.amount_spent)
+      if (parsedAccountInfo.balance !== undefined && parsedAccountInfo.balance !== '0') {
+        api_balance = parseFloat(parsedAccountInfo.balance) / 100
+        if (parsedAccountInfo.spend_cap !== undefined && parsedAccountInfo.amount_spent !== undefined) {
+          const cap = parseFloat(parsedAccountInfo.spend_cap)
+          const spent = parseFloat(parsedAccountInfo.amount_spent)
           if (cap > 0) {
             api_budget_total = cap / 100
             api_amount_spent = spent / 100
           }
         }
-      } else if (accountInfo.spend_cap !== undefined && accountInfo.amount_spent !== undefined) {
-        const cap = parseFloat(accountInfo.spend_cap)
-        const spent = parseFloat(accountInfo.amount_spent)
+      } else if (parsedAccountInfo.spend_cap !== undefined && parsedAccountInfo.amount_spent !== undefined) {
+        const cap = parseFloat(parsedAccountInfo.spend_cap)
+        const spent = parseFloat(parsedAccountInfo.amount_spent)
         if (cap > 0) {
           api_balance = (cap - spent) / 100
           api_budget_total = cap / 100
@@ -132,8 +132,10 @@ export default defineCachedEventHandler(async (event): Promise<AdsResponse> => {
     }
 
     let totalSpend = 0
+    const parsedMetaResponse = typeof metaResponse === 'string' ? JSON.parse(metaResponse) : metaResponse
+    
     // Filter out campaigns that don't have insights (no delivery in the time range)
-    const campaignsWithInsights = (metaResponse.data || []).filter((item: any) => item.insights && item.insights.data && item.insights.data.length > 0)
+    const campaignsWithInsights = (parsedMetaResponse.data || []).filter((item: any) => item.insights && item.insights.data && item.insights.data.length > 0)
 
     const campaigns: CampaignData[] = campaignsWithInsights.map((item: any) => {
       const insight = item.insights.data[0]
@@ -182,6 +184,6 @@ export default defineCachedEventHandler(async (event): Promise<AdsResponse> => {
   name: 'meta-ad-campaigns',
   getKey: (event) => {
     const query = getQuery(event)
-    return String(query.ad_account_id || 'unknown') + '_' + String(query.start_date || '') + '_' + String(query.end_date || '') + '_v4'
+    return String(query.ad_account_id || 'unknown') + '_' + String(query.start_date || '') + '_' + String(query.end_date || '') + '_v5'
   }
 })

@@ -40,7 +40,9 @@ export default defineEventHandler(async (event): Promise<AccountsResponse> => {
       }
     })
 
-    let accounts: AdAccountData[] = (metaResponse.data || []).map((item: any) => ({
+    const parsedMetaResponse = typeof metaResponse === 'string' ? JSON.parse(metaResponse) : metaResponse
+
+    let accounts: AdAccountData[] = (parsedMetaResponse.data || []).map((item: any) => ({
       id: item.account_id,
       name: item.name || `Account ${item.account_id}`,
       status: item.account_status === 1 ? 'ACTIVE' : 'DISABLED', // 1 = ACTIVE in Meta
