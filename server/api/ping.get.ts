@@ -17,7 +17,8 @@ export default defineEventHandler(async (event) => {
   const supabase = await serverSupabaseServiceRole(event)
   const now = new Date().toISOString()
 
-  const { error } = await supabase
+  // Cast as any — tabel system_health tidak ada di generated types (types: false di nuxt.config.ts)
+  const { error } = await (supabase as any)
     .from('system_health')
     .upsert(
       {
