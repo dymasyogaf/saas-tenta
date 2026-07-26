@@ -28,11 +28,17 @@ interface AdsResponse {
     currency: string
     activeCampaigns: number
     campaigns: GoogleCampaignData[]
+    api_balance?: number
+    api_budget_total?: number
+    api_amount_spent?: number
   }
 }
 
+// Login customer ID (MCC account) — satu tempat, tidak duplikat
+const GOOGLE_LOGIN_CUSTOMER_ID = '6445325844'
+
 export default defineCachedEventHandler(async (event): Promise<AdsResponse> => {
-  const config = useRuntimeConfig()
+  const config = useRuntimeConfig(event) // event wajib dipass di Cloudflare Pages
   const googleDevToken = config.googleAdsDevToken
   const accessToken = await getValidGoogleAccessToken()
   
@@ -71,7 +77,7 @@ export default defineCachedEventHandler(async (event): Promise<AdsResponse> => {
       headers: {
         'Authorization': `Bearer ${accessToken}`,
         'developer-token': googleDevToken,
-        'login-customer-id': '6445325844'
+        'login-customer-id': GOOGLE_LOGIN_CUSTOMER_ID
       },
       body: {
         query: `
@@ -158,7 +164,7 @@ export default defineCachedEventHandler(async (event): Promise<AdsResponse> => {
         headers: {
           'Authorization': `Bearer ${accessToken}`,
           'developer-token': googleDevToken,
-          'login-customer-id': '6445325844' // Ganti jika berbeda
+          'login-customer-id': GOOGLE_LOGIN_CUSTOMER_ID // Ganti jika berbeda
         },
         body: {
           query: `
@@ -217,7 +223,10 @@ export default defineCachedEventHandler(async (event): Promise<AdsResponse> => {
   name: 'google-ad-campaigns',
   getKey: (event) => {
     const query = getQuery(event)
-    return String(query.customer_id || 'unknown') + '_' + String(query.start_date || '') + '_' + String(query.end_date || '')
+    const base = String(query.customer_id || 'unknown') + '_' + String(query.start_date || '') + '_' + String(query.end_date || '')
+    // Jika force=true, gunakan timestamp sebagai key agar Nitro selalu fetch fresh dari Google Ads API
+    if (query.force === 'true') return base + '_force_' + Math.floor(Date.now() / 1000)
+    return base
   }
 })
 

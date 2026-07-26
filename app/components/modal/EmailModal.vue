@@ -107,7 +107,7 @@ const saveEmail = async () => {
   try {
     // 1. Verifikasi Password terlebih dahulu
     const { error: authError } = await supabase.auth.signInWithPassword({
-      email: props.currentEmail,
+      email: props.currentEmail.trim(),
       password: password.value
     })
     
@@ -120,10 +120,10 @@ const saveEmail = async () => {
   
     // 2. Jika password benar, ubah email
     const { error: updateError } = await supabase.auth.updateUser({
-      email: newEmail.value
+      email: newEmail.value.trim()
     })
     
-    if (updateError) throw updateError
+    if (updateError) throw new Error(`Gagal update email: ${updateError.message}`)
     
     // 3. Update juga email di tabel public.users agar sinkron
     const { data: userSession } = await supabase.auth.getUser()

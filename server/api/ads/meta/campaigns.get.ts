@@ -2,8 +2,12 @@ interface CampaignData {
   id: string
   name: string
   spend: number
-  impressions: number
-  clicks: number
+  impressions: number  // selalu 0 — Meta query tidak request field ini (pakai reach/linkClicks)
+  clicks: number       // selalu 0 — sama seperti impressions
+  reach: number
+  linkClicks: number
+  cpcLink: number
+  roas: number
   status: string
 }
 
@@ -28,7 +32,7 @@ interface AdsResponse {
 }
 
 export default defineCachedEventHandler(async (event): Promise<AdsResponse> => {
-  const config = useRuntimeConfig()
+  const config = useRuntimeConfig(event) // event wajib dipass di Cloudflare Pages
   const metaToken = config.metaAccessToken
   
   // Jika token belum diset, JANGAN kembalikan data dummy. Kembalikan 0 (Kosong).
@@ -186,6 +190,9 @@ export default defineCachedEventHandler(async (event): Promise<AdsResponse> => {
   name: 'meta-ad-campaigns',
   getKey: (event) => {
     const query = getQuery(event)
-    return String(query.ad_account_id || 'unknown') + '_' + String(query.start_date || '') + '_' + String(query.end_date || '') + '_v5'
+    const base = String(query.ad_account_id || 'unknown') + '_' + String(query.start_date || '') + '_' + String(query.end_date || '') + '_v5'
+    // Jika force=true, gunakan timestamp sebagai key agar Nitro selalu fetch fresh dari Meta API
+    if (query.force === 'true') return base + '_force_' + Math.floor(Date.now() / 1000)
+    return base
   }
 })
