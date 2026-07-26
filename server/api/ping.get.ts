@@ -8,30 +8,16 @@
  *
  * Cara kerja:
  * - Upsert kolom `last_ping` pada tabel `system_health` (1 row permanen, tidak bertambah)
- * - Menggunakan service role key agar tidak terblokir RLS
+ * - Menggunakan serverSupabaseServiceRole agar bypass RLS (kompatibel Cloudflare Pages)
  */
 
-import { createClient } from '@supabase/supabase-js'
+import { serverSupabaseServiceRole } from '#supabase/server'
 
 export default defineEventHandler(async (event) => {
-  const config = useRuntimeConfig(event)
-
-  // Gunakan service role untuk bypass RLS
-  const supabaseAdmin = createClient(
-    // process.env tidak tersedia di Cloudflare Pages — gunakan runtimeConfig saja
-    config.supabaseUrl || 'https://pjmsnphhnporuownasxe.supabase.co',
-    config.supabaseServiceKey || '',
-    {
-      auth: {
-        autoRefreshToken: false,
-        persistSession: false,
-      },
-    }
-  )
-
+  const supabase = await serverSupabaseServiceRole(event)
   const now = new Date().toISOString()
 
-  const { error } = await supabaseAdmin
+  const { error } = await supabase
     .from('system_health')
     .upsert(
       {
@@ -43,11 +29,10 @@ export default defineEventHandler(async (event) => {
     )
 
   if (error) {
-    // Jika tabel belum ada, return info tanpa error fatal
     console.warn('[Keepalive] Supabase ping warning:', error.message)
     return {
       ok: false,
-      message: 'Ping gagal - pastikan tabel system_health sudah dibuat',
+      message: 'Ping gagal - pastikan tabel system_health sudah dibuat di Supabase',
       error: error.message,
       timestamp: now,
     }

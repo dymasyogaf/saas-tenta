@@ -69,8 +69,6 @@ export default defineNuxtConfig({
   // Runtime config for server-side API keys
   runtimeConfig: {
     // Server-only keys (never exposed to client)
-    supabaseUrl: '',
-    supabaseServiceKey: '',
     duidkuMerchantCode: '',
     duidkuApiKey: '',
     duidkuSecretKey: '',
