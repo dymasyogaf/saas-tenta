@@ -197,7 +197,8 @@ import {
   Gem,
   Menu,
   ShieldCheck,
-  Headset
+  Headset,
+  Gift
 } from 'lucide-vue-next'
 
 // Auth state
@@ -247,7 +248,8 @@ const navItems: NavItem[] = [
   { to: '/dashboard/platform', label: 'Platform Iklan', icon: MonitorPlay },
   { to: '/dashboard/saldo', label: 'Saldo Iklan', icon: Wallet },
   { to: '/dashboard/bermasalah', label: 'Iklan Bermasalah', icon: TriangleAlert },
-  { to: '/dashboard/support', label: 'Bantuan (CS)', icon: Headset },
+  { to: '/dashboard/referral', label: 'Affiliate', icon: Gift },
+  { to: '/dashboard/support', label: 'Bantuan Tiket', icon: Headset },
 ]
 
 // Active route detection

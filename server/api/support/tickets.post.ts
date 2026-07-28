@@ -23,8 +23,13 @@ export default defineEventHandler(async (event) => {
 
   const supabase = await serverSupabaseServiceRole<any>(event)
   
-  // Generate random ticket number, e.g. TKT-10294
-  const ticketNumber = 'TKT-' + Math.floor(10000 + Math.random() * 90000)
+  // Hitung jumlah tiket yang ada untuk membuat nomor urut (TKT-0001, TKT-0002, dst)
+  const { count } = await supabase
+    .from('support_tickets')
+    .select('*', { count: 'exact', head: true })
+
+  const nextNum = (count || 0) + 1
+  const ticketNumber = `TKT-${String(nextNum).padStart(4, '0')}`
 
   try {
     const userId = user.id || (user as any).sub

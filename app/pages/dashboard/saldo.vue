@@ -75,7 +75,7 @@
           </button>
         </div>
         <div class="relative w-full lg:w-72">
-          <input type="text" placeholder="Cari ID Akun atau Nama Akun" class="pl-4 pr-10 py-2 border border-ink-200 rounded-md text-sm w-full focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 text-ink-900 placeholder:text-ink-400 bg-white" />
+          <input v-model="searchQuery" type="text" placeholder="Cari ID Akun atau Nama Akun" class="pl-4 pr-10 py-2 border border-ink-200 rounded-md text-sm w-full focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 text-ink-900 placeholder:text-ink-400 bg-white" />
           <Search class="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-ink-400" />
         </div>
       </div>
@@ -154,7 +154,7 @@
               </td>
             </tr>
             <!-- Actual Data -->
-            <tr v-else-if="adsStore.adAccounts.length > 0" v-for="account in adsStore.adAccounts" :key="account.id" class="hover:bg-ink-50/50 transition-colors group">
+            <tr v-else-if="filteredAdAccounts.length > 0" v-for="account in filteredAdAccounts" :key="account.id" class="hover:bg-ink-50/50 transition-colors group">
               <td class="py-4 px-5 font-medium text-ink-600 whitespace-nowrap">{{ account.account_id }}</td>
               <td class="py-4 px-5 font-medium text-ink-900 whitespace-nowrap">
                 <div>{{ account.name }}</div>
@@ -268,7 +268,7 @@
             <!-- Empty State -->
             <tr v-else>
               <td colspan="9" class="p-8 text-center text-ink-500">
-                Data tidak ditemukan.
+                {{ searchQuery ? 'Tidak ada akun yang cocok dengan pencarian Anda.' : 'Data tidak ditemukan.' }}
               </td>
             </tr>
           </tbody>
@@ -294,21 +294,14 @@
 
     <!-- Histori Top Up -->
     <div v-else-if="activeTab === 'histori-topup'">
-      <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
-        <button class="bg-ink-50 border border-ink-100 text-ink-500 px-4 py-2 rounded-md font-semibold text-sm flex items-center gap-2 hover:bg-ink-100 hover:text-ink-700 transition-colors">
-          <Download class="w-4 h-4" /> Download Topup
-        </button>
+      <div class="flex justify-end mb-4">
         <div class="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
-          <div class="relative w-full sm:w-64">
-            <Search class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-ink-400" />
-            <input type="text" placeholder="Cari ID Top Up" class="pl-9 pr-4 py-2 border border-ink-200 rounded-md text-sm w-full focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 text-ink-900 placeholder:text-ink-400 bg-white" />
-          </div>
           <div class="relative w-full sm:w-48">
-            <select class="w-full appearance-none bg-white border border-ink-200 text-ink-700 py-2 pl-4 pr-10 rounded-md text-sm focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 cursor-pointer">
-              <option>Semua Status</option>
-              <option>Berhasil</option>
-              <option>Pending</option>
-              <option>Gagal</option>
+            <select v-model="filterStatusTopup" class="w-full appearance-none bg-white border border-ink-200 text-ink-700 py-2 pl-4 pr-10 rounded-md text-sm focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 cursor-pointer">
+              <option value="all">Semua Status</option>
+              <option value="success">Berhasil</option>
+              <option value="pending">Pending</option>
+              <option value="failed">Gagal</option>
             </select>
             <ChevronDown class="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-ink-400 pointer-events-none" />
           </div>
@@ -533,6 +526,16 @@ const isRequestModalOpen = ref(false)
 const saldoStore = useSaldoStore()
 const adsStore = useAdsStore()
 
+const searchQuery = ref('')
+const filteredAdAccounts = computed(() => {
+  if (!searchQuery.value) return adsStore.adAccounts
+  const q = searchQuery.value.toLowerCase()
+  return adsStore.adAccounts.filter((acc: any) => 
+    (acc.account_id && acc.account_id.toLowerCase().includes(q)) || 
+    (acc.name && acc.name.toLowerCase().includes(q))
+  )
+})
+
 const formatCurrency = (value: number) => {
   return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(value || 0)
 }
@@ -743,6 +746,8 @@ const tabs = [
   { id: 'histori-pengganti', label: 'Histori Akun Pengganti' },
 ]
 
+const filterStatusTopup = ref('all')
+
 const filteredTransactions = computed(() => {
   if (!saldoStore.transactions) return []
   
@@ -762,7 +767,14 @@ const filteredTransactions = computed(() => {
   }
   
   if (activeTab.value === 'histori-topup') {
-    return result.filter((t: any) => t.type === 'topup')
+    let topups = result.filter((t: any) => t.type === 'topup')
+    if (filterStatusTopup.value !== 'all') {
+      topups = topups.filter((t: any) => {
+        if (filterStatusTopup.value === 'failed') return t.status === 'failed' || t.status === 'cancelled'
+        return t.status === filterStatusTopup.value
+      })
+    }
+    return topups
   } else if (activeTab.value === 'histori-tambahan') {
     return result.filter((t: any) => t.type === 'tambahan')
   }

@@ -254,33 +254,6 @@
           </div>
         </div>
 
-        <!-- Kode Referral Content -->
-        <div v-else-if="activeTab === 'referral'" class="bg-white border border-ink-100 rounded-2xl shadow-sm">
-          <div class="px-6 pt-5 pb-4 border-b border-ink-100">
-            <h3 class="font-bold text-ink-900 text-base">Kode Referral</h3>
-          </div>
-          <div class="p-6 space-y-6">
-            <div class="bg-ink-50/50 rounded-xl p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-              <p class="text-ink-900 text-sm font-medium">Daftar disini untuk mengikuti program Affiliate</p>
-              <button class="bg-orange-500 hover:bg-orange-600 text-white font-bold py-2.5 px-6 rounded-md text-sm transition-colors shrink-0 shadow-sm">
-                Daftar Menjadi Affiliate Partner
-              </button>
-            </div>
-            
-            <div class="bg-ink-50/50 rounded-xl p-5">
-              <h4 class="font-bold text-ink-900 text-sm mb-2">Affiliate</h4>
-              <p class="text-ink-900 text-sm mb-4">
-                Kamu punya <span class="text-pink-600 font-medium">74 hari lagi</span> untuk memasukkan kode referral temanmu.
-              </p>
-              <div class="flex flex-col sm:flex-row gap-3">
-                <input type="text" class="flex-1 border border-ink-200 rounded-md px-3 py-2.5 text-sm text-ink-700 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 bg-white" placeholder="" />
-                <button class="bg-ink-100 text-ink-400 font-bold py-2.5 px-8 rounded-md text-sm cursor-not-allowed shrink-0">
-                  Submit
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
         
       </div>
     </div>
@@ -469,6 +442,5 @@ const resetVerification = async () => {
 const tabs = [
   { id: 'profile', label: 'Profile' },
   { id: 'layanan', label: 'Layanan Aktif' },
-  { id: 'referral', label: 'Kode Referral' },
 ]
 </script>

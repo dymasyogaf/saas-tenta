@@ -81,54 +81,82 @@
 
       <div class="p-6 space-y-6">
         <!-- Original Ticket Description (Client) -->
-        <div class="flex gap-4">
-          <div class="w-10 h-10 shrink-0 bg-blue-100 text-blue-600 font-bold flex items-center justify-center rounded-full text-sm">
+        <div class="flex gap-4 flex-row-reverse">
+          <div class="w-10 h-10 shrink-0 bg-ink-100 text-ink-600 font-bold flex items-center justify-center rounded-full text-sm">
             {{ userInitials }}
           </div>
-          <div class="flex-1">
-            <div class="bg-white border border-ink-200 rounded-2xl p-5 shadow-sm relative">
+          <div class="flex-1 flex flex-col items-end">
+            <div class="bg-white border border-ink-200 rounded-2xl p-5 shadow-sm relative w-full">
               <!-- Tail -->
-              <div class="absolute -left-2 top-4 w-4 h-4 bg-white border-l border-t border-ink-200 transform -rotate-45"></div>
+              <div class="absolute -right-2 top-4 w-4 h-4 bg-white border-r border-t border-ink-200 transform rotate-45"></div>
               
-              <div class="flex justify-between items-center mb-4 text-sm">
+              <div class="flex justify-between items-center mb-4 text-sm flex-row-reverse">
                 <span class="font-bold text-ink-900">{{ userName }}</span>
                 <span class="text-ink-400 font-medium">{{ formatDate(ticketData?.created_at) }}</span>
               </div>
               <div class="prose prose-sm max-w-none text-ink-700" v-html="ticketData?.description"></div>
+              
+              <!-- Lampiran Tiket -->
+              <div v-if="ticketData?.attachments && ticketData.attachments.length > 0" class="mt-4 pt-4 border-t border-ink-100">
+                <h4 class="text-xs font-bold text-ink-500 mb-2 uppercase tracking-wider text-right">Lampiran</h4>
+                <div class="flex flex-wrap gap-3 justify-end">
+                  <a v-for="(url, idx) in ticketData.attachments" :key="idx" :href="url" target="_blank" class="block group">
+                    <img v-if="url.match(/\.(jpeg|jpg|gif|png|webp)/i) || url.includes('image')" :src="url" alt="Lampiran Tiket" class="w-24 h-24 object-cover rounded-xl border border-ink-200 group-hover:border-blue-500 transition-colors shadow-sm" />
+                    <div v-else class="w-24 h-24 bg-ink-50 flex flex-col items-center justify-center rounded-xl border border-ink-200 group-hover:border-blue-500 transition-colors shadow-sm text-ink-500 group-hover:text-blue-500">
+                      <Paperclip class="w-6 h-6 mb-1" />
+                      <span class="text-[10px] font-medium text-center px-2 truncate w-full">File {{ Number(idx) + 1 }}</span>
+                    </div>
+                  </a>
+                </div>
+              </div>
             </div>
-            <div class="mt-2 text-xs text-ink-400 font-medium pl-2">{{ formatRelativeTime(ticketData?.created_at) }}</div>
+            <div class="mt-2 text-xs text-ink-400 font-medium pr-2">{{ formatRelativeTime(ticketData?.created_at) }}</div>
           </div>
         </div>
 
         <!-- Mocked Replies -->
-        <div v-for="reply in replies" :key="reply.id" class="flex gap-4" :class="reply.is_staff ? 'flex-row-reverse' : ''">
-          <div v-if="reply.is_staff" class="w-10 h-10 shrink-0 overflow-hidden rounded-full">
-            <img src="https://ui-avatars.com/api/?name=Tim+Support&background=0D8ABC&color=fff" alt="Support" class="w-full h-full object-cover"/>
+        <div v-for="reply in replies" :key="reply.id" class="flex gap-4" :class="!reply.is_staff ? 'flex-row-reverse' : ''">
+          <div v-if="reply.is_staff" class="w-10 h-10 shrink-0 bg-blue-100 text-blue-600 font-bold flex items-center justify-center rounded-full text-sm">
+            {{ reply.sender_name?.substring(0, 2).toUpperCase() || 'AD' }}
           </div>
-          <div v-else class="w-10 h-10 shrink-0 bg-blue-100 text-blue-600 font-bold flex items-center justify-center rounded-full text-sm">
+          <div v-else class="w-10 h-10 shrink-0 bg-ink-100 text-ink-600 font-bold flex items-center justify-center rounded-full text-sm">
             {{ userInitials }}
           </div>
 
-          <div class="flex-1" :class="reply.is_staff ? 'flex flex-col items-end' : ''">
+          <div class="flex-1" :class="!reply.is_staff ? 'flex flex-col items-end' : ''">
             <div :class="[
               'rounded-2xl p-5 shadow-sm relative w-full',
-              reply.is_staff ? 'bg-blue-50/50 border border-blue-100' : 'bg-white border border-ink-200'
+              !reply.is_staff ? 'bg-white border border-ink-200' : 'bg-blue-50/50 border border-blue-100'
             ]">
               <!-- Tail -->
-              <div v-if="reply.is_staff" class="absolute -right-2 top-4 w-4 h-4 bg-blue-50/50 border-r border-t border-blue-100 transform 45deg rotate-45"></div>
-              <div v-else class="absolute -left-2 top-4 w-4 h-4 bg-white border-l border-t border-ink-200 transform -rotate-45"></div>
+              <div v-if="reply.is_staff" class="absolute -left-2 top-4 w-4 h-4 bg-blue-50/50 border-l border-t border-blue-100 transform -rotate-45"></div>
+              <div v-else class="absolute -right-2 top-4 w-4 h-4 bg-white border-r border-t border-ink-200 transform rotate-45"></div>
               
-              <div class="flex justify-between items-center mb-4 text-sm" :class="reply.is_staff ? 'flex-row-reverse' : ''">
+              <div class="flex justify-between items-center mb-4 text-sm" :class="!reply.is_staff ? 'flex-row-reverse' : ''">
                 <div class="flex items-center gap-2">
                   <span v-if="reply.is_staff" class="px-2 py-0.5 bg-blue-100 text-blue-600 text-[10px] font-extrabold rounded-md uppercase tracking-wider">SUPPORT</span>
-                  <span class="font-bold text-ink-900">{{ reply.sender_name }}</span>
+                  <span class="font-bold text-ink-900">{{ reply.is_staff ? reply.sender_name : userName }}</span>
                 </div>
                 <span class="text-ink-400 font-medium">{{ formatDate(reply.created_at) }}</span>
               </div>
               
-              <div class="prose prose-sm max-w-none text-ink-700" v-html="reply.content" :class="reply.is_staff ? 'text-right' : ''"></div>
+              <div class="prose prose-sm max-w-none text-ink-700" v-html="reply.content"></div>
+              
+              <!-- Lampiran Balasan -->
+              <div v-if="reply.attachments && reply.attachments.length > 0" class="mt-4 pt-4 border-t border-ink-100" :class="!reply.is_staff ? 'text-right' : 'text-left'">
+                <h4 class="text-xs font-bold text-ink-500 mb-2 uppercase tracking-wider">Lampiran</h4>
+                <div class="flex flex-wrap gap-3" :class="!reply.is_staff ? 'justify-end' : 'justify-start'">
+                  <a v-for="(url, idx) in reply.attachments" :key="idx" :href="url" target="_blank" class="block group">
+                    <img v-if="url.match(/\.(jpeg|jpg|gif|png|webp)/i) || url.includes('image')" :src="url" alt="Lampiran Balasan" class="w-24 h-24 object-cover rounded-xl border border-ink-200 group-hover:border-blue-500 transition-colors shadow-sm" />
+                    <div v-else class="w-24 h-24 bg-ink-50 flex flex-col items-center justify-center rounded-xl border border-ink-200 group-hover:border-blue-500 transition-colors shadow-sm text-ink-500 group-hover:text-blue-500">
+                      <Paperclip class="w-6 h-6 mb-1" />
+                      <span class="text-[10px] font-medium text-center px-2 truncate w-full">File {{ Number(idx) + 1 }}</span>
+                    </div>
+                  </a>
+                </div>
+              </div>
             </div>
-            <div class="mt-2 text-xs text-ink-400 font-medium" :class="reply.is_staff ? 'pr-2' : 'pl-2'">
+            <div class="mt-2 text-xs text-ink-400 font-medium" :class="!reply.is_staff ? 'pr-2' : 'pl-2'">
               {{ formatRelativeTime(reply.created_at) }}
             </div>
           </div>
@@ -150,6 +178,7 @@
         <div class="mb-4">
           <ClientOnly>
             <QuillEditor
+              :key="editorKey"
               v-model:content="replyContent"
               contentType="html"
               theme="snow"
@@ -218,6 +247,7 @@ const ticketData = computed(() => ticketResponse.value?.data)
 const replies = computed(() => ticketData.value?.replies || [])
 
 const replyContent = ref('')
+const editorKey = ref(0)
 const isSubmitting = ref(false)
 const toast = useToast()
 
@@ -298,6 +328,7 @@ const sendReply = async () => {
     })
     
     replyContent.value = ''
+    editorKey.value++
     selectedFiles.value = []
     previewUrls.value = []
     toast.addToast('Balasan terkirim', 'success')

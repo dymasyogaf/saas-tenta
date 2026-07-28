@@ -5,6 +5,32 @@
       <p class="text-ink-500 mt-1">Pantau dan kelola keluhan klien (Support Tickets)</p>
     </div>
 
+    <!-- Filter & Search -->
+    <div class="bg-white border border-ink-100 rounded-2xl p-4 flex flex-col sm:flex-row justify-between items-center gap-4 shadow-sm shadow-ink-900/5">
+      <div class="flex gap-2 overflow-x-auto pb-2 sm:pb-0 w-full sm:w-auto scrollbar-hide">
+        <button 
+          v-for="f in [{id:'all', label:'Semua Tiket'}, {id:'open', label:'Terbuka'}, {id:'in_progress', label:'In Progress'}, {id:'answered', label:'Dijawab'}, {id:'pending', label:'Ditunda'}, {id:'closed', label:'Ditutup'}]" 
+          :key="f.id"
+          @click="filterStatus = f.id"
+          class="px-4 py-2 rounded-xl text-sm font-bold whitespace-nowrap transition-colors border"
+          :class="filterStatus === f.id ? 'bg-orange-500 border-orange-500 text-white' : 'bg-white border-ink-200 text-ink-600 hover:border-orange-500 hover:text-orange-500'"
+        >
+          {{ f.label }}
+        </button>
+      </div>
+      <div class="relative w-full sm:w-64 flex-shrink-0">
+        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+          <Search class="w-4 h-4 text-ink-400" />
+        </div>
+        <input 
+          v-model="searchQuery"
+          type="text" 
+          placeholder="Cari tiket..." 
+          class="w-full pl-10 pr-4 py-2 border border-ink-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 text-sm"
+        >
+      </div>
+    </div>
+
     <!-- Tickets Table -->
     <div class="bg-white border border-ink-100 rounded-2xl shadow-sm shadow-ink-900/5 overflow-hidden">
       <div class="overflow-x-auto">
@@ -24,10 +50,10 @@
             <tr v-if="pending" class="animate-pulse">
               <td colspan="7" class="p-6 text-center text-ink-400 font-medium">Memuat data tiket...</td>
             </tr>
-            <tr v-else-if="tickets?.data?.length === 0">
-              <td colspan="7" class="p-12 text-center text-ink-500 font-medium">Belum ada tiket bantuan masuk</td>
+            <tr v-else-if="filteredTickets.length === 0">
+              <td colspan="7" class="p-12 text-center text-ink-500 font-medium">Belum ada tiket yang cocok dengan pencarian atau filter Anda.</td>
             </tr>
-            <tr v-for="ticket in tickets?.data" :key="ticket.id" class="hover:bg-ink-50/50 transition-colors">
+            <tr v-for="ticket in filteredTickets" :key="ticket.id" class="hover:bg-ink-50/50 transition-colors">
               <!-- SUBJEK -->
               <td class="p-4 sm:px-6 py-4 align-middle">
                 <div class="flex items-center gap-4">
@@ -94,6 +120,13 @@
                   >
                     Balas
                   </NuxtLink>
+                  <button 
+                    @click="deleteTicket(ticket.id, ticket.ticket_number)"
+                    class="p-2 text-ink-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-colors"
+                    title="Hapus Tiket"
+                  >
+                    <Trash2 class="w-4 h-4" />
+                  </button>
                 </div>
               </td>
             </tr>
@@ -105,7 +138,7 @@
 </template>
 
 <script setup lang="ts">
-import { ExternalLink, MessageCircle } from 'lucide-vue-next'
+import { MessageCircle, Trash2, Search } from 'lucide-vue-next'
 
 
 definePageMeta({ layout: 'admin' })
@@ -113,7 +146,29 @@ definePageMeta({ layout: 'admin' })
 const toast = useToast()
 const { data: tickets, pending, refresh } = useFetch<any>('/api/admin/tickets')
 
+const filterStatus = ref('all')
+const searchQuery = ref('')
 
+const filteredTickets = computed(() => {
+  if (!tickets.value?.data) return []
+  let result = tickets.value.data
+  
+  if (filterStatus.value !== 'all') {
+    result = result.filter((t: any) => t.status === filterStatus.value)
+  }
+  
+  if (searchQuery.value) {
+    const q = searchQuery.value.toLowerCase()
+    result = result.filter((t: any) => 
+      (t.ticket_number && t.ticket_number.toLowerCase().includes(q)) || 
+      (t.subject && t.subject.toLowerCase().includes(q)) ||
+      (t.users?.full_name && t.users.full_name.toLowerCase().includes(q)) ||
+      (t.users?.email && t.users.email.toLowerCase().includes(q))
+    )
+  }
+  
+  return result
+})
 
 const updateStatus = async (ticket_id: string, status: string) => {
   if (!confirm(`Yakin ingin mengubah status tiket menjadi ${status.toUpperCase()}?`)) return
@@ -127,6 +182,18 @@ const updateStatus = async (ticket_id: string, status: string) => {
     refresh()
   } catch (err: any) {
     toast.addToast(err.statusMessage || 'Terjadi kesalahan', 'error')
+  }
+}
+
+const deleteTicket = async (id: string, ticketNumber: string) => {
+  if (!confirm(`Yakin ingin menghapus tiket #${ticketNumber}? Tindakan ini tidak dapat dibatalkan.`)) return
+  
+  try {
+    await $fetch(`/api/admin/tickets/${id}`, { method: 'DELETE' })
+    toast.addToast('Tiket berhasil dihapus', 'success')
+    refresh()
+  } catch (err: any) {
+    toast.addToast(err.statusMessage || 'Gagal menghapus tiket', 'error')
   }
 }
 </script>

@@ -235,7 +235,18 @@ definePageMeta({ layout: 'dashboard' })
 const toast = useToast()
 const supabase = useSupabaseClient()
 
-const { data: tickets, pending, refresh } = useFetch<any>('/api/support/tickets')
+const { data: tickets, pending, refresh } = useAsyncData('user-tickets', async () => {
+  const { data, error } = await supabase
+    .from('support_tickets')
+    .select('*')
+    .order('created_at', { ascending: false })
+    
+  if (error) {
+    console.error('Error fetching tickets:', error)
+    return { data: [] }
+  }
+  return { data }
+})
 
 const isCreating = ref(false)
 const filterStatus = ref('all')
@@ -252,9 +263,9 @@ const filteredTickets = computed(() => {
   if (searchQuery.value) {
     const q = searchQuery.value.toLowerCase()
     result = result.filter((t: any) => 
-      t.ticket_number.toLowerCase().includes(q) || 
-      t.subject.toLowerCase().includes(q) ||
-      t.description.toLowerCase().includes(q)
+      (t.ticket_number && t.ticket_number.toLowerCase().includes(q)) || 
+      (t.subject && t.subject.toLowerCase().includes(q)) ||
+      (t.description && t.description.toLowerCase().includes(q))
     )
   }
   

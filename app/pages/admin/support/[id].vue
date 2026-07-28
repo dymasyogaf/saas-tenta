@@ -98,6 +98,20 @@
                 <span class="text-ink-400 font-medium">{{ formatDate(ticket?.created_at) }}</span>
               </div>
               <div class="prose prose-sm max-w-none text-ink-700" v-html="ticket?.description"></div>
+              
+              <!-- Lampiran Tiket -->
+              <div v-if="ticket?.attachments && ticket.attachments.length > 0" class="mt-4 pt-4 border-t border-ink-100">
+                <h4 class="text-xs font-bold text-ink-500 mb-2 uppercase tracking-wider">Lampiran</h4>
+                <div class="flex flex-wrap gap-3">
+                  <a v-for="(url, idx) in ticket.attachments" :key="idx" :href="url" target="_blank" class="block group">
+                    <img v-if="url.match(/\.(jpeg|jpg|gif|png|webp)/i) || url.includes('image')" :src="url" alt="Lampiran Tiket" class="w-24 h-24 object-cover rounded-xl border border-ink-200 group-hover:border-orange-500 transition-colors shadow-sm" />
+                    <div v-else class="w-24 h-24 bg-ink-50 flex flex-col items-center justify-center rounded-xl border border-ink-200 group-hover:border-orange-500 transition-colors shadow-sm text-ink-500 group-hover:text-orange-500">
+                      <Paperclip class="w-6 h-6 mb-1" />
+                      <span class="text-[10px] font-medium text-center px-2 truncate w-full">File {{ Number(idx) + 1 }}</span>
+                    </div>
+                  </a>
+                </div>
+              </div>
             </div>
             <div class="mt-2 text-xs text-ink-400 font-medium pl-2">{{ formatRelativeTime(ticket?.created_at) }}</div>
           </div>
@@ -105,8 +119,8 @@
 
         <!-- Mocked Replies -->
         <div v-for="reply in replies" :key="reply.id" class="flex gap-4" :class="reply.is_staff ? 'flex-row-reverse' : ''">
-          <div v-if="reply.is_staff" class="w-10 h-10 shrink-0 overflow-hidden rounded-full">
-            <img src="https://ui-avatars.com/api/?name=Admin+Support&background=f97316&color=fff" alt="Support" class="w-full h-full object-cover"/>
+          <div v-if="reply.is_staff" class="w-10 h-10 shrink-0 bg-orange-100 text-orange-600 font-bold flex items-center justify-center rounded-full text-sm">
+            {{ reply.sender_name?.substring(0, 2).toUpperCase() || 'AD' }}
           </div>
           <div v-else class="w-10 h-10 shrink-0 bg-ink-100 text-ink-600 font-bold flex items-center justify-center rounded-full text-sm">
             {{ ticket?.users?.full_name?.substring(0, 2).toUpperCase() || 'KL' }}
@@ -117,7 +131,7 @@
               'rounded-2xl p-5 shadow-sm relative w-full',
               reply.is_staff ? 'bg-orange-50/50 border border-orange-100' : 'bg-white border border-ink-200'
             ]">
-              <div v-if="reply.is_staff" class="absolute -right-2 top-4 w-4 h-4 bg-orange-50/50 border-r border-t border-orange-100 transform 45deg rotate-45"></div>
+              <div v-if="reply.is_staff" class="absolute -right-2 top-4 w-4 h-4 bg-orange-50/50 border-r border-t border-orange-100 transform rotate-45"></div>
               <div v-else class="absolute -left-2 top-4 w-4 h-4 bg-white border-l border-t border-ink-200 transform -rotate-45"></div>
               
               <div class="flex justify-between items-center mb-4 text-sm" :class="reply.is_staff ? 'flex-row-reverse' : ''">
@@ -128,7 +142,21 @@
                 <span class="text-ink-400 font-medium">{{ formatDate(reply.created_at) }}</span>
               </div>
               
-              <div class="prose prose-sm max-w-none text-ink-700" v-html="reply.content" :class="reply.is_staff ? 'text-right' : ''"></div>
+              <div class="prose prose-sm max-w-none text-ink-700" v-html="reply.content"></div>
+              
+              <!-- Lampiran Balasan -->
+              <div v-if="reply.attachments && reply.attachments.length > 0" class="mt-4 pt-4 border-t border-ink-100" :class="reply.is_staff ? 'text-right' : 'text-left'">
+                <h4 class="text-xs font-bold text-ink-500 mb-2 uppercase tracking-wider">Lampiran</h4>
+                <div class="flex flex-wrap gap-3" :class="reply.is_staff ? 'justify-end' : 'justify-start'">
+                  <a v-for="(url, idx) in reply.attachments" :key="idx" :href="url" target="_blank" class="block group">
+                    <img v-if="url.match(/\.(jpeg|jpg|gif|png|webp)/i) || url.includes('image')" :src="url" alt="Lampiran Balasan" class="w-24 h-24 object-cover rounded-xl border border-ink-200 group-hover:border-orange-500 transition-colors shadow-sm" />
+                    <div v-else class="w-24 h-24 bg-ink-50 flex flex-col items-center justify-center rounded-xl border border-ink-200 group-hover:border-orange-500 transition-colors shadow-sm text-ink-500 group-hover:text-orange-500">
+                      <Paperclip class="w-6 h-6 mb-1" />
+                      <span class="text-[10px] font-medium text-center px-2 truncate w-full">File {{ Number(idx) + 1 }}</span>
+                    </div>
+                  </a>
+                </div>
+              </div>
             </div>
             <div class="mt-2 text-xs text-ink-400 font-medium" :class="reply.is_staff ? 'pr-2' : 'pl-2'">
               {{ formatRelativeTime(reply.created_at) }}
@@ -151,10 +179,16 @@
         <!-- Status Ubah via Reply -->
         <div class="flex items-center gap-3">
           <span class="text-xs font-semibold text-ink-500 uppercase tracking-wider">Ubah Status:</span>
-          <select v-model="replyStatus" class="px-3 py-1.5 bg-ink-50 border border-ink-200 text-ink-700 text-xs font-bold rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500">
+          <select 
+            v-model="replyStatus"
+            @change="updateStatus(($event.target as HTMLSelectElement).value)"
+            class="px-3 py-1.5 bg-ink-50 border border-ink-200 text-ink-700 text-xs font-bold rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 cursor-pointer"
+          >
+            <option value="open">Terbuka</option>
             <option value="in_progress">In Progress</option>
             <option value="answered">Dijawab</option>
             <option value="pending">Ditunda</option>
+            <option value="closed">Ditutup</option>
           </select>
         </div>
       </div>
@@ -178,6 +212,7 @@
         <div class="mb-4">
           <ClientOnly>
             <QuillEditor
+              :key="editorKey"
               v-model:content="replyContent"
               contentType="html"
               theme="snow"
@@ -188,15 +223,30 @@
           </ClientOnly>
         </div>
         
-        <div class="flex justify-between items-center">
-          <button class="inline-flex items-center gap-2 px-5 py-2.5 bg-ink-100 hover:bg-ink-200 text-ink-700 rounded-xl text-sm font-bold transition-colors">
-            <Paperclip class="w-4 h-4" />
-            Lampirkan File
-          </button>
-          <button class="inline-flex items-center gap-2 px-5 py-2.5 bg-orange-500 hover:bg-orange-600 text-white rounded-xl text-sm font-bold transition-colors shadow-sm">
-            <Send class="w-4 h-4" />
-            Kirim Balasan & Ubah Status
-          </button>
+        
+        <div class="flex flex-col gap-4">
+          <!-- Preview Lampiran -->
+          <div v-if="attachments.length > 0" class="flex flex-wrap gap-2">
+            <div v-for="(file, index) in attachments" :key="index" class="flex items-center gap-2 bg-ink-50 px-3 py-1.5 rounded-lg border border-ink-200">
+              <span class="text-xs text-ink-600 truncate max-w-[150px]">{{ file.name }}</span>
+              <button @click="removeAttachment(index)" class="text-ink-400 hover:text-red-500">
+                <X class="w-3.5 h-3.5" />
+              </button>
+            </div>
+          </div>
+
+          <div class="flex justify-between items-center">
+            <input type="file" ref="fileInputRef" multiple class="hidden" @change="handleFileChange" accept="image/*,.pdf,.doc,.docx" />
+            <button @click="fileInputRef?.click()" type="button" class="inline-flex items-center gap-2 px-5 py-2.5 bg-ink-100 hover:bg-ink-200 text-ink-700 rounded-xl text-sm font-bold transition-colors">
+              <Paperclip class="w-4 h-4" />
+              Lampirkan File
+            </button>
+            <button @click="submitReply" :disabled="isSubmitting" class="inline-flex items-center gap-2 px-5 py-2.5 bg-orange-500 hover:bg-orange-600 text-white rounded-xl text-sm font-bold transition-colors shadow-sm disabled:opacity-50">
+              <Loader2 v-if="isSubmitting" class="w-4 h-4 animate-spin" />
+              <Send v-else class="w-4 h-4" />
+              {{ isSubmitting ? 'Mengirim...' : 'Kirim balasan' }}
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -217,7 +267,9 @@ import {
   Paperclip,
   Send,
   CheckCircle,
-  AlertCircle
+  AlertCircle,
+  X,
+  Loader2
 } from 'lucide-vue-next'
 
 
@@ -226,19 +278,126 @@ definePageMeta({ layout: 'admin' })
 const route = useRoute()
 const supabase = useSupabaseClient()
 const { user } = useAuth()
+const toast = useToast()
 
 const ticketId = route.params.id
 
 // Fetch ticket data with user relation
-const { data: ticket, pending } = useFetch<any>(`/api/admin/tickets/${ticketId}`)
+const { data: ticket, pending, refresh } = useFetch<any>(`/api/admin/tickets/${ticketId}`, {
+  transform: (res) => res.data
+})
 
-// Mocked Replies for Frontend Design purpose
-const replies = ref<any[]>([
-  // Kosong atau bisa ditambah dummy
-])
+// Actual Replies from API
+const replies = computed(() => ticket.value?.replies || [])
+watch(() => ticket.value, (newVal) => {
+  if (newVal && newVal.status) {
+    replyStatus.value = newVal.status
+  }
+}, { immediate: true })
 
 const replyContent = ref('')
+const editorKey = ref(0)
 const replyStatus = ref('answered')
+const isSubmitting = ref(false)
+
+const attachments = ref<File[]>([])
+const fileInputRef = ref<HTMLInputElement | null>(null)
+
+const handleFileChange = (event: Event) => {
+  const input = event.target as HTMLInputElement
+  if (input.files) {
+    const files = Array.from(input.files)
+    // Validasi ukuran max 5MB per file
+    const validFiles = files.filter(f => f.size <= 5 * 1024 * 1024)
+    if (validFiles.length < files.length) {
+      toast.addToast('Beberapa file diabaikan karena melebihi batas 5MB', 'error')
+    }
+    attachments.value.push(...validFiles)
+  }
+  // Reset input value to allow selecting the same file again
+  if (input) input.value = ''
+}
+
+const removeAttachment = (index: number) => {
+  attachments.value.splice(index, 1)
+}
+
+const updateStatus = async (status: string) => {
+  if (!confirm(`Yakin ingin mengubah status tiket menjadi ${status.toUpperCase()}?`)) return
+  
+  try {
+    await $fetch('/api/admin/tickets', {
+      method: 'POST',
+      body: { ticket_id: ticketId, status }
+    })
+    toast.addToast('Status tiket diperbarui', 'success')
+    if (ticket.value) {
+      ticket.value.status = status
+    }
+  } catch (err: any) {
+    toast.addToast(err.statusMessage || 'Terjadi kesalahan', 'error')
+  }
+}
+
+const submitReply = async () => {
+  const rawText = replyContent.value.replace(/<[^>]*>?/gm, '').trim()
+  if (!rawText) {
+    toast.addToast('Pesan balasan tidak boleh kosong', 'error')
+    return
+  }
+
+  isSubmitting.value = true
+  try {
+    const uploadedUrls: string[] = []
+    
+    // Upload files if any
+    if (attachments.value.length > 0) {
+      for (const file of attachments.value) {
+        const fileExt = file.name.split('.').pop()
+        const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`
+        
+        const { error: uploadError, data } = await supabase.storage
+          .from('support_attachments')
+          .upload(fileName, file)
+        
+        if (uploadError) {
+          toast.addToast(`Gagal upload file ${file.name}`, 'error')
+          console.error('Upload Error:', uploadError)
+          continue
+        }
+        
+        if (data) {
+          const { data: { publicUrl } } = supabase.storage
+            .from('support_attachments')
+            .getPublicUrl(data.path)
+            
+          uploadedUrls.push(publicUrl)
+        }
+      }
+    }
+
+    await $fetch('/api/admin/replies', {
+      method: 'POST',
+      body: { 
+        ticket_id: ticketId, 
+        content: replyContent.value,
+        status: replyStatus.value,
+        attachments: uploadedUrls
+      }
+    })
+    
+    toast.addToast('Balasan berhasil dikirim', 'success')
+    replyContent.value = ''
+    attachments.value = []
+    editorKey.value++
+    if (ticket.value) ticket.value.status = replyStatus.value
+    refresh()
+  } catch (err: any) {
+    toast.addToast(err.statusMessage || 'Gagal mengirim balasan', 'error')
+  } finally {
+    isSubmitting.value = false
+  }
+}
 
 // Helpers
 const adminName = computed(() => user.value?.user_metadata?.full_name || 'Admin Support')
