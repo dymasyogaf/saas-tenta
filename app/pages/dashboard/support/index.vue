@@ -243,9 +243,9 @@ const { data: tickets, pending, refresh } = useAsyncData('user-tickets', async (
     
   if (error) {
     console.error('Error fetching tickets:', error)
-    return { data: [] }
+    return { data: [] as any[] }
   }
-  return { data }
+  return { data: (data as any[]) || [] }
 })
 
 const isCreating = ref(false)

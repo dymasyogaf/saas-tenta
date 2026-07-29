@@ -1,8 +1,12 @@
 import { serverSupabaseServiceRole } from '#supabase/server'
 
 export default defineEventHandler(async (event) => {
+  if (process.env.NODE_ENV === 'production') {
+    throw createError({ statusCode: 404, statusMessage: 'Not Found' })
+  }
+
   const supabase = serverSupabaseServiceRole<any>(event)
-  
+
   try {
     const { data, error } = await supabase
       .from('users')

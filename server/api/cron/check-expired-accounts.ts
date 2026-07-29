@@ -3,11 +3,10 @@ import { serverSupabaseServiceRole } from '#supabase/server'
 export default defineEventHandler(async (event) => {
   const supabase = serverSupabaseServiceRole<any>(event)
   
-  // Opsi: Gunakan API Key atau secret token untuk mengamankan cron endpoint ini
-  // const authHeader = getHeader(event, 'authorization')
-  // if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
-  //   throw createError({ statusCode: 401, statusMessage: 'Unauthorized' })
-  // }
+  const authHeader = getHeader(event, 'authorization')
+  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+    throw createError({ statusCode: 401, statusMessage: 'Unauthorized' })
+  }
 
   try {
     const now = new Date().toISOString()

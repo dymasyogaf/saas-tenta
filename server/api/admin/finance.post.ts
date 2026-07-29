@@ -1,6 +1,7 @@
 import { serverSupabaseServiceRole } from '#supabase/server'
 
 export default defineEventHandler(async (event) => {
+  await requireAdmin(event, ['admin_finance'])
   const body = await readBody(event)
   const supabase = serverSupabaseServiceRole<any>(event)
   
@@ -52,7 +53,10 @@ export default defineEventHandler(async (event) => {
         
       if (saldoData) {
         let newPending = (saldoData.pending_balance || 0) - transaction.amount
-        if (newPending < 0) newPending = 0 // Safety check
+        if (newPending < 0) {
+          console.warn(`[FINANCE WARNING] pending_balance negatif (${newPending}) untuk user ${transaction.user_id}. Kemungkinan inkonsistensi data.`)
+          newPending = 0
+        }
         
         if (action === 'approve') {
           // Approve: Uang sudah dipindah ke Meta, hold dihapus

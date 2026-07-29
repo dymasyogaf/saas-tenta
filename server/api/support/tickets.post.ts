@@ -17,19 +17,13 @@ export default defineEventHandler(async (event) => {
     allowedTags: sanitizeHtml.defaults.allowedTags.concat(['u']),
     allowedAttributes: {
       ...sanitizeHtml.defaults.allowedAttributes,
-      '*': ['class', 'style']
+      '*': ['class']
     }
   })
 
   const supabase = await serverSupabaseServiceRole<any>(event)
   
-  // Hitung jumlah tiket yang ada untuk membuat nomor urut (TKT-0001, TKT-0002, dst)
-  const { count } = await supabase
-    .from('support_tickets')
-    .select('*', { count: 'exact', head: true })
-
-  const nextNum = (count || 0) + 1
-  const ticketNumber = `TKT-${String(nextNum).padStart(4, '0')}`
+  const ticketNumber = `TKT-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`
 
   try {
     const userId = user.id || (user as any).sub

@@ -21,11 +21,13 @@ export default defineEventHandler(async (event) => {
   const supabase = await serverSupabaseClient(event)
   
   // 1. Ambil semua akun iklan pengguna yang aktif
-  const { data: adAccounts, error: accountsError } = await supabase
+  const { data, error: accountsError } = await supabase
     .from('ad_accounts')
     .select('id, platform, account_id, account_name, saldo')
     .eq('user_id', user.id)
     .in('status', ['active', 'pending'])
+  
+  const adAccounts = data as any[]
 
   if (accountsError) {
     throw createError({ statusCode: 500, message: 'Gagal memuat akun iklan' })

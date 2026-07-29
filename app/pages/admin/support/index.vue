@@ -34,7 +34,7 @@
     <!-- Tickets Table -->
     <div class="bg-white border border-ink-100 rounded-2xl shadow-sm shadow-ink-900/5 overflow-hidden">
       <div class="overflow-x-auto">
-        <table class="w-full text-left border-collapse min-w-[1200px]">
+        <table class="w-full text-left border-collapse min-w-[900px]">
           <thead>
             <tr class="border-b border-ink-100">
               <th class="p-4 sm:px-6 py-5 font-extrabold text-ink-900 text-xs tracking-wider uppercase">SUBJEK</th>

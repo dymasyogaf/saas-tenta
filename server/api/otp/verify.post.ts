@@ -31,15 +31,15 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 404, statusMessage: 'Data OTP tidak ditemukan.' })
   }
 
-  // 2. Verify OTP code
-  const dbOtp = String((dbUser as any).otp_code).trim()
-  const inputOtp = String(otp).replace(/\s/g, '').trim()
-
-  if (dbOtp !== inputOtp) {
-    throw createError({ statusCode: 400, statusMessage: 'OTP salah mohon coba lagi' })
+  const otpAttempts = (dbUser as any).otp_attempts || 0
+  if (otpAttempts >= 5) {
+    await (supabase as any)
+      .from('users')
+      .update({ otp_code: null, otp_expires_at: null, otp_attempts: 0 })
+      .eq('id', userId)
+    throw createError({ statusCode: 429, statusMessage: 'Terlalu banyak percobaan. Silakan minta OTP baru.' })
   }
 
-  // 3. Verify Expiry
   const now = new Date()
   const expiresAt = new Date((dbUser as any).otp_expires_at)
 
@@ -47,14 +47,26 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, statusMessage: 'Kode OTP sudah kadaluarsa. Silakan kirim ulang.' })
   }
 
+  const dbOtp = String((dbUser as any).otp_code).trim()
+  const inputOtp = String(otp).replace(/\s/g, '').trim()
+
+  if (dbOtp !== inputOtp) {
+    await (supabase as any)
+      .from('users')
+      .update({ otp_attempts: otpAttempts + 1 })
+      .eq('id', userId)
+    throw createError({ statusCode: 400, statusMessage: `OTP salah. Sisa percobaan: ${4 - otpAttempts}` })
+  }
+
   // 4. Mark phone as verified and clear OTP data (also update the phone number in DB if it was empty)
   const { error: updateError } = await (supabase as any)
     .from('users')
-    .update({ 
-      phone: phone, // Save the phone number to the profile if it was verified successfully
+    .update({
+      phone: phone,
       phone_verified: true,
       otp_code: null,
-      otp_expires_at: null
+      otp_expires_at: null,
+      otp_attempts: 0
     })
     .eq('id', userId)
 

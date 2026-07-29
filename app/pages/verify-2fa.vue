@@ -22,8 +22,10 @@
             :key="index"
             :ref="el => otpInputs[index] = el"
             v-model="otpValues[index]"
-            type="text" 
-            maxlength="1" 
+            type="text"
+            inputmode="numeric"
+            autocomplete="one-time-code"
+            maxlength="1"
             class="w-10 sm:w-12 h-12 sm:h-14 text-center text-lg sm:text-xl font-bold bg-ink-50 border border-ink-200 rounded-xl focus:bg-white focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 transition-all outline-none text-ink-900"
             @input="handleInput(index, $event)"
             @keydown="handleKeydown(index, $event)"
@@ -118,7 +120,7 @@ const handleInput = (index: number, event: Event) => {
   const value = input.value.replace(/[^0-9]/g, '')
   
   if (value) {
-    otpValues.value[index] = value[value.length - 1] // Take last typed character
+    otpValues.value[index] = value[value.length - 1] || '' // Take last typed character
     if (index < 5 && otpInputs.value[index + 1]) {
       otpInputs.value[index + 1].focus()
     }
@@ -144,7 +146,7 @@ const handlePaste = (event: ClipboardEvent) => {
   if (!pastedData) return
   
   for (let i = 0; i < pastedData.length; i++) {
-    otpValues.value[i] = pastedData[i]
+    otpValues.value[i] = pastedData[i] || ''
   }
   
   if (pastedData.length < 6 && otpInputs.value[pastedData.length]) {

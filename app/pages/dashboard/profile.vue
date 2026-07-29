@@ -463,6 +463,7 @@ const handlePhoneRequested = (newPhone: string) => {
 }
 
 const resetVerification = async () => {
+  if (!confirm('Yakin ingin mereset status verifikasi? Ini akan menghapus data KYC Anda.')) return
   try {
     const uid = (user.value as any)?.id || (user.value as any)?.sub
     const supabase = useSupabaseClient()

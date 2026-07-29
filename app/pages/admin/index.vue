@@ -66,7 +66,7 @@
           </div>
           <p class="text-sm font-bold text-slate-700">Antrean KYC</p>
         </div>
-        <div v-if="pending" class="h-9 w-16 bg-slate-200 rounded animate-pulse my-1"></div>
+        <div v-if="pending" class="h-9 w-16 bg-ink-200 rounded animate-pulse my-1"></div>
         <p v-else class="text-3xl font-display font-bold text-slate-900">{{ stats?.kyc || 0 }}</p>
         <p class="text-xs font-medium text-slate-500 mt-2">Menunggu review Tim Audit</p>
       </div>
@@ -79,7 +79,7 @@
           </div>
           <p class="text-sm font-bold text-slate-700">Request Akun</p>
         </div>
-        <div v-if="pending" class="h-9 w-16 bg-slate-200 rounded animate-pulse my-1"></div>
+        <div v-if="pending" class="h-9 w-16 bg-ink-200 rounded animate-pulse my-1"></div>
         <p v-else class="text-3xl font-display font-bold text-slate-900">{{ stats?.ads || 0 }}</p>
         <p class="text-xs font-medium text-slate-500 mt-2">Menunggu eksekusi Tim Ads</p>
       </div>
@@ -92,7 +92,7 @@
           </div>
           <p class="text-sm font-bold text-slate-700">Withdraw & Alokasi</p>
         </div>
-        <div v-if="pending" class="h-9 w-16 bg-slate-200 rounded animate-pulse my-1"></div>
+        <div v-if="pending" class="h-9 w-16 bg-ink-200 rounded animate-pulse my-1"></div>
         <p v-else class="text-3xl font-display font-bold text-slate-900">{{ stats?.withdraw || 0 }}</p>
         <p class="text-xs font-medium text-slate-500 mt-2">Menunggu eksekusi Tim Finance</p>
       </div>
@@ -105,7 +105,7 @@
           </div>
           <p class="text-sm font-bold text-slate-700">Top Up Masuk</p>
         </div>
-        <div v-if="pending" class="h-9 w-32 bg-slate-200 rounded animate-pulse my-1"></div>
+        <div v-if="pending" class="h-9 w-32 bg-ink-200 rounded animate-pulse my-1"></div>
         <p v-else class="text-3xl font-display font-bold text-slate-900">{{ formatCurrency(stats?.topup || 0) }}</p>
         <p class="text-xs font-medium text-slate-500 mt-2">
           Total masuk pada rentang waktu terpilih

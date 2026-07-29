@@ -26,3 +26,8 @@ logs
 # Markdown and SQL files
 *.md
 *.sql
+
+# Test/debug scripts
+check_db.js
+test-db.js
+test-duitku.js

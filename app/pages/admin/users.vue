@@ -37,16 +37,16 @@
             <tr v-if="pending" v-for="i in 3" :key="'skel'+i" class="animate-pulse bg-white">
               <td class="px-6 py-4">
                 <div class="flex items-center gap-3">
-                  <div class="w-10 h-10 rounded-full bg-slate-200 shrink-0"></div>
+                  <div class="w-10 h-10 rounded-full bg-ink-200 shrink-0"></div>
                   <div class="space-y-2">
-                    <div class="h-4 w-32 bg-slate-200 rounded"></div>
-                    <div class="h-3 w-24 bg-slate-200 rounded"></div>
+                    <div class="h-4 w-32 bg-ink-200 rounded"></div>
+                    <div class="h-3 w-24 bg-ink-200 rounded"></div>
                   </div>
                 </div>
               </td>
-              <td class="px-6 py-4"><div class="h-6 w-32 bg-slate-200 rounded-full"></div></td>
-              <td class="px-6 py-4"><div class="h-4 w-24 bg-slate-200 rounded"></div></td>
-              <td class="px-6 py-4"><div class="h-8 w-8 bg-slate-200 rounded-lg mx-auto"></div></td>
+              <td class="px-6 py-4"><div class="h-6 w-32 bg-ink-200 rounded-full"></div></td>
+              <td class="px-6 py-4"><div class="h-4 w-24 bg-ink-200 rounded"></div></td>
+              <td class="px-6 py-4"><div class="h-8 w-8 bg-ink-200 rounded-lg mx-auto"></div></td>
             </tr>
             
             <!-- Empty State -->
@@ -134,8 +134,8 @@ definePageMeta({
 
 const isModalOpen = ref(false)
 
-const { data: staffList, pending, refresh } = useAsyncData('admin_staff_list', async () => {
-  return (await $fetch('/api/admin/staff')) as any[]
+const { data: staffList, pending, refresh } = useAsyncData<any[]>('admin_staff_list', async () => {
+  return (await ($fetch as any)('/api/admin/staff')) as any[]
 }, { default: () => [] })
 
 const { addToast } = useToast()
@@ -153,7 +153,7 @@ const executeRevoke = async () => {
   isDeleteModalOpen.value = false
   
   try {
-    await $fetch('/api/admin/staff', {
+    await ($fetch as any)('/api/admin/staff', {
       method: 'POST',
       body: { action: 'revoke', user_id: staffToDelete.value.id }
     })

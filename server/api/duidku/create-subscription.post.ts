@@ -41,7 +41,7 @@ export default defineEventHandler(async (event) => {
     merchantUserInfo: userId,
     customerVaName: userName || 'Member',
     email: userEmail || 'member@tentaklik.com',
-    phoneNumber: userPhone || '0800000000',
+    phoneNumber: userPhone || '',
     itemDetails: [{
       name: 'Sewa Akun Iklan',
       price: paymentAmount,
@@ -51,7 +51,7 @@ export default defineEventHandler(async (event) => {
       firstName: userName || 'Member',
       lastName: '',
       email: userEmail || 'member@tentaklik.com',
-      phoneNumber: userPhone || '0800000000',
+      phoneNumber: userPhone || '',
     },
     callbackUrl,
     returnUrl,

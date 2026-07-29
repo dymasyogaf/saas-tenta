@@ -1,7 +1,10 @@
-import { serverSupabaseServiceRole } from '#supabase/server'
-import { serverSupabaseUser } from '#supabase/server'
+import { serverSupabaseServiceRole, serverSupabaseUser } from '#supabase/server'
 
 export default defineEventHandler(async (event) => {
+  if (process.env.NODE_ENV === 'production') {
+    throw createError({ statusCode: 404, statusMessage: 'Not Found' })
+  }
+
   const user = await serverSupabaseUser(event)
   const supabase = serverSupabaseServiceRole<any>(event)
   

@@ -1,6 +1,7 @@
 import { serverSupabaseServiceRole } from '#supabase/server'
 
 export default defineEventHandler(async (event) => {
+  await requireAdmin(event, ['admin_finance'])
   const supabase = serverSupabaseServiceRole<any>(event)
   
   try {
@@ -23,7 +24,7 @@ export default defineEventHandler(async (event) => {
     if (error) throw error
 
     // Fallback jika foreign key users() gagal
-    let transactions = data || []
+    let transactions: any[] = data || []
     
     if (transactions.length > 0 && !transactions[0].users) {
       const userIds = [...new Set(transactions.map(t => t.user_id))]

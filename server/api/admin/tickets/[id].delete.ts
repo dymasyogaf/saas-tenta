@@ -1,14 +1,7 @@
-import { serverSupabaseServiceRole, serverSupabaseUser } from '#supabase/server'
+import { serverSupabaseServiceRole } from '#supabase/server'
 
 export default defineEventHandler(async (event) => {
-  const user = await serverSupabaseUser(event)
-  if (!user) throw createError({ statusCode: 401, statusMessage: 'Unauthorized' })
-
-  const role = user.user_metadata?.role
-  if (role !== 'super_admin' && role !== 'admin_compliance') {
-    throw createError({ statusCode: 403, statusMessage: 'Forbidden' })
-  }
-
+  await requireAdmin(event, ['admin_compliance'])
   const ticketId = getRouterParam(event, 'id')
   if (!ticketId) throw createError({ statusCode: 400, statusMessage: 'ID tiket diperlukan' })
 

@@ -16,6 +16,14 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, statusMessage: 'Data tidak lengkap' })
   }
 
+  if (Number(subscriptionMonths) <= 0 || Number(subscriptionMonths) > 12) {
+    throw createError({ statusCode: 400, statusMessage: 'Durasi sewa harus antara 1-12 bulan' })
+  }
+
+  if (Number(rentalFee) <= 0) {
+    throw createError({ statusCode: 400, statusMessage: 'Biaya sewa tidak valid' })
+  }
+
   try {
     // 1. Dapatkan informasi Ad Account
     const { data: account, error: accErr } = await supabase
@@ -40,14 +48,17 @@ export default defineEventHandler(async (event) => {
       throw new Error('Data saldo tidak ditemukan')
     }
 
-    const netBalance = Number(saldoData.balance) - Number(saldoData.pending_balance)
+    const balance = Math.round(Number(saldoData.balance))
+    const pending = Math.round(Number(saldoData.pending_balance))
+    const fee = Math.round(Number(rentalFee))
+    const netBalance = balance - pending
 
-    if (netBalance < Number(rentalFee)) {
+    if (netBalance < fee) {
       throw new Error('Saldo tidak mencukupi untuk perpanjangan')
     }
 
     // 3. Potong Saldo
-    const newBalance = Number(saldoData.balance) - Number(rentalFee)
+    const newBalance = balance - fee
     const { error: updateSaldoErr } = await supabase
       .from('saldo')
       .update({ balance: newBalance })

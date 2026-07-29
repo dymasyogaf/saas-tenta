@@ -12,6 +12,7 @@ export default defineNuxtConfig({
 
   // Security Configuration
   security: {
+    csrf: true,
     headers: {
       crossOriginEmbedderPolicy: 'unsafe-none',
       crossOriginResourcePolicy: 'cross-origin',
@@ -87,6 +88,13 @@ export default defineNuxtConfig({
       appName: 'Tentaklik',
       supabaseUrl: '',
       supabaseKey: '',
+      pricingMonthly: 150000,
+      pricingQuarterly: 350000,
+      pricingQuarterlyOriginal: 450000,
+      pricingSemiannual: 792000,
+      pricingSemiannualOriginal: 900000,
+      managementFeeInfo: 'Rp 555.000,- per akun per bulan termasuk PPN',
+      tiktokAdsEnabled: false,
     },
   },
 

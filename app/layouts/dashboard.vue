@@ -165,7 +165,17 @@
       <!-- Page Content (scrollable) -->
       <div class="flex-1 overflow-auto p-4 md:p-8">
         <DashboardVerificationBanner />
-        <slot />
+        <NuxtErrorBoundary>
+          <slot />
+          <template #error="{ error, clearError }">
+            <div class="bg-red-50 border border-red-200 text-red-600 p-6 rounded-xl flex flex-col items-center justify-center text-center mt-4">
+              <TriangleAlert class="w-12 h-12 mb-2 text-red-500" />
+              <h3 class="font-bold text-lg mb-1">Terjadi Kesalahan</h3>
+              <p class="text-sm opacity-80 mb-4">{{ error.message }}</p>
+              <button @click="clearError" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-colors">Coba Lagi</button>
+            </div>
+          </template>
+        </NuxtErrorBoundary>
       </div>
     </main>
 

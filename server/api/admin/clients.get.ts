@@ -1,8 +1,7 @@
 import { serverSupabaseServiceRole } from '#supabase/server'
 
 export default defineEventHandler(async (event) => {
-  // Gunakan Service Role untuk menembus RLS (Row Level Security)
-  // Agar Admin bisa melihat Saldo milik user lain
+  await requireAdmin(event)
   const supabase = serverSupabaseServiceRole<any>(event)
   
   try {

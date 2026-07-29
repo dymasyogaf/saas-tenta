@@ -68,17 +68,17 @@
             <!-- Loading Skeleton -->
             <tr v-if="pending" v-for="i in 3" :key="'skel'+i" class="animate-pulse bg-white">
               <td class="px-6 py-4">
-                <div class="h-4 w-32 bg-slate-200 rounded mb-2"></div>
-                <div class="h-3 w-48 bg-slate-200 rounded"></div>
+                <div class="h-4 w-32 bg-ink-200 rounded mb-2"></div>
+                <div class="h-3 w-48 bg-ink-200 rounded"></div>
               </td>
               <td class="px-6 py-4">
                 <div class="flex items-center gap-2">
-                  <div class="w-6 h-6 bg-slate-200 rounded-full"></div>
-                  <div class="h-4 w-24 bg-slate-200 rounded"></div>
+                  <div class="w-6 h-6 bg-ink-200 rounded-full"></div>
+                  <div class="h-4 w-24 bg-ink-200 rounded"></div>
                 </div>
               </td>
-              <td class="px-6 py-4"><div class="h-10 w-full bg-slate-200 rounded-lg"></div></td>
-              <td class="px-6 py-4"><div class="h-10 w-24 bg-slate-200 rounded-lg mx-auto"></div></td>
+              <td class="px-6 py-4"><div class="h-10 w-full bg-ink-200 rounded-lg"></div></td>
+              <td class="px-6 py-4"><div class="h-10 w-24 bg-ink-200 rounded-lg mx-auto"></div></td>
             </tr>
             
             <!-- Empty State -->

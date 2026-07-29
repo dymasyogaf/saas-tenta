@@ -185,7 +185,7 @@
       
       <!-- Tables -->
       <div class="w-full overflow-x-auto pb-4 pt-1">
-        <table class="w-full text-left border-collapse min-w-[800px]">
+        <table class="w-full text-left border-collapse min-w-[640px]">
           <thead>
             <tr class="border-b border-ink-100 text-xs font-bold text-orange-500 uppercase tracking-wider">
               <th class="px-6 py-4">TANGGAL</th>
@@ -226,7 +226,7 @@
     
     <!-- Modal Top Up -->
     <div v-if="isTopupModalOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-ink-900/50 backdrop-blur-sm p-4">
-      <div class="bg-white rounded-2xl shadow-xl w-full max-w-3xl overflow-hidden relative border border-ink-100 flex flex-col max-h-[90vh]">
+      <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg sm:max-w-2xl lg:max-w-3xl overflow-hidden relative border border-ink-100 flex flex-col max-h-[90vh]">
         <div class="p-6 border-b border-ink-100 flex justify-between items-center">
           <div>
             <h3 class="text-xl font-display font-bold text-ink-900">Tambah Saldo Iklan</h3>

@@ -5,6 +5,8 @@ export default defineEventHandler(async (event) => {
     const body = await readBody(event)
     const { transaction_id, actual_spent } = body
     
+    await requireAdmin(event, ['admin_finance', 'super_admin'])
+    
     if (!transaction_id || actual_spent === undefined || actual_spent < 0) {
       throw createError({ statusCode: 400, message: 'Parameter transaction_id dan actual_spent wajib disertakan' })
     }

@@ -1,7 +1,7 @@
 <template>
   <Teleport to="body">
     <div v-if="modelValue" class="fixed inset-0 z-50 flex items-center justify-center bg-ink-900/50 backdrop-blur-sm p-4 md:p-6">
-      <div class="bg-white rounded-2xl shadow-xl w-full max-w-4xl overflow-hidden relative border border-ink-100 flex flex-col max-h-[95vh] md:max-h-[90vh]">
+      <div ref="modalRef" class="bg-white rounded-2xl shadow-xl w-full max-w-lg sm:max-w-2xl lg:max-w-4xl overflow-hidden relative border border-ink-100 flex flex-col max-h-[95vh] md:max-h-[90vh]" role="dialog" aria-modal="true" aria-labelledby="request-ad-title">
         <!-- Header -->
         <div class="px-6 py-4 border-b border-ink-100 flex items-center justify-between bg-white shrink-0">
           <div class="flex items-center gap-3">
@@ -9,7 +9,7 @@
               <img :src="platformLogo" class="w-7 h-7 object-contain" />
             </div>
             <div>
-              <h3 class="font-display font-bold text-ink-900">Pengajuan Akun Iklan Baru</h3>
+              <h3 id="request-ad-title" class="font-display font-bold text-ink-900">Pengajuan Akun Iklan Baru</h3>
               <p v-if="activePlatformName" class="text-xs text-ink-500">Lengkapi formulir pendaftaran untuk {{ activePlatformName }}</p>
               <p v-else class="text-xs text-ink-500">Pilih platform iklan yang ingin Anda tambahkan</p>
             </div>
@@ -31,7 +31,11 @@
               <img src="/icon-google-ads.png" class="w-12 h-12 object-contain" />
               <span class="font-bold text-ink-900">Google Ads</span>
             </button>
-            <button disabled class="relative bg-white border border-ink-200 p-6 rounded-xl text-center flex flex-col items-center gap-4 opacity-70 cursor-not-allowed overflow-hidden group">
+            <button v-if="isTiktokEnabled" @click="selectPlatform('TikTok Ads')" class="bg-white border border-ink-200 p-6 rounded-xl hover:border-orange-500 hover:shadow-md transition-all text-center flex flex-col items-center gap-4">
+              <img src="/tiktok.svg" class="w-12 h-12 object-contain" />
+              <span class="font-bold text-ink-900">TikTok Ads</span>
+            </button>
+            <button v-else disabled class="relative bg-white border border-ink-200 p-6 rounded-xl text-center flex flex-col items-center gap-4 opacity-70 cursor-not-allowed overflow-hidden group">
               <div class="absolute inset-0 bg-ink-900/5 flex flex-col items-center justify-center backdrop-blur-[2px] z-10 transition-all">
                 <span class="bg-ink-900 text-white text-xs font-black px-4 py-2 rounded-full uppercase tracking-widest shadow-lg transform -rotate-12 group-hover:scale-110 transition-transform">Coming Soon</span>
               </div>
@@ -172,7 +176,7 @@
                   <p class="font-semibold">a. Management Fee</p>
                   <p>Anda berkewajiban untuk membayarkan "Management Fee" kepada Tentaklik sebesar: Platform Facebook (4%) dan Platform Google (3%). Pembayaran atas Management Fee akan dilakukan dengan pemotongan langsung dari jumlah Dana Top-Up Anda.</p>
                   <p class="font-semibold mt-2">b. Biaya Akun</p>
-                  <p>Anda wajib membayarkan "Biaya Akun" kepada Tentaklik pada setiap bulannya, untuk setiap Ads Account yang digunakan. Besar Biaya Akun adalah Rp 555.000,- per akun per bulan termasuk PPN.</p>
+                  <p>Anda wajib membayarkan "Biaya Akun" kepada Tentaklik pada setiap bulannya, untuk setiap Ads Account yang digunakan. Besar Biaya Akun adalah {{ pricing.managementFeeInfo }}.</p>
                 </div>
               </div>
               
@@ -192,27 +196,24 @@
             </div>
             
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <!-- 1 Bulan -->
-              <div @click="form.subscriptionMonths = 1; form.rentalFee = 150000" :class="['border-2 rounded-xl p-5 cursor-pointer transition-all text-center', form.subscriptionMonths === 1 ? 'border-orange-500 bg-orange-50' : 'border-ink-100 hover:border-ink-300']">
+              <div @click="form.subscriptionMonths = 1; form.rentalFee = pricing.monthly" :class="['border-2 rounded-xl p-5 cursor-pointer transition-all text-center', form.subscriptionMonths === 1 ? 'border-orange-500 bg-orange-50' : 'border-ink-100 hover:border-ink-300']">
                 <h5 class="font-bold text-ink-900 mb-1">1 Bulan</h5>
-                <p class="text-2xl font-bold text-orange-600 mb-2">Rp 150.000</p>
+                <p class="text-2xl font-bold text-orange-600 mb-2">Rp {{ pricing.monthly.toLocaleString('id-ID') }}</p>
                 <p class="text-xs text-ink-500">Normal</p>
               </div>
-              
-              <!-- 3 Bulan -->
-              <div @click="form.subscriptionMonths = 3; form.rentalFee = 350000" :class="['border-2 rounded-xl p-5 cursor-pointer transition-all relative text-center', form.subscriptionMonths === 3 ? 'border-orange-500 bg-orange-50' : 'border-ink-100 hover:border-ink-300']">
+
+              <div @click="form.subscriptionMonths = 3; form.rentalFee = pricing.quarterly" :class="['border-2 rounded-xl p-5 cursor-pointer transition-all relative text-center', form.subscriptionMonths === 3 ? 'border-orange-500 bg-orange-50' : 'border-ink-100 hover:border-ink-300']">
                 <div class="absolute -top-3 inset-x-0 flex justify-center"><span class="bg-orange-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">Hemat 22%</span></div>
                 <h5 class="font-bold text-ink-900 mb-1 mt-1">3 Bulan</h5>
-                <p class="text-2xl font-bold text-orange-600 mb-2">Rp 350.000</p>
-                <p class="text-xs text-ink-500 line-through">Rp 450.000</p>
+                <p class="text-2xl font-bold text-orange-600 mb-2">Rp {{ pricing.quarterly.toLocaleString('id-ID') }}</p>
+                <p class="text-xs text-ink-500 line-through">Rp {{ pricing.quarterlyOriginal.toLocaleString('id-ID') }}</p>
               </div>
-              
-              <!-- 6 Bulan -->
-              <div @click="form.subscriptionMonths = 6; form.rentalFee = 792000" :class="['border-2 rounded-xl p-5 cursor-pointer transition-all relative text-center', form.subscriptionMonths === 6 ? 'border-orange-500 bg-orange-50' : 'border-ink-100 hover:border-ink-300']">
+
+              <div @click="form.subscriptionMonths = 6; form.rentalFee = pricing.semiannual" :class="['border-2 rounded-xl p-5 cursor-pointer transition-all relative text-center', form.subscriptionMonths === 6 ? 'border-orange-500 bg-orange-50' : 'border-ink-100 hover:border-ink-300']">
                 <div class="absolute -top-3 inset-x-0 flex justify-center"><span class="bg-green-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">Hemat 12%</span></div>
                 <h5 class="font-bold text-ink-900 mb-1 mt-1">6 Bulan</h5>
-                <p class="text-2xl font-bold text-orange-600 mb-2">Rp 792.000</p>
-                <p class="text-xs text-ink-500 line-through">Rp 900.000</p>
+                <p class="text-2xl font-bold text-orange-600 mb-2">Rp {{ pricing.semiannual.toLocaleString('id-ID') }}</p>
+                <p class="text-xs text-ink-500 line-through">Rp {{ pricing.semiannualOriginal.toLocaleString('id-ID') }}</p>
               </div>
             </div>
 
@@ -264,7 +265,9 @@
 </template>
 
 <script setup lang="ts">
+import { ref, computed, watch, reactive, nextTick } from 'vue'
 import { X, MonitorPlay } from 'lucide-vue-next'
+import { useFocusTrap } from '@vueuse/integrations/useFocusTrap'
 
 const props = defineProps<{
   modelValue: boolean
@@ -276,7 +279,18 @@ const emit = defineEmits(['update:modelValue', 'success'])
 const toast = useToast()
 const supabase = useSupabaseClient()
 const { user } = useAuth()
+const runtimeConfig = useRuntimeConfig()
 
+const pricing = {
+  monthly: Number(runtimeConfig.public.pricingMonthly),
+  quarterly: Number(runtimeConfig.public.pricingQuarterly),
+  quarterlyOriginal: Number(runtimeConfig.public.pricingQuarterlyOriginal),
+  semiannual: Number(runtimeConfig.public.pricingSemiannual),
+  semiannualOriginal: Number(runtimeConfig.public.pricingSemiannualOriginal),
+  managementFeeInfo: String(runtimeConfig.public.managementFeeInfo),
+}
+
+const isTiktokEnabled = computed(() => String(runtimeConfig.public.tiktokAdsEnabled) === 'true')
 const activePlatformName = ref(props.platformName || '')
 const step = ref(props.platformName ? 2 : 1)
 
@@ -302,6 +316,21 @@ const fetchBalance = async () => {
 watch(() => props.platformName, (newVal) => {
   activePlatformName.value = newVal || ''
   step.value = newVal ? 2 : 1
+})
+
+const modalRef = ref<HTMLElement | null>(null)
+const { activate, deactivate } = useFocusTrap(modalRef, {
+  escapeDeactivates: false,
+  allowOutsideClick: true,
+})
+
+watch(() => props.modelValue, async (isOpen) => {
+  if (isOpen) {
+    await nextTick()
+    activate()
+  } else {
+    deactivate()
+  }
 })
 
 watch(step, (newStep) => {
@@ -340,7 +369,7 @@ const form = reactive({
   agreePolicy: false,
   agreeTc: false,
   subscriptionMonths: 1,
-  rentalFee: 150000,
+  rentalFee: pricing.monthly,
   paymentMethod: 'OV'
 })
 
@@ -366,7 +395,22 @@ const isFormValid = computed(() => {
          form.agreeTc
 })
 
+const isDirty = computed(() => {
+  return form.fullName !== '' || 
+         form.bmId !== '' || 
+         form.targetUrl !== '' || 
+         form.socialLink !== '' || 
+         form.adCategory !== ''
+})
+
 const closeModal = () => {
+  if (isDirty.value && !window.confirm('Terdapat perubahan yang belum disimpan. Apakah Anda yakin ingin menutup?')) {
+    return
+  }
+  forceCloseModal()
+}
+
+const forceCloseModal = () => {
   emit('update:modelValue', false)
   // Reset form
   setTimeout(() => {
@@ -439,7 +483,7 @@ const submitPayment = async () => {
 
     toast.addToast('Pengajuan akun berhasil dibuat. Saldo Anda ditahan sementara.', 'success')
     emit('success')
-    closeModal()
+    forceCloseModal()
     
   } catch (err: any) {
     toast.addToast(err.message || err.data?.statusMessage || 'Gagal memproses pembayaran.', 'error')

@@ -16,8 +16,11 @@
     "@vee-validate/nuxt": "^4.15.1",
     "@vee-validate/zod": "^4.15.1",
     "@vueup/vue-quill": "^1.5.5",
+    "@vueuse/core": "^14.4.0",
+    "@vueuse/integrations": "^14.4.0",
     "apexcharts": "^5.16.0",
     "date-fns": "^4.4.0",
+    "focus-trap": "^8.2.2",
     "lucide-vue-next": "^1.0.0",
     "nuxt": "^4.4.8",
     "nuxt-security": "^2.5.1",
@@ -36,7 +39,7 @@
   "devDependencies": {
     "@types/node": "^26.1.1",
     "@types/sanitize-html": "^2.16.1",
-    "typescript": "^7.0.2",
+    "typescript": "^5.5.4",
     "vite": "^8.1.5",
     "vue-tsc": "^3.3.8",
     "wrangler": "^4.112.0"

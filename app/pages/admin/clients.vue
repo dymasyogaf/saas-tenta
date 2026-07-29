@@ -39,18 +39,18 @@
             <tr v-if="pending" v-for="i in 5" :key="'skel'+i" class="animate-pulse bg-white">
               <td class="px-6 py-4">
                 <div class="flex items-center gap-3">
-                  <div class="w-10 h-10 rounded-full bg-slate-200 shrink-0"></div>
+                  <div class="w-10 h-10 rounded-full bg-ink-200 shrink-0"></div>
                   <div class="space-y-2">
-                    <div class="h-4 w-32 bg-slate-200 rounded"></div>
-                    <div class="h-3 w-24 bg-slate-200 rounded"></div>
+                    <div class="h-4 w-32 bg-ink-200 rounded"></div>
+                    <div class="h-3 w-24 bg-ink-200 rounded"></div>
                   </div>
                 </div>
               </td>
-              <td class="px-6 py-4"><div class="h-4 w-24 bg-slate-200 rounded"></div></td>
-              <td class="px-6 py-4"><div class="h-6 w-20 bg-slate-200 rounded-full"></div></td>
-              <td class="px-6 py-4"><div class="h-5 w-24 bg-slate-200 rounded ml-auto"></div></td>
-              <td class="px-6 py-4"><div class="h-6 w-6 bg-slate-200 rounded-full mx-auto"></div></td>
-              <td class="px-6 py-4"><div class="h-8 w-8 bg-slate-200 rounded-lg mx-auto"></div></td>
+              <td class="px-6 py-4"><div class="h-4 w-24 bg-ink-200 rounded"></div></td>
+              <td class="px-6 py-4"><div class="h-6 w-20 bg-ink-200 rounded-full"></div></td>
+              <td class="px-6 py-4"><div class="h-5 w-24 bg-ink-200 rounded ml-auto"></div></td>
+              <td class="px-6 py-4"><div class="h-6 w-6 bg-ink-200 rounded-full mx-auto"></div></td>
+              <td class="px-6 py-4"><div class="h-8 w-8 bg-ink-200 rounded-lg mx-auto"></div></td>
             </tr>
             
             <!-- Empty State -->
@@ -122,8 +122,8 @@ const searchQuery = ref('')
 const statusFilter = ref('all')
 
 // Fetch and merge Data dari Server Endpoint (Bypass RLS)
-const { data: clients, pending } = useAsyncData('admin_clients_list', async () => {
-  return await $fetch('/api/admin/clients')
+const { data: clients, pending } = useAsyncData<any[]>('admin_clients_list', async () => {
+  return (await ($fetch as any)('/api/admin/clients')) as any[]
 })
 
 // Filter Dinamis Berdasarkan Pencarian & Dropdown Status

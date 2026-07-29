@@ -80,8 +80,8 @@
         </div>
       </div>
       
-      <div class="overflow-x-auto bg-white border border-ink-200 rounded-xl shadow-sm hide-scrollbar">
-        <table class="w-full min-w-[1200px] text-left border-collapse">
+      <div class="overflow-x-auto bg-white border border-ink-200 rounded-xl shadow-sm hide-scrollbar" style="scrollbar-width: thin;">
+        <table class="w-full min-w-[900px] text-left border-collapse">
           <thead>
             <tr class="border-b border-ink-200 bg-ink-50/50 text-[11px] font-bold text-ink-500 uppercase tracking-wider">
               <th class="py-4 px-5 whitespace-nowrap">
@@ -314,19 +314,19 @@
         </table>
       </div>
       
-      <!-- Pagination Dummy -->
       <div class="flex justify-between items-center mt-4 text-sm text-ink-500">
         <div class="flex items-center gap-2">
-          <select class="border border-ink-200 rounded-md px-2 py-1 focus:outline-none focus:ring-1 focus:ring-orange-500 bg-white cursor-pointer font-medium">
-            <option>10</option>
-            <option>20</option>
-            <option>50</option>
+          <select v-model.number="perPage" class="border border-ink-200 rounded-md px-2 py-1 focus:outline-none focus:ring-1 focus:ring-orange-500 bg-white cursor-pointer font-medium">
+            <option :value="10">10</option>
+            <option :value="20">20</option>
+            <option :value="50">50</option>
           </select>
+          <span class="text-xs">dari {{ allFilteredAdAccounts.length }} akun</span>
         </div>
         <div class="flex items-center gap-1">
-          <button class="p-1.5 border border-ink-200 rounded-md hover:bg-ink-50 hover:text-ink-700 transition-colors bg-white"><ChevronLeft class="w-4 h-4" /></button>
-          <button class="py-1 px-3 border border-orange-500 bg-orange-50 text-orange-600 rounded-md font-bold">1</button>
-          <button class="p-1.5 border border-ink-200 rounded-md hover:bg-ink-50 hover:text-ink-700 transition-colors bg-white"><ChevronRight class="w-4 h-4" /></button>
+          <button @click="currentPage = Math.max(1, currentPage - 1)" :disabled="currentPage <= 1" class="p-1.5 border border-ink-200 rounded-md hover:bg-ink-50 hover:text-ink-700 transition-colors bg-white disabled:opacity-40"><ChevronLeft class="w-4 h-4" /></button>
+          <button class="py-1 px-3 border border-orange-500 bg-orange-50 text-orange-600 rounded-md font-bold">{{ currentPage }}</button>
+          <button @click="currentPage = Math.min(totalPages, currentPage + 1)" :disabled="currentPage >= totalPages" class="p-1.5 border border-ink-200 rounded-md hover:bg-ink-50 hover:text-ink-700 transition-colors bg-white disabled:opacity-40"><ChevronRight class="w-4 h-4" /></button>
         </div>
       </div>
     </div>
@@ -573,14 +573,26 @@ const saldoStore = useSaldoStore()
 const adsStore = useAdsStore()
 
 const searchQuery = ref('')
-const filteredAdAccounts = computed(() => {
+const currentPage = ref(1)
+const perPage = ref(10)
+
+const allFilteredAdAccounts = computed(() => {
   if (!searchQuery.value) return adsStore.adAccounts
   const q = searchQuery.value.toLowerCase()
-  return adsStore.adAccounts.filter((acc: any) => 
-    (acc.account_id && acc.account_id.toLowerCase().includes(q)) || 
+  return adsStore.adAccounts.filter((acc: any) =>
+    (acc.account_id && acc.account_id.toLowerCase().includes(q)) ||
     (acc.name && acc.name.toLowerCase().includes(q))
   )
 })
+
+const totalPages = computed(() => Math.max(1, Math.ceil(allFilteredAdAccounts.value.length / perPage.value)))
+
+const filteredAdAccounts = computed(() => {
+  const start = (currentPage.value - 1) * perPage.value
+  return allFilteredAdAccounts.value.slice(start, start + perPage.value)
+})
+
+watch([searchQuery, perPage], () => { currentPage.value = 1 })
 
 const formatCurrency = (value: number) => {
   return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(value || 0)
@@ -753,6 +765,7 @@ const openDailyLimitModal = (account: any) => {
 
 const saveDailyLimit = async () => {
   if (!selectedAccountForLimit.value) return
+  if (!confirm('Yakin ingin mengubah limit harian akun iklan ini?')) return
   isSavingDailyLimit.value = true
   try {
     await $fetch('/api/ads/set-daily-limit', {

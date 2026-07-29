@@ -1,15 +1,8 @@
-import { serverSupabaseServiceRole, serverSupabaseUser } from '#supabase/server'
+import { serverSupabaseServiceRole } from '#supabase/server'
 import sanitizeHtml from 'sanitize-html'
 
 export default defineEventHandler(async (event) => {
-  const user = await serverSupabaseUser(event)
-  if (!user) throw createError({ statusCode: 401, statusMessage: 'Unauthorized' })
-
-  const role = user.user_metadata?.role
-  if (role !== 'super_admin' && role !== 'admin_compliance') {
-    throw createError({ statusCode: 403, statusMessage: 'Forbidden' })
-  }
-
+  const user = await requireAdmin(event, ['admin_compliance'])
   const body = await readBody(event)
   const { ticket_id, content, status, attachments } = body
 
@@ -22,7 +15,7 @@ export default defineEventHandler(async (event) => {
     allowedTags: sanitizeHtml.defaults.allowedTags.concat(['u']),
     allowedAttributes: {
       ...sanitizeHtml.defaults.allowedAttributes,
-      '*': ['class', 'style']
+      '*': ['class']
     }
   })
 

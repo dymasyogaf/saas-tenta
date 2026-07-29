@@ -53,10 +53,10 @@
           </thead>
           <tbody class="divide-y divide-slate-100">
             <tr v-if="pending" v-for="i in 2" :key="'skel'+i" class="animate-pulse bg-white">
-              <td class="px-6 py-4"><div class="h-4 w-32 bg-slate-200 rounded mb-2"></div><div class="h-3 w-24 bg-slate-200 rounded"></div></td>
-              <td class="px-6 py-4"><div class="h-4 w-48 bg-slate-200 rounded"></div></td>
-              <td class="px-6 py-4"><div class="h-5 w-24 bg-slate-200 rounded ml-auto"></div></td>
-              <td class="px-6 py-4"><div class="h-8 w-32 bg-slate-200 rounded-lg mx-auto"></div></td>
+              <td class="px-6 py-4"><div class="h-4 w-32 bg-ink-200 rounded mb-2"></div><div class="h-3 w-24 bg-ink-200 rounded"></div></td>
+              <td class="px-6 py-4"><div class="h-4 w-48 bg-ink-200 rounded"></div></td>
+              <td class="px-6 py-4"><div class="h-5 w-24 bg-ink-200 rounded ml-auto"></div></td>
+              <td class="px-6 py-4"><div class="h-8 w-32 bg-ink-200 rounded-lg mx-auto"></div></td>
             </tr>
             <tr v-else-if="pendingWithdraws.length === 0">
               <td colspan="4" class="px-6 py-12 text-center text-slate-500">
@@ -223,8 +223,8 @@ const typeFilter = ref('all')
 const isSubmitting = ref<string | null>(null)
 
 // Fetch Data Transaksi dari Server (Bypass RLS)
-const { data: transactions, pending, refresh } = useAsyncData('admin_finance_list', async () => {
-  return (await $fetch('/api/admin/finance')) as any[]
+const { data: transactions, pending, refresh } = useAsyncData<any[]>('admin_finance_list', async () => {
+  return (await ($fetch as any)('/api/admin/finance')) as any[]
 }, { default: () => [] })
 
 // Filter Transaksi (Withdraw yang masih Pending)

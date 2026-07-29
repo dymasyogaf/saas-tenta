@@ -15,8 +15,6 @@ export default defineEventHandler(async (event) => {
     .eq('user_id', user.id)
     .order('created_at', { ascending: false })
 
-  console.log('GET /api/ads/accounts for user:', user.id, 'Found:', accounts?.length)
-
   if (error) {
     throw createError({ statusCode: 500, statusMessage: error.message })
   }

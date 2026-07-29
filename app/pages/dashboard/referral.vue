@@ -269,7 +269,7 @@ const telegramShareUrl = computed(() => {
 
 const fetchReferralStatus = async () => {
   try {
-    const res = await $fetch('/api/referral/status')
+    const res = await $fetch('/api/referral/status') as any
     if (res && res.success) {
       referralStatus.value = {
         isLoading: false,
@@ -297,7 +297,7 @@ const fetchReferralStatus = async () => {
 const fetchHistory = async () => {
   isHistoryLoading.value = true
   try {
-    const res = await $fetch('/api/referral/history')
+    const res = await $fetch('/api/referral/history') as any
     if (res && res.success) {
       totalEarned.value = res.totalEarned
       totalRegistered.value = res.totalRegistered
@@ -314,7 +314,7 @@ const fetchHistory = async () => {
 const registerAffiliate = async () => {
   isRegisteringAffiliate.value = true
   try {
-    const res = await $fetch('/api/referral/register', { method: 'POST' })
+    const res = await $fetch('/api/referral/register', { method: 'POST' }) as any
     if (res && res.success) {
       referralStatus.value.isAffiliate = true
       referralStatus.value.myReferralCode = res.code
@@ -334,7 +334,7 @@ const submitReferralCode = async () => {
     const res = await $fetch('/api/referral/submit', {
       method: 'POST',
       body: { code: friendReferralCode.value }
-    })
+    }) as any
     if (res && res.success) {
       referralStatus.value.hasSubmittedCode = true
       referralStatus.value.submittedCode = friendReferralCode.value
@@ -363,7 +363,7 @@ const resetDevData = async () => {
   
   isResetting.value = true
   try {
-    const res = await $fetch('/api/referral/reset', { method: 'POST' })
+    const res = await $fetch('/api/referral/reset', { method: 'POST' }) as any
     if (res && res.success) {
       addToast('Data referral berhasil direset!', 'success')
       window.location.reload()

@@ -1,4 +1,5 @@
 import { serverSupabaseClient, serverSupabaseUser } from '#supabase/server'
+import crypto from 'node:crypto'
 
 export default defineEventHandler(async (event) => {
   const body = await readBody(event)
@@ -20,8 +21,7 @@ export default defineEventHandler(async (event) => {
 
   const supabase = await serverSupabaseClient(event)
 
-  // 1. Generate 6-digit OTP
-  const otpCode = Math.floor(100000 + Math.random() * 900000).toString()
+  const otpCode = crypto.randomInt(100000, 999999).toString()
   
   // Expiry time (5 minutes from now)
   const expiresAt = new Date(Date.now() + 5 * 60 * 1000).toISOString()
@@ -29,9 +29,10 @@ export default defineEventHandler(async (event) => {
   // 2. Save OTP to user's record
   const { error: updateError } = await (supabase as any)
     .from('users')
-    .update({ 
+    .update({
       otp_code: otpCode,
-      otp_expires_at: expiresAt
+      otp_expires_at: expiresAt,
+      otp_attempts: 0
     })
     .eq('id', userId)
 
@@ -45,8 +46,7 @@ export default defineEventHandler(async (event) => {
   const fonnteToken = config.fonnteApiToken
 
   if (!fonnteToken) {
-    // If no token in env, just simulate success (useful for dev without Fonnte account)
-    console.warn(`[OTP DEV MODE] Fonnte Token is missing. Simulated sending OTP ${otpCode} to ${phone}`)
+    console.warn('[OTP DEV MODE] Fonnte Token is missing. OTP simulated.')
     return { success: true, message: 'OTP dikirim (Simulasi Dev)' }
   }
 

@@ -4,10 +4,10 @@
     <div v-if="modelValue" class="fixed inset-0 z-[60]">
     <div class="fixed inset-0 bg-ink-900/50 transition-opacity" @click="close"></div>
     <div class="fixed inset-0 flex items-center justify-center p-4">
-      <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden relative transform transition-all">
+      <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden relative transform transition-all" role="dialog" aria-modal="true" aria-labelledby="password-modal-title">
         <!-- Header -->
         <div class="flex items-center justify-between p-6">
-          <h3 class="font-bold text-ink-900 text-xl">Ganti Password</h3>
+          <h3 id="password-modal-title" class="font-bold text-ink-900 text-xl">Ganti Password</h3>
           <button @click="close" class="text-ink-400 hover:text-ink-600 transition-colors">
             <X class="w-5 h-5" />
           </button>

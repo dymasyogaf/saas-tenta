@@ -1,6 +1,7 @@
 import { serverSupabaseServiceRole } from '#supabase/server'
 
 export default defineEventHandler(async (event) => {
+  await requireAdmin(event, ['admin_ads_ops'])
   const body = await readBody(event)
   const supabase = serverSupabaseServiceRole<any>(event)
   

@@ -1,9 +1,14 @@
-import { serverSupabaseServiceRole } from '#supabase/server'
+import { serverSupabaseServiceRole, serverSupabaseUser } from '#supabase/server'
 import crypto from 'node:crypto'
 
 export default defineEventHandler(async (event) => {
   const query = getQuery(event)
   const merchantOrderId = query.orderId as string
+
+  const user = await serverSupabaseUser(event)
+  if (!user) {
+    throw createError({ statusCode: 401, statusMessage: 'Unauthorized' })
+  }
 
   if (!merchantOrderId) {
     throw createError({ statusCode: 400, statusMessage: 'Parameter orderId diperlukan' })
@@ -67,6 +72,10 @@ export default defineEventHandler(async (event) => {
       }
     }
 
+    if (transaction.user_id !== user.id && user.user_metadata?.role === 'client') {
+      throw createError({ statusCode: 403, statusMessage: 'Forbidden' })
+    }
+
     // Pengecekan Idempotency (Hindari proses ganda jika sudah beres)
     if (transaction.status === 'success' || transaction.status === 'failed') {
       return { 
@@ -79,62 +88,40 @@ export default defineEventHandler(async (event) => {
 
     // 4. Update status berdasarkan respons Duitku
     if (resultCode === '00') {
-      // PEMBAYARAN SUKSES
-      const { error: updateTxError } = await supabase
-        .from('transactions')
-        .update({ status: 'success', updated_at: new Date().toISOString() })
-        .eq('id', transaction.id)
+      const { data: rpcResult, error: rpcError } = await supabase.rpc('process_topup_success', {
+        p_transaction_id: transaction.id,
+        p_amount: amount
+      })
 
-      if (updateTxError) throw updateTxError
+      if (rpcError) throw rpcError
 
-      // Tambahkan Saldo User
-      const { data: saldoData, error: fetchSaldoError } = await supabase
-        .from('saldo')
-        .select('balance')
-        .eq('user_id', transaction.user_id)
-        .single()
-        
-      if (fetchSaldoError) throw fetchSaldoError
-
-      const newBalance = Number(saldoData.balance) + Number(amount)
-      
-      const { error: updateSaldoError } = await supabase
-        .from('saldo')
-        .update({ balance: newBalance, updated_at: new Date().toISOString() })
-        .eq('user_id', transaction.user_id)
-
-      if (updateSaldoError) throw updateSaldoError
-
-      return { 
-        statusCode: 200, 
-        message: 'Transaksi berhasil disinkronisasi: SUKSES', 
-        status: 'success', 
-        duitkuStatus: result 
+      return {
+        statusCode: 200,
+        message: 'Transaksi berhasil disinkronisasi: SUKSES',
+        status: 'success',
+        duitkuStatus: result
       }
 
     } else if (resultCode === '01') {
-      // MASIH PENDING (Menunggu Pembayaran)
-      return { 
-        statusCode: 200, 
-        message: 'Transaksi masih menunggu pembayaran', 
-        status: 'pending', 
-        duitkuStatus: result 
+      return {
+        statusCode: 200,
+        message: 'Transaksi masih menunggu pembayaran',
+        status: 'pending',
+        duitkuStatus: result
       }
 
     } else if (resultCode === '02') {
-      // GAGAL / KADALUARSA
-      const { error: updateTxError } = await supabase
-        .from('transactions')
-        .update({ status: 'failed', updated_at: new Date().toISOString() })
-        .eq('id', transaction.id)
-        
-      if (updateTxError) throw updateTxError
+      const { error: rpcError } = await supabase.rpc('process_topup_failed', {
+        p_transaction_id: transaction.id
+      })
 
-      return { 
-        statusCode: 200, 
-        message: 'Transaksi disinkronisasi: GAGAL', 
-        status: 'failed', 
-        duitkuStatus: result 
+      if (rpcError) throw rpcError
+
+      return {
+        statusCode: 200,
+        message: 'Transaksi disinkronisasi: GAGAL',
+        status: 'failed',
+        duitkuStatus: result
       }
     }
 

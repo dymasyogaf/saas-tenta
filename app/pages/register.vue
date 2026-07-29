@@ -90,7 +90,7 @@
         <div class="pt-2 flex items-start gap-2">
           <input type="checkbox" id="terms" required class="mt-0.5 w-4 h-4 shrink-0 text-orange-600 bg-ink-50 border-ink-200 rounded focus:ring-orange-500 focus:ring-2 accent-orange-500">
           <label for="terms" class="text-xs text-ink-500 leading-relaxed text-left cursor-pointer select-none">
-            Dengan mendaftar, Anda menyetujui <a href="https://tentaklik.com/ketentuan/" target="_blank" rel="noopener noreferrer" class="text-orange-600 font-bold hover:underline">Syarat & Ketentuan</a> serta <button type="button" @click="showAlert('Kebijakan Privasi sedang disiapkan.')" class="text-orange-600 font-bold hover:underline">Kebijakan Privasi</button> kami.
+            Dengan mendaftar, Anda menyetujui <a href="https://tentaklik.com/ketentuan/" target="_blank" rel="noopener noreferrer" class="text-orange-600 font-bold hover:underline">Syarat & Ketentuan</a> serta <a href="https://tentaklik.com/privasi/" target="_blank" rel="noopener noreferrer" class="text-orange-600 font-bold hover:underline">Kebijakan Privasi</a> kami.
           </label>
         </div>
 

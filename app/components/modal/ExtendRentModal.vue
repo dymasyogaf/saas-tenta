@@ -1,11 +1,11 @@
 <template>
   <Teleport to="body">
     <div v-if="modelValue" class="fixed inset-0 z-50 flex items-center justify-center bg-ink-900/50 backdrop-blur-sm p-4 md:p-6">
-      <div class="bg-white rounded-2xl shadow-xl w-full max-w-2xl overflow-hidden relative border border-ink-100 flex flex-col max-h-[95vh] md:max-h-[90vh]">
+      <div class="bg-white rounded-2xl shadow-xl w-full max-w-2xl overflow-hidden relative border border-ink-100 flex flex-col max-h-[95vh] md:max-h-[90vh]" role="dialog" aria-modal="true" aria-labelledby="extend-rent-title">
         <!-- Header -->
         <div class="px-6 py-4 border-b border-ink-100 flex items-center justify-between bg-white shrink-0">
           <div>
-            <h3 class="font-display font-bold text-ink-900">Perpanjang Sewa Akun Iklan</h3>
+            <h3 id="extend-rent-title" class="font-display font-bold text-ink-900">Perpanjang Sewa Akun Iklan</h3>
             <p class="text-xs text-ink-500">Pilih durasi perpanjangan untuk akun {{ account?.name || account?.account_id }}</p>
           </div>
           <button @click="closeModal" class="text-ink-400 hover:text-ink-600 transition-colors bg-ink-50 p-2 rounded-lg">
@@ -31,27 +31,24 @@
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <!-- 1 Bulan -->
-              <div @click="form.subscriptionMonths = 1; form.rentalFee = 150000" :class="['border-2 rounded-xl p-5 cursor-pointer transition-all text-center', form.subscriptionMonths === 1 ? 'border-orange-500 bg-orange-50' : 'border-ink-100 hover:border-ink-300 bg-white']">
+              <div @click="form.subscriptionMonths = 1; form.rentalFee = pricing.monthly" :class="['border-2 rounded-xl p-5 cursor-pointer transition-all text-center', form.subscriptionMonths === 1 ? 'border-orange-500 bg-orange-50' : 'border-ink-100 hover:border-ink-300 bg-white']">
                 <h5 class="font-bold text-ink-900 mb-1">1 Bulan</h5>
-                <p class="text-xl font-bold text-orange-600 mb-2">Rp 150.000</p>
+                <p class="text-xl font-bold text-orange-600 mb-2">Rp {{ pricing.monthly.toLocaleString('id-ID') }}</p>
                 <p class="text-xs text-ink-500">Normal</p>
               </div>
-              
-              <!-- 3 Bulan -->
-              <div @click="form.subscriptionMonths = 3; form.rentalFee = 350000" :class="['border-2 rounded-xl p-5 cursor-pointer transition-all relative text-center', form.subscriptionMonths === 3 ? 'border-orange-500 bg-orange-50' : 'border-ink-100 hover:border-ink-300 bg-white']">
+
+              <div @click="form.subscriptionMonths = 3; form.rentalFee = pricing.quarterly" :class="['border-2 rounded-xl p-5 cursor-pointer transition-all relative text-center', form.subscriptionMonths === 3 ? 'border-orange-500 bg-orange-50' : 'border-ink-100 hover:border-ink-300 bg-white']">
                 <div class="absolute -top-3 inset-x-0 flex justify-center"><span class="bg-orange-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">Hemat 22%</span></div>
                 <h5 class="font-bold text-ink-900 mb-1 mt-1">3 Bulan</h5>
-                <p class="text-xl font-bold text-orange-600 mb-2">Rp 350.000</p>
-                <p class="text-xs text-ink-500 line-through">Rp 450.000</p>
+                <p class="text-xl font-bold text-orange-600 mb-2">Rp {{ pricing.quarterly.toLocaleString('id-ID') }}</p>
+                <p class="text-xs text-ink-500 line-through">Rp {{ pricing.quarterlyOriginal.toLocaleString('id-ID') }}</p>
               </div>
-              
-              <!-- 6 Bulan -->
-              <div @click="form.subscriptionMonths = 6; form.rentalFee = 792000" :class="['border-2 rounded-xl p-5 cursor-pointer transition-all relative text-center', form.subscriptionMonths === 6 ? 'border-orange-500 bg-orange-50' : 'border-ink-100 hover:border-ink-300 bg-white']">
+
+              <div @click="form.subscriptionMonths = 6; form.rentalFee = pricing.semiannual" :class="['border-2 rounded-xl p-5 cursor-pointer transition-all relative text-center', form.subscriptionMonths === 6 ? 'border-orange-500 bg-orange-50' : 'border-ink-100 hover:border-ink-300 bg-white']">
                 <div class="absolute -top-3 inset-x-0 flex justify-center"><span class="bg-green-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">Hemat 12%</span></div>
                 <h5 class="font-bold text-ink-900 mb-1 mt-1">6 Bulan</h5>
-                <p class="text-xl font-bold text-orange-600 mb-2">Rp 792.000</p>
-                <p class="text-xs text-ink-500 line-through">Rp 900.000</p>
+                <p class="text-xl font-bold text-orange-600 mb-2">Rp {{ pricing.semiannual.toLocaleString('id-ID') }}</p>
+                <p class="text-xs text-ink-500 line-through">Rp {{ pricing.semiannualOriginal.toLocaleString('id-ID') }}</p>
               </div>
             </div>
 
@@ -101,6 +98,15 @@ const emit = defineEmits(['update:modelValue', 'success'])
 const toast = useToast()
 const supabase = useSupabaseClient()
 const { user } = useAuth()
+const config = useRuntimeConfig()
+
+const pricing = {
+  monthly: Number(config.public.pricingMonthly),
+  quarterly: Number(config.public.pricingQuarterly),
+  quarterlyOriginal: Number(config.public.pricingQuarterlyOriginal),
+  semiannual: Number(config.public.pricingSemiannual),
+  semiannualOriginal: Number(config.public.pricingSemiannualOriginal),
+}
 
 const isSubmitting = ref(false)
 const saldo = ref(0)
@@ -109,7 +115,7 @@ const netBalance = computed(() => saldo.value - pendingSaldo.value)
 
 const form = reactive({
   subscriptionMonths: 1,
-  rentalFee: 150000,
+  rentalFee: pricing.monthly,
 })
 
 const fetchBalance = async () => {
@@ -131,7 +137,7 @@ watch(() => props.modelValue, (newVal) => {
   if (newVal) {
     fetchBalance()
     form.subscriptionMonths = 1
-    form.rentalFee = 150000
+    form.rentalFee = pricing.monthly
   }
 })
 

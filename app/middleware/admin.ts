@@ -26,11 +26,7 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
       }
     }
 
-    console.log('Role pengguna terdeteksi:', role)
-
-    // Jika masih client biasa, tendang!
     if (!role || role === 'client') {
-      console.warn('Ditolak: User ini bukan admin.')
       return navigateTo('/dashboard')
     }
   } catch (err) {

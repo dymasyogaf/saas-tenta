@@ -98,7 +98,18 @@
     </div>
 
     <!-- Wizard Form State -->
-    <div v-else class="flex flex-col md:flex-row gap-8 lg:gap-12 max-w-5xl mx-auto">
+    <div v-else>
+      <div class="max-w-5xl mx-auto mb-6">
+        <div class="flex items-center justify-between text-xs font-bold text-ink-500 mb-2">
+          <span>Langkah {{ currentStep }} dari 3</span>
+          <span>{{ Math.round((Number(currentStep) / 3) * 100) }}%</span>
+        </div>
+        <div class="w-full h-2 bg-ink-100 rounded-full overflow-hidden">
+          <div class="h-full bg-orange-500 rounded-full transition-all duration-500" :style="{ width: `${(Number(currentStep) / 3) * 100}%` }"></div>
+        </div>
+      </div>
+    </div>
+    <div v-if="currentStep !== 'intro'" class="flex flex-col md:flex-row gap-8 lg:gap-12 max-w-5xl mx-auto">
       
       <!-- Stepper Sidebar -->
       <div class="w-full md:w-64 shrink-0 md:border-r border-ink-100 md:pr-8 py-4">

@@ -1,12 +1,13 @@
 import { serverSupabaseServiceRole } from '#supabase/server'
 
 export default defineEventHandler(async (event) => {
+  await requireAdmin(event, ['super_admin'])
   const supabase = serverSupabaseServiceRole(event)
 
   try {
     // 1. Buat bucket 'kyc_documents'
     const { error: bucketError } = await supabase.storage.createBucket('kyc_documents', {
-      public: true, // Publik agar bisa ditampilkan di UI Admin tanpa Signed URL yang rumit
+      public: false,
       fileSizeLimit: 5242880, // 5MB limit
       allowedMimeTypes: ['image/png', 'image/jpeg', 'image/jpg']
     })

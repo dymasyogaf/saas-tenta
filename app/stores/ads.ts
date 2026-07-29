@@ -10,7 +10,7 @@ export const useAdsStore = defineStore('ads', {
     campaigns: [] as any[],
     adAccounts: [] as any[],
     isFetchingAccounts: false,
-    dataSource: 'mock' // 'mock' | 'live'
+    dataSource: 'live' as 'mock' | 'live'
   }),
 
   actions: {

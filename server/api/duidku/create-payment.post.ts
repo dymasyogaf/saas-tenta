@@ -1,4 +1,4 @@
-import { serverSupabaseServiceRole } from '#supabase/server'
+import { serverSupabaseServiceRole, serverSupabaseUser } from '#supabase/server'
 import crypto from 'node:crypto'
 
 export default defineEventHandler(async (event) => {
@@ -41,14 +41,15 @@ export default defineEventHandler(async (event) => {
   // Namun untuk keamanan penuh, kita gunakan service_role untuk menulis ke tabel transactions
   const supabase = serverSupabaseServiceRole<any>(event)
   
-  // Karena Nuxt Auth Supabase Module menaruh token di cookie
-  // Kita bisa mendapatkan user dari event context (membutuhkan helper serverSupabaseUser)
-  // Untuk kesederhanaan sementara, kita minta frontend mengirimkan userId di body
-  const { userId, userEmail, userName, userPhone } = body
-  
-  if (!userId) {
+  // Kita mengekstrak data dari token sesi yang tervalidasi
+  const user = await serverSupabaseUser(event)
+  if (!user) {
     throw createError({ statusCode: 401, statusMessage: 'Unauthorized' })
   }
+  const userId = user.id
+  const userEmail = user.email || 'member@tentaklik.com'
+  const userName = user.user_metadata?.full_name || 'Member Tentaklik'
+  const userPhone = user.user_metadata?.phone || ''
 
   // 3. Konfigurasi Duitku
   const config = useRuntimeConfig()
@@ -83,7 +84,7 @@ export default defineEventHandler(async (event) => {
     merchantUserInfo: userId,
     customerVaName: userName || 'Member Tentaklik',
     email: userEmail,
-    phoneNumber: userPhone || '081234567890',
+    phoneNumber: userPhone || '',
     itemDetails: [
       {
         name: 'Top Up Saldo Iklan',
@@ -95,7 +96,7 @@ export default defineEventHandler(async (event) => {
       firstName: userName || 'Member',
       lastName: 'Tentaklik',
       email: userEmail,
-      phoneNumber: userPhone || '081234567890',
+      phoneNumber: userPhone || '',
     },
     callbackUrl,
     returnUrl,

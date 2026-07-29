@@ -14,6 +14,7 @@ interface AdsResponse {
   fetchedAt?: string
   data?: {
     totalSpend: number
+    api_balance?: number
     currency: string
     activeCampaigns: number
     campaigns: TikTokCampaignData[]

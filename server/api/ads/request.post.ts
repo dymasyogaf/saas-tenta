@@ -1,10 +1,16 @@
-import { serverSupabaseClient, serverSupabaseServiceRole } from '#supabase/server'
+import { serverSupabaseServiceRole, serverSupabaseUser } from '#supabase/server'
 
 export default defineEventHandler(async (event) => {
   const body = await readBody(event)
-  const { userId, platform, accountName, targetUrl, details, subscriptionMonths, rentalFee } = body
+  const { platform, accountName, targetUrl, details, subscriptionMonths, rentalFee } = body
 
-  if (!userId || !platform || !accountName) {
+  const user = await serverSupabaseUser(event)
+  if (!user) {
+    throw createError({ statusCode: 401, statusMessage: 'Unauthorized' })
+  }
+  const userId = user.id
+
+  if (!platform || !accountName) {
     throw createError({
       statusCode: 400,
       statusMessage: 'Missing required fields'
