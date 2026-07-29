@@ -74,9 +74,18 @@
             Tambah Akun
           </button>
         </div>
-        <div class="relative w-full lg:w-72">
-          <input v-model="searchQuery" type="text" placeholder="Cari ID Akun atau Nama Akun" class="pl-4 pr-10 py-2 border border-ink-200 rounded-md text-sm w-full focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 text-ink-900 placeholder:text-ink-400 bg-white" />
-          <Search class="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-ink-400" />
+        <div class="flex items-center gap-3 w-full lg:w-auto mt-4 sm:mt-0">
+          <div class="relative min-w-[140px] shrink-0">
+            <select v-model="sortOrder" class="appearance-none pl-4 pr-10 py-2 border border-ink-200 rounded-md text-sm w-full focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 text-ink-900 bg-white cursor-pointer">
+              <option value="terbaru">Terbaru</option>
+              <option value="terlama">Terlama</option>
+            </select>
+            <ChevronDown class="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-ink-400 pointer-events-none" />
+          </div>
+          <div class="relative w-full lg:w-72">
+            <input v-model="searchQuery" type="text" placeholder="Cari ID Akun atau Nama Akun" class="pl-4 pr-10 py-2 border border-ink-200 rounded-md text-sm w-full focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 text-ink-900 placeholder:text-ink-400 bg-white" />
+            <Search class="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-ink-400" />
+          </div>
         </div>
       </div>
       
@@ -87,7 +96,7 @@
               <th class="py-4 px-5 whitespace-nowrap">
                 <div class="flex items-center gap-1.5 w-max">
                   ID Akun
-                  <SharedTooltip text="ID unik akun iklan (misalnya Ad Account ID Meta/Google) atau kode referensi transaksi sewa yang terdaftar di platform.">
+                  <SharedTooltip text="Nomor ID akun iklan yang terdaftar di platform Meta atau Google.">
                     <Info class="w-3.5 h-3.5 text-ink-400 hover:text-ink-600 transition-colors cursor-help" />
                   </SharedTooltip>
                 </div>
@@ -95,7 +104,7 @@
               <th class="py-4 px-5 whitespace-nowrap">
                 <div class="flex items-center gap-1.5 w-max">
                   Nama Akun
-                  <SharedTooltip text="Nama profil atau identitas akun iklan yang disewa.">
+                  <SharedTooltip text="Nama akun iklan yang digunakan di Meta atau Google.">
                     <Info class="w-3.5 h-3.5 text-ink-400 hover:text-ink-600 transition-colors cursor-help" />
                   </SharedTooltip>
                 </div>
@@ -103,23 +112,31 @@
               <th class="py-4 px-5 whitespace-nowrap">
                 <div class="flex items-center gap-1.5 w-max">
                   Platform
-                  <SharedTooltip text="Penyedia jaringan iklan tempat akun tersebut berjalan.">
+                  <SharedTooltip text="Platform tempat akun iklan berjalan, yaitu Meta atau Google.">
                     <Info class="w-3.5 h-3.5 text-ink-400 hover:text-ink-600 transition-colors cursor-help" />
                   </SharedTooltip>
                 </div>
               </th>
               <th class="py-4 px-5 whitespace-nowrap">
                 <div class="flex items-center gap-1.5 w-max">
-                  Sisa Anggaran
-                  <SharedTooltip text="Sisa anggaran iklan (Account Budget) yang tersedia di platform. Data diambil langsung dari API Google/Meta Ads secara real-time.">
+                  Saldo
+                  <SharedTooltip text="Sisa saldo iklan yang masih tersedia di akun.">
                     <Info class="w-3.5 h-3.5 text-ink-400 hover:text-ink-600 transition-colors cursor-help" />
                   </SharedTooltip>
                 </div>
               </th>
               <th class="py-4 px-5 whitespace-nowrap">
                 <div class="flex items-center gap-1.5 w-max">
-                  Limit Mingguan
-                  <SharedTooltip text="Batas pengeluaran dalam seminggu sesuai paket yang dipilih beserta sisa rasio pemakaiannya (Ad Spend / Limit).">
+                  Limit
+                  <SharedTooltip text="Batas maksimal pengeluaran iklan dalam 1 minggu sesuai paket yang dipilih.">
+                    <Info class="w-3.5 h-3.5 text-ink-400 hover:text-ink-600 transition-colors cursor-help" />
+                  </SharedTooltip>
+                </div>
+              </th>
+              <th class="py-4 px-5 whitespace-nowrap">
+                <div class="flex items-center gap-1.5 w-max">
+                  Penggunaan
+                  <SharedTooltip text="Total biaya iklan yang sudah digunakan pada periode berjalan.">
                     <Info class="w-3.5 h-3.5 text-ink-400 hover:text-ink-600 transition-colors cursor-help" />
                   </SharedTooltip>
                 </div>
@@ -135,7 +152,7 @@
               <th class="py-4 px-5 whitespace-nowrap">
                 <div class="flex items-center gap-1.5 w-max">
                   Update Terakhir
-                  <SharedTooltip text="Waktu terakhir sistem memicu sinkronisasi data dari jaringan iklan. Data otomatis di-update setiap 5 menit.">
+                  <SharedTooltip text="Data diperbarui secara otomatis setiap 5 menit.">
                     <Info class="w-3.5 h-3.5 text-ink-400 hover:text-ink-600 transition-colors cursor-help" />
                   </SharedTooltip>
                 </div>
@@ -204,9 +221,7 @@
               <td class="py-4 px-5" :class="{'opacity-30 grayscale blur-[1.5px] pointer-events-none': getDaysLeftNum(account.subscription_expires_at) !== null && getDaysLeftNum(account.subscription_expires_at)! <= 0}">
                 <div class="flex items-center gap-2.5 font-bold text-ink-800">
                   <div v-if="account.platform === 'Meta'" class="w-6 h-6 flex items-center justify-center shrink-0">
-                    <svg viewBox="0 0 28 28" class="w-6 h-6 text-blue-600" fill="currentColor">
-                      <path d="M19.34 6.8c-1.93 0-3.34.73-4.26 1.7a6.02 6.02 0 0 0-3.51-1.55c-1.75-.26-3.42.23-4.68 1.24-1.59 1.3-2.39 3.28-2.39 5.39 0 4.15 3 6.6 6.35 6.6 1.93 0 3.34-.73 4.26-1.7a6.02 6.02 0 0 0 3.51 1.55c1.75.26 3.42-.23 4.68-1.24 1.59-1.3 2.39-3.28 2.39-5.39 0-4.15-3-6.6-6.35-6.6zm-8.5 11.38c-2.24 0-4.35-1.64-4.35-4.6 0-1.43.54-2.74 1.56-3.57.82-.67 1.9-1 3.02-.93 1.2.08 2.31.73 3.05 1.83.15.23.29.48.41.75-1.05 1.53-1.69 3.24-1.76 4.96-.55 1.05-1.44 1.56-2.32 1.56zm12.84-4.6c0 1.43-.54 2.74-1.56 3.57-.82.67-1.9 1-3.02.93-1.2-.08-2.31-.73-3.05-1.83-.15-.23-.29-.48-.41-.75 1.05-1.53 1.69-3.24 1.76-4.96.55-1.05 1.44-1.56 2.32-1.56 2.24 0 4.35 1.64 4.35 4.6z"/>
-                    </svg>
+                    <img src="/icon-meta-ads.png" alt="Meta" class="w-5 h-5 object-contain" />
                   </div>
                   <div v-else-if="account.platform === 'Google'" class="w-6 h-6 flex items-center justify-center shrink-0">
                     <svg viewBox="0 0 24 24" class="w-5 h-5">
@@ -292,6 +307,11 @@
                   <span class="text-[10px] font-bold" :class="getLimitColor(account)">
                     {{ getLimitUsagePercent(account) }}%
                   </span>
+                </div>
+              </td>
+              <td class="py-4 px-5 whitespace-nowrap" :class="{'opacity-30 grayscale blur-[1.5px] pointer-events-none': getDaysLeftNum(account.subscription_expires_at) !== null && getDaysLeftNum(account.subscription_expires_at)! <= 0}">
+                <div class="font-bold text-[13px] text-ink-900">
+                  {{ formatCurrency(account.penggunaan) }}
                 </div>
               </td>
               <td class="py-4 px-5 whitespace-nowrap" :class="{'opacity-30 grayscale blur-[1.5px] pointer-events-none': getDaysLeftNum(account.subscription_expires_at) !== null && getDaysLeftNum(account.subscription_expires_at)! <= 0}">
@@ -469,7 +489,12 @@
             </div>
           </div>
         </div>
-        <SharedEmptyState v-else />
+        <div v-else>
+          <SharedEmptyState />
+          <div v-if="activeTab === 'histori-tambahan'" class="text-xs text-gray-400 mt-4 text-center">
+            Debug Info: Total trx = {{ saldoStore.transactions?.length || 0 }}. Types = {{ Array.from(new Set((saldoStore.transactions || []).map((t: any) => t.type))).join(', ') }}
+          </div>
+        </div>
       </template>
     </div>
     
@@ -488,7 +513,36 @@
           <div class="h-8 bg-ink-200 rounded w-24"></div>
         </div>
       </div>
-      <SharedEmptyState />
+      <template v-else>
+        <div v-if="filteredTransactions.length > 0" class="space-y-4">
+          <div v-for="trx in filteredTransactions" :key="trx.id" class="flex items-center justify-between p-4 bg-white border border-ink-100 rounded-xl hover:border-orange-200 transition-colors shadow-sm">
+            <div class="flex items-center gap-4">
+              <div class="w-10 h-10 rounded-lg flex items-center justify-center shrink-0 bg-orange-100 text-orange-600">
+                <CreditCard class="w-5 h-5" />
+              </div>
+              <div>
+                <p class="font-bold text-ink-900 text-sm">Tagihan Iklan</p>
+                <p class="text-[12px] text-ink-500 mt-1">{{ trx.description || '-' }}</p>
+                <p class="text-[10px] text-ink-400 mt-0.5">{{ new Date(trx.created_at).toLocaleString('id-ID') }}</p>
+              </div>
+            </div>
+            <div class="text-right">
+              <p class="font-display font-bold text-base text-ink-900">
+                -{{ formatCurrency(trx.amount) }}
+              </p>
+              <span class="inline-block px-2 py-0.5 mt-1 rounded text-[10px] font-bold"
+                :class="{
+                  'bg-green-100 text-green-700': trx.status === 'success',
+                  'bg-orange-100 text-orange-700': trx.status === 'pending',
+                  'bg-red-100 text-red-700': trx.status === 'failed' || trx.status === 'cancelled'
+                }">
+                {{ trx.status.toUpperCase() }}
+              </span>
+            </div>
+          </div>
+        </div>
+        <SharedEmptyState v-else />
+      </template>
     </div>
     
     <!-- Histori Akun Pengganti -->
@@ -512,7 +566,36 @@
           <div class="h-8 bg-ink-200 rounded w-24"></div>
         </div>
       </div>
-      <SharedEmptyState />
+      <template v-else>
+        <div v-if="filteredTransactions.length > 0" class="space-y-4">
+          <div v-for="trx in filteredTransactions" :key="trx.id" class="flex items-center justify-between p-4 bg-white border border-ink-100 rounded-xl hover:border-orange-200 transition-colors shadow-sm">
+            <div class="flex items-center gap-4">
+              <div class="w-10 h-10 rounded-lg flex items-center justify-center shrink-0 bg-orange-100 text-orange-600">
+                <CreditCard class="w-5 h-5" />
+              </div>
+              <div>
+                <p class="font-bold text-ink-900 text-sm">Tagihan Iklan</p>
+                <p class="text-[12px] text-ink-500 mt-1">{{ trx.description || '-' }}</p>
+                <p class="text-[10px] text-ink-400 mt-0.5">{{ new Date(trx.created_at).toLocaleString('id-ID') }}</p>
+              </div>
+            </div>
+            <div class="text-right">
+              <p class="font-display font-bold text-base text-ink-900">
+                -{{ formatCurrency(trx.amount) }}
+              </p>
+              <span class="inline-block px-2 py-0.5 mt-1 rounded text-[10px] font-bold"
+                :class="{
+                  'bg-green-100 text-green-700': trx.status === 'success',
+                  'bg-orange-100 text-orange-700': trx.status === 'pending',
+                  'bg-red-100 text-red-700': trx.status === 'failed' || trx.status === 'cancelled'
+                }">
+                {{ trx.status.toUpperCase() }}
+              </span>
+            </div>
+          </div>
+        </div>
+        <SharedEmptyState v-else />
+      </template>
     </div>
 
     <!-- Modal Pengajuan Akun -->
@@ -525,7 +608,7 @@
     <ModalExtendRentModal 
       v-model="isExtendRentModalOpen"
       :account="selectedAccountForExtend"
-      @success="adsStore.fetchAdAccounts"
+      @success="() => { adsStore.fetchAdAccounts(); saldoStore.fetchTransactions(); }"
     />
 
     <!-- Modal Set Daily Limit -->
@@ -573,16 +656,28 @@ const saldoStore = useSaldoStore()
 const adsStore = useAdsStore()
 
 const searchQuery = ref('')
+const sortOrder = ref('terbaru')
 const currentPage = ref(1)
 const perPage = ref(10)
 
 const allFilteredAdAccounts = computed(() => {
-  if (!searchQuery.value) return adsStore.adAccounts
-  const q = searchQuery.value.toLowerCase()
-  return adsStore.adAccounts.filter((acc: any) =>
-    (acc.account_id && acc.account_id.toLowerCase().includes(q)) ||
-    (acc.name && acc.name.toLowerCase().includes(q))
-  )
+  let list = [...adsStore.adAccounts]
+  
+  if (searchQuery.value) {
+    const q = searchQuery.value.toLowerCase()
+    list = list.filter((acc: any) =>
+      (acc.account_id && acc.account_id.toLowerCase().includes(q)) ||
+      (acc.name && acc.name.toLowerCase().includes(q))
+    )
+  }
+
+  if (sortOrder.value === 'terlama') {
+    list.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
+  } else {
+    list.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+  }
+  
+  return list
 })
 
 const totalPages = computed(() => Math.max(1, Math.ceil(allFilteredAdAccounts.value.length / perPage.value)))
@@ -770,6 +865,9 @@ const saveDailyLimit = async () => {
   try {
     await $fetch('/api/ads/set-daily-limit', {
       method: 'POST',
+      headers: {
+        'csrf-token': unref(useCsrf().csrf)
+      },
       body: {
         accountId: selectedAccountForLimit.value.id,
         dailyLimit: dailyLimitInput.value
@@ -845,7 +943,9 @@ const filteredTransactions = computed(() => {
     }
     return topups
   } else if (activeTab.value === 'histori-tambahan') {
-    return result.filter((t: any) => t.type === 'tambahan')
+    return result.filter((t: any) => t.type === 'payment')
+  } else if (activeTab.value === 'histori-pengganti') {
+    return result.filter((t: any) => t.type === 'pengganti')
   }
   
   return result

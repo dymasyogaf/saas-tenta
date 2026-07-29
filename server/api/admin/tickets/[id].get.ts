@@ -1,4 +1,5 @@
 import { serverSupabaseServiceRole } from '#supabase/server'
+import { fetchTicketDetails } from '../../../utils/support'
 
 export default defineEventHandler(async (event) => {
   await requireAdmin(event, ['admin_compliance'])
@@ -8,30 +9,11 @@ export default defineEventHandler(async (event) => {
   const supabase = serverSupabaseServiceRole<any>(event)
 
   try {
-    // Get ticket details with user info
-    const { data: ticket, error: ticketError } = await supabase
-      .from('support_tickets')
-      .select('*, users(full_name, email)')
-      .eq('id', ticketId)
-      .single()
-
-    if (ticketError) throw ticketError
-    
-    // Get replies
-    const { data: replies, error: repliesError } = await supabase
-      .from('ticket_replies')
-      .select('*')
-      .eq('ticket_id', ticketId)
-      .order('created_at', { ascending: true })
-
-    if (repliesError) throw repliesError
+    const data = await fetchTicketDetails(supabase, ticketId, true)
 
     return { 
       success: true, 
-      data: {
-        ...ticket,
-        replies: replies || []
-      } 
+      data
     }
   } catch (error: any) {
     console.error('Error fetching admin ticket details:', error)

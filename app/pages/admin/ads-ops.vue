@@ -232,9 +232,7 @@ const inputModels = ref<Record<string, string>>({})
 const isEditing = ref<Record<string, boolean>>({})
 
 // Fetch Data dari Server Endpoint (Bypass RLS)
-const { data: requests, pending, refresh } = useAsyncData('admin_adsops_list', async () => {
-  return (await ($fetch as any)('/api/admin/ads-ops')) as any[]
-}, { default: () => [] })
+const { data: requests, pending, refresh } = useFetch<any[]>('/api/admin/ads-ops', { default: () => [] })
 
 // Inisialisasi Input Model jika data ditarik
 watch(requests, (newVals) => {

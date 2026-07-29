@@ -134,9 +134,7 @@ definePageMeta({
 
 const isModalOpen = ref(false)
 
-const { data: staffList, pending, refresh } = useAsyncData<any[]>('admin_staff_list', async () => {
-  return (await ($fetch as any)('/api/admin/staff')) as any[]
-}, { default: () => [] })
+const { data: staffList, pending, refresh } = useFetch<any[]>('/api/admin/staff')
 
 const { addToast } = useToast()
 

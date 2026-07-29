@@ -25,23 +25,28 @@ export default defineEventHandler(async (event) => {
   }
 
   try {
+    const uid = user.id || (user as any).sub
+    
     // 1. Dapatkan informasi Ad Account
     const { data: account, error: accErr } = await supabase
       .from('ad_accounts')
       .select('id, account_id, platform, account_name, subscription_expires_at')
       .eq('id', accountId)
-      .eq('user_id', user.id)
+      .eq('user_id', uid)
       .single()
 
     if (accErr || !account) {
-      throw new Error('Akun Iklan tidak ditemukan')
+      throw createError({
+        statusCode: 400,
+        statusMessage: `Gagal mencari akun: ${accErr?.message || 'Tidak ada di database'} (ID: ${accountId}, UID: ${uid})`
+      })
     }
 
     // 2. Dapatkan saldo user
     const { data: saldoData, error: saldoErr } = await supabase
       .from('saldo')
       .select('balance, pending_balance')
-      .eq('user_id', user.id)
+      .eq('user_id', uid)
       .single()
 
     if (saldoErr || !saldoData) {
@@ -62,7 +67,7 @@ export default defineEventHandler(async (event) => {
     const { error: updateSaldoErr } = await supabase
       .from('saldo')
       .update({ balance: newBalance })
-      .eq('user_id', user.id)
+      .eq('user_id', uid)
 
     if (updateSaldoErr) {
       throw new Error('Gagal memotong saldo')
@@ -72,7 +77,7 @@ export default defineEventHandler(async (event) => {
     const { error: trxErr } = await supabase
       .from('transactions')
       .insert({
-        user_id: user.id,
+        user_id: uid,
         amount: Number(rentalFee),
         type: 'payment',
         status: 'success',
@@ -118,6 +123,7 @@ export default defineEventHandler(async (event) => {
     }
 
   } catch (error: any) {
+    if (error.statusCode) throw error; // Re-throw Nuxt errors directly to preserve statusMessage
     throw createError({
       statusCode: 400,
       statusMessage: error.message || 'Terjadi kesalahan saat memproses perpanjangan.'

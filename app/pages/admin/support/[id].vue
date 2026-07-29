@@ -287,6 +287,12 @@ const { data: ticket, pending, refresh } = useFetch<any>(`/api/admin/tickets/${t
   transform: (res) => res.data
 })
 
+// Refs
+const replyContent = ref('')
+const editorKey = ref(0)
+const replyStatus = ref('answered')
+const isSubmitting = ref(false)
+
 // Actual Replies from API
 const replies = computed(() => ticket.value?.replies || [])
 watch(() => ticket.value, (newVal) => {
@@ -294,11 +300,6 @@ watch(() => ticket.value, (newVal) => {
     replyStatus.value = newVal.status
   }
 }, { immediate: true })
-
-const replyContent = ref('')
-const editorKey = ref(0)
-const replyStatus = ref('answered')
-const isSubmitting = ref(false)
 
 const attachments = ref<File[]>([])
 const fileInputRef = ref<HTMLInputElement | null>(null)

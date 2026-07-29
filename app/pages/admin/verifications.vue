@@ -74,15 +74,17 @@
         
         <div class="px-6 py-4 border-b border-ink-100 flex justify-between items-center bg-ink-50">
           <h3 class="font-bold text-lg text-ink-900 flex items-center gap-2">
-            <ScanFace class="w-5 h-5 text-orange-500" /> Review Data KYC
+            <ScanFace v-if="!isRejectingMode" class="w-5 h-5 text-orange-500" /> 
+            <MessageSquareX v-else class="w-5 h-5 text-red-500" />
+            {{ isRejectingMode ? 'Tulis Alasan Penolakan' : 'Review Data KYC' }}
           </h3>
-          <button @click="isReviewModalOpen = false" class="text-ink-400 hover:text-ink-900">
+          <button @click="closeReviewModal" class="text-ink-400 hover:text-ink-900">
             <X class="w-5 h-5" />
           </button>
         </div>
         
         <div class="p-6 overflow-y-auto">
-          <div v-if="selectedUser" class="space-y-6">
+          <div v-if="selectedUser && !isRejectingMode" class="space-y-6">
             
             <div class="p-4 bg-orange-50 border border-orange-200 rounded-xl" v-if="!selectedUser.verification_details?.ktp_url">
               <p class="text-xs text-orange-600 font-bold uppercase mb-1">Peringatan Audit (Data Lama)</p>
@@ -134,19 +136,51 @@
                 </div>
               </div>
             </div>
-            
+          </div>
+
+          <!-- REJECT MODE -->
+          <div v-if="isRejectingMode" class="space-y-5">
+            <div>
+              <p class="text-sm text-ink-600 mb-3">Silakan pilih atau tulis alasan spesifik penolakan KYC untuk klien <strong>{{ selectedUser?.verification_details?.name }}</strong>. Pesan ini akan dikirimkan langsung ke notifikasi mereka.</p>
+              
+              <div class="flex flex-wrap gap-2 mb-4">
+                <button @click="setTemplate('ktp')" class="px-3 py-1.5 bg-white border border-green-200 hover:bg-green-50 rounded-lg text-xs font-bold text-green-700 transition-colors flex items-center gap-1.5"><CheckCircle2 class="w-3.5 h-3.5" /> Foto KTP Buram</button>
+                <button @click="setTemplate('nik')" class="px-3 py-1.5 bg-white border border-yellow-200 hover:bg-yellow-50 rounded-lg text-xs font-bold text-yellow-700 transition-colors flex items-center gap-1.5"><AlertCircle class="w-3.5 h-3.5" /> NIK Tidak Sesuai</button>
+                <button @click="setTemplate('empty')" class="px-3 py-1.5 bg-white border border-ink-200 hover:bg-ink-50 rounded-lg text-xs font-bold text-ink-700 transition-colors">Teks Kosong + Signature</button>
+              </div>
+
+              <ClientOnly>
+                <div class="border border-ink-200 rounded-xl overflow-hidden focus-within:ring-2 focus-within:ring-red-500/20 focus-within:border-red-500 bg-white">
+                  <QuillEditor theme="snow" v-model:content="rejectMessage" contentType="html" class="min-h-[200px]" :toolbar="['bold', 'italic', 'underline', { 'list': 'ordered'}, { 'list': 'bullet' }, 'clean']" />
+                </div>
+                <template #fallback>
+                  <textarea v-model="rejectMessage" rows="6" placeholder="Memuat editor..." class="w-full px-4 py-2.5 bg-ink-50 border border-ink-200 rounded-xl focus:outline-none text-sm"></textarea>
+                </template>
+              </ClientOnly>
+            </div>
           </div>
         </div>
         
         <div class="p-6 border-t border-ink-100 bg-ink-50 flex justify-end gap-3 shrink-0">
-          <button @click="handleAction('rejected')" :disabled="isProcessing" class="px-5 py-2.5 bg-white border border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 rounded-xl font-bold text-sm transition-colors shadow-sm disabled:opacity-50">
-            Tolak (Reject)
-          </button>
-          <button @click="handleAction('verified')" :disabled="isProcessing" class="px-5 py-2.5 bg-green-600 text-white hover:bg-green-700 rounded-xl font-bold text-sm transition-colors shadow-sm disabled:opacity-50 flex items-center gap-2">
-            <Loader2 v-if="isProcessing" class="w-4 h-4 animate-spin" />
-            <CheckCircle2 v-else class="w-4 h-4" /> 
-            Setujui (Approve)
-          </button>
+          <template v-if="!isRejectingMode">
+            <button @click="isRejectingMode = true" :disabled="isProcessing" class="px-5 py-2.5 bg-white border border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 rounded-xl font-bold text-sm transition-colors shadow-sm disabled:opacity-50">
+              Tolak (Reject)
+            </button>
+            <button @click="handleAction('verified')" :disabled="isProcessing" class="px-5 py-2.5 bg-green-600 text-white hover:bg-green-700 rounded-xl font-bold text-sm transition-colors shadow-sm disabled:opacity-50 flex items-center gap-2">
+              <Loader2 v-if="isProcessing" class="w-4 h-4 animate-spin" />
+              <CheckCircle2 v-else class="w-4 h-4" /> 
+              Setujui (Approve)
+            </button>
+          </template>
+          <template v-else>
+            <button @click="isRejectingMode = false" :disabled="isProcessing" class="px-5 py-2.5 bg-white border border-ink-200 text-ink-700 hover:bg-ink-50 rounded-xl font-bold text-sm transition-colors shadow-sm disabled:opacity-50">
+              Kembali
+            </button>
+            <button @click="handleAction('rejected')" :disabled="isProcessing || !rejectMessage.trim()" class="px-5 py-2.5 bg-red-600 text-white hover:bg-red-700 rounded-xl font-bold text-sm transition-colors shadow-sm disabled:opacity-50 flex items-center gap-2">
+              <Loader2 v-if="isProcessing" class="w-4 h-4 animate-spin" />
+              Kirim Penolakan
+            </button>
+          </template>
         </div>
 
       </div>
@@ -156,7 +190,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { RefreshCw, Loader2, ShieldCheck, ScanFace, X, CheckCircle2 } from 'lucide-vue-next'
+import { RefreshCw, Loader2, ShieldCheck, ScanFace, X, CheckCircle2, MessageSquareX, AlertCircle } from 'lucide-vue-next'
 
 definePageMeta({
   layout: 'admin',
@@ -164,6 +198,7 @@ definePageMeta({
 })
 
 const supabase = useSupabaseClient()
+const { csrf } = useCsrf()
 const { addToast } = useToast()
 
 const isLoading = ref(true)
@@ -172,6 +207,29 @@ const pendingUsers = ref<any[]>([])
 
 const isReviewModalOpen = ref(false)
 const selectedUser = ref<any>(null)
+const isRejectingMode = ref(false)
+const rejectMessage = ref('')
+
+const setTemplate = (type: string) => {
+  const signature = `<p><br></p><p>--</p><p>Regards.</p><p><strong>Super Admin Dymas</strong></p><p><br></p><p>PT Media Pro Indonesia</p><p>Tentaklik Admin Support</p>`
+  
+  if (type === 'ktp') {
+    rejectMessage.value = `<p>Halo,</p><p><br></p><p>Pengajuan KYC Anda kami tolak karena <strong>Foto KTP</strong> yang Anda unggah buram, terpotong, atau kurang jelas sehingga tidak dapat diproses oleh sistem kami. Silakan ulangi proses verifikasi menggunakan foto KTP yang lebih terang dan jelas terbaca.</p><p>Terima kasih atas kerja samanya.</p>` + signature
+  } else if (type === 'nik') {
+    rejectMessage.value = `<p>Halo,</p><p><br></p><p>Pengajuan KYC Anda kami tolak karena <strong>Nomor Induk Kependudukan (NIK)</strong> yang dimasukkan pada form tidak sesuai dengan yang tertera di kartu fisik KTP Anda. Mohon diperiksa kembali dan ulangi proses verifikasi dengan data yang benar.</p><p>Terima kasih atas kerja samanya.</p>` + signature
+  } else if (type === 'empty') {
+    rejectMessage.value = `<p>Halo,</p><p><br></p><p><br></p><p><br></p>` + signature
+  }
+}
+
+const closeReviewModal = () => {
+  isReviewModalOpen.value = false
+  setTimeout(() => {
+    isRejectingMode.value = false
+    rejectMessage.value = ''
+    selectedUser.value = null
+  }, 300)
+}
 
 const fetchPendingUsers = async () => {
   isLoading.value = true
@@ -207,33 +265,24 @@ const handleAction = async (newStatus: 'verified' | 'rejected') => {
   
   isProcessing.value = true
   try {
-    const { error } = await (supabase as any)
-      .from('users')
-      .update({ verification_status: newStatus })
-      .eq('id', selectedUser.value.id)
-      
-    if (error) throw error
-    
-    // Kirim notifikasi in-app
-    await (supabase as any)
-      .from('notifications')
-      .insert({
-        user_id: selectedUser.value.id,
-        type: 'verification',
-        title: newStatus === 'verified' ? 'Verifikasi Disetujui' : 'Verifikasi Ditolak',
-        message: newStatus === 'verified' 
-          ? 'Selamat! Data identitas Anda telah disetujui. Anda sekarang dapat mengakses semua fitur.'
-          : 'Maaf, verifikasi identitas Anda ditolak. Silakan periksa kembali dan ajukan ulang.'
-      })
+    await $fetch('/api/admin/users/verify', {
+      method: 'POST',
+      headers: { 'csrf-token': csrf },
+      body: {
+        userId: selectedUser.value.id,
+        status: newStatus,
+        message: newStatus === 'rejected' ? rejectMessage.value : null
+      }
+    })
     
     addToast(
       newStatus === 'verified' 
         ? `Profil ${selectedUser.value.verification_details?.name || 'klien'} berhasil disetujui!` 
-        : `Pengajuan ${selectedUser.value.verification_details?.name || 'klien'} ditolak.`,
-      newStatus === 'verified' ? 'success' : 'error'
+        : `Penolakan terkirim ke klien.`,
+      newStatus === 'verified' ? 'success' : 'success'
     )
     
-    isReviewModalOpen.value = false
+    closeReviewModal()
     await fetchPendingUsers() // Refresh data table
     refreshNuxtData('admin-badges') // Refresh badge notifikasi global
     

@@ -150,25 +150,61 @@
       
       <!-- Chart Section -->
       <div class="lg:col-span-2 bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
-        <div class="flex items-center justify-between mb-4">
-          <h3 class="font-bold text-slate-900">Volume Top-Up (7 Hari Terakhir)</h3>
-          <select class="text-xs border border-slate-200 rounded p-1 text-slate-600 focus:outline-none focus:ring-1 focus:ring-orange-500">
-            <option>7 Hari Terakhir</option>
-            <option>Bulan Ini</option>
+        
+        <!-- Header & Select -->
+        <div class="flex items-start justify-between mb-2">
+          <div>
+            <h3 class="font-bold text-xl text-slate-900">Volume Top-Up</h3>
+            <p class="text-sm text-slate-500 mt-1">{{ dateRangeText === 'Pilih Rentang Waktu' ? '7 Hari Terakhir' : dateRangeText }}</p>
+          </div>
+          <select v-model="selectedFilter" class="text-sm border border-slate-200 rounded-md py-1.5 px-3 text-slate-700 bg-white shadow-sm focus:outline-none focus:ring-1 focus:ring-orange-500 cursor-pointer">
+            <option value="7">7 Hari Terakhir</option>
+            <option value="30">30 Hari Terakhir</option>
+            <option value="month">Bulan Ini</option>
+            <option value="custom" disabled hidden>Kustom</option>
           </select>
         </div>
-        <div class="h-72 w-full bg-slate-50 rounded-lg flex items-center justify-center">
-          <div v-if="pending" class="w-full h-full animate-pulse bg-slate-100 rounded-lg"></div>
-          <ClientOnly v-else>
-            <apexchart 
-              type="area" 
-              height="100%" 
-              width="100%" 
-              :options="chartOptions" 
-              :series="stats?.chartSeries || []"
-            ></apexchart>
-          </ClientOnly>
+
+        <!-- Mini Stats -->
+        <div class="flex flex-wrap gap-4 mt-6 mb-8">
+          <div class="border border-slate-100 bg-white rounded-xl p-4 flex items-center gap-4 shadow-sm min-w-[200px]">
+            <div class="w-12 h-12 bg-orange-50 text-orange-500 rounded-xl flex items-center justify-center shrink-0">
+              <WalletCards class="w-6 h-6" />
+            </div>
+            <div>
+              <p class="text-xs font-medium text-slate-400">Total {{ selectedFilter === '7' ? '7 Hari' : (selectedFilter === '30' ? '30 Hari' : (selectedFilter === 'month' ? 'Bulan Ini' : 'Terpilih')) }}</p>
+              <p class="text-xl font-bold text-slate-900 mt-0.5">{{ formatCurrencyShort(chartTotal) }}</p>
+            </div>
+          </div>
+          <div class="border border-slate-100 bg-white rounded-xl p-4 flex items-center gap-4 shadow-sm min-w-[200px]">
+            <div class="w-12 h-12 bg-orange-50 text-orange-500 rounded-xl flex items-center justify-center shrink-0">
+              <TrendingUp class="w-6 h-6" />
+            </div>
+            <div>
+              <p class="text-xs font-medium text-slate-400">Tertinggi</p>
+              <p class="text-xl font-bold text-slate-900 mt-0.5">{{ formatCurrencyShort(chartHighest.val) }}</p>
+              <p class="text-[10px] text-slate-400">{{ chartHighest.label }}</p>
+            </div>
+          </div>
         </div>
+
+        <!-- Chart -->
+        <div class="border border-slate-100 rounded-xl p-4 bg-white shadow-sm relative pt-10">
+          <p class="absolute top-4 left-4 text-xs font-bold text-slate-500">Volume (Rp)</p>
+          <div class="h-64 w-full">
+            <div v-if="pending" class="w-full h-full animate-pulse bg-slate-50 rounded-lg"></div>
+            <ClientOnly v-else>
+              <VueApexCharts 
+                type="area" 
+                height="100%" 
+                width="100%" 
+                :options="chartOptions" 
+                :series="stats?.chartSeries || []"
+              />
+            </ClientOnly>
+          </div>
+        </div>
+
       </div>
 
       <!-- Recent Activities -->
@@ -194,7 +230,10 @@
                   }">
                   {{ tx.type.toUpperCase() }}
                 </span>
-                <span class="text-[10px] text-slate-400">{{ new Date(tx.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) }}</span>
+                <span class="text-[10px] text-slate-400">
+                  {{ new Date(tx.created_at).toLocaleDateString('id-ID', { day: '2-digit', month: 'short' }) }} &bull; 
+                  {{ new Date(tx.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) }}
+                </span>
               </div>
               <div class="flex items-center justify-between mt-1">
                 <span class="text-sm font-bold text-slate-800">{{ formatCurrency(tx.amount || 0) }}</span>
@@ -211,16 +250,74 @@
           </div>
         </div>
         <div class="p-3 border-t border-slate-100 text-center">
-          <NuxtLink to="/admin/finance" class="text-xs font-bold text-orange-600 hover:text-orange-700">Lihat Semua Transaksi &rarr;</NuxtLink>
+          <NuxtLink to="/admin/transactions" class="text-xs font-bold text-orange-600 hover:text-orange-700">Lihat Semua Transaksi &rarr;</NuxtLink>
         </div>
       </div>
 
+    </div>
+
+    <!-- Row 4: Registration Chart -->
+    <div class="mt-6 bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
+      <div class="flex items-center justify-between mb-4">
+        <div>
+          <h3 class="font-bold text-xl text-slate-900">Pendaftar Baru</h3>
+          <p class="text-sm text-slate-500 mt-1">Akumulasi klien yang mendaftar tiap harinya</p>
+        </div>
+      </div>
+      
+      <div class="border border-slate-100 rounded-xl p-4 bg-white shadow-sm relative pt-10">
+        <p class="absolute top-4 left-4 text-xs font-bold text-slate-500">Jumlah Pendaftar (Orang)</p>
+        <div class="h-64 w-full">
+          <div v-if="pending" class="w-full h-full animate-pulse bg-slate-50 rounded-lg"></div>
+          <ClientOnly v-else>
+            <VueApexCharts 
+              type="bar" 
+              height="100%" 
+              width="100%" 
+              :options="userChartOptions" 
+              :series="stats?.userChartSeries || []"
+            />
+          </ClientOnly>
+        </div>
+      </div>
+
+      <!-- User Stats Cards -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+        <div class="border border-slate-100 bg-white rounded-xl p-4 flex items-center gap-4 shadow-sm">
+          <div class="w-12 h-12 bg-blue-50 text-blue-500 rounded-xl flex items-center justify-center shrink-0">
+            <Users class="w-6 h-6" />
+          </div>
+          <div>
+            <p class="text-xs font-medium text-slate-400">Total Pendaftar</p>
+            <p class="text-xl font-bold text-slate-900 mt-0.5">{{ stats?.totalUsers || 0 }}</p>
+          </div>
+        </div>
+        <div class="border border-slate-100 bg-white rounded-xl p-4 flex items-center gap-4 shadow-sm">
+          <div class="w-12 h-12 bg-green-50 text-green-500 rounded-xl flex items-center justify-center shrink-0">
+            <ShieldCheck class="w-6 h-6" />
+          </div>
+          <div>
+            <p class="text-xs font-medium text-slate-400">Terverified</p>
+            <p class="text-xl font-bold text-slate-900 mt-0.5">{{ stats?.verifiedUsers || 0 }}</p>
+          </div>
+        </div>
+        <div class="border border-slate-100 bg-white rounded-xl p-4 flex items-center gap-4 shadow-sm">
+          <div class="w-12 h-12 bg-purple-50 text-purple-500 rounded-xl flex items-center justify-center shrink-0">
+            <Megaphone class="w-6 h-6" />
+          </div>
+          <div>
+            <p class="text-xs font-medium text-slate-400">Client Beriklan</p>
+            <p class="text-xl font-bold text-slate-900 mt-0.5">{{ stats?.uniqueClients || 0 }}</p>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ShieldCheck, Megaphone, TrendingUp, WalletCards, Info, RefreshCw, Calendar } from 'lucide-vue-next'
+import VueApexCharts from 'vue3-apexcharts'
+import { ShieldCheck, Megaphone, TrendingUp, WalletCards, Info, RefreshCw, Calendar, Users } from 'lucide-vue-next'
 
 definePageMeta({
   layout: 'admin',
@@ -253,8 +350,36 @@ const endDate = ref(formatDateForInput(today))
 const applyDateFilter = () => {
   startDate.value = tempStartDate.value
   endDate.value = tempEndDate.value
+  selectedFilter.value = 'custom'
   showDatePopover.value = false
 }
+
+const selectedFilter = ref('30')
+
+watch(selectedFilter, (val) => {
+  if (val === 'custom') return
+  
+  const d = new Date()
+  if (val === '7') {
+    const past = new Date()
+    past.setDate(d.getDate() - 7)
+    startDate.value = formatDateForInput(past)
+    endDate.value = formatDateForInput(d)
+  } else if (val === '30') {
+    const past = new Date()
+    past.setDate(d.getDate() - 30)
+    startDate.value = formatDateForInput(past)
+    endDate.value = formatDateForInput(d)
+  } else if (val === 'month') {
+    const firstDay = new Date(d.getFullYear(), d.getMonth(), 1)
+    startDate.value = formatDateForInput(firstDay)
+    endDate.value = formatDateForInput(d)
+  }
+  
+  // Update temp variables so the calendar UI stays in sync
+  tempStartDate.value = startDate.value
+  tempEndDate.value = endDate.value
+})
 
 // Format tampilan tanggal di tombol filter (Misal: 18 Jun 2026 - 18 Jul 2026)
 const dateRangeText = computed(() => {
@@ -288,14 +413,13 @@ interface AdminStats {
 }
 
 // Fetch real metrics from Backend API (Bypass RLS)
-const { data: stats, pending, refresh } = useAsyncData<AdminStats>('admin_dashboard_stats', async () => {
-  return await $fetch<AdminStats>('/api/admin/stats', {
-    query: {
-      startDate: startDate.value,
-      endDate: endDate.value
-    }
-  })
-}, { watch: [startDate, endDate] })
+const { data: stats, pending, refresh } = useFetch<AdminStats>('/api/admin/stats', {
+  query: {
+    startDate,
+    endDate
+  },
+  watch: [startDate, endDate]
+})
 
 // Helper untuk format rupiah yang singkat
 const formatCurrency = (val: number) => {
@@ -305,42 +429,168 @@ const formatCurrency = (val: number) => {
   return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(val)
 }
 
+const formatCurrencyShort = (val: number) => {
+  if (!val) return 'Rp 0'
+  if (val >= 1000000000) return `Rp ${(val / 1000000000).toFixed(1).replace('.0', '')}M`
+  if (val >= 1000000) return `Rp ${(val / 1000000).toFixed(1).replace('.0', '')} Juta`
+  if (val >= 1000) return `Rp ${(val / 1000).toFixed(0)}rb`
+  return `Rp ${val}`
+}
+
+const chartTotal = computed(() => {
+  if (!stats.value?.chartSeries?.[0]?.data) return 0
+  return stats.value.chartSeries[0].data.reduce((a, b) => a + b, 0)
+})
+
+const chartHighest = computed(() => {
+  if (!stats.value?.chartSeries?.[0]?.data) return { val: 0, label: '-' }
+  const data = stats.value.chartSeries[0].data
+  const labels = stats.value?.chartLabels || []
+  const maxVal = Math.max(...data)
+  const maxIdx = data.indexOf(maxVal)
+  const label = labels[maxIdx] || '-'
+  return { val: maxVal, label }
+})
+
 // Konfigurasi Grafik ApexCharts
-const chartOptions = computed(() => ({
+const chartOptions = computed<any>(() => ({
   chart: {
     type: 'area',
-    toolbar: { show: false },
-    fontFamily: 'Inter, sans-serif'
+    toolbar: { 
+      show: true,
+      tools: {
+        download: false,
+        selection: false,
+        zoom: false, // hide the drag-to-zoom icon
+        zoomin: true,
+        zoomout: true,
+        pan: true,
+        reset: true
+      }
+    },
+    fontFamily: 'Inter, sans-serif',
+    dropShadow: {
+      enabled: true,
+      color: '#f97316',
+      top: 10,
+      left: 0,
+      blur: 10,
+      opacity: 0.15
+    }
   },
   colors: ['#f97316'], // Orange
   dataLabels: { enabled: false },
-  stroke: { curve: 'smooth', width: 3 },
+  stroke: { curve: 'smooth', width: 2 },
+  markers: {
+    size: 4,
+    colors: ['#f97316'],
+    strokeColors: '#fff',
+    strokeWidth: 2,
+    hover: { size: 6 }
+  },
   xaxis: {
     categories: stats.value?.chartLabels || [],
-    labels: { style: { colors: '#64748b' } },
+    tickPlacement: 'on',
+    labels: { 
+      rotate: 0,
+      style: { colors: '#64748b', fontWeight: 500 } 
+    },
     axisBorder: { show: false },
-    axisTicks: { show: false }
+    axisTicks: { show: false },
+    crosshairs: {
+      stroke: { color: '#cbd5e1', width: 1, dashArray: 3 }
+    }
   },
   yaxis: {
     labels: {
       formatter: (val: number) => {
-        if (val >= 1000000) return `${(val / 1000000).toFixed(0)}M`
-        return val
+        if (val >= 1000000) return `Rp ${(val / 1000000).toFixed(1).replace('.0', '')}Jt`
+        if (val >= 1000) return `Rp ${(val / 1000).toFixed(0)}rb`
+        return `Rp ${val}`
       },
-      style: { colors: '#64748b' }
+      style: { colors: '#64748b', fontWeight: 500 }
     }
   },
   grid: {
     borderColor: '#f1f5f9',
     strokeDashArray: 4,
+    padding: { top: 0, right: 0, bottom: 0, left: 10 }
   },
   fill: {
     type: 'gradient',
     gradient: {
       shadeIntensity: 1,
-      opacityFrom: 0.4,
-      opacityTo: 0,
-      stops: [0, 90, 100]
+      opacityFrom: 0.65,
+      opacityTo: 0.05,
+      stops: [0, 100]
+    }
+  },
+  tooltip: {
+    theme: 'light',
+    custom: function({series, seriesIndex, dataPointIndex, w}: any) {
+      const val = series[seriesIndex][dataPointIndex]
+      const label = w.globals.labels[dataPointIndex]
+      const formatted = formatCurrencyShort(val)
+      return `<div style="padding: 6px 12px; font-size: 12px; font-weight: 600; color: #475569; display: flex; align-items: center; gap: 8px;">
+                ${label} <span style="color: #f97316">&bull;</span> <span style="color: #f97316">${formatted}</span>
+              </div>`
+    }
+  }
+}))
+
+const userChartOptions = computed<any>(() => ({
+  chart: {
+    type: 'bar',
+    toolbar: { 
+      show: true,
+      tools: {
+        download: false,
+        selection: false,
+        zoom: false,
+        zoomin: true,
+        zoomout: true,
+        pan: true,
+        reset: true
+      }
+    },
+    fontFamily: 'Inter, sans-serif'
+  },
+  plotOptions: {
+    bar: {
+      borderRadius: 4,
+      columnWidth: '40%',
+    }
+  },
+  colors: ['#3b82f6'], // Blue
+  dataLabels: { enabled: false },
+  xaxis: {
+    categories: stats.value?.chartLabels || [],
+    tickPlacement: 'on',
+    labels: { 
+      style: { colors: '#64748b', fontWeight: 500 } 
+    },
+    axisBorder: { show: false },
+    axisTicks: { show: false }
+  },
+  yaxis: {
+    labels: {
+      formatter: (val: number) => Math.round(val),
+      style: { colors: '#64748b', fontWeight: 500 }
+    }
+  },
+  grid: {
+    borderColor: '#f1f5f9',
+    strokeDashArray: 4,
+    padding: { top: 0, right: 0, bottom: 0, left: 10 }
+  },
+  tooltip: {
+    theme: 'light',
+    custom: function({series, seriesIndex, dataPointIndex, w}: any) {
+      const val = series[seriesIndex][dataPointIndex]
+      const label = w.globals.labels[dataPointIndex]
+      return `<div style="padding: 6px 12px; font-size: 12px; font-weight: 600; color: #475569; display: flex; align-items: center; gap: 8px;">
+                ${label} <span style="color: #3b82f6">&bull;</span> <span style="color: #3b82f6">${val} Orang</span>
+              </div>`
     }
   }
 }))

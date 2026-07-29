@@ -234,6 +234,7 @@ definePageMeta({ layout: 'dashboard' })
 
 const toast = useToast()
 const supabase = useSupabaseClient()
+const { csrf } = useCsrf()
 
 const { data: tickets, pending, refresh } = useAsyncData('user-tickets', async () => {
   const { data, error } = await supabase
@@ -352,6 +353,7 @@ const submitTicket = async () => {
 
     const res = await $fetch('/api/support/tickets', {
       method: 'POST',
+      headers: { 'csrf-token': csrf },
       body: payload
     })
     

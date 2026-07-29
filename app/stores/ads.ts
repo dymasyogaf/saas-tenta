@@ -14,6 +14,14 @@ export const useAdsStore = defineStore('ads', {
   }),
 
   actions: {
+    getEndpoint(platform: string, accountId: string, startDate?: string, endDate?: string) {
+      const p = platform.toLowerCase()
+      if (p.includes('meta')) return { endpoint: '/api/ads/meta/campaigns', params: { ad_account_id: accountId, start_date: startDate, end_date: endDate }, platform: 'meta' }
+      if (p.includes('google')) return { endpoint: '/api/ads/google/campaigns', params: { customer_id: accountId, start_date: startDate, end_date: endDate }, platform: 'google' }
+      if (p.includes('tiktok')) return { endpoint: '/api/ads/tiktok/campaigns', params: { advertiser_id: accountId, start_date: startDate, end_date: endDate }, platform: 'tiktok' }
+      return { endpoint: '', params: {}, platform: '' }
+    },
+
     async fetchAllPerformance(startDate?: string, endDate?: string) {
       this.isLoading = true
       this.error = null
@@ -48,26 +56,11 @@ export const useAdsStore = defineStore('ads', {
            const adAccountId = acc.details?.ad_account_id
            if (!adAccountId) return null
 
-           let endpoint = ''
-           let params = {}
-           let platform = ''
-           if (acc.platform.includes('Meta')) {
-              endpoint = '/api/ads/meta/campaigns'
-              params = { ad_account_id: adAccountId, start_date: startDate, end_date: endDate }
-              platform = 'meta'
-           } else if (acc.platform.includes('Google')) {
-              endpoint = '/api/ads/google/campaigns'
-              params = { customer_id: adAccountId, start_date: startDate, end_date: endDate }
-              platform = 'google'
-           } else if (acc.platform.includes('TikTok')) {
-              endpoint = '/api/ads/tiktok/campaigns'
-              params = { advertiser_id: adAccountId, start_date: startDate, end_date: endDate }
-              platform = 'tiktok'
-           }
+           const { endpoint, params, platform: p } = this.getEndpoint(acc.platform, adAccountId, startDate, endDate)
 
            if (endpoint) {
               const res = await $fetch<any>(endpoint, { method: 'GET', params }).catch(() => null)
-              if (res) res._platform = platform
+              if (res) res._platform = p
               return res
            }
            return null
@@ -147,18 +140,7 @@ export const useAdsStore = defineStore('ads', {
 
         // Fetch live spend from Meta/Google proxy endpoints for each account
         const promises = this.adAccounts.map(async (acc, index) => {
-          let endpoint = ''
-          let params = {}
-          if (acc.platform.toLowerCase() === 'meta') {
-             endpoint = '/api/ads/meta/campaigns'
-             params = { ad_account_id: acc.account_id }
-          } else if (acc.platform.toLowerCase() === 'google') {
-             endpoint = '/api/ads/google/campaigns'
-             params = { customer_id: acc.account_id }
-          } else if (acc.platform.toLowerCase() === 'tiktok') {
-             endpoint = '/api/ads/tiktok/campaigns'
-             params = { advertiser_id: acc.account_id }
-          }
+          const { endpoint, params } = this.getEndpoint(acc.platform, acc.account_id)
           
           if (endpoint) {
              try {
@@ -202,18 +184,7 @@ export const useAdsStore = defineStore('ads', {
       
       try {
         const promises = this.adAccounts.map(async (acc, index) => {
-          let endpoint = ''
-          let params: any = {}
-          if (acc.platform.toLowerCase() === 'meta') {
-             endpoint = '/api/ads/meta/campaigns'
-             params = { ad_account_id: acc.account_id, start_date: startDate, end_date: endDate }
-          } else if (acc.platform.toLowerCase() === 'google') {
-             endpoint = '/api/ads/google/campaigns'
-             params = { customer_id: acc.account_id, start_date: startDate, end_date: endDate }
-          } else if (acc.platform.toLowerCase() === 'tiktok') {
-             endpoint = '/api/ads/tiktok/campaigns'
-             params = { advertiser_id: acc.account_id, start_date: startDate, end_date: endDate }
-          }
+          const { endpoint, params } = this.getEndpoint(acc.platform, acc.account_id, startDate, endDate)
           
           if (endpoint) {
              try {

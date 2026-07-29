@@ -97,9 +97,14 @@
                 </span>
               </td>
               <td class="px-6 py-4 text-center">
-                <button class="p-2 text-slate-400 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-colors" title="Lihat Detail Klien">
-                  <ExternalLink class="w-4 h-4" />
-                </button>
+                <div class="flex items-center justify-center gap-2">
+                  <button class="p-2 text-slate-400 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-colors" title="Lihat Detail Klien">
+                    <ExternalLink class="w-4 h-4" />
+                  </button>
+                  <button @click="deleteClient(client.id, client.full_name)" class="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Hapus Klien">
+                    <Trash2 class="w-4 h-4" />
+                  </button>
+                </div>
               </td>
             </tr>
           </tbody>
@@ -110,7 +115,7 @@
 </template>
 
 <script setup lang="ts">
-import { Search, Users, ExternalLink } from 'lucide-vue-next'
+import { Search, Users, ExternalLink, Trash2 } from 'lucide-vue-next'
 
 definePageMeta({
   layout: 'admin',
@@ -122,9 +127,7 @@ const searchQuery = ref('')
 const statusFilter = ref('all')
 
 // Fetch and merge Data dari Server Endpoint (Bypass RLS)
-const { data: clients, pending } = useAsyncData<any[]>('admin_clients_list', async () => {
-  return (await ($fetch as any)('/api/admin/clients')) as any[]
-})
+const { data: clients, pending } = useFetch<any[]>('/api/admin/clients')
 
 // Filter Dinamis Berdasarkan Pencarian & Dropdown Status
 const filteredClients = computed(() => {
@@ -147,5 +150,25 @@ const filteredClients = computed(() => {
 // Format Rupiah
 const formatCurrency = (val: number) => {
   return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(val)
+}
+
+// Hapus Klien
+const deleteClient = async (id: string, name: string) => {
+  if (!confirm(`Apakah Anda yakin ingin menghapus klien ${name || 'ini'} secara permanen? Semua data terkait juga akan terhapus.`)) return
+  
+  try {
+    const res = await $fetch(`/api/admin/users/${id}`, {
+      method: 'DELETE'
+    })
+    
+    alert('Klien berhasil dihapus.')
+    
+    // Update local state by refetching or filtering
+    if (clients.value) {
+      clients.value = clients.value.filter((c: any) => c.id !== id)
+    }
+  } catch (err: any) {
+    alert(err.data?.statusMessage || 'Terjadi kesalahan saat menghapus klien')
+  }
 }
 </script>

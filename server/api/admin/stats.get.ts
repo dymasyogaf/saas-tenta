@@ -38,15 +38,19 @@ export default defineEventHandler(async (event) => {
       supabase.from('transactions').select('*', { count: 'exact', head: true }).in('type', ['withdraw', 'transfer']).eq('status', 'pending')
     )
 
-    // 4. Total Users
-    const { count: totalUsers } = await applyDateFilter(
-      supabase.from('users').select('*', { count: 'exact', head: true })
-    )
+    // 4. Total Users & Verified Users
+    let usersQuery = supabase.from('users').select('created_at, verification_status')
+    usersQuery = applyDateFilter(usersQuery)
+    const { data: usersData } = await usersQuery
+    const totalUsers = usersData?.length || 0
+    const verifiedUsers = usersData?.filter((u: any) => u.verification_status === 'verified').length || 0
 
-    // 5. Total Ad Accounts (Approved)
-    const { count: totalAds } = await applyDateFilter(
-      supabase.from('ad_account_requests').select('*', { count: 'exact', head: true }).eq('status', 'approved')
-    )
+    // 5. Total Ad Accounts & Unique Advertising Clients
+    let adsQuery = supabase.from('ad_account_requests').select('user_id').eq('status', 'approved')
+    adsQuery = applyDateFilter(adsQuery)
+    const { data: adsData } = await adsQuery
+    const totalAds = adsData?.length || 0
+    const uniqueClients = new Set(adsData?.map((a: any) => a.user_id)).size
 
     // 6. Top Up Berdasarkan Filter Custom Date
     let topupQuery = supabase.from('transactions').select('amount, created_at').eq('type', 'topup').eq('status', 'success')
@@ -64,25 +68,38 @@ export default defineEventHandler(async (event) => {
       .from('transactions')
       .select('id, type, amount, status, created_at')
       .order('created_at', { ascending: false })
-      .limit(8)
+      .limit(4)
     
     recentTxsQuery = applyDateFilter(recentTxsQuery)
     const { data: recentTxs } = await recentTxsQuery
       
-    // Siapkan data chart (distribusi per hari selama 7 hari terakhir dari endDate)
-    const chartData = [0, 0, 0, 0, 0, 0, 0]
-    const chartLabels = ['', '', '', '', '', '', '']
+    // Siapkan data chart (distribusi per hari sesuai rentang tanggal)
+    const chartData: number[] = []
+    const userChartData: number[] = []
+    const chartLabels: string[] = []
     
-    if (endDate) {
+    if (startDate && endDate) {
+      const start = new Date(startDate)
+      start.setHours(0, 0, 0, 0)
       const end = new Date(endDate)
       end.setHours(23, 59, 59, 999)
       
-      for (let i = 6; i >= 0; i--) {
+      const diffTime = end.getTime() - start.getTime()
+      let diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+      
+      // Limit to prevent massive arrays (max 31 days for month view)
+      if (diffDays > 31) diffDays = 31
+      if (diffDays <= 0) diffDays = 1
+      
+      for (let i = diffDays - 1; i >= 0; i--) {
         const d = new Date(end)
         d.setDate(d.getDate() - i)
         
-        const dayNames = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu']
-        chartLabels[6 - i] = i === 0 ? 'Hari Ini' : (dayNames[d.getDay()] || '')
+        const dayNames = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab']
+        const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des']
+        
+        const label = `${dayNames[d.getDay()]}, ${d.getDate()} ${monthNames[d.getMonth()]}`
+        chartLabels.push(label)
         
         const dStart = new Date(d)
         dStart.setHours(0, 0, 0, 0)
@@ -96,7 +113,15 @@ export default defineEventHandler(async (event) => {
           return txDate >= dStart && txDate <= dEnd
         }).reduce((sum: number, tx: any) => sum + (Number(tx.amount) || 0), 0) || 0
         
-        chartData[6 - i] = dayTotal
+        chartData.push(dayTotal)
+        
+        // Cari pendaftar baru di hari tersebut
+        const newUsersDay = usersData?.filter((u: any) => {
+          const uDate = new Date(u.created_at)
+          return uDate >= dStart && uDate <= dEnd
+        }).length || 0
+        
+        userChartData.push(newUsersDay)
       }
     }
 
@@ -106,10 +131,17 @@ export default defineEventHandler(async (event) => {
       topup: topupTotal,
       withdraw: withdrawCount || 0,
       totalUsers: totalUsers || 0,
+      verifiedUsers: verifiedUsers || 0,
+      uniqueClients: uniqueClients || 0,
       totalAds: totalAds || 0,
       totalFee: estimatedFee,
       recentTxs: recentTxs || [],
-      chartSeries: [{ name: 'Top Up', data: chartData }],
+      chartSeries: [
+        { name: 'Total Top Up', data: chartData }
+      ],
+      userChartSeries: [
+        { name: 'Pendaftar Baru', data: userChartData }
+      ],
       chartLabels: chartLabels
     }
 

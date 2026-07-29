@@ -111,6 +111,9 @@ const pricing = {
 const isSubmitting = ref(false)
 const saldo = ref(0)
 const pendingSaldo = ref(0)
+
+const { csrf } = useCsrf()
+
 const netBalance = computed(() => saldo.value - pendingSaldo.value)
 
 const form = reactive({
@@ -175,6 +178,9 @@ const submitPayment = async () => {
   try {
     const response = await $fetch<any>('/api/ads/extend-rent', {
       method: 'POST',
+      headers: {
+        'csrf-token': unref(csrf)
+      },
       body: {
         accountId: props.account.id,
         subscriptionMonths: form.subscriptionMonths,
@@ -191,7 +197,8 @@ const submitPayment = async () => {
     closeModal()
     
   } catch (err: any) {
-    toast.addToast(err.message || err.data?.statusMessage || 'Gagal memproses pembayaran.', 'error')
+    const errorMsg = err.data?.statusMessage || err.data?.message || err.message || 'Gagal memproses pembayaran.'
+    toast.addToast(errorMsg, 'error')
   } finally {
     isSubmitting.value = false
   }

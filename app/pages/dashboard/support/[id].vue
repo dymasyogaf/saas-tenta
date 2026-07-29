@@ -237,6 +237,7 @@ definePageMeta({ layout: 'dashboard' })
 const route = useRoute()
 const supabase = useSupabaseClient()
 const { user } = useAuth()
+const { csrf } = useCsrf()
 
 const ticketId = route.params.id
 
@@ -260,7 +261,10 @@ const userInitials = computed(() => {
 
 const closeTicket = async () => {
   try {
-    await $fetch(`/api/support/tickets/${ticketId}/close`, { method: 'POST' })
+    await $fetch(`/api/support/tickets/${ticketId}/close`, { 
+      method: 'POST',
+      headers: { 'csrf-token': csrf }
+    })
     toast.addToast('Tiket ditutup', 'success')
     refresh()
   } catch (error: any) {
@@ -324,6 +328,7 @@ const sendReply = async () => {
 
     await $fetch(`/api/support/tickets/${ticketId}/reply`, {
       method: 'POST',
+      headers: { 'csrf-token': csrf },
       body: { content: replyContent.value, attachments: attachmentUrls }
     })
     

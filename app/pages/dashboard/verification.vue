@@ -354,6 +354,7 @@ definePageMeta({
 const { user } = useAuth()
 const router = useRouter()
 const supabase = useSupabaseClient()
+const { csrf } = useCsrf()
 const { addToast } = useToast()
 
 const currentStep = ref<number | 'intro'>('intro')
@@ -447,6 +448,7 @@ const requestOTP = async () => {
   try {
     await $fetch('/api/otp/send', {
       method: 'POST',
+      headers: { 'csrf-token': csrf },
       body: { phone: userPhone.value }
     })
     
@@ -466,6 +468,7 @@ const submitVerification = async () => {
     // 1. Verifikasi OTP
     await $fetch('/api/otp/verify', {
       method: 'POST',
+      headers: { 'csrf-token': csrf },
       body: { phone: userPhone.value, code: otpCode.value }
     })
     // 2. Upload File ke Supabase Storage via Server (Aman dari RLS)
@@ -483,6 +486,7 @@ const submitVerification = async () => {
 
     const uploadResponse = await $fetch('/api/upload-kyc', {
       method: 'POST',
+      headers: { 'csrf-token': csrf },
       body: {
         userId: user.value?.id || user.value?.sub,
         ktp_base64: ktpBase64,
@@ -502,6 +506,7 @@ const submitVerification = async () => {
     try {
       await $fetch('/api/webhook/ekyc', {
         method: 'POST',
+        headers: { 'csrf-token': csrf },
         body: {
           nama: formData.value.name,
           nik: formData.value.nik,

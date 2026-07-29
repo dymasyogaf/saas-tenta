@@ -66,9 +66,11 @@
         <div class="flex items-center gap-3 sm:gap-5">
           <!-- Notification Bell -->
           <div class="relative">
-            <button class="text-ink-500 hover:text-orange-500 transition-colors relative mt-1" @click="isNotifOpen = !isNotifOpen">
+            <button class="text-ink-500 hover:text-orange-500 transition-colors relative mt-1" @click="toggleNotif">
               <Bell class="w-5 h-5" />
-              <span class="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white" />
+              <span v-if="unreadCount > 0" class="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full border-2 border-white">
+                {{ unreadCount }}
+              </span>
             </button>
 
             <!-- Notification Popup -->
@@ -82,12 +84,30 @@
                   <Settings class="w-4 h-4" />
                 </button>
               </div>
-              <div class="p-8 flex flex-col items-center justify-center text-center h-72 overflow-y-auto">
-                <div class="w-24 h-24 mb-6 bg-ink-50 rounded-full flex items-center justify-center text-ink-300 relative">
-                  <Bell class="w-10 h-10" />
-                  <span class="absolute top-2 right-2 text-ink-400 font-bold text-xs transform rotate-12">zZ</span>
+              <div class="flex flex-col h-72 overflow-y-auto">
+                <div v-if="notifications.length === 0" class="p-8 flex flex-col items-center justify-center text-center h-full">
+                  <div class="w-24 h-24 mb-6 bg-ink-50 rounded-full flex items-center justify-center text-ink-300 relative">
+                    <Bell class="w-10 h-10" />
+                    <span class="absolute top-2 right-2 text-ink-400 font-bold text-xs transform rotate-12">zZ</span>
+                  </div>
+                  <p class="text-ink-500 text-sm">Saat ini anda tidak memiliki notifikasi</p>
                 </div>
-                <p class="text-ink-500 text-sm">Saat ini anda tidak memiliki notifikasi</p>
+                <div v-else class="divide-y divide-ink-100">
+                  <div 
+                    v-for="notif in notifications" 
+                    :key="notif.id"
+                    @click="viewNotification(notif)"
+                    class="p-4 hover:bg-ink-50 cursor-pointer transition-colors relative"
+                    :class="{'bg-orange-50/30': !notif.is_read}"
+                  >
+                    <div v-if="!notif.is_read" class="absolute left-2 top-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-orange-500"></div>
+                    <div class="pl-3">
+                      <p class="text-xs font-bold text-ink-900 mb-1">{{ notif.title }}</p>
+                      <p class="text-xs text-ink-600 line-clamp-2">{{ stripHtml(notif.message) }}</p>
+                      <p class="text-[10px] text-ink-400 mt-2">{{ new Date(notif.created_at).toLocaleDateString('id-ID') }}</p>
+                    </div>
+                  </div>
+                </div>
               </div>
               <div class="p-4 border-t border-ink-100 text-center">
                 <NuxtLink
@@ -188,6 +208,27 @@
 
     <!-- Floating WhatsApp -->
     <SharedFloatingWhatsApp />
+
+    <!-- Notification Detail Modal -->
+    <div v-if="selectedNotif" class="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
+      <div class="absolute inset-0 bg-ink-900/40 backdrop-blur-sm" @click="selectedNotif = null"></div>
+      <div class="relative bg-white rounded-2xl shadow-xl w-full max-w-md flex flex-col max-h-[90vh]">
+        <div class="p-6 border-b border-ink-100 flex items-center justify-between shrink-0">
+          <h3 class="font-bold text-lg text-ink-900">{{ selectedNotif.title }}</h3>
+          <button @click="selectedNotif = null" class="p-2 text-ink-400 hover:text-ink-600 hover:bg-ink-50 rounded-full transition-colors">
+            <Plus class="w-5 h-5 rotate-45" />
+          </button>
+        </div>
+        <div class="p-6 overflow-y-auto flex-1 text-sm text-ink-700 prose prose-sm prose-orange max-w-none">
+          <div v-html="selectedNotif.message"></div>
+        </div>
+        <div class="p-4 border-t border-ink-100 bg-ink-50 rounded-b-2xl shrink-0 flex justify-end">
+          <button @click="selectedNotif = null" class="px-5 py-2 bg-white border border-ink-200 text-ink-700 font-semibold rounded-xl hover:bg-ink-50 transition-colors">
+            Tutup
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -211,16 +252,66 @@ import {
   Gift
 } from 'lucide-vue-next'
 
-// Auth state
 const { user, logout } = useAuth()
 const router = useRouter()
 const saldoStore = useSaldoStore()
+const supabase = useSupabaseClient<any>()
+
+const notifications = ref<any[]>([])
+const unreadCount = computed(() => notifications.value.filter(n => !n.is_read).length)
+
+const stripHtml = (html: string) => {
+  if (!html) return ''
+  return html.replace(/<[^>]*>?/gm, ' ').trim()
+}
+
+const toggleNotif = async () => {
+  isNotifOpen.value = !isNotifOpen.value
+  if (isNotifOpen.value) {
+    await fetchNotifications()
+  }
+}
+
+const fetchNotifications = async () => {
+  if (!user.value) {
+    console.log('fetchNotifications: user is null')
+    return
+  }
+  
+  try {
+    const userId = user.value.id || user.value.sub
+    const data = await $fetch<any[]>('/api/notifications', {
+      params: {
+        userId: userId || 'MISSING',
+        _t: Date.now()
+      }
+    })
+    console.log('fetchNotifications Data:', data)
+    if (data) {
+      notifications.value = data
+    }
+  } catch (err: any) {
+    console.error('fetchNotifications Error:', err)
+  }
+}
+
+const selectedNotif = ref<any>(null)
+
+const viewNotification = async (notif: any) => {
+  selectedNotif.value = notif
+  isNotifOpen.value = false // close dropdown
+  if (!notif.is_read) {
+    notif.is_read = true
+    await supabase.from('notifications').update({ is_read: true }).eq('id', notif.id)
+  }
+}
 
 onMounted(() => {
   // Hanya fetch jika belum ada (untuk menghindari double fetch di halaman saldo/topup)
   if (saldoStore.activePackage === null) {
     saldoStore.fetchSaldo()
   }
+  fetchNotifications()
 })
 
 const userName = computed(() => {

@@ -1,4 +1,5 @@
 import { serverSupabaseUser, serverSupabaseClient } from '#supabase/server'
+import { fetchTicketDetails } from '../../../utils/support'
 
 export default defineEventHandler(async (event) => {
   const user = await serverSupabaseUser(event)
@@ -11,30 +12,11 @@ export default defineEventHandler(async (event) => {
   const userId = user.id || (user as any).sub
 
   try {
-    // Get ticket details
-    const { data: ticket, error: ticketError } = await supabase
-      .from('support_tickets')
-      .select('*')
-      .eq('id', ticketId)
-      .single()
-
-    if (ticketError) throw ticketError
-    
-    // Get replies
-    const { data: replies, error: repliesError } = await supabase
-      .from('ticket_replies')
-      .select('*')
-      .eq('ticket_id', ticketId)
-      .order('created_at', { ascending: true })
-
-    if (repliesError) throw repliesError
+    const data = await fetchTicketDetails(supabase, ticketId, false)
 
     return { 
       success: true, 
-      data: {
-        ...ticket,
-        replies: replies || []
-      } 
+      data
     }
   } catch (error: any) {
     console.error('Error fetching ticket details:', error)

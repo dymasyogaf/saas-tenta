@@ -47,8 +47,8 @@ export default defineEventHandler(async (event) => {
     const { error: pasErr } = await supabase.storage.from('kyc_documents').upload(pasPhotoFileName, pasphotoBuffer, { contentType: pasphoto_mime, upsert: true })
     if (pasErr) throw pasErr
 
-    const { data: ktpUrl } = await supabase.storage.from('kyc_documents').createSignedUrl(ktpFileName, 60 * 60 * 24 * 7)
-    const { data: pasUrl } = await supabase.storage.from('kyc_documents').createSignedUrl(pasPhotoFileName, 60 * 60 * 24 * 7)
+    const { data: ktpPublic } = supabase.storage.from('kyc_documents').getPublicUrl(ktpFileName)
+    const { data: pasPublic } = supabase.storage.from('kyc_documents').getPublicUrl(pasPhotoFileName)
 
     // Update database (Bypass RLS)
     const { error: dbErr } = await (supabase as any).from('users').update({
@@ -57,8 +57,8 @@ export default defineEventHandler(async (event) => {
         name: nama,
         nik: nik,
         dob: tanggal_lahir,
-        ktp_path: ktpFileName,
-        pasphoto_path: pasPhotoFileName
+        ktp_url: ktpPublic.publicUrl,
+        pasphoto_url: pasPublic.publicUrl
       }
     }).eq('id', userId)
 
@@ -66,8 +66,8 @@ export default defineEventHandler(async (event) => {
 
     return {
       success: true,
-      ktp_url: ktpUrl?.signedUrl || '',
-      pasphoto_url: pasUrl?.signedUrl || ''
+      ktp_url: ktpPublic.publicUrl || '',
+      pasphoto_url: pasPublic.publicUrl || ''
     }
   } catch (error: any) {
     console.error('Error uploading to storage:', error)
