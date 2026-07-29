@@ -154,15 +154,54 @@
               </td>
             </tr>
             <!-- Actual Data -->
-            <tr v-else-if="filteredAdAccounts.length > 0" v-for="account in filteredAdAccounts" :key="account.id" class="hover:bg-ink-50/50 transition-colors group">
-              <td class="py-4 px-5 font-medium text-ink-600 whitespace-nowrap">{{ account.account_id }}</td>
-              <td class="py-4 px-5 font-medium text-ink-900 whitespace-nowrap">
+            <tr v-else-if="filteredAdAccounts.length > 0" v-for="account in filteredAdAccounts" :key="account.id" class="transition-colors group border-b border-ink-100 relative" :class="getDaysLeftNum(account.subscription_expires_at) !== null && getDaysLeftNum(account.subscription_expires_at)! <= 0 ? 'bg-ink-50/50' : 'hover:bg-ink-50/50'">
+              
+              <!-- Kolom Pertama dengan Overlay Badge (Center Row) -->
+              <td class="py-4 px-5 whitespace-nowrap static">
+                
+                <div v-if="getDaysLeftNum(account.subscription_expires_at) !== null && getDaysLeftNum(account.subscription_expires_at)! <= 0" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 flex flex-col items-center justify-center pointer-events-auto">
+                  <div class="bg-ink-700 text-white font-bold px-6 py-1.5 rounded-full -rotate-6 shadow-xl uppercase tracking-widest text-sm border-2 border-white shadow-ink-900/20">
+                    IKLAN TERPAUSED
+                  </div>
+                  <button 
+                    @click="openExtendRentModal(account)" 
+                    class="mt-3 bg-red-500 text-white font-bold px-6 py-2 text-xs rounded-full shadow hover:bg-red-600 hover:-translate-y-0.5 hover:shadow-md transition-all active:translate-y-0"
+                  >
+                    Perpanjang Sekarang!
+                  </button>
+                </div>
+                
+                <span class="font-medium text-ink-600 inline-block" :class="{'opacity-30 grayscale blur-[1.5px] pointer-events-none': getDaysLeftNum(account.subscription_expires_at) !== null && getDaysLeftNum(account.subscription_expires_at)! <= 0}">
+                  {{ account.account_id }}
+                </span>
+              </td>
+              <td class="py-4 px-5 font-medium text-ink-900 whitespace-nowrap" :class="{'opacity-30 grayscale blur-[1.5px] pointer-events-none': getDaysLeftNum(account.subscription_expires_at) !== null && getDaysLeftNum(account.subscription_expires_at)! <= 0}">
                 <div>{{ account.name }}</div>
-                <div v-if="account.subscription_expires_at" class="text-[10px] text-ink-500 mt-1">
-                  Sisa Sewa: <span class="font-bold">{{ calculateDaysLeft(account.subscription_expires_at) }}</span>
+                <div v-if="account.subscription_expires_at" class="mt-1.5 flex flex-wrap items-center gap-2">
+                  <div class="text-[11px] text-ink-500 flex items-center gap-1">
+                    <span>Sisa Sewa:</span>
+                    <span 
+                      class="font-bold px-1.5 py-0.5 rounded" 
+                      :class="{
+                        'bg-red-50 text-red-600': getDaysLeftNum(account.subscription_expires_at) !== null && getDaysLeftNum(account.subscription_expires_at)! <= 0,
+                        'bg-orange-50 text-orange-600': getDaysLeftNum(account.subscription_expires_at) !== null && getDaysLeftNum(account.subscription_expires_at)! > 0 && getDaysLeftNum(account.subscription_expires_at)! <= 5,
+                        'text-ink-900': getDaysLeftNum(account.subscription_expires_at) !== null && getDaysLeftNum(account.subscription_expires_at)! > 5
+                      }"
+                    >
+                      {{ calculateDaysLeft(account.subscription_expires_at) }}
+                    </span>
+                  </div>
+                  <button 
+                    v-if="getDaysLeftNum(account.subscription_expires_at) !== null && getDaysLeftNum(account.subscription_expires_at)! <= 5"
+                    @click="openExtendRentModal(account)" 
+                    class="text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm transition-all flex items-center gap-1"
+                    :class="getDaysLeftNum(account.subscription_expires_at)! <= 0 ? 'bg-red-500 text-white hover:bg-red-600' : 'bg-orange-500 text-white hover:bg-orange-600'"
+                  >
+                    Perpanjang
+                  </button>
                 </div>
               </td>
-              <td class="py-4 px-5">
+              <td class="py-4 px-5" :class="{'opacity-30 grayscale blur-[1.5px] pointer-events-none': getDaysLeftNum(account.subscription_expires_at) !== null && getDaysLeftNum(account.subscription_expires_at)! <= 0}">
                 <div class="flex items-center gap-2.5 font-bold text-ink-800">
                   <div v-if="account.platform === 'Meta'" class="w-6 h-6 flex items-center justify-center shrink-0">
                     <svg viewBox="0 0 28 28" class="w-6 h-6 text-blue-600" fill="currentColor">
@@ -183,7 +222,7 @@
                   {{ account.platform }}
                 </div>
               </td>
-              <td class="py-4 px-5 min-w-[200px]">
+              <td class="py-4 px-5 min-w-[200px]" :class="{'opacity-30 grayscale blur-[1.5px] pointer-events-none': getDaysLeftNum(account.subscription_expires_at) !== null && getDaysLeftNum(account.subscription_expires_at)! <= 0}">
                 <!-- Nominal & API indicator -->
                 <div class="flex items-center gap-2 whitespace-nowrap mb-1.5">
                   <span class="font-bold text-[14px]" :class="getBudgetColor(account)">
@@ -228,7 +267,7 @@
                   </span>
                 </div>
               </td>
-              <td class="py-4 px-5 min-w-[200px]">
+              <td class="py-4 px-5 min-w-[200px]" :class="{'opacity-30 grayscale blur-[1.5px] pointer-events-none': getDaysLeftNum(account.subscription_expires_at) !== null && getDaysLeftNum(account.subscription_expires_at)! <= 0}">
                 <!-- Nominal limit -->
                 <div class="flex items-center gap-2 whitespace-nowrap mb-1.5">
                   <span class="font-bold text-[14px]" :class="getLimitColor(account)">
@@ -255,7 +294,7 @@
                   </span>
                 </div>
               </td>
-              <td class="py-4 px-5 whitespace-nowrap">
+              <td class="py-4 px-5 whitespace-nowrap" :class="{'opacity-30 grayscale blur-[1.5px] pointer-events-none': getDaysLeftNum(account.subscription_expires_at) !== null && getDaysLeftNum(account.subscription_expires_at)! <= 0}">
                 <div class="flex items-center gap-2">
                   <span class="font-bold text-[13px] text-ink-900">{{ account.daily_limit ? formatCurrency(account.daily_limit) : 'Belum Diatur' }}</span>
                   <button @click="openDailyLimitModal(account)" class="text-ink-400 hover:text-orange-500 transition-colors p-1" title="Atur Spend Harian">
@@ -263,7 +302,7 @@
                   </button>
                 </div>
               </td>
-              <td class="py-4 px-5 text-ink-500 text-[13px] whitespace-nowrap">{{ formatLastUpdated(account.updated_at) }}</td>
+              <td class="py-4 px-5 text-ink-500 text-[13px] whitespace-nowrap" :class="{'opacity-30 grayscale blur-[1.5px] pointer-events-none': getDaysLeftNum(account.subscription_expires_at) !== null && getDaysLeftNum(account.subscription_expires_at)! <= 0}">{{ formatLastUpdated(account.updated_at) }}</td>
             </tr>
             <!-- Empty State -->
             <tr v-else>
@@ -482,6 +521,13 @@
       platformName=""
     />
 
+    <!-- Modal Perpanjang Sewa -->
+    <ModalExtendRentModal 
+      v-model="isExtendRentModalOpen"
+      :account="selectedAccountForExtend"
+      @success="adsStore.fetchAdAccounts"
+    />
+
     <!-- Modal Set Daily Limit -->
     <div v-if="isDailyLimitModalOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-ink-900/50 backdrop-blur-sm">
       <div class="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden relative">
@@ -622,18 +668,20 @@ const formatLastUpdated = (dateStr: string) => {
 
 const calculateDaysLeft = (dateStr: string) => {
   if (!dateStr) return '-'
+  const diffDays = getDaysLeftNum(dateStr)
+  if (diffDays === null) return '-'
+  if (diffDays <= 0) return 'Kedaluwarsa'
+  return diffDays + ' Hari'
+}
+
+const getDaysLeftNum = (dateStr: string) => {
+  if (!dateStr) return null
   const end = new Date(dateStr)
   const today = new Date()
-  
-  // Hilangkan jam/menit agar perhitungannya murni selisih hari (kalender)
   end.setHours(0, 0, 0, 0)
   today.setHours(0, 0, 0, 0)
-  
   const diffTime = end.getTime() - today.getTime()
-  if (diffTime <= 0) return 'Kedaluwarsa'
-  
-  const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24))
-  return diffDays + ' Hari'
+  return Math.round(diffTime / (1000 * 60 * 60 * 24))
 }
 
 const syncAds = async () => {
@@ -671,6 +719,14 @@ const syncAds = async () => {
 const showPicComingSoon = () => {
   const toast = useToast()
   toast.addToast('Fitur manajemen PIC / Tim sedang dalam tahap pengembangan.', 'info')
+}
+
+const isExtendRentModalOpen = ref(false)
+const selectedAccountForExtend = ref<any>(null)
+
+const openExtendRentModal = (account: any) => {
+  selectedAccountForExtend.value = account
+  isExtendRentModalOpen.value = true
 }
 
 const isDailyLimitModalOpen = ref(false)

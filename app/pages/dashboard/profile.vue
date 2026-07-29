@@ -241,7 +241,22 @@
                   <div class="text-right">
                     <div v-if="account.subscription_expires_at">
                       <span class="text-[10px] text-ink-500">Masa Aktif</span>
-                      <p class="font-bold text-ink-900 text-xs">{{ calculateDaysLeft(account.subscription_expires_at) }}</p>
+                      <div class="flex items-center justify-end gap-1.5 mt-0.5">
+                        <span 
+                          class="font-bold text-xs px-1.5 py-0.5 rounded" 
+                          :class="getDaysLeftNum(account.subscription_expires_at) !== null && getDaysLeftNum(account.subscription_expires_at)! <= 0 ? 'bg-red-50 text-red-600' : (getDaysLeftNum(account.subscription_expires_at) !== null && getDaysLeftNum(account.subscription_expires_at)! <= 5 ? 'bg-orange-50 text-orange-600' : 'text-ink-900')"
+                        >
+                          {{ calculateDaysLeft(account.subscription_expires_at) }}
+                        </span>
+                        <button 
+                          v-if="getDaysLeftNum(account.subscription_expires_at) !== null && getDaysLeftNum(account.subscription_expires_at)! <= 5"
+                          @click="openExtendRentModal(account)" 
+                          class="text-[9px] font-bold px-2 py-0.5 rounded-full shadow-sm transition-all flex items-center"
+                          :class="getDaysLeftNum(account.subscription_expires_at)! <= 0 ? 'bg-red-500 text-white hover:bg-red-600' : 'bg-orange-500 text-white hover:bg-orange-600'"
+                        >
+                          Perpanjang
+                        </button>
+                      </div>
                     </div>
                     <div v-else>
                       <span class="text-[10px] text-ink-500">Masa Aktif</span>
@@ -263,6 +278,12 @@
     <ModalVerifyPhoneModal v-model="isVerifyPhoneOpen" :phone="pendingPhone || undefined" @verified="handleVerified" />
     <ModalPhoneModal v-model="isPhoneOpen" :currentPhone="phone" @request-verify="handlePhoneRequested" />
     <ModalEmailModal v-model="isEmailOpen" :currentEmail="email" />
+    
+    <ModalExtendRentModal 
+      v-model="isExtendRentModalOpen"
+      :account="selectedAccountForExtend"
+      @success="adsStore.fetchAdAccounts"
+    />
   </div>
 </template>
 
@@ -363,14 +384,28 @@ onMounted(() => {
 
 const calculateDaysLeft = (dateStr: string) => {
   if (!dateStr) return '-'
+  const diffDays = getDaysLeftNum(dateStr)
+  if (diffDays === null) return '-'
+  if (diffDays <= 0) return 'Kedaluwarsa'
+  return diffDays + ' Hari'
+}
+
+const getDaysLeftNum = (dateStr: string) => {
+  if (!dateStr) return null
   const end = new Date(dateStr)
   const today = new Date()
   end.setHours(0, 0, 0, 0)
   today.setHours(0, 0, 0, 0)
   const diffTime = end.getTime() - today.getTime()
-  if (diffTime <= 0) return 'Kedaluwarsa'
-  const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24))
-  return diffDays + ' Hari'
+  return Math.round(diffTime / (1000 * 60 * 60 * 24))
+}
+
+const isExtendRentModalOpen = ref(false)
+const selectedAccountForExtend = ref<any>(null)
+
+const openExtendRentModal = (account: any) => {
+  selectedAccountForExtend.value = account
+  isExtendRentModalOpen.value = true
 }
 
 const handleToggle2FA = async () => {
