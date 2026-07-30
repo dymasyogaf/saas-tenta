@@ -46,7 +46,7 @@ export default defineEventHandler(async (event) => {
   if (!user) {
     throw createError({ statusCode: 401, statusMessage: 'Unauthorized' })
   }
-  const userId = user.id
+  const userId = user.id || (user as any).sub
   const userEmail = user.email || 'member@tentaklik.com'
   const userName = user.user_metadata?.full_name || 'Member Tentaklik'
   const userPhone = user.user_metadata?.phone || ''
@@ -147,7 +147,7 @@ export default defineEventHandler(async (event) => {
 
       if (dbError) {
         console.error('Error insert transaction:', dbError)
-        throw createError({ statusCode: 500, statusMessage: 'Gagal mencatat transaksi di database internal' })
+        throw createError({ statusCode: 500, statusMessage: `Gagal mencatat transaksi di database internal: ${dbError.message}` })
       }
 
       // Berhasil

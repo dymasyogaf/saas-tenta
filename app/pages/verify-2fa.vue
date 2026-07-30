@@ -11,8 +11,8 @@
       </div>
 
       <div class="text-center mb-8">
-        <h1 class="text-2xl font-display font-bold text-ink-900 mb-2">Verifikasi Keamanan</h1>
-        <p class="text-ink-500 text-sm">Masukkan kode OTP 6 digit yang baru saja dikirim ke nomor WhatsApp Anda ({{ maskedPhone }}).</p>
+        <h1 class="text-2xl font-display font-bold text-ink-900 mb-2">{{ $t('auth.verifySecurityTitle') }}</h1>
+        <p class="text-ink-500 text-sm">{{ $t('auth.verifySecuritySubtitle1') }}{{ maskedPhone }}{{ $t('auth.verifySecuritySubtitle2') }}</p>
       </div>
 
       <div class="space-y-6">
@@ -38,8 +38,8 @@
           :class="!isOtpComplete || isVerifying ? 'bg-ink-100 text-ink-400 cursor-not-allowed' : 'bg-orange-500 hover:bg-orange-600 text-white shadow-lg shadow-orange-500/20'"
           class="w-full font-bold py-3.5 px-4 rounded-xl transition-all flex justify-center items-center gap-2"
         >
-          <span v-if="isVerifying">Memverifikasi...</span>
-          <span v-else>Verifikasi & Masuk</span>
+          <span v-if="isVerifying">{{ $t('common.verifying') }}</span>
+          <span v-else>{{ $t('auth.verifyAndLogin') }}</span>
         </button>
         
         <div class="text-center pt-2 space-y-4">
@@ -49,13 +49,13 @@
             class="block w-full text-sm font-semibold transition-colors disabled:opacity-50"
             :class="cooldown > 0 ? 'text-ink-400 cursor-not-allowed' : 'text-orange-600 hover:text-orange-700'"
           >
-            <span v-if="isResending">Mengirim ulang...</span>
-            <span v-else-if="cooldown > 0">Kirim ulang dalam {{ cooldown }}s</span>
-            <span v-else>Kirim Ulang Kode OTP</span>
+            <span v-if="isResending">{{ $t('auth.resending') }}</span>
+            <span v-else-if="cooldown > 0">{{ $t('auth.resendIn') }} {{ cooldown }}s</span>
+            <span v-else>{{ $t('auth.resendOtp') }}</span>
           </button>
           
           <button @click="cancelLogin" class="text-xs font-medium text-ink-400 hover:text-ink-600 underline underline-offset-2">
-            Batal dan kembali ke halaman Login
+            {{ $t('auth.cancelAndBack') }}
           </button>
         </div>
       </div>
@@ -71,6 +71,7 @@ definePageMeta({
 })
 
 const router = useRouter()
+const { t } = useI18n()
 const { addToast } = useToast()
 const user = useSupabaseUser()
 const supabase = useSupabaseClient()
@@ -175,16 +176,16 @@ const verifyOTP = async () => {
     }) as any
     
     if (res.success) {
-      addToast('Verifikasi berhasil!', 'success')
+      addToast(t('auth.toast.verifySuccess'), 'success')
       needs2FA.value = null // clear cookie
       router.push('/dashboard')
     } else {
-      addToast(res.message || 'Kode OTP salah', 'error')
+      addToast(res.message || t('auth.toast.wrongOtp'), 'error')
       otpValues.value = Array(6).fill('')
       if (otpInputs.value[0]) otpInputs.value[0].focus()
     }
   } catch (err: any) {
-    addToast(err.data?.message || 'Terjadi kesalahan saat memverifikasi', 'error')
+    addToast(err.data?.message || t('auth.toast.verifyError'), 'error')
     otpValues.value = Array(6).fill('')
     if (otpInputs.value[0]) otpInputs.value[0].focus()
   } finally {
@@ -204,11 +205,11 @@ const resendOTP = async () => {
       },
       body: { phone: phone.value }
     })
-    addToast('Kode OTP baru telah dikirim ke WhatsApp Anda', 'success')
+    addToast(t('auth.toast.newOtpSent'), 'success')
     startCooldown()
     if (otpInputs.value[0]) otpInputs.value[0].focus()
   } catch (err: any) {
-    addToast(err.data?.message || 'Gagal mengirim ulang OTP', 'error')
+    addToast(err.data?.message || t('auth.toast.resendFailed'), 'error')
   } finally {
     isResending.value = false
   }

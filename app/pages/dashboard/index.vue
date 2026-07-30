@@ -2,9 +2,9 @@
   <div class="space-y-6 max-w-6xl mx-auto">
 
     <!-- Stats Cards Row 1 -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
       <div class="bg-white p-6 rounded-2xl shadow-sm border border-ink-100">
-        <p class="text-sm font-medium text-ink-500 mb-2">Total Saldo Aktif</p>
+        <p class="text-sm font-medium text-ink-500 mb-2">{{ $t('dashboard.totalActiveBalance') }}</p>
         <template v-if="saldoStore.isFetchingSaldo">
           <div class="h-9 w-32 bg-ink-200 rounded-md animate-pulse mb-3 mt-1"></div>
           <div class="h-4 w-24 bg-ink-200 rounded-md animate-pulse mt-4"></div>
@@ -12,13 +12,13 @@
         <template v-else>
           <h3 class="text-2xl xl:text-3xl font-display font-bold text-ink-900">{{ formatCurrency(saldoStore.balance) }}</h3>
           <p class="text-sm text-green-600 mt-3 flex items-center gap-1 font-medium">
-            <TrendingUp class="w-4 h-4" /> +0% dari bulan lalu
+            <TrendingUp class="w-4 h-4" /> {{ $t('dashboard.fromLastMonth') }}
           </p>
         </template>
       </div>
 
       <div class="bg-white p-6 rounded-2xl shadow-sm border border-ink-100">
-        <p class="text-sm font-medium text-ink-500 mb-2">Total Ad Spend</p>
+        <p class="text-sm font-medium text-ink-500 mb-2">{{ $t('dashboard.totalAdSpend') }}</p>
         <template v-if="adsStore.isLoading">
           <div class="h-9 w-32 bg-ink-200 rounded-md animate-pulse mb-3 mt-1"></div>
           <div class="h-4 w-24 bg-ink-200 rounded-md animate-pulse mt-4"></div>
@@ -26,50 +26,34 @@
         <template v-else>
           <h3 class="text-2xl xl:text-3xl font-display font-bold text-ink-900">{{ formatCurrency(adsStore.totalSpend) }}</h3>
           <p class="text-sm text-ink-500 mt-3 flex items-center gap-1">
-            <Activity class="w-4 h-4 text-orange-500" /> 30 hari terakhir
+            <Activity class="w-4 h-4 text-orange-500" /> {{ $t('dashboard.last30days') }}
           </p>
         </template>
       </div>
 
       <div class="bg-white p-6 rounded-2xl shadow-sm border border-ink-100">
-        <p class="text-sm font-medium text-ink-500 mb-2">Akun Iklan Berjalan</p>
+        <p class="text-sm font-medium text-ink-500 mb-2">{{ $t('dashboard.activeAdAccounts') }}</p>
         <template v-if="adsStore.isLoading">
           <div class="h-9 w-16 bg-ink-200 rounded-md animate-pulse mb-3 mt-1"></div>
           <div class="h-4 w-40 bg-ink-200 rounded-md animate-pulse mt-4"></div>
         </template>
         <template v-else>
           <h3 class="text-2xl xl:text-3xl font-display font-bold text-ink-900">{{ adsStore.activeCampaigns }}</h3>
-          <p class="text-sm text-ink-500 mt-3">Kampanye aktif (30 hari)</p>
+          <p class="text-sm text-ink-500 mt-3">{{ $t('dashboard.activeCampaigns30d') }}</p>
         </template>
       </div>
 
-      <div class="bg-white p-6 rounded-2xl shadow-sm border border-ink-100">
-        <p class="text-sm font-medium text-ink-500 mb-2">Konversi</p>
-        <template v-if="adsStore.isLoading">
-          <div class="h-9 w-16 bg-ink-200 rounded-md animate-pulse mb-3 mt-1"></div>
-          <div class="h-4 w-24 bg-ink-200 rounded-md animate-pulse mt-4"></div>
-        </template>
-        <template v-else>
-          <h3 class="text-2xl xl:text-3xl font-display font-bold text-ink-900">{{ totalConversions }}</h3>
-          <p v-if="totalConversions > 0" class="text-sm text-green-600 mt-3 flex items-center gap-1 font-medium">
-            <Target class="w-4 h-4" /> Cost/Conv: {{ formatCurrency(adsStore.totalSpend / totalConversions) }}
-          </p>
-          <p v-else class="text-sm text-ink-400 mt-3 flex items-center gap-1">
-            <Target class="w-4 h-4" /> Belum ada konversi
-          </p>
-        </template>
-      </div>
     </div>
 
     <!-- Campaign Performance Table -->
     <div class="bg-white rounded-2xl shadow-sm border border-ink-100 overflow-hidden">
       <div class="px-6 py-5 border-b border-ink-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <h4 class="font-display font-bold text-lg text-ink-900">Performa Kampanye Teratas</h4>
+        <h4 class="font-display font-bold text-lg text-ink-900">{{ $t('dashboard.topCampaignPerformance') }}</h4>
         <div class="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
           <!-- Platform Filter -->
           <div class="relative w-full sm:w-44">
             <select v-model="selectedPlatform" class="w-full appearance-none bg-white border border-ink-200 text-ink-700 py-2 pl-3 pr-8 rounded-lg text-sm focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 shadow-sm cursor-pointer">
-              <option value="all">Semua Iklan</option>
+              <option value="all">{{ $t('dashboard.allAds') }}</option>
               <option value="meta">Meta Ads</option>
               <option value="tiktok">TikTok Ads</option>
               <option value="google">Google Ads</option>
@@ -103,7 +87,7 @@
             </div>
           </div>
           <div v-else-if="displayedCampaigns.length === 0" class="p-6 text-center">
-            <p class="text-ink-500">Tidak ada kampanye aktif yang ditemukan.</p>
+            <p class="text-ink-500">{{ $t('dashboard.noCampaignsFound') }}</p>
           </div>
           
           <template v-else>
@@ -123,8 +107,8 @@
                       </span>
                     </div>
                     <p class="text-sm text-ink-500 mt-0.5">
-                      Spend: {{ formatCurrency(cmp.spend) }}
-                      <span v-if="cmp.dailyBudget" class="text-ink-400"> · Budget: {{ formatCurrency(cmp.dailyBudget) }}/hari</span>
+                      {{ $t('dashboard.spend') }}: {{ formatCurrency(cmp.spend) }}
+                      <span v-if="cmp.dailyBudget" class="text-ink-400"> · {{ $t('dashboard.budget') }}: {{ formatCurrency(cmp.dailyBudget) }}{{ $t('dashboard.perDay') }}</span>
                     </p>
                   </div>
                 </div>
@@ -134,19 +118,19 @@
               <!-- Meta Ads Metrics -->
               <div v-if="cmp.platform === 'meta'" class="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-4 pt-3 border-t border-ink-200/60">
                 <div>
-                  <p class="text-xs text-ink-400 font-medium">Reach</p>
-                  <p class="font-display font-bold text-ink-900">{{ cmp.reach?.toLocaleString('id-ID') || '0' }}</p>
+                  <p class="text-xs text-ink-400 font-medium">{{ $t('dashboard.metrics.reach') }}</p>
+                  <p class="font-display font-bold text-ink-900">{{ cmp.reach?.toLocaleString(locale) || '0' }}</p>
                 </div>
                 <div>
-                  <p class="text-xs text-ink-400 font-medium">Link Clicks</p>
-                  <p class="font-display font-bold text-green-600">{{ cmp.linkClicks?.toLocaleString('id-ID') || '0' }}</p>
+                  <p class="text-xs text-ink-400 font-medium">{{ $t('dashboard.metrics.linkClicks') }}</p>
+                  <p class="font-display font-bold text-green-600">{{ cmp.linkClicks?.toLocaleString(locale) || '0' }}</p>
                 </div>
                 <div>
-                  <p class="text-xs text-ink-400 font-medium">CPC (Link)</p>
+                  <p class="text-xs text-ink-400 font-medium">{{ $t('dashboard.metrics.cpcLink') }}</p>
                   <p class="font-display font-bold text-ink-900">{{ formatCurrency(cmp.cpcLink || 0) }}</p>
                 </div>
                 <div>
-                  <p class="text-xs text-ink-400 font-medium">ROAS</p>
+                  <p class="text-xs text-ink-400 font-medium">{{ $t('dashboard.metrics.roas') }}</p>
                   <p class="font-display font-bold" :class="(cmp.roas || 0) > 1 ? 'text-green-600' : 'text-ink-400'">
                     {{ (cmp.roas || 0).toFixed(2) }}x
                   </p>
@@ -156,28 +140,22 @@
               <!-- Google & TikTok Metrics -->
               <div v-else class="grid grid-cols-2 sm:grid-cols-5 gap-3 mt-4 pt-3 border-t border-ink-200/60">
                 <div>
-                  <p class="text-xs text-ink-400 font-medium">Impresi</p>
-                  <p class="font-display font-bold text-ink-900">{{ cmp.impressions?.toLocaleString('id-ID') || '0' }}</p>
+                  <p class="text-xs text-ink-400 font-medium">{{ $t('dashboard.metrics.impressions') }}</p>
+                  <p class="font-display font-bold text-ink-900">{{ cmp.impressions?.toLocaleString(locale) || '0' }}</p>
                 </div>
                 <div>
-                  <p class="text-xs text-ink-400 font-medium">Klik</p>
-                  <p class="font-display font-bold text-green-600">{{ cmp.clicks?.toLocaleString('id-ID') || '0' }}</p>
+                  <p class="text-xs text-ink-400 font-medium">{{ $t('dashboard.metrics.clicks') }}</p>
+                  <p class="font-display font-bold text-green-600">{{ cmp.clicks?.toLocaleString(locale) || '0' }}</p>
                 </div>
                 <div>
-                  <p class="text-xs text-ink-400 font-medium">CTR</p>
+                  <p class="text-xs text-ink-400 font-medium">{{ $t('dashboard.metrics.ctr') }}</p>
                   <p class="font-display font-bold" :class="cmp.ctr > 3 ? 'text-green-600' : cmp.ctr > 1 ? 'text-orange-500' : 'text-red-500'">
                     {{ cmp.ctr?.toFixed(2) || '0.00' }}%
                   </p>
                 </div>
                 <div>
-                  <p class="text-xs text-ink-400 font-medium">CPC</p>
+                  <p class="text-xs text-ink-400 font-medium">{{ $t('dashboard.metrics.cpc') }}</p>
                   <p class="font-display font-bold text-ink-900">{{ formatCurrency(cmp.averageCpc || 0) }}</p>
-                </div>
-                <div>
-                  <p class="text-xs text-ink-400 font-medium">Konversi</p>
-                  <p class="font-display font-bold" :class="cmp.conversions > 0 ? 'text-green-600' : 'text-ink-400'">
-                    {{ cmp.conversions?.toFixed(0) || '0' }}
-                  </p>
                 </div>
               </div>
             </div>
@@ -189,7 +167,7 @@
 </template>
 
 <script setup lang="ts">
-import { TrendingUp, Activity, Target, ShieldAlert, ChevronDown } from 'lucide-vue-next'
+import { TrendingUp, Activity, ShieldAlert, ChevronDown } from 'lucide-vue-next'
 import { onMounted, ref, computed, watch } from 'vue'
 import { useSaldoStore } from '~/stores/saldo'
 import { useAdsStore } from '~/stores/ads'
@@ -198,17 +176,13 @@ definePageMeta({
   layout: 'dashboard',
 })
 
+const { t, locale } = useI18n()
 const saldoStore = useSaldoStore()
 const adsStore = useAdsStore()
 
 const { user } = useAuth()
 const supabase = useSupabaseClient()
 const verificationStatus = ref<string | null>(null)
-
-// Computed: total konversi dari semua kampanye
-const totalConversions = computed(() => {
-  return adsStore.campaigns.reduce((sum: number, c: any) => sum + (c.conversions || 0), 0)
-})
 
 // Filter states
 const selectedPlatform = ref('all')
@@ -254,20 +228,20 @@ onMounted(async () => {
 })
 
 const formatCurrency = (value: number) => {
-  return new Intl.NumberFormat('id-ID', { 
-    style: 'currency', 
-    currency: 'IDR', 
-    maximumFractionDigits: 0 
+  return new Intl.NumberFormat(locale.value === 'id' ? 'id-ID' : 'en-US', {
+    style: 'currency',
+    currency: 'IDR',
+    maximumFractionDigits: 0
   }).format(value || 0)
 }
 
 const statusBadge = (status: string) => {
   const map: Record<string, { label: string; class: string }> = {
-    'ENABLED': { label: 'Aktif', class: 'bg-green-100 text-green-700' },
-    'ACTIVE': { label: 'Aktif', class: 'bg-green-100 text-green-700' },
-    'PAUSED': { label: 'Dijeda', class: 'bg-yellow-100 text-yellow-700' },
-    'REMOVED': { label: 'Dihapus', class: 'bg-red-100 text-red-700' },
-    'ARCHIVED': { label: 'Diarsipkan', class: 'bg-ink-100 text-ink-700' },
+    'ENABLED': { label: t('dashboard.status.active'), class: 'bg-green-100 text-green-700' },
+    'ACTIVE': { label: t('dashboard.status.active'), class: 'bg-green-100 text-green-700' },
+    'PAUSED': { label: t('dashboard.status.paused'), class: 'bg-yellow-100 text-yellow-700' },
+    'REMOVED': { label: t('dashboard.status.removed'), class: 'bg-red-100 text-red-700' },
+    'ARCHIVED': { label: t('dashboard.status.archived'), class: 'bg-ink-100 text-ink-700' },
   }
   return map[status] || { label: status || 'N/A', class: 'bg-ink-200 text-ink-600' }
 }

@@ -6,15 +6,15 @@
       <!-- Header Area -->
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 class="text-2xl font-bold text-ink-900">Pusat Bantuan (Tiket)</h1>
-          <p class="text-ink-500 mt-1">Sampaikan kendala Anda dan tim kami akan segera menindaklanjutinya.</p>
+          <h1 class="text-2xl font-bold text-ink-900">{{ $t('support.title') }}</h1>
+          <p class="text-ink-500 mt-1">{{ $t('support.subtitle') }}</p>
         </div>
         <div class="flex gap-3">
           <button 
             @click="isCreating = true"
             class="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-xl text-sm transition-colors shadow-sm"
           >
-            Buat Tiket Baru
+            {{ $t('support.createTicket') }}
           </button>
         </div>
       </div>
@@ -23,7 +23,7 @@
       <div class="bg-white border border-ink-100 rounded-2xl p-4 flex flex-col sm:flex-row justify-between items-center gap-4 shadow-sm shadow-ink-900/5">
         <div class="flex gap-2 overflow-x-auto pb-2 sm:pb-0 w-full sm:w-auto scrollbar-hide">
           <button 
-            v-for="f in [{id:'all', label:'Semua Tiket'}, {id:'open', label:'Terbuka'}, {id:'in_progress', label:'In Progress'}, {id:'answered', label:'Dijawab'}, {id:'pending', label:'Ditunda'}, {id:'closed', label:'Ditutup'}]" 
+            v-for="f in filterOptions" 
             :key="f.id"
             @click="filterStatus = f.id"
             class="px-4 py-2 rounded-xl text-sm font-bold whitespace-nowrap transition-colors border"
@@ -39,7 +39,7 @@
           <input 
             v-model="searchQuery"
             type="text" 
-            placeholder="Cari tiket..." 
+            :placeholder="$t('support.searchTicket')" 
             class="w-full pl-10 pr-4 py-2 border border-ink-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 text-sm"
           >
         </div>
@@ -51,17 +51,17 @@
           <table class="w-full text-left border-collapse min-w-[1000px]">
             <thead>
               <tr class="border-b border-ink-100">
-                <th class="p-4 sm:px-6 py-5 font-extrabold text-ink-900 text-xs tracking-wider uppercase">SUBJEK</th>
-                <th class="p-4 sm:px-6 py-5 font-extrabold text-ink-900 text-xs tracking-wider uppercase">KATEGORI</th>
-                <th class="p-4 sm:px-6 py-5 font-extrabold text-ink-900 text-xs tracking-wider uppercase">STATUS</th>
-                <th class="p-4 sm:px-6 py-5 font-extrabold text-ink-900 text-xs tracking-wider uppercase">PRIORITAS</th>
-                <th class="p-4 sm:px-6 py-5 font-extrabold text-ink-900 text-xs tracking-wider uppercase">DIPERBARUI</th>
-                <th class="p-4 sm:px-6 py-5 font-extrabold text-ink-900 text-xs tracking-wider uppercase text-right">AKSI</th>
+                <th class="p-4 sm:px-6 py-5 font-extrabold text-ink-900 text-xs tracking-wider uppercase">{{ $t('support.tableHeaders.subject') }}</th>
+                <th class="p-4 sm:px-6 py-5 font-extrabold text-ink-900 text-xs tracking-wider uppercase">{{ $t('support.tableHeaders.category') }}</th>
+                <th class="p-4 sm:px-6 py-5 font-extrabold text-ink-900 text-xs tracking-wider uppercase">{{ $t('support.tableHeaders.status') }}</th>
+                <th class="p-4 sm:px-6 py-5 font-extrabold text-ink-900 text-xs tracking-wider uppercase">{{ $t('support.tableHeaders.priority') }}</th>
+                <th class="p-4 sm:px-6 py-5 font-extrabold text-ink-900 text-xs tracking-wider uppercase">{{ $t('support.tableHeaders.updated') }}</th>
+                <th class="p-4 sm:px-6 py-5 font-extrabold text-ink-900 text-xs tracking-wider uppercase text-right">{{ $t('support.tableHeaders.action') }}</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-ink-100">
               <tr v-if="pending" class="animate-pulse">
-                <td colspan="6" class="p-6 text-center text-ink-400 font-medium">Memuat tiket...</td>
+                <td colspan="6" class="p-6 text-center text-ink-400 font-medium">{{ $t('support.loadingTickets') }}</td>
               </tr>
               <tr v-else-if="filteredTickets.length === 0">
                 <td colspan="6" class="p-12 text-center">
@@ -69,8 +69,8 @@
                     <div class="w-16 h-16 bg-ink-50 rounded-full flex items-center justify-center text-ink-300 mb-4">
                       <Ticket class="w-8 h-8" />
                     </div>
-                    <h3 class="font-bold text-ink-900 mb-1">Tidak Ada Tiket</h3>
-                    <p class="text-sm text-ink-500 mb-4">Belum ada tiket yang cocok dengan pencarian atau filter Anda.</p>
+                    <h3 class="font-bold text-ink-900 mb-1">{{ $t('support.noTickets') }}</h3>
+                    <p class="text-sm text-ink-500 mb-4">{{ $t('support.noTicketsDesc') }}</p>
                   </div>
                 </td>
               </tr>
@@ -91,14 +91,14 @@
                 <!-- KATEGORI -->
                 <td class="p-4 sm:px-6 py-4 align-middle">
                   <span class="text-[13px] font-bold text-ink-600">
-                    {{ getCategoryLabel(ticket.category) }}
+                    {{ $t(`support.categoryShort.${ticket.category}`) }}
                   </span>
                 </td>
                 
                 <!-- STATUS -->
                 <td class="p-4 sm:px-6 py-4 align-middle">
                   <span :class="getStatusOutlineClass(ticket.status)">
-                    {{ getStatusLabel(ticket.status).toUpperCase() }}
+                    {{ $t(`support.status.${ticket.status}`).toUpperCase() }}
                   </span>
                 </td>
                 
@@ -111,15 +111,15 @@
                 
                 <!-- DIPERBARUI -->
                 <td class="p-4 sm:px-6 py-4 align-middle">
-                  <p class="text-[13px] font-bold text-ink-900">{{ formatDateOnly(ticket.created_at) }}</p>
-                  <p class="text-[13px] text-ink-500 font-medium mt-0.5">{{ formatRelativeTime(ticket.created_at) }}</p>
+                  <p class="text-[13px] font-bold text-ink-900">{{ formatDateOnly(ticket.created_at, locale) }}</p>
+                  <p class="text-[13px] text-ink-500 font-medium mt-0.5">{{ formatRelativeTime(ticket.created_at, locale) }}</p>
                 </td>
                 
                 <!-- AKSI -->
                 <td class="p-4 sm:px-6 py-4 align-middle text-right">
                   <NuxtLink :to="`/dashboard/support/${ticket.id}`" class="inline-flex items-center gap-2 px-5 py-2.5 bg-red-400 hover:bg-red-500 text-white rounded-xl text-sm font-bold transition-colors shadow-sm">
                     <Eye class="w-4 h-4" />
-                    Lihat
+                    {{ $t('support.view') }}
                   </NuxtLink>
                 </td>
               </tr>
@@ -134,47 +134,47 @@
       <div class="bg-white border border-ink-200 rounded-2xl shadow-sm overflow-hidden">
         <div class="border-b border-ink-100 p-4 sm:p-6 flex items-center gap-3 bg-ink-50/50">
           <div class="w-1.5 h-5 bg-blue-500 rounded-full"></div>
-          <h2 class="text-lg font-bold text-ink-900">Detail Tiket</h2>
+          <h2 class="text-lg font-bold text-ink-900">{{ $t('support.ticketDetail') }}</h2>
         </div>
         
         <form @submit.prevent="submitTicket" class="p-4 sm:p-8 space-y-6">
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <!-- Kategori / Layanan Terkait -->
             <div>
-              <label class="block text-sm font-bold text-ink-900 mb-1.5">Kategori Masalah <span class="text-red-500">*</span></label>
+              <label class="block text-sm font-bold text-ink-900 mb-1.5">{{ $t('support.form.category') }} <span class="text-red-500">*</span></label>
               <select v-model="form.category" required class="w-full px-4 py-2.5 bg-white border border-ink-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-sm">
-                <option value="top_up">Top Up Saldo</option>
-                <option value="ad_account">Akun Iklan (Banned/Limit)</option>
-                <option value="technical">Masalah Teknis Website</option>
-                <option value="other">Lainnya</option>
+                <option value="top_up">{{ $t('support.category.top_up') }}</option>
+                <option value="ad_account">{{ $t('support.category.ad_account') }}</option>
+                <option value="technical">{{ $t('support.category.technical') }}</option>
+                <option value="other">{{ $t('support.category.other') }}</option>
               </select>
-              <p class="text-[11px] text-ink-500 mt-1.5">Pilih kategori layanan yang paling sesuai dengan kendala Anda.</p>
+              <p class="text-[11px] text-ink-500 mt-1.5">{{ $t('support.form.categoryHint') }}</p>
             </div>
             
             <!-- Prioritas / Departemen -->
             <div>
-              <label class="block text-sm font-bold text-ink-900 mb-1.5">Prioritas <span class="text-red-500">*</span></label>
+              <label class="block text-sm font-bold text-ink-900 mb-1.5">{{ $t('support.form.priority') }} <span class="text-red-500">*</span></label>
               <select v-model="form.priority" required class="w-full px-4 py-2.5 bg-white border border-ink-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-sm">
-                <option value="low">Rendah</option>
-                <option value="normal">Normal</option>
-                <option value="high">Tinggi</option>
+                <option value="low">{{ $t('support.priorityLabel.low') }}</option>
+                <option value="normal">{{ $t('support.priorityLabel.normal') }}</option>
+                <option value="high">{{ $t('support.priorityLabel.high') }}</option>
               </select>
             </div>
             
             <div v-if="form.category === 'other'" class="sm:col-span-2">
-              <label class="block text-sm font-bold text-ink-900 mb-1.5">Sebutkan Kategori Masalah <span class="text-red-500">*</span></label>
-              <input v-model="customCategory" required type="text" placeholder="Misal: Ubah Data Profil" class="w-full px-4 py-2.5 bg-white border border-ink-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-sm">
+              <label class="block text-sm font-bold text-ink-900 mb-1.5">{{ $t('support.form.customCategory') }} <span class="text-red-500">*</span></label>
+              <input v-model="customCategory" required type="text" :placeholder="$t('support.form.customCategoryPlaceholder')" class="w-full px-4 py-2.5 bg-white border border-ink-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-sm">
             </div>
 
             <!-- Subjek -->
             <div class="sm:col-span-2">
-              <label class="block text-sm font-bold text-ink-900 mb-1.5">Subjek <span class="text-red-500">*</span></label>
-              <input v-model="form.subject" required type="text" placeholder="Deskripsi singkat masalah Anda" class="w-full px-4 py-2.5 bg-white border border-ink-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-sm">
+              <label class="block text-sm font-bold text-ink-900 mb-1.5">{{ $t('support.form.subject') }} <span class="text-red-500">*</span></label>
+              <input v-model="form.subject" required type="text" :placeholder="$t('support.form.subjectPlaceholder')" class="w-full px-4 py-2.5 bg-white border border-ink-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-sm">
             </div>
             
             <!-- Pesan -->
             <div class="sm:col-span-2">
-              <label class="block text-sm font-bold text-ink-900 mb-1.5">Pesan <span class="text-red-500">*</span></label>
+              <label class="block text-sm font-bold text-ink-900 mb-1.5">{{ $t('support.form.message') }} <span class="text-red-500">*</span></label>
               <ClientOnly>
                 <div class="border border-ink-200 rounded-xl overflow-hidden focus-within:ring-2 focus-within:ring-blue-500/20 focus-within:border-blue-500 bg-white">
                   <QuillEditor theme="snow" v-model:content="form.description" contentType="html" class="min-h-[200px]" :toolbar="['bold', 'italic', 'underline', { 'list': 'ordered'}, { 'list': 'bullet' }, 'blockquote', 'link', 'code-block', 'clean']" />
@@ -183,7 +183,7 @@
                   <textarea v-model="form.description" required rows="6" placeholder="Memuat editor..." class="w-full px-4 py-2.5 bg-ink-50 border border-ink-200 rounded-xl focus:outline-none text-sm"></textarea>
                 </template>
               </ClientOnly>
-              <p class="text-[11px] text-ink-500 mt-1.5">Gunakan editor di atas. HTML akan disanitasi.</p>
+              <p class="text-[11px] text-ink-500 mt-1.5">{{ $t('support.editorHint') }}</p>
             </div>
           </div>
           
@@ -191,12 +191,12 @@
           
           <!-- Lampiran -->
           <div>
-            <h3 class="text-sm font-bold text-ink-900 mb-2">Lampiran</h3>
+            <h3 class="text-sm font-bold text-ink-900 mb-2">{{ $t('support.attachment') }}</h3>
             <button type="button" @click="triggerFileInput" class="inline-flex items-center gap-2 px-4 py-2 bg-orange-400 hover:bg-orange-500 text-white rounded-lg text-sm font-bold transition-colors mb-2 shadow-sm">
               <Paperclip class="w-4 h-4" />
-              Pilih File
+              {{ $t('support.selectFile') }}
             </button>
-            <p class="text-[11px] text-ink-500">Allowed: Images, PDF. Maksimal 5 file.</p>
+            <p class="text-[11px] text-ink-500">{{ $t('support.attachmentInfo') }}</p>
             <input ref="fileInput" type="file" multiple accept="image/*,.pdf" class="hidden" @change="handleFileChange">
             
             <!-- Previews -->
@@ -211,11 +211,11 @@
           </div>
           
           <div class="flex justify-end gap-3 pt-6 border-t border-ink-100">
-            <button type="button" @click="isCreating = false" class="px-5 py-2.5 bg-red-400 hover:bg-red-500 text-white font-bold rounded-lg text-sm transition-colors shadow-sm">Batal</button>
+            <button type="button" @click="isCreating = false" class="px-5 py-2.5 bg-red-400 hover:bg-red-500 text-white font-bold rounded-lg text-sm transition-colors shadow-sm">{{ $t('common.cancel') }}</button>
             <button type="submit" :disabled="isSubmitting" class="px-5 py-2.5 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-lg text-sm transition-colors disabled:opacity-50 shadow-sm">
               <span class="flex items-center gap-2">
                 <Send class="w-4 h-4" />
-                {{ isSubmitting ? 'Mengirim...' : 'Kirim Tiket' }}
+                {{ isSubmitting ? $t('support.sending') : $t('support.submitTicket') }}
               </span>
             </button>
           </div>
@@ -232,6 +232,7 @@ import { Ticket, X, Image, Search, ArrowLeft, Paperclip, Send, MessageCircle, Ey
 
 definePageMeta({ layout: 'dashboard' })
 
+const { t, locale } = useI18n()
 const toast = useToast()
 const supabase = useSupabaseClient()
 const { csrf } = useCsrf()
@@ -252,6 +253,15 @@ const { data: tickets, pending, refresh } = useAsyncData('user-tickets', async (
 const isCreating = ref(false)
 const filterStatus = ref('all')
 const searchQuery = ref('')
+
+const filterOptions = computed(() => [
+  { id: 'all', label: t('support.filter.all') },
+  { id: 'open', label: t('support.filter.open') },
+  { id: 'in_progress', label: t('support.filter.inProgress') },
+  { id: 'answered', label: t('support.filter.answered') },
+  { id: 'pending', label: t('support.filter.pending') },
+  { id: 'closed', label: t('support.filter.closed') },
+])
 
 const filteredTickets = computed(() => {
   if (!tickets.value?.data) return []
@@ -300,7 +310,7 @@ const handleFileChange = (e: Event) => {
   // Validasi max file size 5MB
   for (const file of files) {
     if (file.size > 5 * 1024 * 1024) {
-      toast.addToast(`File ${file.name} terlalu besar (Max 5MB)`, 'error')
+      toast.addToast(t('support.toast.fileTooLarge', { name: file.name }), 'error')
       continue
     }
     selectedFiles.value.push(file)
@@ -321,7 +331,7 @@ const submitTicket = async () => {
   // Cegah pengiriman jika pesan kosong atau hanya tag HTML kosong
   const rawText = form.value.description.replace(/<[^>]*>?/gm, '').trim()
   if (!rawText && !selectedFiles.value.length) {
-    toast.addToast('Pesan tidak boleh kosong', 'error')
+    toast.addToast(t('support.toast.emptyMessage'), 'error')
     return
   }
 
@@ -331,7 +341,7 @@ const submitTicket = async () => {
 
     // Upload files jika ada
     if (selectedFiles.value.length > 0) {
-      toast.addToast('Mengunggah lampiran...', 'info')
+      toast.addToast(t('support.toast.uploading'), 'info')
       for (const file of selectedFiles.value) {
         const ext = file.name.split('.').pop()
         const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${ext}`
@@ -357,7 +367,7 @@ const submitTicket = async () => {
       body: payload
     })
     
-    toast.addToast('Tiket bantuan berhasil dikirim.', 'success')
+    toast.addToast(t('support.toast.ticketSent'), 'success')
     isCreating.value = false
     
     // Reset Form
@@ -368,7 +378,7 @@ const submitTicket = async () => {
     
     refresh()
   } catch (error: any) {
-    toast.addToast(error.statusMessage || 'Gagal mengirim tiket', 'error')
+    toast.addToast(error.statusMessage || t('support.toast.ticketFailed'), 'error')
   } finally {
     isSubmitting.value = false
   }

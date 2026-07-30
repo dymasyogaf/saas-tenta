@@ -1,0 +1,46 @@
+{
+  "components": {
+    "platformCard": {
+      "comingSoon": "Coming Soon",
+      "hide": "Hide",
+      "show": "Show",
+      "steps": "account creation steps",
+      "locked": "Locked",
+      "getAccount": "Get Ads Account",
+      "topUp": "Top Up Balance",
+      "reapply": "Reapply",
+      "step1Title": "Fill out registration form",
+      "step1Desc": "Complete the form with your name as on ID card, Business ID, and agree to Terms & Conditions.",
+      "step2Title": "Internal Team Review",
+      "step2Desc": "Tentaklik Compliance Team will review the eligibility of your ad account request.",
+      "step3Title": "Ad Account Creation",
+      "step3Desc": "Once approved, we will process the linking and creation of your Whitelisted ad account.",
+      "step4Title": "Top Up Account Balance",
+      "step4Desc": "Top up your account balance first via the dashboard so ads can run.",
+      "step5Title": "Start advertising right away!",
+      "step5Desc": "Account is ready to use! You can directly run ad campaigns without obstacles."
+    },
+    "verificationBanner": {
+      "unverifiedTitle": "Identity Verification Required",
+      "unverifiedDesc": "Platform feature access is limited. Please verify your identity (eKYC) first to fully unlock all Tentaklik services.",
+      "verifyNow": "Verify Now",
+      "pendingTitle": "Verification Under Review",
+      "pendingDesc": "Your identity data is being reviewed by our team. Please wait a moment until the verification process is complete.",
+      "checkStatus": "Check Status"
+    },
+    "dateRangePicker": {
+      "title": "Select Time Range",
+      "startDate": "Start Date",
+      "endDate": "End Date",
+      "apply": "Apply"
+    },
+    "emptyState": {
+      "noData": "Data not found"
+    },
+    "floatingWhatsApp": {
+      "title": "Contact Customer Support",
+      "label": "Tenta Support",
+      "message": "Hello Tentaklik Support Team, I need help with my account. "
+    }
+  }
+}

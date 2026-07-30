@@ -224,6 +224,8 @@ definePageMeta({
   middleware: ['admin'] // Harusnya dilindungi middleware admin_ads_ops / super_admin
 })
 
+const { csrf } = useCsrf()
+
 const activeTab = ref('new')
 const isSubmitting = ref<string | null>(null)
 const currentAction = ref<string | null>(null)
@@ -298,7 +300,8 @@ const resetDev = async () => {
   if (!confirm('🔥 PERINGATAN DEV: Aksi ini akan menghapus SEMUA data Pengajuan (ad_account_requests) dan Akun Iklan (ad_accounts) di database. Lanjutkan?')) return
   const toast = useToast()
   try {
-    const res = await $fetch('/api/dev/reset-ads', { method: 'POST' })
+    const csrfToken = unref(csrf)
+    const res = await $fetch('/api/dev/reset-ads', { method: 'POST', headers: csrfToken ? { 'csrf-token': csrfToken } : {} })
     toast.addToast((res as any).message, 'success')
     await refresh()
     refreshNuxtData('admin-badges')
@@ -332,8 +335,10 @@ const processAction = async (id: string, action: 'approve' | 'reject' | 'save_id
   const toast = useToast()
 
   try {
+    const csrfToken2 = unref(csrf)
     const response = await $fetch('/api/admin/ads-ops', {
       method: 'POST',
+      headers: csrfToken2 ? { 'csrf-token': csrfToken2 } : {},
       body: {
         action: action,
         request_id: id,

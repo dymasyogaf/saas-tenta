@@ -9,8 +9,8 @@
       </div>
 
       <div class="text-center mb-8">
-        <h1 class="text-2xl font-display font-bold text-ink-900 mb-2">Buat Akun Baru</h1>
-        <p class="text-ink-500 text-sm">Mulai kelola iklan Anda dengan bebas batas hari ini.</p>
+        <h1 class="text-2xl font-display font-bold text-ink-900 mb-2">{{ $t('auth.registerTitle') }}</h1>
+        <p class="text-ink-500 text-sm">{{ $t('auth.registerSubtitle') }}</p>
       </div>
 
       <!-- Error Message -->
@@ -21,27 +21,27 @@
 
       <form @submit.prevent="handleRegister" class="space-y-4">
         <div>
-          <label class="block text-sm font-semibold text-ink-900 mb-2">Nama Lengkap <span class="text-red-500">*</span></label>
+          <label class="block text-sm font-semibold text-ink-900 mb-2">{{ $t('auth.fullName') }} <span class="text-red-500">*</span></label>
           <div class="relative">
             <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-ink-400">
               <User class="w-5 h-5" />
             </div>
-            <input v-model="name" type="text" required placeholder="Budi Santoso" class="w-full pl-11 pr-4 py-3 bg-ink-50 border border-ink-200 rounded-xl focus:bg-white focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 transition-all outline-none text-ink-900 placeholder:text-ink-400">
+            <input v-model="name" type="text" required :placeholder="$t('auth.namePlaceholder')" class="w-full pl-11 pr-4 py-3 bg-ink-50 border border-ink-200 rounded-xl focus:bg-white focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 transition-all outline-none text-ink-900 placeholder:text-ink-400">
           </div>
         </div>
 
         <div>
-          <label class="block text-sm font-semibold text-ink-900 mb-2">Email <span class="text-red-500">*</span></label>
+          <label class="block text-sm font-semibold text-ink-900 mb-2">{{ $t('auth.email') }} <span class="text-red-500">*</span></label>
           <div class="relative">
             <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-ink-400">
               <Mail class="w-5 h-5" />
             </div>
-            <input v-model="email" type="email" required placeholder="budi@perusahaan.com" class="w-full pl-11 pr-4 py-3 bg-ink-50 border border-ink-200 rounded-xl focus:bg-white focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 transition-all outline-none text-ink-900 placeholder:text-ink-400">
+            <input v-model="email" type="email" required :placeholder="$t('auth.registerEmailPlaceholder')" class="w-full pl-11 pr-4 py-3 bg-ink-50 border border-ink-200 rounded-xl focus:bg-white focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 transition-all outline-none text-ink-900 placeholder:text-ink-400">
           </div>
         </div>
 
         <div>
-          <label class="block text-sm font-semibold text-ink-900 mb-2">Nomor WhatsApp <span class="text-red-500">*</span></label>
+          <label class="block text-sm font-semibold text-ink-900 mb-2">{{ $t('auth.whatsapp') }} <span class="text-red-500">*</span></label>
           <div class="flex">
             <div class="relative w-[110px] bg-ink-100 border border-ink-200 border-r-0 rounded-l-xl flex items-center justify-between px-3 group focus-within:bg-white focus-within:border-orange-500 focus-within:ring-2 focus-within:ring-orange-500/20 focus-within:z-10 transition-all">
               <span class="font-medium text-ink-900">{{ selectedCountry?.flag }} {{ dialCode }}</span>
@@ -59,7 +59,7 @@
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label class="block text-sm font-semibold text-ink-900 mb-2">Password <span class="text-red-500">*</span></label>
+            <label class="block text-sm font-semibold text-ink-900 mb-2">{{ $t('auth.password') }} <span class="text-red-500">*</span></label>
             <div class="relative">
               <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-ink-400">
                 <Lock class="w-5 h-5" />
@@ -73,7 +73,7 @@
           </div>
 
           <div>
-            <label class="block text-sm font-semibold text-ink-900 mb-2">Konfirmasi Password <span class="text-red-500">*</span></label>
+            <label class="block text-sm font-semibold text-ink-900 mb-2">{{ $t('auth.confirmPassword') }} <span class="text-red-500">*</span></label>
             <div class="relative">
               <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-ink-400">
                 <LockKeyhole class="w-5 h-5" />
@@ -90,24 +90,31 @@
         <div class="pt-2 flex items-start gap-2">
           <input type="checkbox" id="terms" required class="mt-0.5 w-4 h-4 shrink-0 text-orange-600 bg-ink-50 border-ink-200 rounded focus:ring-orange-500 focus:ring-2 accent-orange-500">
           <label for="terms" class="text-xs text-ink-500 leading-relaxed text-left cursor-pointer select-none">
-            Dengan mendaftar, Anda menyetujui <a href="https://tentaklik.com/ketentuan/" target="_blank" rel="noopener noreferrer" class="text-orange-600 font-bold hover:underline">Syarat & Ketentuan</a> serta <a href="https://tentaklik.com/privasi/" target="_blank" rel="noopener noreferrer" class="text-orange-600 font-bold hover:underline">Kebijakan Privasi</a> kami.
+            <i18n-t keypath="auth.termsText" tag="span">
+              <template #terms>
+                <a href="https://tentaklik.com/ketentuan/" target="_blank" rel="noopener noreferrer" class="text-orange-600 font-bold hover:underline">{{ $t('auth.termsLink') }}</a>
+              </template>
+              <template #privacy>
+                <a href="https://tentaklik.com/privasi/" target="_blank" rel="noopener noreferrer" class="text-orange-600 font-bold hover:underline">{{ $t('auth.privacyLink') }}</a>
+              </template>
+            </i18n-t>
           </label>
         </div>
 
         <button type="submit" :disabled="isLoading" class="w-full bg-ink-900 text-white font-bold py-3.5 px-4 rounded-xl hover:bg-ink-800 transition-colors shadow-lg shadow-ink-900/10 mt-2 flex justify-center items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed">
           <template v-if="isLoading">
             <Loader2 class="w-4 h-4 animate-spin" />
-            <span>Memproses...</span>
+            <span>{{ $t('common.processing') }}</span>
           </template>
           <template v-else>
-            <span>Daftar Sekarang</span>
+            <span>{{ $t('auth.registerButton') }}</span>
             <ArrowRight class="w-4 h-4" />
           </template>
         </button>
       </form>
 
       <p class="text-center text-sm font-medium text-ink-600 mt-8">
-        Sudah punya akun? <NuxtLink to="/login" class="text-orange-600 font-bold hover:underline">Masuk di sini</NuxtLink>
+        {{ $t('auth.hasAccount') }} <NuxtLink to="/login" class="text-orange-600 font-bold hover:underline">{{ $t('auth.loginHere') }}</NuxtLink>
       </p>
     </div>
   </div>
@@ -121,6 +128,7 @@ definePageMeta({
   layout: 'default',
 })
 
+const { t } = useI18n()
 const router = useRouter()
 const name = ref('')
 const email = ref('')
@@ -151,7 +159,7 @@ const handleRegister = async () => {
   errorMsg.value = ''
   
   if (password.value !== confirmPassword.value) {
-    errorMsg.value = 'Password dan Konfirmasi Password tidak cocok.'
+    errorMsg.value = t('auth.toast.passwordMismatch')
     return
   }
 
@@ -161,7 +169,7 @@ const handleRegister = async () => {
 
   const data = await register(email.value, password.value, name.value, fullPhone)
   if (data) {
-    addToast('Pendaftaran berhasil! Silakan periksa email Anda (jika aktif).', 'success')
+    addToast(t('auth.toast.registerSuccess'), 'success')
     router.push('/login')
   }
 }

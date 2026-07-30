@@ -6,8 +6,8 @@
       <!-- Header -->
       <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
         <div>
-          <h3 class="text-lg font-bold text-slate-900">Tambah Staf Internal</h3>
-          <p class="text-xs text-slate-500 mt-1">Berikan hak akses khusus untuk karyawan.</p>
+          <h3 class="text-lg font-bold text-slate-900">{{ $t('modals.addStaff.title') }}</h3>
+          <p class="text-xs text-slate-500 mt-1">{{ $t('modals.addStaff.subtitle') }}</p>
         </div>
         <button @click="close" class="text-slate-400 hover:text-slate-600 transition-colors">
           <X class="w-5 h-5" />
@@ -21,14 +21,14 @@
           class="flex-1 py-3 text-sm font-semibold text-center transition-colors border-b-2"
           :class="activeTab === 'promote' ? 'border-orange-500 text-orange-600' : 'border-transparent text-slate-500 hover:text-slate-700'"
         >
-          Opsi A: Promosikan Klien
+          {{ $t('modals.addStaff.tabPromote') }}
         </button>
         <button 
           @click="activeTab = 'create'"
           class="flex-1 py-3 text-sm font-semibold text-center transition-colors border-b-2"
           :class="activeTab === 'create' ? 'border-orange-500 text-orange-600' : 'border-transparent text-slate-500 hover:text-slate-700'"
         >
-          Opsi B: Buat Akun Baru
+          {{ $t('modals.addStaff.tabCreate') }}
         </button>
       </div>
 
@@ -41,12 +41,12 @@
 
         <!-- TAB 1: PROMOTE -->
         <div v-if="activeTab === 'promote'" class="space-y-4">
-          <p class="text-sm text-slate-600 mb-2">Pilih klien yang sudah terdaftar untuk diangkat menjadi staf/admin.</p>
+          <p class="text-sm text-slate-600 mb-2">{{ $t('modals.addStaff.promoteDesc') }}</p>
           
           <div class="space-y-1">
-            <label class="text-xs font-semibold text-slate-700">Pilih Klien</label>
+            <label class="text-xs font-semibold text-slate-700">{{ $t('modals.addStaff.selectClient') }}</label>
             <select v-model="formPromote.user_id" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-orange-500">
-              <option value="">-- Pilih Klien --</option>
+              <option value="">{{ $t('modals.addStaff.selectClientPlaceholder') }}</option>
               <option v-for="c in clients" :key="c.id" :value="c.id">
                 {{ c.full_name || c.email }} ({{ c.email }})
               </option>
@@ -54,44 +54,44 @@
           </div>
 
           <div class="space-y-1">
-            <label class="text-xs font-semibold text-slate-700">Pilih Jabatan (Role)</label>
+            <label class="text-xs font-semibold text-slate-700">{{ $t('modals.addStaff.selectRole') }}</label>
             <select v-model="formPromote.role" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-orange-500">
-              <option value="">-- Pilih Jabatan --</option>
-              <option value="admin_compliance">Tim Audit / Kepatuhan</option>
-              <option value="admin_ads_ops">Tim Operasional Iklan</option>
-              <option value="admin_finance">Tim Keuangan (Finance)</option>
-              <option value="super_admin">Super Admin</option>
+              <option value="">{{ $t('modals.addStaff.selectRolePlaceholder') }}</option>
+              <option value="admin_compliance">{{ $t('admin.roles.admin_compliance') }}</option>
+              <option value="admin_ads_ops">{{ $t('admin.roles.admin_ads_ops') }}</option>
+              <option value="admin_finance">{{ $t('admin.roles.admin_finance') }}</option>
+              <option value="super_admin">{{ $t('admin.roles.super_admin') }}</option>
             </select>
           </div>
         </div>
 
         <!-- TAB 2: CREATE -->
         <div v-if="activeTab === 'create'" class="space-y-4">
-          <p class="text-sm text-slate-600 mb-2">Sistem akan membuatkan akun di belakang layar (bypass registrasi).</p>
+          <p class="text-sm text-slate-600 mb-2">{{ $t('modals.addStaff.createDesc') }}</p>
           
           <div class="space-y-1">
-            <label class="text-xs font-semibold text-slate-700">Nama Lengkap</label>
-            <input v-model="formCreate.full_name" type="text" placeholder="Contoh: Budi Santoso" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-orange-500" />
+            <label class="text-xs font-semibold text-slate-700">{{ $t('modals.addStaff.fullName') }}</label>
+            <input v-model="formCreate.full_name" type="text" :placeholder="$t('modals.addStaff.fullNamePlaceholder')" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-orange-500" />
           </div>
 
           <div class="space-y-1">
-            <label class="text-xs font-semibold text-slate-700">Email Staf</label>
-            <input v-model="formCreate.email" type="email" placeholder="budi@agensi.com" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-orange-500" />
+            <label class="text-xs font-semibold text-slate-700">{{ $t('modals.addStaff.email') }}</label>
+            <input v-model="formCreate.email" type="email" :placeholder="$t('modals.addStaff.emailPlaceholder')" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-orange-500" />
           </div>
 
           <div class="space-y-1">
-            <label class="text-xs font-semibold text-slate-700">Kata Sandi (Password)</label>
-            <input v-model="formCreate.password" type="text" placeholder="Minimal 6 karakter" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-orange-500" />
+            <label class="text-xs font-semibold text-slate-700">{{ $t('modals.addStaff.password') }}</label>
+            <input v-model="formCreate.password" type="text" :placeholder="$t('modals.addStaff.passwordPlaceholder')" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-orange-500" />
           </div>
 
           <div class="space-y-1">
-            <label class="text-xs font-semibold text-slate-700">Pilih Jabatan (Role)</label>
+            <label class="text-xs font-semibold text-slate-700">{{ $t('modals.addStaff.selectRole') }}</label>
             <select v-model="formCreate.role" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-orange-500">
-              <option value="">-- Pilih Jabatan --</option>
-              <option value="admin_compliance">Tim Audit / Kepatuhan</option>
-              <option value="admin_ads_ops">Tim Operasional Iklan</option>
-              <option value="admin_finance">Tim Keuangan (Finance)</option>
-              <option value="super_admin">Super Admin</option>
+              <option value="">{{ $t('modals.addStaff.selectRolePlaceholder') }}</option>
+              <option value="admin_compliance">{{ $t('admin.roles.admin_compliance') }}</option>
+              <option value="admin_ads_ops">{{ $t('admin.roles.admin_ads_ops') }}</option>
+              <option value="admin_finance">{{ $t('admin.roles.admin_finance') }}</option>
+              <option value="super_admin">{{ $t('admin.roles.super_admin') }}</option>
             </select>
           </div>
         </div>
@@ -100,7 +100,7 @@
       <!-- Footer -->
       <div class="p-4 border-t border-slate-100 flex items-center justify-end gap-3 bg-slate-50">
         <button @click="close" class="px-4 py-2 text-sm font-semibold text-slate-600 hover:text-slate-800 transition-colors">
-          Batal
+          {{ $t('common.cancel') }}
         </button>
         <button 
           @click="submit" 
@@ -108,7 +108,7 @@
           class="px-6 py-2 bg-orange-600 hover:bg-orange-700 text-white text-sm font-bold rounded-lg transition-colors flex items-center gap-2 disabled:opacity-50"
         >
           <span v-if="isLoading" class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
-          {{ activeTab === 'promote' ? 'Promosikan' : 'Buat Akun' }}
+          {{ activeTab === 'promote' ? $t('modals.addStaff.promoteBtn') : $t('modals.addStaff.createBtn') }}
         </button>
       </div>
 
@@ -126,6 +126,7 @@ const props = defineProps({
 
 const emit = defineEmits(['update:isOpen', 'success'])
 
+const { t } = useI18n()
 const activeTab = ref('promote')
 const isLoading = ref(false)
 const errorMsg = ref('')
@@ -180,17 +181,20 @@ const submit = async () => {
       ? { action: 'promote', ...formPromote.value }
       : { action: 'create', ...formCreate.value }
 
+    const { csrf } = useCsrf()
+    const csrfToken = unref(csrf)
     const response = await $fetch('/api/admin/staff', {
       method: 'POST',
+      headers: csrfToken ? { 'csrf-token': csrfToken } : {},
       body: payload
     })
 
     const toast = useToast()
-    toast.addToast((response as any).message || 'Sukses', 'success')
+    toast.addToast((response as any).message || t('common.success'), 'success')
     emit('success')
     close()
   } catch (error: any) {
-    errorMsg.value = error.data?.statusMessage || error.message || 'Terjadi kesalahan'
+    errorMsg.value = error.data?.statusMessage || error.message || t('common.error')
   } finally {
     isLoading.value = false
   }

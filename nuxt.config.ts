@@ -8,7 +8,23 @@ export default defineNuxtConfig({
     '@nuxtjs/supabase',
     '@vee-validate/nuxt',
     'nuxt-security',
+    '@nuxtjs/i18n',
   ],
+
+  i18n: {
+    locales: [
+      { code: 'id', name: 'Bahasa Indonesia', file: 'id.json' },
+      { code: 'en', name: 'English', file: 'en.json' },
+    ],
+    defaultLocale: 'id',
+    langDir: '../app/locales/',
+    strategy: 'no_prefix',
+    detectBrowserLanguage: {
+      useCookie: true,
+      cookieKey: 'i18n_lang',
+      fallbackLocale: 'id',
+    },
+  },
 
   // Security Configuration
   security: {
@@ -39,6 +55,7 @@ export default defineNuxtConfig({
     redirect: false, // We'll handle auth redirects manually
     url: 'https://pjmsnphhnporuownasxe.supabase.co',
     key: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBqbXNucGhobnBvcnVvd25hc3hlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQxODU0NDcsImV4cCI6MjA5OTc2MTQ0N30.nqxxJD-KqRcQjDrwEbyNBcKEiCY151_kNaBwk1APhbA',
+    serviceKey: process.env.SUPABASE_SERVICE_KEY,
     types: false, // Disable database type generation to suppress warning
   },
 

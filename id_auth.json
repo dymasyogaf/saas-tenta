@@ -1,0 +1,42 @@
+{
+  "auth": {
+    "resetPasswordTitle": "Reset Password",
+    "resetPasswordSubtitle": "Silakan masukkan password baru Anda.",
+    "newPassword": "Password Baru",
+    "min8Chars": "Minimal 8 karakter",
+    "confirmNewPassword": "Konfirmasi Password Baru",
+    "repeatNewPassword": "Ulangi password baru",
+    "updatePasswordBtn": "Update Password",
+    "backToLogin": "Kembali ke Login",
+    "verifySecurityTitle": "Verifikasi Keamanan",
+    "verifySecuritySubtitle1": "Masukkan kode OTP 6 digit yang baru saja dikirim ke nomor WhatsApp Anda (",
+    "verifySecuritySubtitle2": ").",
+    "verifyAndLogin": "Verifikasi & Masuk",
+    "resending": "Mengirim ulang...",
+    "resendIn": "Kirim ulang dalam",
+    "resendOtp": "Kirim Ulang Kode OTP",
+    "cancelAndBack": "Batal dan kembali ke halaman Login",
+    "confirmingTitle": "Memproses Konfirmasi...",
+    "confirmingSubtitle": "Mohon tunggu sebentar, sedang memverifikasi token keamanan Anda.",
+    "confirmSuccessTitle": "Konfirmasi Berhasil!",
+    "confirmSuccessSubtitle": "Email atau akun Anda telah berhasil diverifikasi. Anda akan dialihkan ke dashboard...",
+    "confirmFailedTitle": "Konfirmasi Gagal",
+    "backToDashboard": "Kembali ke Dashboard",
+    "invalidLink": "Link konfirmasi tidak valid atau sudah kadaluarsa.",
+    "invalidToken": "Token tidak valid atau sudah kadaluarsa.",
+    "sessionNotFound": "Sesi tidak ditemukan atau token tidak valid.",
+    "toast": {
+      "passwordMismatch": "Konfirmasi password tidak cocok",
+      "updateSuccess": "Password berhasil diupdate! Silakan login.",
+      "updateFailed": "Gagal mengupdate password",
+      "verifySuccess": "Verifikasi berhasil!",
+      "wrongOtp": "Kode OTP salah",
+      "verifyError": "Terjadi kesalahan saat memverifikasi",
+      "newOtpSent": "Kode OTP baru telah dikirim ke WhatsApp Anda",
+      "resendFailed": "Gagal mengirim ulang OTP"
+    }
+  },
+  "common": {
+    "verifying": "Memverifikasi..."
+  }
+}

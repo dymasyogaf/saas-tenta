@@ -132,6 +132,7 @@ definePageMeta({
   middleware: ['admin'] // Sebaiknya dilindungi lagi dengan 'super_admin' middleware nantinya
 })
 
+const { csrf } = useCsrf()
 const isModalOpen = ref(false)
 
 const { data: staffList, pending, refresh } = useFetch<any[]>('/api/admin/staff')
@@ -151,8 +152,10 @@ const executeRevoke = async () => {
   isDeleteModalOpen.value = false
   
   try {
+    const csrfToken = unref(csrf)
     await ($fetch as any)('/api/admin/staff', {
       method: 'POST',
+      headers: csrfToken ? { 'csrf-token': csrfToken } : {},
       body: { action: 'revoke', user_id: staffToDelete.value.id }
     })
     addToast('Akses berhasil dicabut!', 'success')

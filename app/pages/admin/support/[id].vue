@@ -327,8 +327,11 @@ const updateStatus = async (status: string) => {
   if (!confirm(`Yakin ingin mengubah status tiket menjadi ${status.toUpperCase()}?`)) return
   
   try {
+    const { csrf } = useCsrf()
+    const csrfToken = unref(csrf)
     await $fetch('/api/admin/tickets', {
       method: 'POST',
+      headers: csrfToken ? { 'csrf-token': csrfToken } : {},
       body: { ticket_id: ticketId, status }
     })
     toast.addToast('Status tiket diperbarui', 'success')
@@ -377,8 +380,11 @@ const submitReply = async () => {
       }
     }
 
+    const { csrf } = useCsrf()
+    const csrfToken = unref(csrf)
     await $fetch('/api/admin/replies', {
       method: 'POST',
+      headers: csrfToken ? { 'csrf-token': csrfToken } : {},
       body: { 
         ticket_id: ticketId, 
         content: replyContent.value,

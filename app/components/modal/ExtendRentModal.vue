@@ -5,8 +5,8 @@
         <!-- Header -->
         <div class="px-6 py-4 border-b border-ink-100 flex items-center justify-between bg-white shrink-0">
           <div>
-            <h3 id="extend-rent-title" class="font-display font-bold text-ink-900">Perpanjang Sewa Akun Iklan</h3>
-            <p class="text-xs text-ink-500">Pilih durasi perpanjangan untuk akun {{ account?.name || account?.account_id }}</p>
+            <h3 id="extend-rent-title" class="font-display font-bold text-ink-900">{{ $t('modals.extendRent.title') }}</h3>
+            <p class="text-xs text-ink-500">{{ $t('modals.extendRent.subtitle', { account: account?.name || account?.account_id }) }}</p>
           </div>
           <button @click="closeModal" class="text-ink-400 hover:text-ink-600 transition-colors bg-ink-50 p-2 rounded-lg">
             <X class="w-5 h-5" />
@@ -25,28 +25,28 @@
               </div>
               <div>
                 <h4 class="font-bold text-ink-900 text-sm">{{ account?.name || 'Unknown Account' }}</h4>
-                <p class="text-xs text-ink-500">ID: {{ account?.account_id }}</p>
-                <p class="text-[11px] text-ink-500 mt-1">Masa Aktif: <span class="font-bold" :class="isExpired ? 'text-red-500' : 'text-ink-900'">{{ daysLeftText }}</span></p>
+                <p class="text-xs text-ink-500">{{ $t('modals.extendRent.id') }} {{ account?.account_id }}</p>
+                <p class="text-[11px] text-ink-500 mt-1">{{ $t('modals.extendRent.activePeriod') }} <span class="font-bold" :class="isExpired ? 'text-red-500' : 'text-ink-900'">{{ daysLeftText }}</span></p>
               </div>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div @click="form.subscriptionMonths = 1; form.rentalFee = pricing.monthly" :class="['border-2 rounded-xl p-5 cursor-pointer transition-all text-center', form.subscriptionMonths === 1 ? 'border-orange-500 bg-orange-50' : 'border-ink-100 hover:border-ink-300 bg-white']">
-                <h5 class="font-bold text-ink-900 mb-1">1 Bulan</h5>
+                <h5 class="font-bold text-ink-900 mb-1">1 {{ $t('modals.extendRent.month') }}</h5>
                 <p class="text-xl font-bold text-orange-600 mb-2">Rp {{ pricing.monthly.toLocaleString('id-ID') }}</p>
-                <p class="text-xs text-ink-500">Normal</p>
+                <p class="text-xs text-ink-500">{{ $t('modals.extendRent.normal') }}</p>
               </div>
 
               <div @click="form.subscriptionMonths = 3; form.rentalFee = pricing.quarterly" :class="['border-2 rounded-xl p-5 cursor-pointer transition-all relative text-center', form.subscriptionMonths === 3 ? 'border-orange-500 bg-orange-50' : 'border-ink-100 hover:border-ink-300 bg-white']">
-                <div class="absolute -top-3 inset-x-0 flex justify-center"><span class="bg-orange-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">Hemat 22%</span></div>
-                <h5 class="font-bold text-ink-900 mb-1 mt-1">3 Bulan</h5>
+                <div class="absolute -top-3 inset-x-0 flex justify-center"><span class="bg-orange-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">{{ $t('modals.extendRent.save') }} 22%</span></div>
+                <h5 class="font-bold text-ink-900 mb-1 mt-1">3 {{ $t('modals.extendRent.months') }}</h5>
                 <p class="text-xl font-bold text-orange-600 mb-2">Rp {{ pricing.quarterly.toLocaleString('id-ID') }}</p>
                 <p class="text-xs text-ink-500 line-through">Rp {{ pricing.quarterlyOriginal.toLocaleString('id-ID') }}</p>
               </div>
 
               <div @click="form.subscriptionMonths = 6; form.rentalFee = pricing.semiannual" :class="['border-2 rounded-xl p-5 cursor-pointer transition-all relative text-center', form.subscriptionMonths === 6 ? 'border-orange-500 bg-orange-50' : 'border-ink-100 hover:border-ink-300 bg-white']">
-                <div class="absolute -top-3 inset-x-0 flex justify-center"><span class="bg-green-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">Hemat 12%</span></div>
-                <h5 class="font-bold text-ink-900 mb-1 mt-1">6 Bulan</h5>
+                <div class="absolute -top-3 inset-x-0 flex justify-center"><span class="bg-green-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">{{ $t('modals.extendRent.save') }} 12%</span></div>
+                <h5 class="font-bold text-ink-900 mb-1 mt-1">6 {{ $t('modals.extendRent.months') }}</h5>
                 <p class="text-xl font-bold text-orange-600 mb-2">Rp {{ pricing.semiannual.toLocaleString('id-ID') }}</p>
                 <p class="text-xs text-ink-500 line-through">Rp {{ pricing.semiannualOriginal.toLocaleString('id-ID') }}</p>
               </div>
@@ -54,11 +54,11 @@
 
             <div class="mt-8 bg-white rounded-xl p-4 border border-ink-200 flex items-center justify-between shadow-sm">
               <div>
-                <p class="text-sm text-ink-500 mb-1">Sisa Saldo Bersih Anda</p>
+                <p class="text-sm text-ink-500 mb-1">{{ $t('modals.extendRent.netBalance') }}</p>
                 <p class="font-bold text-xl text-ink-900" :class="{'text-red-500': netBalance < form.rentalFee}">Rp {{ netBalance.toLocaleString('id-ID') }}</p>
               </div>
               <button type="button" v-if="netBalance < form.rentalFee" @click="() => navigateTo('/dashboard/topup')" class="px-4 py-2 bg-white border border-orange-200 text-orange-600 font-bold rounded-lg text-xs hover:bg-orange-50 transition-colors shadow-sm">
-                Top Up Sekarang
+                {{ $t('modals.extendRent.topupNow') }}
               </button>
             </div>
           </div>
@@ -67,7 +67,7 @@
         <!-- Footer -->
         <div class="px-6 py-4 bg-white flex justify-end gap-3 border-t border-ink-100 shrink-0">
           <button @click="closeModal" type="button" class="px-6 py-2.5 bg-white border border-ink-200 text-ink-700 hover:bg-ink-50 font-bold rounded-xl text-sm transition-colors shadow-sm">
-            Batal
+            {{ $t('common.cancel') }}
           </button>
           
           <button 
@@ -76,8 +76,8 @@
             class="px-8 py-2.5 bg-orange-500 border border-orange-500 text-white hover:bg-orange-600 font-bold rounded-xl text-sm transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
             <span v-if="isSubmitting" class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
-            <template v-else-if="netBalance < form.rentalFee">Saldo Tidak Mencukupi</template>
-            <template v-else>Bayar Sekarang</template>
+            <template v-else-if="netBalance < form.rentalFee">{{ $t('modals.extendRent.insufficientBalance') }}</template>
+            <template v-else>{{ $t('modals.extendRent.payNow') }}</template>
           </button>
         </div>
       </div>
@@ -100,6 +100,7 @@ const supabase = useSupabaseClient()
 const { user } = useAuth()
 const config = useRuntimeConfig()
 
+const { t } = useI18n()
 const pricing = {
   monthly: Number(config.public.pricingMonthly),
   quarterly: Number(config.public.pricingQuarterly),
@@ -151,9 +152,9 @@ const daysLeftText = computed(() => {
   end.setHours(0, 0, 0, 0)
   today.setHours(0, 0, 0, 0)
   const diffTime = end.getTime() - today.getTime()
-  if (diffTime <= 0) return 'Kedaluwarsa'
+  if (diffTime <= 0) return t('modals.extendRent.expired')
   const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24))
-  return diffDays + ' Hari'
+  return `${diffDays} ${t('modals.extendRent.days')}`
 })
 
 const isExpired = computed(() => {
@@ -169,7 +170,7 @@ const closeModal = () => {
 
 const submitPayment = async () => {
   if (netBalance.value < form.rentalFee) {
-    toast.addToast('Saldo tidak mencukupi. Silakan top up terlebih dahulu.', 'error')
+    toast.addToast(t('modals.extendRent.errorInsufficient'), 'error')
     return
   }
   
@@ -189,10 +190,10 @@ const submitPayment = async () => {
     })
 
     if (!response.success) {
-      throw new Error(response.message || 'Gagal memproses pembayaran')
+      throw new Error(response.message || t('modals.extendRent.errorProcess'))
     }
 
-    toast.addToast(response.message || 'Perpanjangan sewa akun berhasil.', 'success')
+    toast.addToast(response.message || t('modals.extendRent.successMsg'), 'success')
     emit('success')
     closeModal()
     

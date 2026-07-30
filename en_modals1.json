@@ -1,0 +1,63 @@
+{
+  "modals": {
+    "addStaff": {
+      "title": "Add Internal Staff",
+      "subtitle": "Provide special access rights for employees.",
+      "tabPromote": "Option A: Promote Client",
+      "tabCreate": "Option B: Create New Account",
+      "promoteDesc": "Select an already registered client to be promoted to staff/admin.",
+      "selectClient": "Select Client",
+      "selectClientPlaceholder": "-- Select Client --",
+      "selectRole": "Select Role",
+      "selectRolePlaceholder": "-- Select Role --",
+      "createDesc": "The system will create an account behind the scenes (bypass registration).",
+      "fullName": "Full Name",
+      "fullNamePlaceholder": "Example: Budi Santoso",
+      "email": "Staff Email",
+      "emailPlaceholder": "budi@agency.com",
+      "password": "Password",
+      "passwordPlaceholder": "Minimum 6 characters",
+      "promoteBtn": "Promote",
+      "createBtn": "Create Account"
+    },
+    "email": {
+      "title": "Change Email",
+      "currentEmail": "Current Email:",
+      "newEmail": "New Email",
+      "newEmailPlaceholder": "Enter new address...",
+      "securityConfirm": "Security Confirmation",
+      "passwordPlaceholder": "Enter current password...",
+      "securityDesc": "Required to verify your identity.",
+      "saving": "Saving...",
+      "saveChanges": "Save Changes",
+      "wrongPassword": "The password you entered is incorrect.",
+      "updateFailed": "Failed to update email: ",
+      "successMsg": "Email change request successful. Please check your new (and old) email inbox for confirmation.",
+      "updateFailedGeneric": "Failed to change email"
+    },
+    "extendRent": {
+      "title": "Extend Ad Account Rent",
+      "subtitle": "Select extension duration for account {account}",
+      "id": "ID:",
+      "activePeriod": "Active Period:",
+      "month": "Month",
+      "months": "Months",
+      "normal": "Normal",
+      "save": "Save",
+      "netBalance": "Your Net Balance",
+      "topupNow": "Top Up Now",
+      "insufficientBalance": "Insufficient Balance",
+      "payNow": "Pay Now",
+      "expired": "Expired",
+      "days": "Days",
+      "errorInsufficient": "Insufficient balance. Please top up first.",
+      "errorProcess": "Failed to process payment.",
+      "successMsg": "Account rental extension successful."
+    }
+  },
+  "common": {
+    "cancel": "Cancel",
+    "success": "Success",
+    "error": "An error occurred"
+  }
+}

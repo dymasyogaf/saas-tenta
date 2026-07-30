@@ -1,19 +1,21 @@
 import { format, formatDistanceToNow } from 'date-fns'
-import { id } from 'date-fns/locale'
+import { id as idLocale, enUS } from 'date-fns/locale'
 
-export const formatDate = (val?: string) => {
+const getDateLocale = (locale?: string) => locale === 'en' ? enUS : idLocale
+
+export const formatDate = (val?: string, locale?: string) => {
   if (!val) return '-'
-  return format(new Date(val), 'dd MMM yyyy, HH:mm')
+  return format(new Date(val), 'dd MMM yyyy, HH:mm', { locale: getDateLocale(locale) })
 }
 
-export const formatDateOnly = (val?: string) => {
+export const formatDateOnly = (val?: string, locale?: string) => {
   if (!val) return '-'
-  return format(new Date(val), 'dd MMM yyyy')
+  return format(new Date(val), 'dd MMM yyyy', { locale: getDateLocale(locale) })
 }
 
-export const formatRelativeTime = (val?: string) => {
+export const formatRelativeTime = (val?: string, locale?: string) => {
   if (!val) return '-'
-  return formatDistanceToNow(new Date(val), { addSuffix: true, locale: id })
+  return formatDistanceToNow(new Date(val), { addSuffix: true, locale: getDateLocale(locale) })
 }
 
 export const getCategoryLabel = (category: string) => {

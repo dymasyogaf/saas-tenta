@@ -267,7 +267,7 @@ const handleAction = async (newStatus: 'verified' | 'rejected') => {
   try {
     await $fetch('/api/admin/users/verify', {
       method: 'POST',
-      headers: { 'csrf-token': csrf },
+      headers: { 'csrf-token': unref(csrf) },
       body: {
         userId: selectedUser.value.id,
         status: newStatus,

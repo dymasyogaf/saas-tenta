@@ -1,7 +1,7 @@
 <template>
   <div class="max-w-6xl mx-auto">
     <div class="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
-      <h2 class="text-2xl font-display font-bold text-ink-900">Saldo Saya</h2>
+      <h2 class="text-2xl font-display font-bold text-ink-900">{{ $t('saldo.myBalance') }}</h2>
       
       <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3">
         <!-- Date Filter -->
@@ -13,7 +13,7 @@
         <div v-if="activeTab === 'histori-pengganti'" class="flex flex-col sm:flex-row items-start sm:items-center gap-3 w-full sm:w-auto">
           <div class="relative w-full sm:w-44">
             <select class="w-full appearance-none bg-white border border-ink-200 text-ink-700 py-2 pl-3 pr-8 rounded-lg text-sm focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 shadow-sm cursor-pointer">
-              <option>Pilih Platform</option>
+              <option>{{ $t('saldo.selectPlatform') }}</option>
               <option>Meta Ads</option>
               <option>Tiktok Ads</option>
               <option>Google Ads</option>
@@ -22,11 +22,11 @@
           </div>
           <div class="relative w-full sm:w-56">
             <select class="w-full appearance-none bg-white border border-ink-200 text-ink-700 py-2 pl-3 pr-8 rounded-lg text-sm focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 shadow-sm cursor-pointer">
-              <option>Semua Status</option>
-              <option>Menunggu Persetujuan</option>
-              <option>Pengajuan Sedang Diproses</option>
-              <option>Approved</option>
-              <option>Pengajuan Ditolak</option>
+              <option>{{ $t('saldo.allStatus') }}</option>
+              <option>{{ $t('saldo.waitingApproval') }}</option>
+              <option>{{ $t('saldo.beingProcessed') }}</option>
+              <option>{{ $t('saldo.approved') }}</option>
+              <option>{{ $t('saldo.requestRejected') }}</option>
             </select>
             <ChevronDown class="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-ink-400 pointer-events-none" />
           </div>
@@ -63,7 +63,7 @@
             class="flex items-center justify-center gap-2 px-4 py-2 bg-blue-50 border border-blue-200 text-blue-600 rounded-md text-sm font-bold hover:bg-blue-100 transition-colors disabled:opacity-50"
           >
             <RefreshCw class="w-4 h-4" :class="{ 'animate-spin': adsStore.isFetchingAccounts }" />
-            Sync Sekarang
+            {{ $t('saldo.syncNow') }}
           </button>
           
           <button 
@@ -71,19 +71,19 @@
             class="flex items-center justify-center gap-2 px-4 py-2 bg-orange-500 border border-orange-600 text-white rounded-md text-sm font-bold hover:bg-orange-600 transition-colors shadow-sm"
           >
             <PlusCircle class="w-4 h-4" />
-            Tambah Akun
+            {{ $t('saldo.addAccount') }}
           </button>
         </div>
         <div class="flex items-center gap-3 w-full lg:w-auto mt-4 sm:mt-0">
           <div class="relative min-w-[140px] shrink-0">
             <select v-model="sortOrder" class="appearance-none pl-4 pr-10 py-2 border border-ink-200 rounded-md text-sm w-full focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 text-ink-900 bg-white cursor-pointer">
-              <option value="terbaru">Terbaru</option>
-              <option value="terlama">Terlama</option>
+              <option value="terbaru">{{ $t('saldo.newest') }}</option>
+              <option value="terlama">{{ $t('saldo.oldest') }}</option>
             </select>
             <ChevronDown class="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-ink-400 pointer-events-none" />
           </div>
           <div class="relative w-full lg:w-72">
-            <input v-model="searchQuery" type="text" placeholder="Cari ID Akun atau Nama Akun" class="pl-4 pr-10 py-2 border border-ink-200 rounded-md text-sm w-full focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 text-ink-900 placeholder:text-ink-400 bg-white" />
+            <input v-model="searchQuery" type="text" :placeholder="$t('saldo.searchAccount')" class="pl-4 pr-10 py-2 border border-ink-200 rounded-md text-sm w-full focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 text-ink-900 placeholder:text-ink-400 bg-white" />
             <Search class="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-ink-400" />
           </div>
         </div>
@@ -95,64 +95,64 @@
             <tr class="border-b border-ink-200 bg-ink-50/50 text-[11px] font-bold text-ink-500 uppercase tracking-wider">
               <th class="py-4 px-5 whitespace-nowrap">
                 <div class="flex items-center gap-1.5 w-max">
-                  ID Akun
-                  <SharedTooltip text="Nomor ID akun iklan yang terdaftar di platform Meta atau Google.">
+                  {{ $t('saldo.table.accountId') }}
+                  <SharedTooltip :text="$t('saldo.table.accountIdTooltip')">
                     <Info class="w-3.5 h-3.5 text-ink-400 hover:text-ink-600 transition-colors cursor-help" />
                   </SharedTooltip>
                 </div>
               </th>
               <th class="py-4 px-5 whitespace-nowrap">
                 <div class="flex items-center gap-1.5 w-max">
-                  Nama Akun
-                  <SharedTooltip text="Nama akun iklan yang digunakan di Meta atau Google.">
+                  {{ $t('saldo.table.accountName') }}
+                  <SharedTooltip :text="$t('saldo.table.accountNameTooltip')">
                     <Info class="w-3.5 h-3.5 text-ink-400 hover:text-ink-600 transition-colors cursor-help" />
                   </SharedTooltip>
                 </div>
               </th>
               <th class="py-4 px-5 whitespace-nowrap">
                 <div class="flex items-center gap-1.5 w-max">
-                  Platform
-                  <SharedTooltip text="Platform tempat akun iklan berjalan, yaitu Meta atau Google.">
+                  {{ $t('saldo.table.platform') }}
+                  <SharedTooltip :text="$t('saldo.table.platformTooltip')">
                     <Info class="w-3.5 h-3.5 text-ink-400 hover:text-ink-600 transition-colors cursor-help" />
                   </SharedTooltip>
                 </div>
               </th>
               <th class="py-4 px-5 whitespace-nowrap">
                 <div class="flex items-center gap-1.5 w-max">
-                  Saldo
-                  <SharedTooltip text="Sisa saldo iklan yang masih tersedia di akun.">
+                  {{ $t('saldo.table.balance') }}
+                  <SharedTooltip :text="$t('saldo.table.balanceTooltip')">
                     <Info class="w-3.5 h-3.5 text-ink-400 hover:text-ink-600 transition-colors cursor-help" />
                   </SharedTooltip>
                 </div>
               </th>
               <th class="py-4 px-5 whitespace-nowrap">
                 <div class="flex items-center gap-1.5 w-max">
-                  Limit
-                  <SharedTooltip text="Batas maksimal pengeluaran iklan dalam 1 minggu sesuai paket yang dipilih.">
+                  {{ $t('saldo.table.limit') }}
+                  <SharedTooltip :text="$t('saldo.table.limitTooltip')">
                     <Info class="w-3.5 h-3.5 text-ink-400 hover:text-ink-600 transition-colors cursor-help" />
                   </SharedTooltip>
                 </div>
               </th>
               <th class="py-4 px-5 whitespace-nowrap">
                 <div class="flex items-center gap-1.5 w-max">
-                  Penggunaan
-                  <SharedTooltip text="Total biaya iklan yang sudah digunakan pada periode berjalan.">
+                  {{ $t('saldo.table.usage') }}
+                  <SharedTooltip :text="$t('saldo.table.usageTooltip')">
                     <Info class="w-3.5 h-3.5 text-ink-400 hover:text-ink-600 transition-colors cursor-help" />
                   </SharedTooltip>
                 </div>
               </th>
               <th class="py-4 px-5 whitespace-nowrap">
                 <div class="flex items-center gap-1.5 w-max">
-                  Spend Harian
-                  <SharedTooltip text="Batas maksimal pengeluaran harian yang diizinkan untuk akun ini.">
+                  {{ $t('saldo.table.dailySpend') }}
+                  <SharedTooltip :text="$t('saldo.table.dailySpendTooltip')">
                     <Info class="w-3.5 h-3.5 text-ink-400 hover:text-ink-600 transition-colors cursor-help" />
                   </SharedTooltip>
                 </div>
               </th>
               <th class="py-4 px-5 whitespace-nowrap">
                 <div class="flex items-center gap-1.5 w-max">
-                  Update Terakhir
-                  <SharedTooltip text="Data diperbarui secara otomatis setiap 5 menit.">
+                  {{ $t('saldo.table.lastUpdate') }}
+                  <SharedTooltip :text="$t('saldo.table.lastUpdateTooltip')">
                     <Info class="w-3.5 h-3.5 text-ink-400 hover:text-ink-600 transition-colors cursor-help" />
                   </SharedTooltip>
                 </div>
@@ -178,13 +178,13 @@
                 
                 <div v-if="getDaysLeftNum(account.subscription_expires_at) !== null && getDaysLeftNum(account.subscription_expires_at)! <= 0" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 flex flex-col items-center justify-center pointer-events-auto">
                   <div class="bg-ink-700 text-white font-bold px-6 py-1.5 rounded-full -rotate-6 shadow-xl uppercase tracking-widest text-sm border-2 border-white shadow-ink-900/20">
-                    IKLAN TERPAUSED
+                    {{ $t('saldo.adsPaused') }}
                   </div>
                   <button 
                     @click="openExtendRentModal(account)" 
                     class="mt-3 bg-red-500 text-white font-bold px-6 py-2 text-xs rounded-full shadow hover:bg-red-600 hover:-translate-y-0.5 hover:shadow-md transition-all active:translate-y-0"
                   >
-                    Perpanjang Sekarang!
+                    {{ $t('saldo.extendNow') }}
                   </button>
                 </div>
                 
@@ -196,7 +196,7 @@
                 <div>{{ account.name }}</div>
                 <div v-if="account.subscription_expires_at" class="mt-1.5 flex flex-wrap items-center gap-2">
                   <div class="text-[11px] text-ink-500 flex items-center gap-1">
-                    <span>Sisa Sewa:</span>
+                    <span>{{ $t('saldo.rentRemaining') }}</span>
                     <span 
                       class="font-bold px-1.5 py-0.5 rounded" 
                       :class="{
@@ -214,7 +214,7 @@
                     class="text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm transition-all flex items-center gap-1"
                     :class="getDaysLeftNum(account.subscription_expires_at)! <= 0 ? 'bg-red-500 text-white hover:bg-red-600' : 'bg-orange-500 text-white hover:bg-orange-600'"
                   >
-                    Perpanjang
+                    {{ $t('saldo.extend') }}
                   </button>
                 </div>
               </td>
@@ -258,10 +258,10 @@
                   ></div>
                 </div>
 
-                <!-- Info text: terpakai / total -->
+                <!-- Info text: {{ $t('saldo.used') }} / total -->
                 <div class="flex items-center justify-between mt-1">
                   <span class="text-[10px] text-ink-400 font-medium">
-                    {{ formatCompact(getBudgetSpent(account)) }} / {{ formatCompact(getBudgetTotal(account)) }} terpakai
+                    {{ formatCompact(getBudgetSpent(account)) }} / {{ formatCompact(getBudgetTotal(account)) }} {{ $t('saldo.used') }}
                   </span>
                   <span class="text-[10px] font-bold" :class="getBudgetColor(account)">
                     {{ getBudgetUsagePercent(account) }}%
@@ -272,13 +272,13 @@
                 <div v-if="account.saldo <= 0" class="mt-1.5">
                   <NuxtLink to="/dashboard/topup" class="inline-flex items-center gap-1 bg-red-50 text-red-600 border border-red-100 text-[10px] font-bold px-2 py-1 rounded-md hover:bg-red-100 transition-colors">
                     <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                    Anggaran Habis — Top Up
+                    {{ $t('saldo.budgetEmpty') }}
                   </NuxtLink>
                 </div>
                 <div v-else-if="account.saldo <= (0.2 * getBudgetTotal(account))" class="mt-1.5">
                   <span class="inline-flex items-center gap-1 text-[10px] font-bold text-amber-600">
                     <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-                    Anggaran Menipis
+                    {{ $t('saldo.budgetLow') }}
                   </span>
                 </div>
               </td>
@@ -299,10 +299,10 @@
                   ></div>
                 </div>
 
-                <!-- Info text: terpakai / total -->
+                <!-- Info text: {{ $t('saldo.used') }} / total -->
                 <div class="flex items-center justify-between mt-1">
                   <span class="text-[10px] text-ink-400 font-medium">
-                    {{ formatCompact(account.penggunaan) }} / {{ formatCompact(account.limit) }} terpakai
+                    {{ formatCompact(account.penggunaan) }} / {{ formatCompact(account.limit) }} {{ $t('saldo.used') }}
                   </span>
                   <span class="text-[10px] font-bold" :class="getLimitColor(account)">
                     {{ getLimitUsagePercent(account) }}%
@@ -316,8 +316,8 @@
               </td>
               <td class="py-4 px-5 whitespace-nowrap" :class="{'opacity-30 grayscale blur-[1.5px] pointer-events-none': getDaysLeftNum(account.subscription_expires_at) !== null && getDaysLeftNum(account.subscription_expires_at)! <= 0}">
                 <div class="flex items-center gap-2">
-                  <span class="font-bold text-[13px] text-ink-900">{{ account.daily_limit ? formatCurrency(account.daily_limit) : 'Belum Diatur' }}</span>
-                  <button @click="openDailyLimitModal(account)" class="text-ink-400 hover:text-orange-500 transition-colors p-1" title="Atur Spend Harian">
+                  <span class="font-bold text-[13px] text-ink-900">{{ account.daily_limit ? formatCurrency(account.daily_limit) : $t('saldo.notSet') }}</span>
+                  <button @click="openDailyLimitModal(account)" class="text-ink-400 hover:text-orange-500 transition-colors p-1" :title="$t('saldo.dailyLimitModal.title')">
                     <svg class="w-3.5 h-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4 Z"></path></svg>
                   </button>
                 </div>
@@ -327,7 +327,7 @@
             <!-- Empty State -->
             <tr v-else>
               <td colspan="9" class="p-8 text-center text-ink-500">
-                {{ searchQuery ? 'Tidak ada akun yang cocok dengan pencarian Anda.' : 'Data tidak ditemukan.' }}
+                {{ searchQuery ? $t('saldo.noMatchingAccounts') : $t('saldo.noData') }}
               </td>
             </tr>
           </tbody>
@@ -341,7 +341,7 @@
             <option :value="20">20</option>
             <option :value="50">50</option>
           </select>
-          <span class="text-xs">dari {{ allFilteredAdAccounts.length }} akun</span>
+          <span class="text-xs">{{ $t('saldo.ofAccounts', { count: allFilteredAdAccounts.length }) }}</span>
         </div>
         <div class="flex items-center gap-1">
           <button @click="currentPage = Math.max(1, currentPage - 1)" :disabled="currentPage <= 1" class="p-1.5 border border-ink-200 rounded-md hover:bg-ink-50 hover:text-ink-700 transition-colors bg-white disabled:opacity-40"><ChevronLeft class="w-4 h-4" /></button>
@@ -357,10 +357,10 @@
         <div class="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
           <div class="relative w-full sm:w-48">
             <select v-model="filterStatusTopup" class="w-full appearance-none bg-white border border-ink-200 text-ink-700 py-2 pl-4 pr-10 rounded-md text-sm focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 cursor-pointer">
-              <option value="all">Semua Status</option>
-              <option value="success">Berhasil</option>
-              <option value="pending">Pending</option>
-              <option value="failed">Gagal</option>
+              <option value="all">{{ $t('saldo.allStatus') }}</option>
+              <option value="success">{{ $t('saldo.filterSuccess') }}</option>
+              <option value="pending">{{ $t('saldo.filterPending') }}</option>
+              <option value="failed">{{ $t('saldo.filterFailed') }}</option>
             </select>
             <ChevronDown class="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-ink-400 pointer-events-none" />
           </div>
@@ -395,13 +395,13 @@
               </div>
               <div>
                 <p class="font-bold text-ink-900 text-sm">
-                  {{ trx.type === 'topup' ? 'Top Up Saldo' : 
-                     trx.type === 'transfer' ? 'Alokasi Iklan' : 
-                     trx.type === 'payment' ? 'Tagihan Iklan' : 
-                     trx.type === 'refund' ? 'Refund Sisa Saldo' : trx.type }}
+                  {{ trx.type === 'topup' ? $t('saldo.trxType.topUp') :
+                     trx.type === 'transfer' ? $t('saldo.trxType.adAllocation') :
+                     trx.type === 'payment' ? $t('saldo.trxType.adBilling') :
+                     trx.type === 'refund' ? $t('saldo.trxType.refund') : trx.type }}
                 </p>
                 <p class="text-[12px] text-ink-500 mt-1">{{ trx.description || '-' }}</p>
-                <p class="text-[10px] text-ink-400 mt-0.5">{{ new Date(trx.created_at).toLocaleString('id-ID') }}</p>
+                <p class="text-[10px] text-ink-400 mt-0.5">{{ new Date(trx.created_at).toLocaleString(locale === 'id' ? 'id-ID' : 'en-US') }}</p>
               </div>
             </div>
             <div class="text-right">
@@ -428,11 +428,11 @@
     <div v-else-if="activeTab === 'histori-pindah'">
       <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
         <button class="bg-ink-50 border border-ink-100 text-ink-500 px-4 py-2 rounded-md font-semibold text-sm flex items-center gap-2 hover:bg-ink-100 hover:text-ink-700 transition-colors">
-          <Download class="w-4 h-4" /> Download Report
+          <Download class="w-4 h-4" /> {{ $t('saldo.downloadReport') }}
         </button>
         <div class="relative w-full md:w-64">
           <Search class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-ink-400" />
-          <input type="text" placeholder="Cari ID Transfer Saldo" class="pl-9 pr-4 py-2 border border-ink-200 rounded-md text-sm w-full focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 text-ink-900 placeholder:text-ink-400 bg-white" />
+          <input type="text" :placeholder="$t('saldo.searchTransfer')" class="pl-9 pr-4 py-2 border border-ink-200 rounded-md text-sm w-full focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 text-ink-900 placeholder:text-ink-400 bg-white" />
         </div>
       </div>
       <!-- Skeleton Loading for Table -->
@@ -464,13 +464,13 @@
               </div>
               <div>
                 <p class="font-bold text-ink-900 text-sm">
-                  {{ trx.type === 'topup' ? 'Top Up Saldo' : 
-                     trx.type === 'transfer' ? 'Alokasi Iklan' : 
-                     trx.type === 'payment' ? 'Tagihan Iklan' : 
-                     trx.type === 'refund' ? 'Refund Sisa Saldo' : trx.type }}
+                  {{ trx.type === 'topup' ? $t('saldo.trxType.topUp') :
+                     trx.type === 'transfer' ? $t('saldo.trxType.adAllocation') :
+                     trx.type === 'payment' ? $t('saldo.trxType.adBilling') :
+                     trx.type === 'refund' ? $t('saldo.trxType.refund') : trx.type }}
                 </p>
                 <p class="text-[12px] text-ink-500 mt-1">{{ trx.description || '-' }}</p>
-                <p class="text-[10px] text-ink-400 mt-0.5">{{ new Date(trx.created_at).toLocaleString('id-ID') }}</p>
+                <p class="text-[10px] text-ink-400 mt-0.5">{{ new Date(trx.created_at).toLocaleString(locale === 'id' ? 'id-ID' : 'en-US') }}</p>
               </div>
             </div>
             <div class="text-right">
@@ -521,9 +521,9 @@
                 <CreditCard class="w-5 h-5" />
               </div>
               <div>
-                <p class="font-bold text-ink-900 text-sm">Tagihan Iklan</p>
+                <p class="font-bold text-ink-900 text-sm">{{ $t('saldo.trxType.adBilling') }}</p>
                 <p class="text-[12px] text-ink-500 mt-1">{{ trx.description || '-' }}</p>
-                <p class="text-[10px] text-ink-400 mt-0.5">{{ new Date(trx.created_at).toLocaleString('id-ID') }}</p>
+                <p class="text-[10px] text-ink-400 mt-0.5">{{ new Date(trx.created_at).toLocaleString(locale === 'id' ? 'id-ID' : 'en-US') }}</p>
               </div>
             </div>
             <div class="text-right">
@@ -549,7 +549,7 @@
     <div v-else-if="activeTab === 'histori-pengganti'">
       <div class="flex justify-end mb-4">
         <div class="relative w-full md:w-72">
-          <input type="text" placeholder="Cari ID Akun atau Nama Akun" class="pl-4 pr-10 py-2 border border-ink-200 rounded-md text-sm w-full focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 text-ink-900 placeholder:text-ink-400 bg-white" />
+          <input type="text" :placeholder="$t('saldo.searchAccount')" class="pl-4 pr-10 py-2 border border-ink-200 rounded-md text-sm w-full focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 text-ink-900 placeholder:text-ink-400 bg-white" />
           <Search class="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-ink-400" />
         </div>
       </div>
@@ -574,9 +574,9 @@
                 <CreditCard class="w-5 h-5" />
               </div>
               <div>
-                <p class="font-bold text-ink-900 text-sm">Tagihan Iklan</p>
+                <p class="font-bold text-ink-900 text-sm">{{ $t('saldo.trxType.adBilling') }}</p>
                 <p class="text-[12px] text-ink-500 mt-1">{{ trx.description || '-' }}</p>
-                <p class="text-[10px] text-ink-400 mt-0.5">{{ new Date(trx.created_at).toLocaleString('id-ID') }}</p>
+                <p class="text-[10px] text-ink-400 mt-0.5">{{ new Date(trx.created_at).toLocaleString(locale === 'id' ? 'id-ID' : 'en-US') }}</p>
               </div>
             </div>
             <div class="text-right">
@@ -615,23 +615,23 @@
     <div v-if="isDailyLimitModalOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-ink-900/50 backdrop-blur-sm">
       <div class="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden relative">
         <div class="px-6 pt-6 pb-4 border-b border-ink-100 flex justify-between items-center">
-          <h3 class="text-xl font-display font-bold text-ink-900">Atur Spend Harian</h3>
+          <h3 class="text-xl font-display font-bold text-ink-900">{{ $t('saldo.dailyLimitModal.title') }}</h3>
           <button @click="isDailyLimitModalOpen = false" class="text-ink-400 hover:text-ink-600 transition-colors">
             <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
           </button>
         </div>
         <div class="p-6">
-          <label class="block text-sm font-medium text-ink-700 mb-2">Limit Pengeluaran Harian (Rp)</label>
+          <label class="block text-sm font-medium text-ink-700 mb-2">{{ $t('saldo.dailyLimitModal.label') }}</label>
           <div class="relative">
             <span class="absolute left-4 top-1/2 -translate-y-1/2 text-ink-500 font-medium">Rp</span>
             <input type="text" v-model="formattedDailyLimitInput" class="w-full pl-11 pr-4 py-2.5 border border-ink-200 rounded-lg text-ink-900 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 font-medium" placeholder="100.000" />
           </div>
-          <p class="text-[11px] text-ink-500 mt-2">Batas harian yang Anda atur akan membatasi pengeluaran iklan Anda setiap harinya di platform terkait.</p>
+          <p class="text-[11px] text-ink-500 mt-2">{{ $t('saldo.dailyLimitModal.desc') }}</p>
         </div>
         <div class="px-6 py-4 bg-ink-50 flex gap-3 justify-end border-t border-ink-100">
-          <button @click="isDailyLimitModalOpen = false" class="px-4 py-2 text-sm font-bold text-ink-600 hover:bg-ink-200 rounded-lg transition-colors">Batal</button>
+          <button @click="isDailyLimitModalOpen = false" class="px-4 py-2 text-sm font-bold text-ink-600 hover:bg-ink-200 rounded-lg transition-colors">{{ $t('common.cancel') }}</button>
           <button @click="saveDailyLimit" :disabled="isSavingDailyLimit" class="px-4 py-2 text-sm font-bold text-white bg-orange-500 hover:bg-orange-600 rounded-lg transition-colors disabled:opacity-50">
-            {{ isSavingDailyLimit ? 'Menyimpan...' : 'Simpan Limit' }}
+            {{ isSavingDailyLimit ? $t('saldo.dailyLimitModal.saving') : $t('saldo.dailyLimitModal.save') }}
           </button>
         </div>
       </div>
@@ -650,6 +650,7 @@ definePageMeta({
   layout: 'dashboard',
 })
 
+const { t, locale } = useI18n()
 const isRequestModalOpen = ref(false)
 
 const saldoStore = useSaldoStore()
@@ -690,13 +691,15 @@ const filteredAdAccounts = computed(() => {
 watch([searchQuery, perPage], () => { currentPage.value = 1 })
 
 const formatCurrency = (value: number) => {
-  return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(value || 0)
+  return new Intl.NumberFormat(locale.value === 'id' ? 'id-ID' : 'en-US', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(value || 0)
 }
 
 const formatCompact = (value: number) => {
   if (!value || value <= 0) return 'Rp 0'
-  if (value >= 1000000) return `Rp ${(value / 1000000).toFixed(1).replace('.0', '')}jt`
-  if (value >= 1000) return `Rp ${(value / 1000).toFixed(0)}rb`
+  const m = t('saldo.compact.million')
+  const k = t('saldo.compact.thousand')
+  if (value >= 1000000) return `Rp ${(value / 1000000).toFixed(1).replace('.0', '')}${m}`
+  if (value >= 1000) return `Rp ${(value / 1000).toFixed(0)}${k}`
   return `Rp ${value}`
 }
 
@@ -763,7 +766,7 @@ const getLimitBarColor = (account: any) => {
 const formatLastUpdated = (dateStr: string) => {
   if (!dateStr) return '-'
   const d = new Date(dateStr)
-  return new Intl.DateTimeFormat('id-ID', {
+  return new Intl.DateTimeFormat(locale.value === 'id' ? 'id-ID' : 'en-US', {
     day: 'numeric',
     month: 'short',
     year: 'numeric',
@@ -777,8 +780,8 @@ const calculateDaysLeft = (dateStr: string) => {
   if (!dateStr) return '-'
   const diffDays = getDaysLeftNum(dateStr)
   if (diffDays === null) return '-'
-  if (diffDays <= 0) return 'Kedaluwarsa'
-  return diffDays + ' Hari'
+  if (diffDays <= 0) return t('saldo.expired')
+  return diffDays + ' ' + t('saldo.days')
 }
 
 const getDaysLeftNum = (dateStr: string) => {
@@ -802,12 +805,12 @@ const syncAds = async () => {
       
       let timeString = ''
       if (remainingMinutes > 0) {
-        timeString += `${remainingMinutes} menit `
+        timeString += `${remainingMinutes} ${t('saldo.toast.minutes')} `
       }
-      timeString += `${remainingSeconds} detik`
+      timeString += `${remainingSeconds} ${t('saldo.toast.seconds')}`
 
       const toast = useToast()
-      toast.addToast(`Sinkronisasi terlalu cepat. Harap tunggu ${timeString} lagi.`, 'error')
+      toast.addToast(t('saldo.toast.syncTooFast', { time: timeString }), 'error')
       return
     }
   }
@@ -820,12 +823,12 @@ const syncAds = async () => {
   } else {
     await adsStore.fetchLiveSpendOnly()
   }
-  toast.addToast('Data penggunaan dan saldo berhasil di-sync dari platform', 'success')
+  toast.addToast(t('saldo.toast.syncSuccess'), 'success')
 }
 
 const showPicComingSoon = () => {
   const toast = useToast()
-  toast.addToast('Fitur manajemen PIC / Tim sedang dalam tahap pengembangan.', 'info')
+  toast.addToast(t('saldo.toast.picComingSoon'), 'info')
 }
 
 const isExtendRentModalOpen = ref(false)
@@ -860,7 +863,7 @@ const openDailyLimitModal = (account: any) => {
 
 const saveDailyLimit = async () => {
   if (!selectedAccountForLimit.value) return
-  if (!confirm('Yakin ingin mengubah limit harian akun iklan ini?')) return
+  if (!confirm(t('saldo.dailyLimitModal.confirmChange'))) return
   isSavingDailyLimit.value = true
   try {
     await $fetch('/api/ads/set-daily-limit', {
@@ -874,12 +877,12 @@ const saveDailyLimit = async () => {
       }
     })
     const toast = useToast()
-    toast.addToast('Limit harian berhasil diatur', 'success')
+    toast.addToast(t('saldo.toast.dailyLimitSuccess'), 'success')
     isDailyLimitModalOpen.value = false
-    adsStore.fetchAdAccounts() // refresh
+    adsStore.fetchAdAccounts()
   } catch (err: any) {
     const toast = useToast()
-    toast.addToast(err.statusMessage || 'Gagal mengatur limit harian', 'error')
+    toast.addToast(err.statusMessage || t('saldo.toast.dailyLimitFailed'), 'error')
   } finally {
     isSavingDailyLimit.value = false
   }
@@ -906,12 +909,12 @@ watch(dateRange, (newVal) => {
   }
 })
 
-const tabs = [
-  { id: 'list-saldo', label: 'List Saldo' },
-  { id: 'histori-topup', label: 'Histori Top Up' },
-  { id: 'histori-tambahan', label: 'Histori Akun Tambahan' },
-  { id: 'histori-pengganti', label: 'Histori Akun Pengganti' },
-]
+const tabs = computed(() => [
+  { id: 'list-saldo', label: t('saldo.tabs.balanceList') },
+  { id: 'histori-topup', label: t('saldo.tabs.topUpHistory') },
+  { id: 'histori-tambahan', label: t('saldo.tabs.additionalHistory') },
+  { id: 'histori-pengganti', label: t('saldo.tabs.replacementHistory') },
+])
 
 const filterStatusTopup = ref('all')
 

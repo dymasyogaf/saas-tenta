@@ -9,8 +9,8 @@
       </div>
 
       <div class="text-center mb-8">
-        <h1 class="text-2xl font-display font-bold text-ink-900 mb-2">Selamat Datang Kembali</h1>
-        <p class="text-ink-500 text-sm">Masuk untuk mengelola kampanye iklan Anda.</p>
+        <h1 class="text-2xl font-display font-bold text-ink-900 mb-2">{{ $t('auth.welcome') }}</h1>
+        <p class="text-ink-500 text-sm">{{ $t('auth.loginSubtitle') }}</p>
       </div>
 
       <!-- Error Message -->
@@ -21,20 +21,20 @@
 
       <form @submit.prevent="handleLogin" class="space-y-5">
         <div>
-          <label class="block text-sm font-semibold text-ink-900 mb-2">Email</label>
+          <label class="block text-sm font-semibold text-ink-900 mb-2">{{ $t('auth.email') }}</label>
           <div class="relative">
             <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-ink-400">
               <Mail class="w-5 h-5" />
             </div>
-            <input v-model="email" type="email" required placeholder="nama@perusahaan.com" class="w-full pl-11 pr-4 py-3 bg-ink-50 border border-ink-200 rounded-xl focus:bg-white focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 transition-all outline-none text-ink-900 placeholder:text-ink-400">
+            <input v-model="email" type="email" required :placeholder="$t('auth.emailPlaceholder')" class="w-full pl-11 pr-4 py-3 bg-ink-50 border border-ink-200 rounded-xl focus:bg-white focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 transition-all outline-none text-ink-900 placeholder:text-ink-400">
           </div>
         </div>
 
         <div>
           <div class="flex justify-between items-center mb-2">
-            <label class="block text-sm font-semibold text-ink-900">Password</label>
+            <label class="block text-sm font-semibold text-ink-900">{{ $t('auth.password') }}</label>
             <button type="button" @click="forgotPassword" :disabled="isResetting" class="text-xs font-bold transition-colors" :class="isResetting ? 'text-ink-400 cursor-not-allowed' : 'text-orange-600 hover:text-orange-700'">
-              {{ isResetting ? 'Mengirim...' : 'Lupa Password?' }}
+              {{ isResetting ? $t('auth.sending') : $t('auth.forgotPassword') }}
             </button>
           </div>
           <div class="relative">
@@ -51,19 +51,19 @@
 
         <div class="flex items-center gap-2 pt-2">
           <input v-model="remember" type="checkbox" id="remember" class="w-4 h-4 text-orange-600 bg-ink-50 border-ink-200 rounded focus:ring-orange-500 focus:ring-2 accent-orange-500">
-          <label for="remember" class="text-sm font-medium text-ink-600 select-none cursor-pointer">Ingat saya</label>
+          <label for="remember" class="text-sm font-medium text-ink-600 select-none cursor-pointer">{{ $t('auth.rememberMe') }}</label>
         </div>
 
         <button type="submit" :disabled="loading" class="w-full bg-orange-500 text-white font-bold py-3.5 px-4 rounded-xl hover:bg-orange-600 transition-colors shadow-lg shadow-orange-500/20 mt-2 flex justify-center items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
-          <span v-if="loading">Memproses...</span>
+          <span v-if="loading">{{ $t('common.processing') }}</span>
           <template v-else>
-            Masuk <ArrowRight class="w-4 h-4" />
+            {{ $t('auth.login') }} <ArrowRight class="w-4 h-4" />
           </template>
         </button>
       </form>
 
       <p class="text-center text-sm font-medium text-ink-600 mt-8">
-        Belum punya akun? <NuxtLink to="/register" class="text-orange-600 font-bold hover:underline">Daftar sekarang</NuxtLink>
+        {{ $t('auth.noAccount') }} <NuxtLink to="/register" class="text-orange-600 font-bold hover:underline">{{ $t('auth.registerNow') }}</NuxtLink>
       </p>
     </div>
   </div>
@@ -76,6 +76,7 @@ definePageMeta({
   layout: 'default',
 })
 
+const { t } = useI18n()
 const router = useRouter()
 const email = ref('')
 const password = ref('')
@@ -91,7 +92,7 @@ const handleLogin = async () => {
   errorMsg.value = ''
   
   if (!email.value || !password.value) {
-    errorMsg.value = 'Email dan password harus diisi'
+    errorMsg.value = t('auth.toast.emailPasswordRequired')
     return
   }
 
@@ -158,7 +159,7 @@ const isResetting = ref(false)
 
 const forgotPassword = async () => {
   if (!email.value) {
-    addToast('Silakan isi alamat email Anda terlebih dahulu di kolom form.', 'info')
+    addToast(t('auth.toast.emailRequired'), 'info')
     return
   }
   
@@ -170,9 +171,9 @@ const forgotPassword = async () => {
     
     if (error) throw error
     
-    addToast('Link reset password telah dikirim ke email Anda!', 'success')
+    addToast(t('auth.toast.resetSent'), 'success')
   } catch (err: any) {
-    addToast(err.message || 'Gagal mengirim email reset password', 'error')
+    addToast(err.message || t('auth.toast.resetFailed'), 'error')
   } finally {
     isResetting.value = false
   }

@@ -8,7 +8,7 @@ export default defineEventHandler(async (event) => {
   if (!user) {
     throw createError({ statusCode: 401, statusMessage: 'Unauthorized' })
   }
-  const userId = user.id
+  const userId = user.id || (user as any).sub
 
   if (!platform || !accountName) {
     throw createError({
@@ -20,11 +20,24 @@ export default defineEventHandler(async (event) => {
   const supabaseAdmin = serverSupabaseServiceRole<any>(event)
 
   // 1. Ambil data saldo user
-  const { data: saldoData, error: saldoErr } = await supabaseAdmin
+  let { data: saldoData, error: saldoErr } = await supabaseAdmin
     .from('saldo')
     .select('balance, pending_balance')
     .eq('user_id', userId)
     .single()
+
+  if (saldoErr && saldoErr.code === 'PGRST116') {
+    const { data: newSaldo, error: insertErr } = await supabaseAdmin
+      .from('saldo')
+      .insert({ user_id: userId, balance: 0, pending_balance: 0 })
+      .select('balance, pending_balance')
+      .single()
+      
+    if (!insertErr && newSaldo) {
+      saldoData = newSaldo
+      saldoErr = null
+    }
+  }
 
   if (saldoErr || !saldoData) {
     throw createError({ statusCode: 400, statusMessage: 'Data saldo tidak ditemukan' })

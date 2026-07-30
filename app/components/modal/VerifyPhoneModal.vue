@@ -12,9 +12,9 @@
         
         <!-- Body -->
         <p class="text-ink-900 text-sm md:text-base leading-relaxed mb-6">
-          6 digit OTP telah dikirimkan ke nomor<br>
+          {{ $t('modals.verifyPhone.subtitle1') }}<br>
           <span class="text-orange-500">{{ actualPhone }}</span><br>
-          melalui WhatsApp
+          {{ $t('modals.verifyPhone.subtitle2') }}
         </p>
         
         <div class="flex items-center justify-center gap-2 sm:gap-4 mb-6">
@@ -32,8 +32,8 @@
         </div>
         
         <p class="text-ink-500 text-sm mb-6">
-          <span v-if="timeLeft > 0">Tunggu <span class="text-orange-500 font-medium">{{ timeLeft }} detik</span> untuk kirim ulang</span>
-          <button v-else @click="sendOTP" class="text-orange-500 font-bold hover:underline">Kirim Ulang OTP</button>
+          <span v-if="timeLeft > 0">{{ $t('modals.verifyPhone.wait') }} <span class="text-orange-500 font-medium">{{ timeLeft }} {{ $t('modals.verifyPhone.seconds') }}</span> {{ $t('modals.verifyPhone.resend') }}</span>
+          <button v-else @click="sendOTP" class="text-orange-500 font-bold hover:underline">{{ $t('modals.verifyPhone.resendBtn') }}</button>
         </p>
         
         <button 
@@ -42,12 +42,12 @@
           :class="isVerifying || otpString.length < 6 || attempts >= 5 ? 'bg-ink-100 text-ink-400 cursor-not-allowed' : 'bg-orange-500 hover:bg-orange-600 text-white shadow-md'"
           class="w-full font-bold py-3 rounded-lg text-sm transition-all mb-4 flex items-center justify-center gap-2"
         >
-          <span v-if="isVerifying">Memverifikasi...</span>
-          <span v-else>Verifikasi</span>
+          <span v-if="isVerifying">{{ $t('modals.verifyPhone.verifying') }}</span>
+          <span v-else>{{ $t('modals.verifyPhone.verifyBtn') }}</span>
         </button>
         
         <p class="text-ink-900 text-sm">
-          Kamu memiliki <span class="text-orange-500 font-medium">{{ 5 - attempts }}X</span> kesempatan untuk melakukan Input OTP
+          {{ $t('modals.verifyPhone.attempts1') }} <span class="text-orange-500 font-medium">{{ 5 - attempts }}X</span> {{ $t('modals.verifyPhone.attempts2') }}
         </p>
       </div>
     </div>
@@ -69,6 +69,7 @@ const emit = defineEmits(['update:modelValue', 'verified'])
 
 const { user } = useAuth()
 const { addToast } = useToast()
+const { t } = useI18n()
 
 const actualPhone = computed(() => {
   if (props.phone) return props.phone // Prioritaskan props.phone (nomor baru)
@@ -113,24 +114,25 @@ const startTimer = () => {
 
 const sendOTP = async () => {
   if (!actualPhone.value) {
-    addToast('Nomor telepon tidak valid', 'error')
+    addToast(t('modals.verifyPhone.errInvalidPhone'), 'error')
     return
   }
   
   try {
     const { data: { session } } = await useSupabaseClient().auth.getSession()
-    addToast('Mengirim OTP...', 'info')
+    addToast(t('modals.verifyPhone.sendingOtp'), 'info')
     await $fetch('/api/otp/send', {
       method: 'POST',
       headers: {
-        Authorization: session ? `Bearer ${session.access_token}` : ''
+        Authorization: session ? `Bearer ${session.access_token}` : '',
+        'csrf-token': unref(useCsrf().csrf) || ''
       },
       body: { phone: actualPhone.value }
     })
     startTimer()
-    addToast('OTP berhasil dikirim ke WhatsApp Anda', 'success')
+    addToast(t('modals.verifyPhone.successSend'), 'success')
   } catch (err: any) {
-    addToast(err.data?.statusMessage || 'Gagal mengirim OTP', 'error')
+    addToast(err.data?.statusMessage || t('modals.verifyPhone.errSend'), 'error')
   }
 }
 
@@ -145,16 +147,17 @@ const verifyOTP = async () => {
     await $fetch('/api/otp/verify', {
       method: 'POST',
       headers: {
-        Authorization: session ? `Bearer ${session.access_token}` : ''
+        Authorization: session ? `Bearer ${session.access_token}` : '',
+        'csrf-token': unref(useCsrf().csrf) || ''
       },
       body: { phone: actualPhone.value, otp: otpString.value }
     })
     
-    addToast('Nomor telepon berhasil diverifikasi!', 'success')
+    addToast(t('modals.verifyPhone.successVerify'), 'success')
     emit('verified')
     close()
   } catch (err: any) {
-    addToast(err.data?.statusMessage || 'OTP salah atau kadaluarsa', 'error')
+    addToast(err.data?.statusMessage || t('modals.verifyPhone.errVerify'), 'error')
     otp.value = ['', '', '', '', '', ''] // reset
     inputRefs.value[0]?.focus()
   } finally {

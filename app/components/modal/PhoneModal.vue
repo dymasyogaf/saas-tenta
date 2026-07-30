@@ -7,7 +7,7 @@
       <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden relative transform transition-all">
         <!-- Header -->
         <div class="flex items-center justify-between p-6">
-          <h3 class="font-bold text-ink-900 text-xl">Ubah No Telepon</h3>
+          <h3 class="font-bold text-ink-900 text-xl">{{ $t('modals.phone.title') }}</h3>
           <button @click="close" class="text-ink-400 hover:text-ink-600 transition-colors">
             <X class="w-5 h-5" />
           </button>
@@ -16,12 +16,12 @@
         <!-- Body -->
         <div class="px-6 space-y-5">
           <p class="text-sm text-ink-500 mb-2">
-            No Telepon saat ini: <span class="font-semibold text-ink-900">{{ currentPhone }}</span>
+            {{ $t('modals.phone.current') }} <span class="font-semibold text-ink-900">{{ currentPhone }}</span>
           </p>
           
           <!-- No Telepon Baru -->
           <div>
-            <label class="block text-sm font-medium text-ink-900 mb-2">No Telepon Baru</label>
+            <label class="block text-sm font-medium text-ink-900 mb-2">{{ $t('modals.phone.new') }}</label>
             <div class="flex">
               <div class="relative w-[110px] bg-ink-50 border border-ink-200 border-r-0 rounded-l-md flex items-center justify-between px-3 group focus-within:bg-white focus-within:border-orange-500 focus-within:ring-1 focus-within:ring-orange-500 transition-all">
                 <span class="font-medium text-ink-900 text-sm">{{ selectedCountry?.flag }} {{ dialCode }}</span>
@@ -47,7 +47,7 @@
           
           <!-- Konfirmasi Password -->
           <div>
-            <label class="block text-sm font-medium text-ink-900 mb-2">Konfirmasi Keamanan</label>
+            <label class="block text-sm font-medium text-ink-900 mb-2">{{ $t('modals.email.securityConfirm') }}</label>
             <div class="relative">
               <input 
                 v-model="password"
@@ -57,21 +57,21 @@
                 data-lpignore="true"
                 data-1p-ignore="true"
                 :style="!showPassword ? '-webkit-text-security: disc;' : ''"
-                placeholder="Masukkan kata sandi saat ini..."
+                :placeholder="$t('modals.email.passwordPlaceholder')"
                 class="w-full border border-ink-200 rounded-md px-3 py-2 text-sm text-ink-700 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500"
               >
               <button @click="showPassword = !showPassword" class="absolute inset-y-0 right-0 flex items-center px-3 text-ink-400 hover:text-ink-600">
                 <component :is="showPassword ? Eye : EyeOff" class="w-4 h-4" />
               </button>
             </div>
-            <p class="text-xs text-ink-400 mt-1.5">Dibutuhkan untuk memverifikasi identitas Anda.</p>
+            <p class="text-xs text-ink-400 mt-1.5">{{ $t('modals.email.securityDesc') }}</p>
           </div>
         </div>
         
         <!-- Footer -->
         <div class="px-6 py-4 mt-6 border-t border-ink-100 flex justify-end gap-3">
           <button @click="close" class="text-ink-500 hover:text-ink-700 font-medium py-2 px-4 rounded-md text-sm transition-colors">
-            Batal
+            {{ $t('common.cancel') }}
           </button>
           <button 
             @click="savePhone"
@@ -79,8 +79,8 @@
             :class="!isValid || isLoading ? 'bg-ink-100 text-ink-400 cursor-not-allowed' : 'bg-orange-500 hover:bg-orange-600 text-white shadow-md'"
             class="font-bold py-2 px-6 rounded-md text-sm transition-all flex items-center gap-2"
           >
-            <span v-if="isLoading">Memproses...</span>
-            <span v-else>Lanjut</span>
+            <span v-if="isLoading">{{ $t('common.processing') }}</span>
+            <span v-else>{{ $t('common.next') }}</span>
           </button>
         </div>
       </div>
@@ -104,6 +104,7 @@ const { addToast } = useToast()
 const { user } = useAuth()
 const supabase = useSupabaseClient()
 
+const { t } = useI18n()
 const dialCode = ref('+62')
 const newPhone = ref('')
 const password = ref('')
@@ -136,7 +137,7 @@ const savePhone = async () => {
     
     if (authError) {
       if (authError.message.includes('Invalid login credentials')) {
-        throw new Error('Password yang Anda masukkan salah.')
+        throw new Error(t('modals.password.errWrongOld'))
       }
       throw authError
     }
@@ -146,7 +147,7 @@ const savePhone = async () => {
     emit('request-verify', fullPhone.value)
     close()
   } catch (err: any) {
-    addToast(err.message || 'Gagal memverifikasi keamanan', 'error')
+    addToast(err.message || t('modals.phone.errVerify'), 'error')
   } finally {
     isLoading.value = false
   }

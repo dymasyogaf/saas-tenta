@@ -13,11 +13,11 @@
     
     <!-- Popover Content -->
     <div v-if="showDatePopover" class="absolute right-0 top-full mt-2 w-72 bg-white rounded-xl shadow-xl border border-ink-200 p-4 z-50">
-      <h4 class="font-bold text-ink-900 mb-4">Pilih Rentang Waktu</h4>
+      <h4 class="font-bold text-ink-900 mb-4">{{ $t('components.dateRangePicker.title') }}</h4>
       
       <div class="space-y-3">
         <div>
-          <label class="block text-xs text-ink-500 mb-1">Mulai Tanggal</label>
+          <label class="block text-xs text-ink-500 mb-1">{{ $t('components.dateRangePicker.startDate') }}</label>
           <input 
             v-model="tempStartDate" 
             type="date" 
@@ -25,7 +25,7 @@
           />
         </div>
         <div>
-          <label class="block text-xs text-ink-500 mb-1">Sampai Tanggal</label>
+          <label class="block text-xs text-ink-500 mb-1">{{ $t('components.dateRangePicker.endDate') }}</label>
           <input 
             v-model="tempEndDate" 
             type="date" 
@@ -35,7 +35,7 @@
       </div>
       
       <button @click="applyDateFilter" class="w-full mt-4 bg-orange-500 hover:bg-orange-600 text-white font-bold py-2 rounded-lg text-sm transition-colors">
-        Terapkan
+        {{ $t('components.dateRangePicker.apply') }}
       </button>
     </div>
     
@@ -54,6 +54,7 @@ const props = defineProps<{
 
 const emit = defineEmits(['update:modelValue', 'change'])
 
+const { t } = useI18n()
 const showDatePopover = ref(false)
 
 const tempStartDate = ref(props.modelValue.start)
@@ -71,7 +72,7 @@ const applyDateFilter = () => {
 }
 
 const dateRangeText = computed(() => {
-  if (!props.modelValue.start || !props.modelValue.end) return 'Pilih Rentang Waktu'
+  if (!props.modelValue.start || !props.modelValue.end) return t('components.dateRangePicker.title')
   
   const format = (dateStr: string) => {
     const d = new Date(dateStr)

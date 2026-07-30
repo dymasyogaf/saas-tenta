@@ -94,8 +94,10 @@ export const useSaldoStore = defineStore('saldo', {
       
       // Harus dipanggil di awal (sinkron) sebelum await, agar tidak kehilangan Vue Context
       let toast: any = null
+      let csrfToken: string | undefined = undefined
       try {
         toast = useToast()
+        csrfToken = unref(useCsrf().csrf)
       } catch (err) {}
       
       try {
@@ -108,6 +110,7 @@ export const useSaldoStore = defineStore('saldo', {
         // Panggil internal API
         const response = await $fetch<any>('/api/duidku/create-payment', {
           method: 'POST',
+          headers: csrfToken ? { 'csrf-token': csrfToken } : {},
           body: {
             amount,
             method, // <- Metode yang dipilih dari Modal
@@ -141,8 +144,10 @@ export const useSaldoStore = defineStore('saldo', {
       this.error = null
       
       let toast: any = null
+      let csrfToken: string | undefined = undefined
       try {
         toast = useToast()
+        csrfToken = unref(useCsrf().csrf)
       } catch (err) {}
       
       try {
@@ -151,6 +156,7 @@ export const useSaldoStore = defineStore('saldo', {
         
         const response = await $fetch<any>('/api/saldo/transfer', {
           method: 'POST',
+          headers: csrfToken ? { 'csrf-token': csrfToken } : {},
           body: {
             amount,
             user_id: uid,

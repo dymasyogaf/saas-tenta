@@ -3,26 +3,26 @@
     <div class="bg-white rounded-2xl shadow-sm border border-ink-100 p-8 max-w-md w-full text-center space-y-4">
       <div v-if="status === 'loading'" class="flex flex-col items-center justify-center space-y-4">
         <Loader2 class="w-10 h-10 animate-spin text-orange-500" />
-        <h2 class="text-xl font-bold text-ink-900">Memproses Konfirmasi...</h2>
-        <p class="text-ink-500 text-sm">Mohon tunggu sebentar, sedang memverifikasi token keamanan Anda.</p>
+        <h2 class="text-xl font-bold text-ink-900">{{ $t('auth.confirmingTitle') }}</h2>
+        <p class="text-ink-500 text-sm">{{ $t('auth.confirmingSubtitle') }}</p>
       </div>
       
       <div v-else-if="status === 'success'" class="flex flex-col items-center justify-center space-y-4">
         <div class="w-12 h-12 bg-green-100 text-green-600 rounded-full flex items-center justify-center mb-2">
           <Check class="w-6 h-6" />
         </div>
-        <h2 class="text-xl font-bold text-ink-900">Konfirmasi Berhasil!</h2>
-        <p class="text-ink-500 text-sm">Email atau akun Anda telah berhasil diverifikasi. Anda akan dialihkan ke dashboard...</p>
+        <h2 class="text-xl font-bold text-ink-900">{{ $t('auth.confirmSuccessTitle') }}</h2>
+        <p class="text-ink-500 text-sm">{{ $t('auth.confirmSuccessSubtitle') }}</p>
       </div>
       
       <div v-else-if="status === 'error'" class="flex flex-col items-center justify-center space-y-4">
         <div class="w-12 h-12 bg-red-100 text-red-600 rounded-full flex items-center justify-center mb-2">
           <XCircle class="w-6 h-6" />
         </div>
-        <h2 class="text-xl font-bold text-ink-900">Konfirmasi Gagal</h2>
+        <h2 class="text-xl font-bold text-ink-900">{{ $t('auth.confirmFailedTitle') }}</h2>
         <p class="text-ink-500 text-sm">{{ errorMessage }}</p>
         <button @click="goToDashboard" class="mt-4 bg-orange-500 hover:bg-orange-600 text-white font-bold py-2.5 px-6 rounded-md text-sm transition-colors w-full">
-          Kembali ke Dashboard
+          {{ $t('auth.backToDashboard') }}
         </button>
       </div>
     </div>
@@ -38,11 +38,13 @@ definePageMeta({
 
 const route = useRoute()
 const router = useRouter()
+const { t } = useI18n()
 const supabase = useSupabaseClient()
 const user = useSupabaseUser()
 
 const status = ref<'loading' | 'success' | 'error'>('loading')
-const errorMessage = ref('Link konfirmasi tidak valid atau sudah kadaluarsa.')
+const errorMessage = ref('')
+onMounted(() => { if (!errorMessage.value) errorMessage.value = t('auth.invalidLink') })
 
 const goToDashboard = () => {
   router.push('/dashboard')
@@ -52,7 +54,7 @@ onMounted(async () => {
   // If there is an error in URL from Supabase
   if (route.query.error_description || route.query.error) {
     status.value = 'error'
-    errorMessage.value = (route.query.error_description as string) || 'Terjadi kesalahan saat verifikasi.'
+    errorMessage.value = (route.query.error_description as string) || t('auth.verifyError')
     return
   }
 
@@ -77,7 +79,7 @@ onMounted(async () => {
       return
     } catch (err: any) {
       status.value = 'error'
-      errorMessage.value = err.message || 'Token tidak valid atau sudah kadaluarsa.'
+      errorMessage.value = err.message || t('auth.invalidToken')
       return
     }
   }
@@ -98,7 +100,7 @@ onMounted(async () => {
     } else {
       // If after 3 seconds still no user and no token processing, redirect to login
       status.value = 'error'
-      errorMessage.value = 'Sesi tidak ditemukan atau token tidak valid.'
+      errorMessage.value = t('auth.sessionNotFound')
     }
   }, 2000)
 })

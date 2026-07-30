@@ -3,8 +3,8 @@
     <!-- Intro State -->
     <div v-if="currentStep === 'intro'" class="space-y-8">
       <div>
-        <h1 class="text-2xl font-display font-bold text-ink-900">Verifikasi Profile</h1>
-        <p class="text-ink-500 text-sm mt-1">Selesaikan verifikasi identitas (eKYC) untuk membuka akses penuh ke seluruh fitur platform.</p>
+        <h1 class="text-2xl font-display font-bold text-ink-900">{{ $t('verification.title') }}</h1>
+        <p class="text-ink-500 text-sm mt-1">{{ $t('verification.subtitle') }}</p>
       </div>
 
       <!-- Banner Section -->
@@ -14,28 +14,28 @@
         <div class="absolute bottom-0 right-1/4 w-48 h-48 bg-yellow-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30"></div>
 
         <div class="z-10 relative flex-1 space-y-6">
-          <h2 class="text-2xl md:text-3xl font-display font-bold text-ink-900 leading-tight">Nikmati benefit berikut jika kamu sudah verifikasi akunmu:</h2>
+          <h2 class="text-2xl md:text-3xl font-display font-bold text-ink-900 leading-tight">{{ $t('verification.benefitsTitle') }}</h2>
           
           <ul class="space-y-4">
             <li class="flex items-start gap-3 text-ink-700">
               <CheckCircle2 class="w-5 h-5 text-orange-500 shrink-0 mt-0.5" />
-              <span class="font-medium">Akses penuh pembuatan Kampanye Iklan (Meta, Google, TikTok)</span>
+              <span class="font-medium">{{ $t('verification.benefit1') }}</span>
             </li>
             <li class="flex items-start gap-3 text-ink-700">
               <CheckCircle2 class="w-5 h-5 text-orange-500 shrink-0 mt-0.5" />
-              <span class="font-medium">Bisa top-up dan menggunakan saldo My Balance tanpa batas</span>
+              <span class="font-medium">{{ $t('verification.benefit2') }}</span>
             </li>
             <li class="flex items-start gap-3 text-ink-700">
               <CheckCircle2 class="w-5 h-5 text-orange-500 shrink-0 mt-0.5" />
-              <span class="font-medium">Terhindar dari risiko pemblokiran Ads Account tiba-tiba</span>
+              <span class="font-medium">{{ $t('verification.benefit3') }}</span>
             </li>
             <li class="flex items-start gap-3 text-ink-700">
               <CheckCircle2 class="w-5 h-5 text-orange-500 shrink-0 mt-0.5" />
-              <span class="font-medium">Akses prioritas VIP ke layanan Customer Support kami</span>
+              <span class="font-medium">{{ $t('verification.benefit4') }}</span>
             </li>
           </ul>
 
-          <p class="text-orange-600 font-bold text-sm">Serta masih banyak benefit-benefit lainnya!</p>
+          <p class="text-orange-600 font-bold text-sm">{{ $t('verification.moreBenefits') }}</p>
 
           <div class="pt-2">
             <button @click="currentStep = 1" class="bg-orange-500 hover:bg-orange-600 text-white font-bold py-3.5 px-8 rounded-xl shadow-lg shadow-orange-500/20 transition-all w-full md:w-auto">
@@ -61,7 +61,7 @@
 
       <!-- Steps Section -->
       <div class="pt-8">
-        <h3 class="text-lg font-bold text-ink-900 mb-6 font-display">Langkah-Langkah Verifikasi</h3>
+        <h3 class="text-lg font-bold text-ink-900 mb-6 font-display">{{ $t('verification.stepsTitle') }}</h3>
         
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
           <!-- Step 1 -->
@@ -70,8 +70,8 @@
             <div class="w-16 h-16 bg-orange-50 text-orange-500 rounded-full flex items-center justify-center mx-auto mb-4 border border-orange-100">
               <FileText class="w-8 h-8" />
             </div>
-            <h4 class="font-bold text-ink-900 mb-2">Isi Data Diri</h4>
-            <p class="text-sm text-ink-500 leading-relaxed">Upload KTP, Pas Photo, dan isi kelengkapan data diri Anda.</p>
+            <h4 class="font-bold text-ink-900 mb-2">{{ $t('verification.step1Title') }}</h4>
+            <p class="text-sm text-ink-500 leading-relaxed">{{ $t('verification.step1Desc') }}</p>
           </div>
           
           <!-- Step 2 -->
@@ -80,8 +80,8 @@
             <div class="w-16 h-16 bg-orange-50 text-orange-500 rounded-full flex items-center justify-center mx-auto mb-4 border border-orange-100">
               <ClipboardCheck class="w-8 h-8" />
             </div>
-            <h4 class="font-bold text-ink-900 mb-2">Ringkasan</h4>
-            <p class="text-sm text-ink-500 leading-relaxed">Cek kembali seluruh data yang Anda isi untuk memastikan tidak ada typo.</p>
+            <h4 class="font-bold text-ink-900 mb-2">{{ $t('verification.step2Title') }}</h4>
+            <p class="text-sm text-ink-500 leading-relaxed">{{ $t('verification.step2Desc') }}</p>
           </div>
           
           <!-- Step 3 -->
@@ -90,8 +90,8 @@
             <div class="w-16 h-16 bg-orange-50 text-orange-500 rounded-full flex items-center justify-center mx-auto mb-4 border border-orange-100">
               <ShieldCheck class="w-8 h-8 ml-1" />
             </div>
-            <h4 class="font-bold text-ink-900 mb-2">Verifikasi Keamanan</h4>
-            <p class="text-sm text-ink-500 leading-relaxed">Masukkan kode OTP untuk mengirim data eKYC dengan aman.</p>
+            <h4 class="font-bold text-ink-900 mb-2">{{ $t('verification.step3Title') }}</h4>
+            <p class="text-sm text-ink-500 leading-relaxed">{{ $t('verification.step3Desc') }}</p>
           </div>
         </div>
       </div>
@@ -101,7 +101,7 @@
     <div v-else>
       <div class="max-w-5xl mx-auto mb-6">
         <div class="flex items-center justify-between text-xs font-bold text-ink-500 mb-2">
-          <span>Langkah {{ currentStep }} dari 3</span>
+          <span>{{ $t('verification.stepOf', { current: currentStep }) }}</span>
           <span>{{ Math.round((Number(currentStep) / 3) * 100) }}%</span>
         </div>
         <div class="w-full h-2 bg-ink-100 rounded-full overflow-hidden">
@@ -120,19 +120,19 @@
           <!-- Step 1 Indicator -->
           <div class="relative z-10 flex items-center gap-4">
             <div :class="currentStep >= 1 ? 'border-orange-500 bg-white text-orange-500' : 'border-ink-200 bg-ink-50 text-ink-400'" class="w-8 h-8 rounded-full border-2 flex items-center justify-center font-bold text-sm shadow-sm transition-colors">1</div>
-            <span :class="currentStep === 1 ? 'font-bold text-orange-500' : 'font-medium text-ink-700'">Pengisian Data Diri</span>
+            <span :class="currentStep === 1 ? 'font-bold text-orange-500' : 'font-medium text-ink-700'">{{ $t('verification.step1HeaderTitle') }}</span>
           </div>
           
           <!-- Step 2 Indicator -->
           <div class="relative z-10 flex items-center gap-4">
             <div :class="currentStep >= 2 ? 'border-orange-500 bg-white text-orange-500' : 'border-ink-200 bg-ink-50 text-ink-400'" class="w-8 h-8 rounded-full border-2 flex items-center justify-center font-bold text-sm transition-colors">2</div>
-            <span :class="currentStep === 2 ? 'font-bold text-orange-500' : 'font-medium text-ink-700'">Ringkasan</span>
+            <span :class="currentStep === 2 ? 'font-bold text-orange-500' : 'font-medium text-ink-700'">{{ $t('verification.step2Title') }}</span>
           </div>
           
           <!-- Step 3 Indicator -->
           <div class="relative z-10 flex items-center gap-4">
             <div :class="currentStep >= 3 ? 'border-orange-500 bg-white text-orange-500' : 'border-ink-200 bg-ink-50 text-ink-400'" class="w-8 h-8 rounded-full border-2 flex items-center justify-center font-bold text-sm transition-colors">3</div>
-            <span :class="currentStep === 3 ? 'font-bold text-orange-500' : 'font-medium text-ink-400'">Verifikasi OTP</span>
+            <span :class="currentStep === 3 ? 'font-bold text-orange-500' : 'font-medium text-ink-400'">{{ $t('verification.sidebarStep3') }}</span>
           </div>
         </div>
 
@@ -141,15 +141,15 @@
            <div class="absolute top-4 left-4 right-4 h-px bg-ink-200 z-0"></div>
            <div class="relative z-10 flex flex-col items-center gap-2">
              <div class="w-8 h-8 rounded-full border-2 border-orange-500 bg-white text-orange-500 flex items-center justify-center font-bold text-sm">1</div>
-             <span class="text-xs font-bold text-orange-500">Data Diri</span>
+             <span class="text-xs font-bold text-orange-500">{{ $t('verification.mobileStep1') }}</span>
            </div>
            <div class="relative z-10 flex flex-col items-center gap-2">
              <div :class="currentStep >= 2 ? 'border-orange-500 bg-white text-orange-500' : 'border-ink-200 bg-ink-50 text-ink-400'" class="w-8 h-8 rounded-full border-2 flex items-center justify-center font-bold text-sm">2</div>
-             <span :class="currentStep >= 2 ? 'text-orange-500' : 'text-ink-400'" class="text-xs font-medium">Ringkasan</span>
+             <span :class="currentStep >= 2 ? 'text-orange-500' : 'text-ink-400'" class="text-xs font-medium">{{ $t('verification.step2Title') }}</span>
            </div>
            <div class="relative z-10 flex flex-col items-center gap-2">
              <div :class="currentStep >= 3 ? 'border-orange-500 bg-white text-orange-500' : 'border-ink-200 bg-ink-50 text-ink-400'" class="w-8 h-8 rounded-full border-2 flex items-center justify-center font-bold text-sm">3</div>
-             <span :class="currentStep >= 3 ? 'text-orange-500' : 'text-ink-400'" class="text-xs font-medium">OTP</span>
+             <span :class="currentStep >= 3 ? 'text-orange-500' : 'text-ink-400'" class="text-xs font-medium">{{ $t('verification.mobileStep3') }}</span>
            </div>
         </div>
       </div>
@@ -158,8 +158,8 @@
       <div v-if="currentStep === 1" class="flex-1">
         <!-- Form Header -->
         <div class="mb-8">
-          <h2 class="text-2xl font-bold text-ink-900 mb-1">Pengisian Data Diri</h2>
-          <p class="text-ink-500 text-sm">Mohon pastikan kembali kebenaran informasi data diri yang diisi.</p>
+          <h2 class="text-2xl font-bold text-ink-900 mb-1">{{ $t('verification.step1HeaderTitle') }}</h2>
+          <p class="text-ink-500 text-sm">{{ $t('verification.step1HeaderDesc') }}</p>
         </div>
 
         <!-- Form Box -->
@@ -167,12 +167,12 @@
           
           <!-- Foto KTP Section -->
           <div class="grid grid-cols-1 md:grid-cols-2 gap-8 pb-4">
-            <!-- Upload KTP -->
+            <!-- {{ $t('verification.uploadKtpBtn') }} -->
             <div>
-              <label class="block text-sm font-bold text-ink-900 mb-3">Foto KTP/Paspor</label>
+              <label class="block text-sm font-bold text-ink-900 mb-3">{{ $t('verification.uploadKtpLabel') }}</label>
               <div v-if="!selectedKTP">
                 <label class="bg-orange-500 hover:bg-orange-600 text-white font-bold py-2.5 px-6 rounded-md text-sm transition-colors shadow-sm inline-flex items-center gap-2 cursor-pointer w-full justify-center">
-                  <Upload class="w-4 h-4" /> Upload KTP
+                  <Upload class="w-4 h-4" /> {{ $t('verification.uploadKtpBtn') }}
                   <input type="file" accept="image/png, image/jpeg, image/jpg" class="hidden" @change="handleFileUpload($event, 'ktp')" />
                 </label>
               </div>
@@ -181,21 +181,21 @@
                      :class="isScanning ? 'bg-orange-50 text-orange-700 border-orange-200' : 'bg-green-50 text-green-700 border-green-200'">
                   <Loader2 v-if="isScanning" class="w-5 h-5 text-orange-500 shrink-0 animate-spin" />
                   <CheckCircle2 v-else class="w-5 h-5 text-green-500 shrink-0" />
-                  <span class="text-sm font-medium truncate">{{ isScanning ? 'Membaca KTP (OCR)...' : selectedKTP.name }}</span>
+                  <span class="text-sm font-medium truncate">{{ isScanning ? $t('verification.scanningOcr') : selectedKTP.name }}</span>
                 </div>
                 <label v-if="!isScanning" class="text-orange-500 hover:text-orange-600 font-bold text-sm cursor-pointer inline-flex items-center gap-1.5 transition-colors">
-                  <Upload class="w-4 h-4" /> Ganti
+                  <Upload class="w-4 h-4" /> {{ $t('verification.changeBtn') }}
                   <input type="file" accept="image/png, image/jpeg, image/jpg" class="hidden" @change="handleFileUpload($event, 'ktp')" />
                 </label>
               </div>
             </div>
 
-            <!-- Upload Pas Photo -->
+            <!-- {{ $t('verification.uploadPasPhotoBtn') }} -->
             <div>
-              <label class="block text-sm font-bold text-ink-900 mb-3">Pas Photo / Foto Diri</label>
+              <label class="block text-sm font-bold text-ink-900 mb-3">{{ $t('verification.uploadPasPhotoLabel') }}</label>
               <div v-if="!selectedPasPhoto">
                 <label class="bg-orange-500 hover:bg-orange-600 text-white font-bold py-2.5 px-6 rounded-md text-sm transition-colors shadow-sm inline-flex items-center gap-2 cursor-pointer w-full justify-center">
-                  <Upload class="w-4 h-4" /> Upload Pas Photo
+                  <Upload class="w-4 h-4" /> {{ $t('verification.uploadPasPhotoBtn') }}
                   <input type="file" accept="image/png, image/jpeg, image/jpg" class="hidden" @change="handleFileUpload($event, 'pasphoto')" />
                 </label>
               </div>
@@ -205,7 +205,7 @@
                   <span class="text-sm font-medium truncate">{{ selectedPasPhoto.name }}</span>
                 </div>
                 <label class="text-orange-500 hover:text-orange-600 font-bold text-sm cursor-pointer inline-flex items-center gap-1.5 transition-colors">
-                  <Upload class="w-4 h-4" /> Ganti
+                  <Upload class="w-4 h-4" /> {{ $t('verification.changeBtn') }}
                   <input type="file" accept="image/png, image/jpeg, image/jpg" class="hidden" @change="handleFileUpload($event, 'pasphoto')" />
                 </label>
               </div>
@@ -215,34 +215,34 @@
           <div class="space-y-5">
             <!-- Nama -->
             <div>
-              <label class="block text-sm font-bold text-ink-900 mb-1">Nama <span class="text-ink-400 font-normal">(Pastikan nama sesuai dengan yang ada di KTP)</span></label>
+              <label class="block text-sm font-bold text-ink-900 mb-1">{{ $t('verification.nameLabel') }} <span class="text-ink-400 font-normal">{{ $t('verification.nameNote') }}</span></label>
               <input v-model="formData.name" type="text" class="w-full border border-ink-200 rounded-md px-3 py-2.5 text-sm text-ink-900 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 bg-white" />
             </div>
 
             <!-- NIK -->
             <div>
-              <label class="block text-sm font-bold text-ink-900 mb-1">NIK/No.Paspor</label>
+              <label class="block text-sm font-bold text-ink-900 mb-1">{{ $t('verification.nikLabel') }}</label>
               <input v-model="formData.nik" type="text" maxlength="20" class="w-full border rounded-md px-3 py-2.5 text-sm text-ink-900 focus:outline-none focus:ring-1 bg-white transition-colors" :class="isNikValid ? 'border-ink-200 focus:border-orange-500 focus:ring-orange-500' : 'border-red-500 focus:border-red-500 focus:ring-red-500'" />
-              <p v-if="!isNikValid" class="text-xs text-red-500 mt-1 font-medium flex items-center gap-1"><AlertCircle class="w-3 h-3"/> NIK/No.Paspor harus terdiri dari 8-20 digit angka.</p>
+              <p v-if="!isNikValid" class="text-xs text-red-500 mt-1 font-medium flex items-center gap-1"><AlertCircle class="w-3 h-3"/> {{ $t('verification.nikError') }}</p>
             </div>
 
             <!-- Tanggal Lahir -->
             <div>
-              <label class="block text-sm font-bold text-ink-900 mb-1">Tanggal Lahir <span class="text-ink-400 font-normal">(contoh: 25-02-1999)</span></label>
+              <label class="block text-sm font-bold text-ink-900 mb-1">{{ $t('verification.dobLabel') }} <span class="text-ink-400 font-normal">{{ $t('verification.dobNote') }}</span></label>
               <input v-model="formData.dob" @input="handleDobInput" type="text" maxlength="10" class="w-full border rounded-md px-3 py-2.5 text-sm text-ink-900 focus:outline-none focus:ring-1 bg-white transition-colors" :class="isDobValid ? 'border-ink-200 focus:border-orange-500 focus:ring-orange-500' : 'border-red-500 focus:border-red-500 focus:ring-red-500'" placeholder="DD-MM-YYYY" />
-              <p v-if="!isDobValid" class="text-xs text-red-500 mt-1 font-medium flex items-center gap-1"><AlertCircle class="w-3 h-3"/> Format harus sesuai (Contoh: 25-02-1999).</p>
+              <p v-if="!isDobValid" class="text-xs text-red-500 mt-1 font-medium flex items-center gap-1"><AlertCircle class="w-3 h-3"/> {{ $t('verification.dobError') }}</p>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
               <!-- Email (Disabled) -->
               <div>
-                <label class="block text-sm font-bold text-ink-900 mb-1">Email <span class="text-ink-400 font-normal">(contoh: john.doe@gmail.com)</span></label>
+                <label class="block text-sm font-bold text-ink-900 mb-1">{{ $t('verification.emailLabel') }} <span class="text-ink-400 font-normal">{{ $t('verification.emailNote') }}</span></label>
                 <input type="text" :value="user?.email" disabled class="w-full border border-ink-100 rounded-md px-3 py-2.5 text-sm text-ink-500 bg-ink-50 cursor-not-allowed" />
               </div>
 
               <!-- Nomor HP (Disabled) -->
               <div>
-                <label class="block text-sm font-bold text-ink-900 mb-1">Nomor HP <span class="text-ink-400 font-normal">(contoh: 6282248069950)</span></label>
+                <label class="block text-sm font-bold text-ink-900 mb-1">{{ $t('verification.phoneLabel') }} <span class="text-ink-400 font-normal">{{ $t('verification.phoneNote') }}</span></label>
                 <input type="text" :value="userPhone" disabled class="w-full border border-ink-100 rounded-md px-3 py-2.5 text-sm text-ink-500 bg-ink-50 cursor-not-allowed" />
               </div>
             </div>
@@ -251,7 +251,7 @@
         </div>
         
         <div class="flex justify-end mt-6 gap-3">
-          <button @click="currentStep = 'intro'" class="bg-white text-ink-500 font-bold py-3 px-6 rounded-lg text-sm hover:bg-ink-50 border border-ink-200 transition-all">Batal</button>
+          <button @click="currentStep = 'intro'" class="bg-white text-ink-500 font-bold py-3 px-6 rounded-lg text-sm hover:bg-ink-50 border border-ink-200 transition-all">{{ $t('verification.cancelBtn') }}</button>
           <button @click="currentStep = 2" :disabled="!isFormValid" class="bg-orange-500 text-white font-bold py-3 px-8 rounded-lg text-sm hover:bg-orange-600 shadow-lg shadow-orange-500/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
             Selanjutnya
           </button>
@@ -261,21 +261,21 @@
       <!-- Step 2: Ringkasan -->
       <div v-else-if="currentStep === 2" class="flex-1">
         <div class="mb-8">
-          <h2 class="text-2xl font-bold text-ink-900 mb-1">Ringkasan Data</h2>
-          <p class="text-ink-500 text-sm">Pastikan semua data di bawah ini sudah benar sebelum kami mengirimkan kode OTP.</p>
+          <h2 class="text-2xl font-bold text-ink-900 mb-1">{{ $t('verification.step2HeaderTitle') }}</h2>
+          <p class="text-ink-500 text-sm">{{ $t('verification.step2HeaderDesc') }}</p>
         </div>
 
         <div class="bg-white border border-ink-100 rounded-2xl overflow-hidden shadow-sm">
           <div class="p-6 border-b border-ink-50 bg-ink-50/50">
-            <h3 class="font-bold text-ink-900 flex items-center gap-2"><User class="w-5 h-5 text-orange-500" /> Informasi Pribadi</h3>
+            <h3 class="font-bold text-ink-900 flex items-center gap-2"><User class="w-5 h-5 text-orange-500" /> {{ $t('verification.personalInfo') }}</h3>
           </div>
           <div class="p-6 space-y-4">
             <div class="grid grid-cols-3 border-b border-ink-50 pb-4">
-              <span class="col-span-1 text-ink-500 text-sm font-medium">Nama Lengkap</span>
+              <span class="col-span-1 text-ink-500 text-sm font-medium">{{ $t('verification.fullName') }}</span>
               <span class="col-span-2 text-ink-900 text-sm font-bold">{{ formData.name }}</span>
             </div>
             <div class="grid grid-cols-3 border-b border-ink-50 pb-4">
-              <span class="col-span-1 text-ink-500 text-sm font-medium">NIK/No.Paspor</span>
+              <span class="col-span-1 text-ink-500 text-sm font-medium">{{ $t('verification.nikLabel') }}</span>
               <span class="col-span-2 text-ink-900 text-sm font-bold">{{ formData.nik }}</span>
             </div>
             <div class="grid grid-cols-3 border-b border-ink-50 pb-4">
@@ -294,10 +294,10 @@
         </div>
 
         <div class="flex justify-end mt-6 gap-3">
-          <button @click="currentStep = 1" class="bg-white text-ink-500 font-bold py-3 px-6 rounded-lg text-sm hover:bg-ink-50 border border-ink-200 transition-all">Kembali Edit</button>
+          <button @click="currentStep = 1" class="bg-white text-ink-500 font-bold py-3 px-6 rounded-lg text-sm hover:bg-ink-50 border border-ink-200 transition-all">{{ $t('verification.backEditBtn') }}</button>
           <button @click="requestOTP" :disabled="isSendingOTP" class="bg-orange-500 text-white font-bold py-3 px-8 rounded-lg text-sm hover:bg-orange-600 shadow-lg shadow-orange-500/20 transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
             <Loader2 v-if="isSendingOTP" class="w-4 h-4 animate-spin" />
-            <span>Kirim Kode OTP</span>
+            <span>{{ $t('verification.sendOtpBtn') }}</span>
           </button>
         </div>
       </div>
@@ -305,8 +305,8 @@
       <!-- Step 3: Verifikasi OTP -->
       <div v-else-if="currentStep === 3" class="flex-1">
         <div class="mb-8">
-          <h2 class="text-2xl font-bold text-ink-900 mb-1">Verifikasi Keamanan</h2>
-          <p class="text-ink-500 text-sm">Masukkan 6 digit kode OTP yang telah dikirimkan ke WhatsApp <span class="font-bold text-ink-900">{{ userPhone }}</span>.</p>
+          <h2 class="text-2xl font-bold text-ink-900 mb-1">{{ $t('verification.step3Title') }}</h2>
+          <p class="text-ink-500 text-sm">{{ $t('verification.step3HeaderDesc') }} <span class="font-bold text-ink-900">{{ userPhone }}</span>.</p>
         </div>
 
         <div class="bg-white border border-ink-100 rounded-2xl p-6 md:p-8 shadow-sm text-center">
@@ -316,15 +316,15 @@
           
           <div class="max-w-xs mx-auto">
             <input v-model="otpCode" type="text" maxlength="6" class="w-full text-center text-2xl tracking-[0.5em] font-bold border border-ink-200 rounded-xl px-4 py-4 text-ink-900 focus:outline-none focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 bg-ink-50 focus:bg-white transition-all" placeholder="••••••" />
-            <p class="text-xs text-ink-500 mt-4">Belum menerima kode? <button @click="requestOTP" :disabled="isSendingOTP" class="text-orange-500 font-bold hover:underline">Kirim Ulang</button></p>
+            <p class="text-xs text-ink-500 mt-4">{{ $t('verification.resendOtpText') }} <button @click="requestOTP" :disabled="isSendingOTP" class="text-orange-500 font-bold hover:underline">{{ $t('verification.resendOtpBtn') }}</button></p>
           </div>
         </div>
 
         <div class="flex justify-end mt-6 gap-3">
-          <button @click="currentStep = 2" class="bg-white text-ink-500 font-bold py-3 px-6 rounded-lg text-sm hover:bg-ink-50 border border-ink-200 transition-all">Kembali</button>
+          <button @click="currentStep = 2" class="bg-white text-ink-500 font-bold py-3 px-6 rounded-lg text-sm hover:bg-ink-50 border border-ink-200 transition-all">{{ $t('verification.backBtn') }}</button>
           <button @click="submitVerification" :disabled="isSubmitting || otpCode.length < 6" class="bg-orange-500 text-white font-bold py-3 px-8 rounded-lg text-sm hover:bg-orange-600 shadow-lg shadow-orange-500/20 transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
             <Loader2 v-if="isSubmitting" class="w-4 h-4 animate-spin" />
-            <span>{{ isSubmitting ? 'Memproses...' : 'Verifikasi & Selesai' }}</span>
+            <span>{{ isSubmitting ? $t('verification.processing') : $t('verification.verifyCompleteBtn') }}</span>
           </button>
         </div>
       </div>
@@ -355,6 +355,7 @@ const { user } = useAuth()
 const router = useRouter()
 const supabase = useSupabaseClient()
 const { csrf } = useCsrf()
+const { t } = useI18n()
 const { addToast } = useToast()
 
 const currentStep = ref<number | 'intro'>('intro')
@@ -410,7 +411,7 @@ const handleFileUpload = (event: Event, type: 'ktp' | 'pasphoto') => {
     
     // Validasi Format
     if (!['image/jpeg', 'image/png', 'image/jpg'].includes(file.type)) {
-      addToast('Format file harus JPG atau PNG.', 'error')
+      addToast(t('verification.invalidFormat'), 'error')
       target.value = ''
       return
     }
@@ -418,17 +419,17 @@ const handleFileUpload = (event: Event, type: 'ktp' | 'pasphoto') => {
     // Validasi Ukuran (2MB)
     const maxSize = 2 * 1024 * 1024
     if (file.size > maxSize) {
-      addToast('Ukuran file maksimal adalah 2MB.', 'error')
+      addToast(t('verification.invalidSize'), 'error')
       target.value = ''
       return
     }
 
     if (type === 'ktp') {
       selectedKTP.value = file
-      addToast('File KTP berhasil dipilih.', 'success')
+      addToast(t('verification.ktpSuccess'), 'success')
     } else {
       selectedPasPhoto.value = file
-      addToast(`Pas Photo berhasil dipilih.`, 'success')
+      addToast(t('verification.pasPhotoSuccess'), 'success')
     }
   }
 }
@@ -440,7 +441,7 @@ const isSubmitting = ref(false)
 
 const requestOTP = async () => {
   if (!userPhone.value) {
-    addToast('Nomor HP tidak ditemukan di profil Anda.', 'error')
+    addToast(t('verification.phoneNotFound'), 'error')
     return
   }
   
@@ -452,10 +453,10 @@ const requestOTP = async () => {
       body: { phone: userPhone.value }
     })
     
-    addToast('Kode OTP telah dikirim ke WhatsApp Anda.', 'success')
+    addToast(t('verification.otpSent'), 'success')
     currentStep.value = 3
   } catch (err: any) {
-    const cleanError = err.data?.statusMessage || err.data?.message || err.message || 'Gagal mengirim OTP.'
+    const cleanError = err.data?.statusMessage || err.data?.message || err.message || t('verification.otpSendFailed')
     addToast(cleanError, 'error')
   } finally {
     isSendingOTP.value = false
@@ -522,14 +523,14 @@ const submitVerification = async () => {
     }
     
     
-    addToast('Pengajuan verifikasi berhasil dikirim. Tim Audit akan segera meninjau data Anda.', 'success')
+    addToast(t('verification.submitSuccess'), 'success')
     
     // 4. Redirect ke Dashboard dengan Hard Reload agar Layout (Banner) ter-refresh
     window.location.href = '/dashboard'
     
     
   } catch (err: any) {
-    const cleanError = err.data?.statusMessage || err.data?.message || err.message || 'Gagal melakukan verifikasi.'
+    const cleanError = err.data?.statusMessage || err.data?.message || err.message || t('verification.submitFailed')
     addToast(cleanError, 'error')
   } finally {
     isSubmitting.value = false

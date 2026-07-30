@@ -2,8 +2,8 @@
   <div class="max-w-4xl mx-auto">
     <!-- Header -->
     <div class="mb-8">
-      <h2 class="text-2xl font-display font-bold text-ink-900 mb-2">Pusat Pemberitahuan</h2>
-      <p class="text-ink-600">Kelola dan baca semua notifikasi dari akun Tentaklik Anda.</p>
+      <h2 class="text-2xl font-display font-bold text-ink-900 mb-2">{{ $t('dashboard.notifications.title') }}</h2>
+      <p class="text-ink-600">{{ $t('dashboard.notifications.subtitle') }}</p>
     </div>
 
     <div class="bg-white border border-ink-100 rounded-2xl shadow-sm overflow-hidden flex flex-col min-h-[400px]">
@@ -17,8 +17,8 @@
           <Bell class="w-10 h-10" />
           <span class="absolute top-2 right-2 text-ink-400 font-bold text-xs transform rotate-12">zZ</span>
         </div>
-        <h3 class="text-lg font-bold text-ink-900 mb-2">Belum ada notifikasi</h3>
-        <p class="text-ink-500 max-w-sm">Saat ini belum ada pemberitahuan apa pun. Kami akan memberi tahu Anda jika ada aktivitas baru.</p>
+        <h3 class="text-lg font-bold text-ink-900 mb-2">{{ $t('dashboard.notifications.emptyTitle') }}</h3>
+        <p class="text-ink-500 max-w-sm">{{ $t('dashboard.notifications.emptyDesc') }}</p>
       </div>
 
       <!-- List Notifikasi -->
@@ -74,7 +74,7 @@
         </div>
         <div class="p-4 sm:p-5 border-t border-ink-100 bg-ink-50 rounded-b-2xl shrink-0 flex justify-end">
           <button @click="selectedNotif = null" class="px-6 py-2.5 bg-orange-500 text-white font-semibold rounded-xl hover:bg-orange-600 shadow-sm transition-colors">
-            Tutup Pesan
+            {{ $t('dashboard.notifications.close') }}
           </button>
         </div>
       </div>

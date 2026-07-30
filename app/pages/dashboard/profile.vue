@@ -1,6 +1,6 @@
 <template>
   <div class="max-w-6xl mx-auto space-y-6">
-    <h2 class="text-2xl font-display font-bold text-ink-900 mb-6">Profile</h2>
+    <h2 class="text-2xl font-display font-bold text-ink-900 mb-6">{{ $t('profile.title') }}</h2>
     
     <div class="grid grid-cols-1 md:grid-cols-12 gap-6">
       
@@ -41,13 +41,13 @@
         <!-- Profile Form -->
         <div v-if="activeTab === 'profile'" class="bg-white border border-ink-100 rounded-2xl shadow-sm">
           <div class="px-6 py-5 border-b border-ink-100">
-            <h3 class="font-bold text-ink-900 text-base">Profile</h3>
+            <h3 class="font-bold text-ink-900 text-base">{{ $t('profile.title') }}</h3>
           </div>
           
           <div class="p-6 space-y-6">
             <!-- Nama -->
             <div>
-              <label class="block text-sm font-bold text-ink-900 mb-2">Nama</label>
+              <label class="block text-sm font-bold text-ink-900 mb-2">{{ $t('profile.name') }}</label>
               <div v-if="isLoadingPhone" class="flex gap-3">
                 <div class="flex-1 h-11 bg-ink-100 animate-pulse rounded-md"></div>
                 <div class="w-40 h-11 bg-ink-100 animate-pulse rounded-md shrink-0"></div>
@@ -57,27 +57,27 @@
                 
                 <div v-if="verificationStatus === 'verified'" class="flex flex-col sm:flex-row items-center gap-2 shrink-0">
                   <div class="flex w-full items-center justify-center gap-2 bg-green-50 text-green-600 px-4 py-2.5 rounded-md text-sm font-semibold border border-green-200">
-                    <ShieldCheck class="w-4 h-4" /> Profile Terverifikasi
+                    <ShieldCheck class="w-4 h-4" /> {{ $t('profile.profileVerified') }}
                   </div>
-                  <button @click="resetVerification" class="text-xs text-ink-400 hover:text-red-500 underline mt-1 sm:mt-0">Reset (Dev)</button>
+                  <button @click="resetVerification" class="text-xs text-ink-400 hover:text-red-500 underline mt-1 sm:mt-0">{{ $t('profile.resetDev') }}</button>
                 </div>
                 
                 <div v-else-if="verificationStatus === 'pending'" class="flex flex-col sm:flex-row items-center gap-2 shrink-0">
                   <div class="flex w-full items-center justify-center gap-2 bg-orange-50 text-orange-600 px-4 py-2.5 rounded-md text-sm font-semibold border border-orange-200">
-                    <ShieldCheck class="w-4 h-4" /> Sedang Direview
+                    <ShieldCheck class="w-4 h-4" /> {{ $t('profile.underReview') }}
                   </div>
-                  <button @click="resetVerification" class="text-xs text-ink-400 hover:text-red-500 underline mt-1 sm:mt-0">Reset (Dev)</button>
+                  <button @click="resetVerification" class="text-xs text-ink-400 hover:text-red-500 underline mt-1 sm:mt-0">{{ $t('profile.resetDev') }}</button>
                 </div>
 
                 <NuxtLink v-else to="/dashboard/verification" class="flex items-center justify-center gap-2 border border-orange-500 text-orange-500 px-4 py-2.5 rounded-md text-sm font-semibold hover:bg-orange-50 transition-colors shrink-0">
-                  <ShieldCheck class="w-4 h-4" /> Verifikasi profile
+                  <ShieldCheck class="w-4 h-4" /> {{ $t('profile.verifyProfile') }}
                 </NuxtLink>
               </div>
             </div>
             
             <!-- No Telepon -->
             <div>
-              <label class="block text-sm font-bold text-ink-900 mb-2">No Telepon</label>
+              <label class="block text-sm font-bold text-ink-900 mb-2">{{ $t('profile.phone') }}</label>
               <div class="flex flex-wrap items-center gap-2 text-sm">
                 <Smartphone class="w-4 h-4 text-ink-400" />
                 <!-- Loading State -->
@@ -85,7 +85,7 @@
                   <div class="w-32 h-5 bg-ink-100 animate-pulse rounded mr-2"></div>
                   <div class="flex items-center gap-1.5 text-ink-400">
                     <Loader2 class="w-4 h-4 animate-spin" />
-                    <span class="font-medium text-sm italic">Memeriksa...</span>
+                    <span class="font-medium text-sm italic">{{ $t('profile.checking') }}</span>
                   </div>
                 </template>
                 
@@ -95,19 +95,19 @@
                   <template v-if="!isPhoneVerified">
                     <div class="flex items-center gap-1.5 text-orange-600">
                       <AlertCircle class="w-4 h-4" />
-                      <span class="font-bold text-sm">Belum Diverifikasi</span>
+                      <span class="font-bold text-sm">{{ $t('profile.notVerified') }}</span>
                     </div>
-                    <button @click="isVerifyPhoneOpen = true" class="text-orange-500 hover:text-orange-600 font-medium ml-2 underline underline-offset-2">Verifikasi</button>
-                    <button @click="isPhoneOpen = true" class="text-orange-500 hover:text-orange-600 font-medium ml-2 underline underline-offset-2">Ubah</button>
+                    <button @click="isVerifyPhoneOpen = true" class="text-orange-500 hover:text-orange-600 font-medium ml-2 underline underline-offset-2">{{ $t('profile.verify') }}</button>
+                    <button @click="isPhoneOpen = true" class="text-orange-500 hover:text-orange-600 font-medium ml-2 underline underline-offset-2">{{ $t('profile.change') }}</button>
                   </template>
-  
+
                   <!-- Verified State -->
                   <template v-else>
                     <div class="flex items-center gap-1.5 bg-green-50 text-green-600 px-3 py-1 rounded-lg">
                       <ShieldCheck class="w-4 h-4" />
-                      <span class="font-bold text-sm">Terverifikasi</span>
+                      <span class="font-bold text-sm">{{ $t('profile.verified') }}</span>
                     </div>
-                    <button @click="isPhoneOpen = true" class="text-orange-500 hover:text-orange-600 font-medium ml-2 underline underline-offset-2">Ubah</button>
+                    <button @click="isPhoneOpen = true" class="text-orange-500 hover:text-orange-600 font-medium ml-2 underline underline-offset-2">{{ $t('profile.change') }}</button>
                   </template>
                 </template>
               </div>
@@ -115,7 +115,7 @@
             
             <!-- Email -->
             <div>
-              <label class="block text-sm font-bold text-ink-900 mb-2">Email</label>
+              <label class="block text-sm font-bold text-ink-900 mb-2">{{ $t('profile.email') }}</label>
               <div class="flex flex-wrap items-center gap-2 text-sm">
                 <template v-if="isLoadingPhone">
                   <div class="w-48 h-5 bg-ink-100 animate-pulse rounded mr-2"></div>
@@ -127,18 +127,18 @@
                   <template v-if="!isEmailVerified">
                     <div class="flex items-center gap-1.5 text-orange-600">
                       <AlertCircle class="w-4 h-4" />
-                      <span class="font-bold text-sm">Belum Diverifikasi</span>
+                      <span class="font-bold text-sm">{{ $t('profile.notVerified') }}</span>
                     </div>
-                    <button @click="isEmailOpen = true" class="text-orange-500 hover:text-orange-600 font-medium ml-2 underline underline-offset-2">Ubah Email / Verifikasi</button>
+                    <button @click="isEmailOpen = true" class="text-orange-500 hover:text-orange-600 font-medium ml-2 underline underline-offset-2">{{ $t('profile.changeEmailVerify') }}</button>
                   </template>
-  
+
                   <!-- Verified State -->
                   <template v-else>
                     <div class="flex items-center gap-1.5 bg-green-50 text-green-600 px-3 py-1 rounded-lg">
                       <ShieldCheck class="w-4 h-4" />
-                      <span class="font-bold text-sm">Terverifikasi</span>
+                      <span class="font-bold text-sm">{{ $t('profile.verified') }}</span>
                     </div>
-                    <button @click="isEmailOpen = true" class="text-orange-500 hover:text-orange-600 font-medium ml-2 underline underline-offset-2">Ubah</button>
+                    <button @click="isEmailOpen = true" class="text-orange-500 hover:text-orange-600 font-medium ml-2 underline underline-offset-2">{{ $t('profile.change') }}</button>
                   </template>
                 </template>
               </div>
@@ -148,20 +148,20 @@
             <div class="pt-2">
               <div class="flex items-center gap-4 mb-2">
                 <div class="w-48">
-                  <p class="font-bold text-ink-900 text-sm">Aktifkan Two-Factor Authentication (2FA)</p>
+                  <p class="font-bold text-ink-900 text-sm">{{ $t('profile.twoFA.title') }}</p>
                 </div>
                 <label class="relative inline-flex items-center cursor-pointer shrink-0" :class="{'opacity-50': isUpdating2FA}">
                   <input type="checkbox" v-model="is2FAEnabled" @change="handleToggle2FA" :disabled="isUpdating2FA" class="sr-only peer">
                   <div class="w-11 h-6 bg-ink-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-ink-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-orange-500"></div>
                 </label>
               </div>
-              <p class="text-xs text-ink-400 mb-4 md:ml-52 max-w-sm">Tingkatkan keamanan akunmu dengan OTP setiap kali login menggunakan email.</p>
+              <p class="text-xs text-ink-400 mb-4 md:ml-52 max-w-sm">{{ $t('profile.twoFA.desc') }}</p>
               
               <div :class="is2FAEnabled ? 'bg-green-50 border-green-100' : 'bg-yellow-50 border-yellow-100'" class="border rounded-lg p-4 flex items-start gap-3 mt-4 md:ml-52 transition-colors">
                 <component :is="is2FAEnabled ? ShieldCheck : AlertCircle" :class="is2FAEnabled ? 'text-green-600' : 'text-yellow-600'" class="w-5 h-5 shrink-0 mt-0.5" />
                 <div>
-                  <p class="font-bold text-ink-900 text-sm mb-1">{{ is2FAEnabled ? 'Keren, akunmu udah diamankan menggunakan 2FA' : 'Amankan akunmu sekarang dengan 2FA' }}</p>
-                  <p class="text-xs text-ink-500 leading-relaxed">{{ is2FAEnabled ? 'Akun Anda sekarang dilindungi oleh verifikasi OTP setiap kali login menggunakan email.' : 'Aktifkan Two-Factor Authentication (2FA) untuk meminimalisir risiko keamanan pada akunmu.' }}</p>
+                  <p class="font-bold text-ink-900 text-sm mb-1">{{ is2FAEnabled ? $t('profile.twoFA.enabledTitle') : $t('profile.twoFA.disabledTitle') }}</p>
+                  <p class="text-xs text-ink-500 leading-relaxed">{{ is2FAEnabled ? $t('profile.twoFA.enabledDesc') : $t('profile.twoFA.disabledDesc') }}</p>
                 </div>
               </div>
             </div>
@@ -169,14 +169,14 @@
             <!-- Action Buttons -->
             <div class="space-y-3 pt-6 border-t border-ink-100">
               <button @click="isPasswordOpen = true" class="w-full flex items-center justify-center gap-2 border border-orange-500 text-orange-500 font-bold py-2.5 rounded-lg text-sm hover:bg-orange-50 transition-colors">
-                <Lock class="w-4 h-4" /> Ganti Password
+                <Lock class="w-4 h-4" /> {{ $t('profile.changePassword') }}
               </button>
             </div>
           </div>
           
           <div class="px-6 py-4 flex justify-end border-t border-ink-100">
             <button class="bg-ink-100 text-ink-400 font-bold py-2 px-6 rounded-md text-sm cursor-not-allowed">
-              Simpan
+              {{ $t('profile.save') }}
             </button>
           </div>
         </div>
@@ -184,10 +184,10 @@
         <!-- Layanan Aktif Content -->
         <div v-else-if="activeTab === 'layanan'" class="bg-white border border-ink-100 rounded-2xl shadow-sm">
           <div class="px-6 py-5 border-b border-ink-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <h3 class="font-bold text-ink-900 text-base">Layanan Aktif</h3>
+            <h3 class="font-bold text-ink-900 text-base">{{ $t('profile.services.title') }}</h3>
             <div class="flex items-center gap-3">
               <NuxtLink to="/dashboard/topup" class="border border-orange-500 text-orange-500 font-bold py-2 px-4 rounded-md text-sm hover:bg-orange-50 transition-colors">
-                Ubah Paket
+                {{ $t('profile.services.changePlan') }}
               </NuxtLink>
             </div>
           </div>
@@ -197,24 +197,29 @@
             <div class="border border-ink-100 rounded-xl p-5 bg-orange-50/50">
               <div class="flex items-center gap-3 mb-2">
                 <Gem class="w-5 h-5 text-orange-500" />
-                <span class="font-bold text-ink-900 text-lg">Paket {{ activePackage.charAt(0).toUpperCase() + activePackage.slice(1) }}</span>
-                <span class="px-3 py-1 bg-green-100 text-green-600 text-xs font-bold rounded-md uppercase tracking-wider">Aktif</span>
+                <span class="font-bold text-ink-900 text-lg">{{ $t('profile.services.currentPlan', { name: activePackage.charAt(0).toUpperCase() + activePackage.slice(1) }) }}</span>
+                <span class="px-3 py-1 bg-green-100 text-green-600 text-xs font-bold rounded-md uppercase tracking-wider">{{ $t('profile.services.active') }}</span>
               </div>
-              <p class="text-sm text-ink-500">Anda sedang berlangganan paket {{ activePackage.charAt(0).toUpperCase() + activePackage.slice(1) }}. Anda dapat melihat detail limit dan biaya (*fee*) pada halaman <NuxtLink to="/dashboard/topup" class="text-orange-500 font-bold hover:underline">Top Up</NuxtLink>.</p>
+              <p class="text-sm text-ink-500">
+                <i18n-t keypath="profile.services.planDesc" tag="span">
+                  <template #name>{{ activePackage.charAt(0).toUpperCase() + activePackage.slice(1) }}</template>
+                  <template #link><NuxtLink to="/dashboard/topup" class="text-orange-500 font-bold hover:underline">Top Up</NuxtLink></template>
+                </i18n-t>
+              </p>
             </div>
 
             <!-- Sewa Akun Iklan -->
             <div class="border border-ink-100 rounded-xl p-5">
               <div class="flex flex-wrap items-center gap-3 mb-5">
-                <span class="font-bold text-ink-900">Sewa Akun Iklan</span>
-                <span class="px-3 py-1 bg-ink-100 text-ink-500 text-xs font-bold rounded-md">{{ adsStore.adAccounts.length }} Akun</span>
+                <span class="font-bold text-ink-900">{{ $t('profile.services.adAccountRental') }}</span>
+                <span class="px-3 py-1 bg-ink-100 text-ink-500 text-xs font-bold rounded-md">{{ $t('profile.services.accounts', { count: adsStore.adAccounts.length }) }}</span>
               </div>
               
               <div v-if="adsStore.isFetchingAccounts" class="flex justify-center p-4">
                 <Loader2 class="w-6 h-6 text-orange-500 animate-spin" />
               </div>
               <div v-else-if="adsStore.adAccounts.length === 0" class="text-center p-4 text-ink-500 text-sm">
-                Belum ada akun iklan yang disewa.
+                {{ $t('profile.services.noAccounts') }}
               </div>
               <div v-else class="space-y-3">
                 <div v-for="account in adsStore.adAccounts" :key="account.id" class="flex items-center justify-between p-4 border border-ink-100 rounded-lg hover:border-orange-200 transition-colors">
@@ -238,7 +243,7 @@
                   </div>
                   <div class="text-right">
                     <div v-if="account.subscription_expires_at">
-                      <span class="text-[10px] text-ink-500">Masa Aktif</span>
+                      <span class="text-[10px] text-ink-500">{{ $t('profile.services.activePeriod') }}</span>
                       <div class="flex items-center justify-end gap-1.5 mt-0.5">
                         <span 
                           class="font-bold text-xs px-1.5 py-0.5 rounded" 
@@ -252,12 +257,12 @@
                           class="text-[9px] font-bold px-2 py-0.5 rounded-full shadow-sm transition-all flex items-center"
                           :class="getDaysLeftNum(account.subscription_expires_at)! <= 0 ? 'bg-red-500 text-white hover:bg-red-600' : 'bg-orange-500 text-white hover:bg-orange-600'"
                         >
-                          Perpanjang
+                          {{ $t('profile.services.extend') }}
                         </button>
                       </div>
                     </div>
                     <div v-else>
-                      <span class="text-[10px] text-ink-500">Masa Aktif</span>
+                      <span class="text-[10px] text-ink-500">{{ $t('profile.services.activePeriod') }}</span>
                       <p class="font-bold text-ink-900 text-xs">-</p>
                     </div>
                   </div>
@@ -297,6 +302,7 @@ definePageMeta({
   layout: 'dashboard',
 })
 
+const { t } = useI18n()
 const route = useRoute()
 const activeTab = ref((route.query.tab as string) || 'profile')
 const activePackage = ref('starter')
@@ -306,10 +312,10 @@ const adsStore = useAdsStore()
 
 const fullName = computed(() => user.value?.user_metadata?.full_name || 'User')
 const verificationStatus = ref('unverified')
-const email = computed(() => user.value?.email || 'Belum diatur')
+const email = computed(() => user.value?.email || t('profile.notSet'))
 // Anggap email otomatis terverifikasi selama user bisa login, sesuai request MVP.
 const isEmailVerified = computed(() => !!user.value?.email)
-const phone = computed(() => user.value?.user_metadata?.phone || 'Belum diatur')
+const phone = computed(() => user.value?.user_metadata?.phone || t('profile.notSet'))
 const { addToast } = useToast()
 
 const initials = computed(() => {
@@ -384,8 +390,8 @@ const calculateDaysLeft = (dateStr: string) => {
   if (!dateStr) return '-'
   const diffDays = getDaysLeftNum(dateStr)
   if (diffDays === null) return '-'
-  if (diffDays <= 0) return 'Kedaluwarsa'
-  return diffDays + ' Hari'
+  if (diffDays <= 0) return t('profile.services.expired')
+  return diffDays + ' ' + t('profile.services.days')
 }
 
 const getDaysLeftNum = (dateStr: string) => {
@@ -422,10 +428,10 @@ const handleToggle2FA = async () => {
       user.value = freshUser as any
     }
     
-    addToast(is2FAEnabled.value ? '2FA berhasil diaktifkan' : '2FA berhasil dinonaktifkan', 'success')
+    addToast(is2FAEnabled.value ? t('profile.toast.twoFAEnabled') : t('profile.toast.twoFADisabled'), 'success')
   } catch (err: any) {
     is2FAEnabled.value = !is2FAEnabled.value
-    addToast(err.message || 'Gagal mengubah status 2FA', 'error')
+    addToast(err.message || t('profile.toast.twoFAFailed'), 'error')
   } finally {
     isUpdating2FA.value = false
   }
@@ -461,20 +467,20 @@ const handlePhoneRequested = (newPhone: string) => {
 }
 
 const resetVerification = async () => {
-  if (!confirm('Yakin ingin mereset status verifikasi? Ini akan menghapus data KYC Anda.')) return
+  if (!confirm(t('profile.resetConfirm'))) return
   try {
     const uid = (user.value as any)?.id || (user.value as any)?.sub
     const supabase = useSupabaseClient()
     await (supabase as any).from('users').update({ verification_status: 'unverified' }).eq('id', uid)
-    addToast('Status verifikasi berhasil di-reset untuk testing!', 'success')
+    addToast(t('profile.toast.resetSuccess'), 'success')
     window.location.reload()
   } catch (err: any) {
-    addToast(err.message || 'Gagal reset', 'error')
+    addToast(err.message || t('profile.toast.resetFailed'), 'error')
   }
 }
 
-const tabs = [
-  { id: 'profile', label: 'Profile' },
-  { id: 'layanan', label: 'Layanan Aktif' },
-]
+const tabs = computed(() => [
+  { id: 'profile', label: t('profile.tabs.profile') },
+  { id: 'layanan', label: t('profile.tabs.activeServices') },
+])
 </script>

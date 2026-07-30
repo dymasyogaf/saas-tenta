@@ -43,11 +43,24 @@ export default defineEventHandler(async (event) => {
     }
 
     // 2. Dapatkan saldo user
-    const { data: saldoData, error: saldoErr } = await supabase
+    let { data: saldoData, error: saldoErr } = await supabase
       .from('saldo')
       .select('balance, pending_balance')
       .eq('user_id', uid)
       .single()
+
+    if (saldoErr && saldoErr.code === 'PGRST116') {
+      const { data: newSaldo, error: insertErr } = await supabase
+        .from('saldo')
+        .insert({ user_id: uid, balance: 0, pending_balance: 0 })
+        .select('balance, pending_balance')
+        .single()
+        
+      if (!insertErr && newSaldo) {
+        saldoData = newSaldo
+        saldoErr = null
+      }
+    }
 
     if (saldoErr || !saldoData) {
       throw new Error('Data saldo tidak ditemukan')

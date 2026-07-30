@@ -14,13 +14,13 @@
         </div>
 
         <h2 class="text-2xl md:text-4xl font-display font-bold text-ink-900 mb-4 max-w-3xl leading-tight">
-          Akun iklan yang lebih optimal, siap gas tanpa batas!
+          {{ $t('platform.heroTitle') }}
         </h2>
         <p class="text-ink-600 mb-10 max-w-3xl text-sm md:text-base leading-relaxed">
-          Tinggalin cara beriklan yang lama dan penuh drama! Pakai Tentaklik Ads buat dapetin mudahnya beriklan minim hambatan.
+          {{ $t('platform.heroDesc') }}
         </p>
 
-        <h3 class="text-xl font-bold text-ink-900 mb-6">Yang pasti kamu dapetin</h3>
+        <h3 class="text-xl font-bold text-ink-900 mb-6">{{ $t('platform.benefitsTitle') }}</h3>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div
@@ -44,10 +44,10 @@
 
     <!-- Platform List -->
     <div class="flex flex-col sm:flex-row sm:justify-between items-start sm:items-center mb-4 gap-4">
-      <h3 class="font-display font-bold text-xl md:text-2xl text-ink-900">Layanan iklan di Tentaklik</h3>
+      <h3 class="font-display font-bold text-xl md:text-2xl text-ink-900">{{ $t('platform.servicesTitle') }}</h3>
       
       <button @click="resetDev" class="flex items-center gap-2 px-4 py-2 bg-red-50 border border-red-200 rounded-lg text-sm font-bold text-red-600 hover:bg-red-100 transition-colors shadow-sm shrink-0">
-        <Trash2 class="w-4 h-4" /> Reset Dev (Wipe Data)
+        <Trash2 class="w-4 h-4" /> {{ $t('platform.resetDev') }}
       </button>
     </div>
 
@@ -93,8 +93,10 @@ definePageMeta({
   layout: 'dashboard',
 })
 
+const { t } = useI18n()
 const supabase = useSupabaseClient()
 const { user } = useAuth()
+const { csrf } = useCsrf()
 
 const isModalOpen = ref(false)
 const selectedPlatformName = ref('')
@@ -110,59 +112,67 @@ const openTopUpModal = () => {
   navigateTo('/dashboard/topup')
 }
 
-const benefits = [
+const benefits = computed(() => [
   {
     icon: GraduationCap,
-    title: 'Info, ilmu, hingga edukasi ads terupdate',
-    desc: 'Diberikan langsung oleh tim Tentaklik atau kolaborasi bersama Meta, Google, maupun TikTok.',
+    title: t('platform.benefits.educationTitle'),
+    desc: t('platform.benefits.educationDesc'),
   },
   {
     icon: BarChart2,
-    title: 'Scale up iklan tanpa limit',
-    desc: 'Akun whitelisted yang ideal untuk ngiklan secara agresif tanpa khawatir kena limit harian.',
+    title: t('platform.benefits.scaleTitle'),
+    desc: t('platform.benefits.scaleDesc'),
   },
   {
     icon: ShieldCheck,
-    title: 'Akun lebih aman, minim risiko restrict',
-    desc: 'Ngiklan lebih tenang dengan akun yang minim drama. Jika terkena restrict, tim kami siap sedia bantu kamu selesaikan masalahnya.',
+    title: t('platform.benefits.safeTitle'),
+    desc: t('platform.benefits.safeDesc'),
   },
   {
     icon: Wallet,
-    title: 'Budget iklan lebih efisien',
-    desc: 'Isi saldo akun iklan gratis management fee untuk pengguna baru*, ngiklan jadi lebih optimal! *S&K berlaku.',
+    title: t('platform.benefits.budgetTitle'),
+    desc: t('platform.benefits.budgetDesc'),
   },
-]
+])
 
-const platforms = ref<any[]>([
+const platformsRaw = ref<any[]>([
   {
     dbName: 'Meta Ads',
     name: 'Facebook Ads Whitelisted Account (Meta)',
     logo: '/icon-meta-ads.png',
     logoClass: 'rounded-full',
-    status: 'Tidak Aktif',
+    statusKey: 'inactive',
     rawStatus: null,
-    description: 'Scale up iklan pakai <strong>Meta Ads</strong> Whitelisted Account dari Tentaklik yang bisa gas kapan pun dan minim hambatan!',
+    descKey: 'platform.metaDesc',
   },
   {
     dbName: 'TikTok Ads',
     name: 'TikTok Ads Whitelisted Account',
     logo: '/tiktok.svg',
     logoClass: 'rounded-2xl p-2',
-    status: 'Tidak Aktif',
+    statusKey: 'inactive',
     rawStatus: null,
     isComingSoon: true,
-    description: 'Scale up iklan pakai <strong>Tiktok Ads</strong> Whitelisted Account dari Tentaklik yang bisa gas kapan pun dan minim hambatan!',
+    descKey: 'platform.tiktokDesc',
   },
   {
     dbName: 'Google Ads',
     name: 'Google Ads Whitelisted Account',
     logo: '/icon-google-ads.png',
     logoClass: 'rounded-full',
-    status: 'Tidak Aktif',
+    statusKey: 'inactive',
     rawStatus: null,
-    description: 'Scale up iklan pakai <strong>Google Ads</strong> Whitelisted Account dari Tentaklik yang bisa gas kapan pun dan minim hambatan!',
+    descKey: 'platform.googleDesc',
   },
 ])
+
+const platforms = computed(() =>
+  platformsRaw.value.map(p => ({
+    ...p,
+    status: t(`platform.accountStatus.${p.statusKey}`),
+    description: t(p.descKey),
+  }))
+)
 
 const fetchRequests = async () => {
   isLoading.value = true
@@ -194,20 +204,17 @@ const fetchRequests = async () => {
     .order('created_at', { ascending: false })
     
   if (data) {
-    // Karena data diurutkan descending (terbaru di awal), kita hanya proses jika platform belum diset (agar tidak ditimpa yang lama)
+    const statusKeyMap: Record<string, string> = {
+      'pending_review': 'inReview',
+      'processing': 'creating',
+      'approved': 'active',
+      'rejected': 'rejected',
+    }
     data.forEach((req: any) => {
-      const p = platforms.value.find(p => p.dbName === req.platform)
+      const p = platformsRaw.value.find(p => p.dbName === req.platform)
       if (p && !p.rawStatus) {
         p.rawStatus = req.status
-        if (req.status === 'pending_review') {
-          p.status = 'Sedang Review'
-        } else if (req.status === 'processing') {
-          p.status = 'Pembuatan Akun'
-        } else if (req.status === 'approved') {
-          p.status = 'Aktif'
-        } else if (req.status === 'rejected') {
-          p.status = 'Ditolak'
-        }
+        p.statusKey = statusKeyMap[req.status] || 'inactive'
       }
     })
   }
@@ -216,22 +223,21 @@ const fetchRequests = async () => {
 }
 
 const resetDev = async () => {
-  if (!confirm('🔥 PERINGATAN DEV: Aksi ini akan menghapus SEMUA data Pengajuan dan Akun Iklan. Lanjutkan?')) return
+  if (!confirm(t('platform.resetDevConfirm'))) return
   try {
-    const res = await $fetch('/api/dev/reset-ads', { method: 'POST' })
+    const csrfToken = unref(csrf)
+    const res = await $fetch('/api/dev/reset-ads', { method: 'POST', headers: csrfToken ? { 'csrf-token': csrfToken } : {} })
     alert((res as any).message)
-    
-    // Kembalikan ke tampilan default
-    platforms.value.forEach(p => {
+
+    platformsRaw.value.forEach(p => {
       p.rawStatus = null
-      p.status = 'Tidak Aktif'
+      p.statusKey = 'inactive'
     })
-    
-    // Refresh saldo global jika perlu
+
     refreshNuxtData()
     fetchRequests()
   } catch(e: any) {
-    alert(e.data?.statusMessage || 'Gagal mereset data')
+    alert(e.data?.statusMessage || t('platform.resetFailed'))
   }
 }
 

@@ -144,6 +144,7 @@ import { MessageCircle, Trash2, Search } from 'lucide-vue-next'
 definePageMeta({ layout: 'admin' })
 
 const toast = useToast()
+const { csrf } = useCsrf()
 const { data: tickets, pending, refresh } = useFetch<any>('/api/admin/tickets')
 
 const filterStatus = ref('all')
@@ -174,8 +175,10 @@ const updateStatus = async (ticket_id: string, status: string) => {
   if (!confirm(`Yakin ingin mengubah status tiket menjadi ${status.toUpperCase()}?`)) return
   
   try {
+    const csrfToken = unref(csrf)
     await $fetch('/api/admin/tickets', {
       method: 'POST',
+      headers: csrfToken ? { 'csrf-token': csrfToken } : {},
       body: { ticket_id, status }
     })
     toast.addToast('Status tiket diperbarui', 'success')
@@ -189,7 +192,8 @@ const deleteTicket = async (id: string, ticketNumber: string) => {
   if (!confirm(`Yakin ingin menghapus tiket #${ticketNumber}? Tindakan ini tidak dapat dibatalkan.`)) return
   
   try {
-    await $fetch(`/api/admin/tickets/${id}`, { method: 'DELETE' })
+    const csrfToken2 = unref(csrf)
+    await $fetch(`/api/admin/tickets/${id}`, { method: 'DELETE', headers: csrfToken2 ? { 'csrf-token': csrfToken2 } : {} })
     toast.addToast('Tiket berhasil dihapus', 'success')
     refresh()
   } catch (err: any) {

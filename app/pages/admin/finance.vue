@@ -217,6 +217,8 @@ definePageMeta({
   middleware: ['admin'] // Harusnya dilindungi middleware admin_finance / super_admin
 })
 
+const { csrf } = useCsrf()
+
 const activeTab = ref('withdraw')
 const searchQuery = ref('')
 const typeFilter = ref('all')
@@ -274,8 +276,10 @@ const executeProcessWithdraw = async () => {
   const toast = useToast()
 
   try {
+    const csrfToken = unref(csrf)
     const response = await $fetch('/api/admin/finance', {
       method: 'POST',
+      headers: csrfToken ? { 'csrf-token': csrfToken } : {},
       body: {
         transaction_id: confirmId.value,
         action: confirmAction.value

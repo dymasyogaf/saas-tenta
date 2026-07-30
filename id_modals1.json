@@ -1,0 +1,63 @@
+{
+  "modals": {
+    "addStaff": {
+      "title": "Tambah Staf Internal",
+      "subtitle": "Berikan hak akses khusus untuk karyawan.",
+      "tabPromote": "Opsi A: Promosikan Klien",
+      "tabCreate": "Opsi B: Buat Akun Baru",
+      "promoteDesc": "Pilih klien yang sudah terdaftar untuk diangkat menjadi staf/admin.",
+      "selectClient": "Pilih Klien",
+      "selectClientPlaceholder": "-- Pilih Klien --",
+      "selectRole": "Pilih Jabatan (Role)",
+      "selectRolePlaceholder": "-- Pilih Jabatan --",
+      "createDesc": "Sistem akan membuatkan akun di belakang layar (bypass registrasi).",
+      "fullName": "Nama Lengkap",
+      "fullNamePlaceholder": "Contoh: Budi Santoso",
+      "email": "Email Staf",
+      "emailPlaceholder": "budi@agensi.com",
+      "password": "Kata Sandi (Password)",
+      "passwordPlaceholder": "Minimal 6 karakter",
+      "promoteBtn": "Promosikan",
+      "createBtn": "Buat Akun"
+    },
+    "email": {
+      "title": "Ubah Email",
+      "currentEmail": "Email saat ini:",
+      "newEmail": "Email Baru",
+      "newEmailPlaceholder": "Masukkan alamat baru...",
+      "securityConfirm": "Konfirmasi Keamanan",
+      "passwordPlaceholder": "Masukkan kata sandi saat ini...",
+      "securityDesc": "Dibutuhkan untuk memverifikasi identitas Anda.",
+      "saving": "Menyimpan...",
+      "saveChanges": "Simpan Perubahan",
+      "wrongPassword": "Password yang Anda masukkan salah.",
+      "updateFailed": "Gagal update email: ",
+      "successMsg": "Permintaan ubah email berhasil. Silakan cek kotak masuk email baru (dan lama) Anda untuk konfirmasi.",
+      "updateFailedGeneric": "Gagal mengubah email"
+    },
+    "extendRent": {
+      "title": "Perpanjang Sewa Akun Iklan",
+      "subtitle": "Pilih durasi perpanjangan untuk akun {account}",
+      "id": "ID:",
+      "activePeriod": "Masa Aktif:",
+      "month": "Bulan",
+      "months": "Bulan",
+      "normal": "Normal",
+      "save": "Hemat",
+      "netBalance": "Sisa Saldo Bersih Anda",
+      "topupNow": "Top Up Sekarang",
+      "insufficientBalance": "Saldo Tidak Mencukupi",
+      "payNow": "Bayar Sekarang",
+      "expired": "Kedaluwarsa",
+      "days": "Hari",
+      "errorInsufficient": "Saldo tidak mencukupi. Silakan top up terlebih dahulu.",
+      "errorProcess": "Gagal memproses pembayaran.",
+      "successMsg": "Perpanjangan sewa akun berhasil."
+    }
+  },
+  "common": {
+    "cancel": "Batal",
+    "success": "Sukses",
+    "error": "Terjadi kesalahan"
+  }
+}

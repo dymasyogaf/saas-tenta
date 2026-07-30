@@ -27,7 +27,7 @@
       <!-- Navigation -->
       <nav class="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
         <div class="px-4 mb-2">
-          <p class="text-[10px] font-bold text-ink-400 tracking-wider uppercase">Menu Operasional</p>
+          <p class="text-[10px] font-bold text-ink-400 tracking-wider uppercase">{{ $t('admin.menuTitle') }}</p>
         </div>
         
         <NuxtLink
@@ -89,7 +89,7 @@
             to="/dashboard"
             class="text-sm font-medium text-ink-500 hover:text-orange-600 flex items-center gap-2 transition-colors border border-ink-200 bg-white px-3 py-1.5 rounded-lg hover:bg-orange-50"
           >
-            <LogOut class="w-4 h-4" /> Klien Dasbor
+            <LogOut class="w-4 h-4" /> {{ $t('nav.clientDashboard') }}
           </NuxtLink>
           
           <!-- Profile Dropdown -->
@@ -109,12 +109,24 @@
               v-if="isProfileOpen"
               class="absolute right-0 top-full mt-2 w-48 bg-white border border-ink-200 rounded-xl shadow-lg py-2 z-50"
             >
+              <!-- Language Switcher -->
+              <button
+                v-for="loc in availableLocales"
+                :key="loc.code"
+                @click="setLocale(loc.code as 'id' | 'en'); isProfileOpen = false"
+                class="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-ink-50 transition-colors group text-left"
+              >
+                <Globe class="w-4 h-4 text-ink-400 group-hover:text-orange-500" />
+                <span class="font-semibold text-ink-700 group-hover:text-orange-600">{{ loc.name }}</span>
+              </button>
+              <div class="h-px bg-ink-100 my-1" />
+
               <button
                 @click="handleLogout"
                 class="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-ink-50 transition-colors group text-left"
               >
                 <LogOut class="w-4 h-4 text-ink-400 group-hover:text-red-500" />
-                <span class="font-semibold text-ink-700 group-hover:text-red-600">Logout</span>
+                <span class="font-semibold text-ink-700 group-hover:text-red-600">{{ $t('common.logout') }}</span>
               </button>
             </div>
           </div>
@@ -147,12 +159,18 @@ import {
   ChevronDown,
   Menu,
   LogOut,
-  Headset
+  Headset,
+  Globe
 } from 'lucide-vue-next'
 
 // Auth state
 const { user, logout } = useAuth()
 const router = useRouter()
+const { t, locale, locales, setLocale } = useI18n()
+
+const availableLocales = computed(() =>
+  (locales.value as Array<{ code: string; name: string }>).filter(l => l.code !== locale.value)
+)
 
 const userName = computed(() => {
   return user.value?.user_metadata?.full_name || user.value?.email || 'Admin'
@@ -185,46 +203,42 @@ const userRole = computed(() => user.value?.user_metadata?.role || 'admin')
 
 // Helper Konversi Jabatan
 const getRoleName = (role: string) => {
-  const map: Record<string, string> = {
-    'admin_compliance': 'Tim Audit (Kepatuhan)',
-    'admin_ads_ops': 'Tim Ops Iklan',
-    'admin_finance': 'Tim Keuangan',
-    'super_admin': 'Super Admin'
-  }
-  return map[role] || role
+  const key = `admin.roles.${role}`
+  const translated = t(key)
+  return translated !== key ? translated : role
 }
 
 // Navigation items
 const navItems = computed(() => {
   const role = userRole.value
   const items = [
-    { to: '/admin', label: 'Dashboard Admin', icon: LayoutDashboard },
-    { 
-      to: '/admin/verifications', 
-      label: 'Tim Audit (eKYC)', 
-      icon: ShieldCheck, 
+    { to: '/admin', label: t('admin.dashboardAdmin'), icon: LayoutDashboard },
+    {
+      to: '/admin/verifications',
+      label: t('admin.auditTeam'),
+      icon: ShieldCheck,
       badge: pendingKycCount.value > 0 ? pendingKycCount.value.toString() : undefined,
       allowed: ['super_admin', 'admin_compliance']
     },
-    { 
-      to: '/admin/ads-ops', 
-      label: 'Tim Ads Ops', 
-      icon: Megaphone, 
+    {
+      to: '/admin/ads-ops',
+      label: t('admin.adsOpsTeam'),
+      icon: Megaphone,
       badge: pendingAdsCount.value > 0 ? pendingAdsCount.value.toString() : undefined,
-      allowed: ['super_admin', 'admin_ads_ops'] 
+      allowed: ['super_admin', 'admin_ads_ops']
     },
-    { 
-      to: '/admin/finance', 
-      label: 'Tim Finance', 
-      icon: WalletCards, 
+    {
+      to: '/admin/finance',
+      label: t('admin.financeTeam'),
+      icon: WalletCards,
       badge: pendingFinanceCount.value > 0 ? pendingFinanceCount.value.toString() : undefined,
-      allowed: ['super_admin', 'admin_finance'] 
+      allowed: ['super_admin', 'admin_finance']
     },
-    { to: '/admin/support', label: 'Tiket Bantuan', icon: Headset, allowed: ['super_admin', 'admin_compliance'] },
-    { to: '/admin/clients', label: 'Daftar Klien', icon: Users, allowed: ['super_admin', 'admin_finance', 'admin_ads_ops', 'admin_compliance'] },
-    { to: '/admin/users', label: 'Manajemen Akses', icon: UserCog, allowed: ['super_admin'] },
+    { to: '/admin/support', label: t('admin.supportTickets'), icon: Headset, allowed: ['super_admin', 'admin_compliance'] },
+    { to: '/admin/clients', label: t('admin.clientList'), icon: Users, allowed: ['super_admin', 'admin_finance', 'admin_ads_ops', 'admin_compliance'] },
+    { to: '/admin/users', label: t('admin.accessManagement'), icon: UserCog, allowed: ['super_admin'] },
   ]
-  
+
   return items.filter(item => !item.allowed || item.allowed.includes(role))
 })
 
@@ -241,14 +255,14 @@ function isActiveRoute(path: string) {
 // Dynamic page title
 const pageTitle = computed(() => {
   const titles: Record<string, string> = {
-    '/admin': 'Dashboard Admin',
-    '/admin/verifications': 'Verifikasi Identitas Klien',
-    '/admin/ads-ops': 'Manajemen Akun Iklan',
-    '/admin/finance': 'Audit Keuangan & Mutasi',
-    '/admin/clients': 'Daftar Klien (CRM)',
-    '/admin/users': 'Manajemen Pengguna',
-    '/admin/support': 'Tiket Pusat Bantuan',
+    '/admin': t('admin.dashboardAdmin'),
+    '/admin/verifications': t('admin.pageTitles.verifications'),
+    '/admin/ads-ops': t('admin.pageTitles.adsOps'),
+    '/admin/finance': t('admin.pageTitles.finance'),
+    '/admin/clients': t('admin.pageTitles.clients'),
+    '/admin/users': t('admin.pageTitles.users'),
+    '/admin/support': t('admin.pageTitles.support'),
   }
-  return titles[route.path] || 'Panel Admin'
+  return titles[route.path] || t('admin.panelAdmin')
 })
 </script>

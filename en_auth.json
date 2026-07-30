@@ -1,0 +1,42 @@
+{
+  "auth": {
+    "resetPasswordTitle": "Reset Password",
+    "resetPasswordSubtitle": "Please enter your new password.",
+    "newPassword": "New Password",
+    "min8Chars": "Minimum 8 characters",
+    "confirmNewPassword": "Confirm New Password",
+    "repeatNewPassword": "Repeat new password",
+    "updatePasswordBtn": "Update Password",
+    "backToLogin": "Back to Login",
+    "verifySecurityTitle": "Security Verification",
+    "verifySecuritySubtitle1": "Enter the 6-digit OTP code just sent to your WhatsApp number (",
+    "verifySecuritySubtitle2": ").",
+    "verifyAndLogin": "Verify & Login",
+    "resending": "Resending...",
+    "resendIn": "Resend in",
+    "resendOtp": "Resend OTP Code",
+    "cancelAndBack": "Cancel and back to Login page",
+    "confirmingTitle": "Processing Confirmation...",
+    "confirmingSubtitle": "Please wait a moment, verifying your security token.",
+    "confirmSuccessTitle": "Confirmation Successful!",
+    "confirmSuccessSubtitle": "Your email or account has been successfully verified. You will be redirected to the dashboard...",
+    "confirmFailedTitle": "Confirmation Failed",
+    "backToDashboard": "Back to Dashboard",
+    "invalidLink": "Confirmation link is invalid or expired.",
+    "invalidToken": "Token is invalid or expired.",
+    "sessionNotFound": "Session not found or invalid token.",
+    "toast": {
+      "passwordMismatch": "Password confirmation does not match",
+      "updateSuccess": "Password updated successfully! Please login.",
+      "updateFailed": "Failed to update password",
+      "verifySuccess": "Verification successful!",
+      "wrongOtp": "Incorrect OTP code",
+      "verifyError": "An error occurred while verifying",
+      "newOtpSent": "New OTP code has been sent to your WhatsApp",
+      "resendFailed": "Failed to resend OTP"
+    }
+  },
+  "common": {
+    "verifying": "Verifying..."
+  }
+}

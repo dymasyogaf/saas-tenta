@@ -1,0 +1,49 @@
+{
+  "modals": {
+    "instructionBm": {
+      "title": "How to get ID",
+      "step1a": "Go to the page",
+      "step2a": "Select the Business Portfolio to be used for Tentaklik Ads account later.",
+      "step3a": "Enter the authentication code first (make sure you have registered 2FA).",
+      "step4a": "Select Business Portfolio Info on the left menu.",
+      "step5a": "Business Manager ID is located under your Business Portfolio name.",
+      "step1b": "Go to the tiktok ads business center page at",
+      "step3b": "Select the Business Center Portfolio to be used for Tentaklik Ads account later.",
+      "step4b": "Business Center (BC) ID is located in the Account Overview section.",
+      "ok": "Okay, got it",
+      "altFb": "Facebook Business Manager Instructions",
+      "altTiktok": "TikTok Business Center Instructions"
+    },
+    "password": {
+      "title": "Change Password",
+      "old": "Old Password",
+      "oldPlaceholder": "Enter current password",
+      "new": "New Password",
+      "newPlaceholder": "Minimum 8 characters",
+      "confirm": "Confirm Password",
+      "confirmPlaceholder": "Repeat new password",
+      "forgot": "Forgot Password?",
+      "sending": "Sending...",
+      "errMismatch": "Password confirmation does not match the new password",
+      "errSame": "New password cannot be the same as the old password",
+      "errSession": "System error occurred, invalid session.",
+      "errWrongOld": "The old password you entered is incorrect.",
+      "success": "Password updated successfully",
+      "errUpdate": "Failed to update password",
+      "errNoEmail": "An error occurred, email not found.",
+      "resetSuccess": "Password reset link has been sent to your email!",
+      "resetFail": "Failed to send reset email"
+    },
+    "phone": {
+      "title": "Change Phone Number",
+      "current": "Current Phone Number:",
+      "new": "New Phone Number",
+      "errVerify": "Failed to verify security"
+    }
+  },
+  "common": {
+    "saving": "Saving...",
+    "saveChanges": "Save Changes",
+    "confirmation": "Confirmation"
+  }
+}

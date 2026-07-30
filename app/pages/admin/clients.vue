@@ -123,6 +123,7 @@ definePageMeta({
 })
 
 const supabase = useSupabaseClient()
+const { csrf } = useCsrf()
 const searchQuery = ref('')
 const statusFilter = ref('all')
 
@@ -157,8 +158,10 @@ const deleteClient = async (id: string, name: string) => {
   if (!confirm(`Apakah Anda yakin ingin menghapus klien ${name || 'ini'} secara permanen? Semua data terkait juga akan terhapus.`)) return
   
   try {
+    const csrfToken = unref(csrf)
     const res = await $fetch(`/api/admin/users/${id}`, {
-      method: 'DELETE'
+      method: 'DELETE',
+      headers: csrfToken ? { 'csrf-token': csrfToken } : {}
     })
     
     alert('Klien berhasil dihapus.')

@@ -19,12 +19,12 @@
           <ShieldAlert class="w-6 h-6" />
         </div>
         <div>
-          <h4 class="font-bold text-red-900 mb-1">Verifikasi Identitas Diperlukan</h4>
-          <p class="text-sm text-red-700">Akses fitur platform dibatasi. Silakan verifikasi identitas (eKYC) Anda terlebih dahulu untuk membuka seluruh layanan Tentaklik secara penuh.</p>
+          <h4 class="font-bold text-red-900 mb-1">{{ $t('components.verificationBanner.unverifiedTitle') }}</h4>
+          <p class="text-sm text-red-700">{{ $t('components.verificationBanner.unverifiedDesc') }}</p>
         </div>
       </div>
       <NuxtLink to="/dashboard/verification" class="shrink-0 w-full md:w-auto text-center px-6 py-2.5 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl text-sm transition-colors shadow-sm">
-        Verifikasi Sekarang
+        {{ $t('components.verificationBanner.verifyNow') }}
       </NuxtLink>
     </div>
 
@@ -35,12 +35,12 @@
           <ShieldAlert class="w-6 h-6" />
         </div>
         <div>
-          <h4 class="font-bold text-orange-900 mb-1">Verifikasi Sedang Direview</h4>
-          <p class="text-sm text-orange-700">Data identitas Anda sedang ditinjau oleh tim kami. Harap menunggu beberapa saat hingga proses verifikasi selesai.</p>
+          <h4 class="font-bold text-orange-900 mb-1">{{ $t('components.verificationBanner.pendingTitle') }}</h4>
+          <p class="text-sm text-orange-700">{{ $t('components.verificationBanner.pendingDesc') }}</p>
         </div>
       </div>
       <NuxtLink to="/dashboard/profile" class="shrink-0 w-full md:w-auto text-center px-6 py-2.5 bg-orange-100 hover:bg-orange-200 text-orange-700 font-bold rounded-xl text-sm transition-colors shadow-sm">
-        Cek Status
+        {{ $t('components.verificationBanner.checkStatus') }}
       </NuxtLink>
     </div>
   </div>

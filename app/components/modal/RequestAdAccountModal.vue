@@ -9,9 +9,9 @@
               <img :src="platformLogo" class="w-7 h-7 object-contain" />
             </div>
             <div>
-              <h3 id="request-ad-title" class="font-display font-bold text-ink-900">Pengajuan Akun Iklan Baru</h3>
-              <p v-if="activePlatformName" class="text-xs text-ink-500">Lengkapi formulir pendaftaran untuk {{ activePlatformName }}</p>
-              <p v-else class="text-xs text-ink-500">Pilih platform iklan yang ingin Anda tambahkan</p>
+              <h3 id="request-ad-title" class="font-display font-bold text-ink-900">{{ $t('modals.requestAd.title') }}</h3>
+              <p v-if="activePlatformName" class="text-xs text-ink-500">{{ $t('modals.requestAd.subtitle') }} {{ activePlatformName }}</p>
+              <p v-else class="text-xs text-ink-500">{{ $t('modals.requestAd.selectPlatform') }}</p>
             </div>
           </div>
           <button @click="closeModal" class="text-ink-400 hover:text-ink-600 transition-colors bg-ink-50 p-2 rounded-lg">
@@ -49,11 +49,11 @@
             
             <!-- Section 1: Informasi Detail -->
             <div class="bg-white p-6 rounded-xl border border-ink-200 shadow-sm space-y-5">
-              <h4 class="font-bold text-ink-900 text-lg mb-4">Informasi detail</h4>
+              <h4 class="font-bold text-ink-900 text-lg mb-4">{{ $t('modals.requestAd.details') }}</h4>
               
               <div>
-                <label class="block text-sm font-bold text-ink-900 mb-2">Nama lengkap (sesuai KTP) <span class="text-red-500">*</span></label>
-                <input v-model="form.fullName" type="text" required placeholder="Masukkan nama lengkap sesuai di KTP" class="w-full px-4 py-2.5 border border-ink-200 rounded-lg text-sm focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 text-ink-900" />
+                <label class="block text-sm font-bold text-ink-900 mb-2">{{ $t('modals.requestAd.fullName') }} <span class="text-red-500">*</span></label>
+                <input v-model="form.fullName" type="text" required :placeholder="$t('modals.requestAd.fullNamePlaceholder')" class="w-full px-4 py-2.5 border border-ink-200 rounded-lg text-sm focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 text-ink-900" />
               </div>
 
               <div>
@@ -63,26 +63,26 @@
                   <span class="text-red-500">*</span>
                 </label>
                 <div class="flex flex-col sm:flex-row sm:items-center gap-3">
-                  <input v-model="form.bmId" :type="activePlatformName.includes('Google') ? 'email' : 'text'" required :placeholder="activePlatformName.includes('Google') ? 'Masukkan Shared Email' : 'Masukkan ID ' + (activePlatformName.includes('TikTok') ? 'Business Center' : 'Business Manager')" class="w-full sm:flex-1 px-4 py-2.5 border border-ink-200 rounded-lg text-sm focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 text-ink-900" />
-                  <button v-if="!activePlatformName.includes('Google')" type="button" @click="showInstructionBm = true" class="text-sm font-semibold text-orange-500 hover:text-orange-600 whitespace-nowrap text-left transition-colors">Lihat cara mendapatkan ID {{ activePlatformName.includes('TikTok') ? 'Business Center' : 'Business Manager' }}</button>
+                  <input v-model="form.bmId" :type="activePlatformName.includes('Google') ? 'email' : 'text'" required :placeholder="activePlatformName.includes('Google') ? $t('modals.requestAd.sharedEmailPlaceholder') : $t('modals.requestAd.idPlaceholder') + ' ' + (activePlatformName.includes('TikTok') ? 'Business Center' : 'Business Manager')" class="w-full sm:flex-1 px-4 py-2.5 border border-ink-200 rounded-lg text-sm focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 text-ink-900" />
+                  <button v-if="!activePlatformName.includes('Google')" type="button" @click="showInstructionBm = true" class="text-sm font-semibold text-orange-500 hover:text-orange-600 whitespace-nowrap text-left transition-colors">{{ $t('modals.requestAd.howToGetId') }} {{ activePlatformName.includes('TikTok') ? 'Business Center' : 'Business Manager' }}</button>
                 </div>
               </div>
               
               <div>
-                <label class="block text-sm font-bold text-ink-900 mb-2">Kategori Bisnis <span class="text-red-500">*</span></label>
+                <label class="block text-sm font-bold text-ink-900 mb-2">{{ $t('modals.requestAd.adCategory') }} <span class="text-red-500">*</span></label>
                 <select v-model="form.adCategory" required class="w-full px-4 py-2.5 border border-ink-200 rounded-lg text-sm focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 text-ink-900 bg-white">
-                  <option value="" disabled>— Pilih kategori —</option>
-                  <option value="UMKM">UMKM</option>
-                  <option value="Produk Kecantikan">Produk Kecantikan</option>
-                  <option value="Kesehatan">Kesehatan</option>
-                  <option value="Konsultan Pendidikan">Konsultan Pendidikan</option>
-                  <option value="Fashion">Fashion</option>
-                  <option value="Lainnya">Lainnya</option>
+                  <option value="" disabled>{{ $t('modals.requestAd.categoryPlaceholder') }}</option>
+                  <option value="UMKM">{{ $t('modals.requestAd.catUMKM') }}</option>
+                  <option value="Produk Kecantikan">{{ $t('modals.requestAd.catBeauty') }}</option>
+                  <option value="Kesehatan">{{ $t('modals.requestAd.catHealth') }}</option>
+                  <option value="Konsultan Pendidikan">{{ $t('modals.requestAd.catEdu') }}</option>
+                  <option value="Fashion">{{ $t('modals.requestAd.catFashion') }}</option>
+                  <option value="Lainnya">{{ $t('modals.requestAd.catOther') }}</option>
                 </select>
               </div>
 
               <div v-if="activePlatformName.includes('Meta')">
-                <label class="block text-sm font-bold text-ink-900 mb-2">Link Instagram / Facebook Page <span class="text-red-500">*</span></label>
+                <label class="block text-sm font-bold text-ink-900 mb-2">{{ $t('modals.requestAd.socialLink') }} <span class="text-red-500">*</span></label>
                 <input 
                   v-model="form.socialLink" 
                   @blur="formatSocialUrl"
@@ -94,7 +94,7 @@
               </div>
 
               <div>
-                <label class="block text-sm font-bold text-ink-900 mb-2">Target Website (URL) <span v-if="!activePlatformName.includes('Meta')" class="text-red-500">*</span><span v-else class="text-ink-400 font-normal ml-1">(Opsional)</span></label>
+                <label class="block text-sm font-bold text-ink-900 mb-2">{{ $t('modals.requestAd.targetUrl') }} <span v-if="!activePlatformName.includes('Meta')" class="text-red-500">*</span><span v-else class="text-ink-400 font-normal ml-1">{{ $t('modals.requestAd.optional') }}</span></label>
                 <input 
                   v-model="form.targetUrl" 
                   @blur="formatUrl"
@@ -108,81 +108,81 @@
 
             <!-- Section 2: Keamanan 2FA -->
             <div class="bg-white p-6 rounded-xl border border-ink-200 shadow-sm space-y-4">
-              <h4 class="font-bold text-ink-900 text-lg mb-2">Keamanan Two Factor Authentication (2FA)</h4>
+              <h4 class="font-bold text-ink-900 text-lg mb-2">{{ $t('modals.requestAd.security2fa') }}</h4>
               <p class="text-sm text-ink-700 leading-relaxed bg-ink-50 p-4 rounded-lg border border-ink-100">
-                Autentikasi Dua Faktor (2FA) adalah proses yang meminta pengguna untuk membuktikan identitas mereka dengan dua cara berbeda sebelum bisa masuk ke sistem. Misalnya masuk menggunakan alamat email atau nomor telepon, lalu memasukkan kata sandi atau pin yang benar.
+                {{ $t('modals.requestAd.security2faDesc') }}
               </p>
               
               <div class="space-y-3 mt-4">
                 <label class="flex items-start gap-3 cursor-pointer group">
                   <input type="checkbox" v-model="form.agree2fa1" required class="mt-1 w-4 h-4 text-orange-500 border-ink-300 rounded focus:ring-orange-500 shrink-0" />
-                  <span class="text-sm text-ink-600 group-hover:text-ink-900 transition-colors">Saya menyadari apabila ada admin yang tidak mengaktifkan 2FA dan melakukan kelalaian sehingga menyebabkan akun terkena hack, maka saldo iklan yang digunakan oleh hacker tidak dapat dikembalikan oleh meta/ditinjau ulang oleh platform.</span>
+                  <span class="text-sm text-ink-600 group-hover:text-ink-900 transition-colors">{{ $t('modals.requestAd.agree2fa1') }}</span>
                 </label>
                 <label class="flex items-start gap-3 cursor-pointer group">
                   <input type="checkbox" v-model="form.agree2fa2" required class="mt-1 w-4 h-4 text-orange-500 border-ink-300 rounded focus:ring-orange-500 shrink-0" />
-                  <span class="text-sm text-ink-600 group-hover:text-ink-900 transition-colors">Segala keputusan baliknya saldo akibat kejadian hack sepenuhnya berada di pihak platform (Meta/Google/TikTok).</span>
+                  <span class="text-sm text-ink-600 group-hover:text-ink-900 transition-colors">{{ $t('modals.requestAd.agree2fa2') }}</span>
                 </label>
               </div>
             </div>
 
             <!-- Section 3: Kebijakan Platform -->
             <div class="bg-white p-6 rounded-xl border border-ink-200 shadow-sm space-y-4">
-              <h4 class="font-bold text-ink-900 text-lg mb-2">Kebijakan {{ activePlatformName.includes('Meta') ? 'Facebook' : activePlatformName }}</h4>
+              <h4 class="font-bold text-ink-900 text-lg mb-2">{{ $t('modals.requestAd.policyTitle') }} {{ activePlatformName.includes('Meta') ? 'Facebook' : activePlatformName }}</h4>
               <div class="bg-ink-50 p-4 rounded-lg border border-ink-100">
                 <label class="flex items-start gap-3 cursor-pointer group">
                   <input type="checkbox" v-model="form.agreePolicy" required class="mt-1 w-4 h-4 text-orange-500 border-ink-300 rounded focus:ring-orange-500 shrink-0" />
-                  <span class="text-sm text-ink-600 group-hover:text-ink-900 transition-colors">Saya memahami dan setuju dengan segala kebijakan platform. Saya bersedia menanggung segala resiko jika terjadi pelanggaran terhadap kebijakan platform tersebut.</span>
+                  <span class="text-sm text-ink-600 group-hover:text-ink-900 transition-colors">{{ $t('modals.requestAd.agreePolicy') }}</span>
                 </label>
               </div>
             </div>
 
-            <!-- Section 4: Syarat dan Ketentuan -->
+            <!-- Section 4: {{ $t('modals.requestAd.tcTitle') }} -->
             <div class="bg-white p-6 rounded-xl border border-ink-200 shadow-sm space-y-4">
-              <h4 class="font-bold text-ink-900 text-lg mb-2">Syarat dan Ketentuan</h4>
+              <h4 class="font-bold text-ink-900 text-lg mb-2">{{ $t('modals.requestAd.tcTitle') }}</h4>
               
               <div class="bg-ink-50 border border-ink-200 rounded-lg p-4 h-64 overflow-y-auto text-xs text-ink-700 space-y-4 custom-scrollbar">
                 <div class="space-y-2">
-                  <h5 class="font-bold text-sm">1. Definisi</h5>
-                  <p>1.1 "Ads Account" berarti akun iklan milik Tentaklik yang bersifat whitelisted pada Platform Pengiklanan Digital yang akan diberikan akses kepada Anda sehubungan dengan penggunaan Whitelisted Account Support.</p>
-                  <p>1.2 "Ad Credit" berarti saldo yang tertampung pada Ads Account yang disediakan Tentaklik kepada Anda sesuai sejumlah Dana Top-Up yang dapat digunakan untuk melakukan kegiatan pengiklanan pada Platform Pengiklanan Digital.</p>
-                  <p>1.3 "Dana Top-Up" berarti sejumlah dana yang dibayarkan oleh Anda sehubungan dengan penggunaan Whitelisted Account Support yang akan ditampung dan menjadi saldo Ad Credit Anda.</p>
-                  <p>1.4 "Platform Pengiklanan Digital" berarti platform online yang dapat Anda gunakan untuk melakukan kegiatan pengiklanan dengan menggunakan Ads Account sehubungan dengan Whitelisted Account Support, yaitu Meta, Google, TikTok, dan/atau platform lainnya.</p>
-                  <p>1.5 "Whitelisted Account Support" berarti layanan dukungan kegiatan pengiklanan pada Platform Pengiklanan Digital dengan menggunakan Ads Account yang disediakan oleh Tentaklik kepada Anda.</p>
-                  <p>1.6 "CPAS (Facebook Collaborative Ads)" berarti menghubungkan layanan Akun Iklan dengan marketplace, yang memungkinkan pelaksanaan iklan menggunakan katalog dan penargetan audien berdasarkan data kunjungan pada marketplace, sesuai dengan persyaratan dan kebijakan platform terkait.</p>
+                  <h5 class="font-bold text-sm">{{ $t('modals.requestAd.tcDef') }}</h5>
+                  <p>{{ $t('modals.requestAd.tcDef11') }}</p>
+                  <p>{{ $t('modals.requestAd.tcDef12') }}</p>
+                  <p>{{ $t('modals.requestAd.tcDef13') }}</p>
+                  <p>{{ $t('modals.requestAd.tcDef14') }}</p>
+                  <p>{{ $t('modals.requestAd.tcDef15') }}</p>
+                  <p>{{ $t('modals.requestAd.tcDef16') }}</p>
                 </div>
 
                 <div class="space-y-2">
-                  <h5 class="font-bold text-sm">2. Layanan Tentaklik Ads Service</h5>
-                  <p class="font-semibold">2.1 Ruang Lingkup Layanan</p>
+                  <h5 class="font-bold text-sm">{{ $t('modals.requestAd.tcSvc') }}</h5>
+                  <p class="font-semibold">{{ $t('modals.requestAd.tcSvc21') }}</p>
                   <ul class="list-disc pl-4 space-y-1">
-                    <li>Tentaklik akan menyediakan layanan periklanan sesuai dengan service yang tersedia di Tentaklik.</li>
-                    <li>Layanan Tentaklik mencakup, namun tidak terbatas pada: Penyediaan fasilitas top up otomatis 24 jam untuk platform Facebook dan Google.</li>
-                    <li>Penyediaan review konten iklan sesuai dengan standar beriklan Tentaklik yang didalamnya termasuk syarat dan ketentuan Platform Digital Beriklan.</li>
-                    <li>User akan mendapatkan Ads Account sejumlah maksimal 1 (satu) pada awal penggunaan Layanan. Tentaklik berhak menambahkan jumlah akun Ads Account Anda secara bertahap berdasarkan pertimbangan sepihak.</li>
-                    <li>Memberikan support atas tambahan akun iklan maupun business manager yang dibutuhkan oleh user sesuai dengan persetujuan tim Tentaklik.</li>
-                    <li>Meregulasi iklan user dimana termasuk dalam kegiatan penutupan/pemberhentian campaign/account iklan dari user bila ditemukan pelanggaran iklan.</li>
+                    <li>{{ $t('modals.requestAd.tcSvc21a') }}</li>
+                    <li>{{ $t('modals.requestAd.tcSvc21b') }}</li>
+                    <li>{{ $t('modals.requestAd.tcSvc21c') }}</li>
+                    <li>{{ $t('modals.requestAd.tcSvc21d') }}</li>
+                    <li>{{ $t('modals.requestAd.tcSvc21e') }}</li>
+                    <li>{{ $t('modals.requestAd.tcSvc21f') }}</li>
                   </ul>
-                  <p class="font-semibold mt-2">2.2 Persetujuan Layanan Tentaklik Ads Service</p>
-                  <p>Dengan mendaftar pada platform Tentaklik menandakan user telah setuju dengan seluruh S&K beriklan menggunakan Layanan Tentaklik Ads Service.</p>
+                  <p class="font-semibold mt-2">{{ $t('modals.requestAd.tcSvc22') }}</p>
+                  <p>{{ $t('modals.requestAd.tcSvc22Desc') }}</p>
                 </div>
 
                 <div class="space-y-2">
-                  <h5 class="font-bold text-sm">3. Tanggung Jawab Tentaklik</h5>
-                  <p>Tentaklik berkomitmen memastikan iklan yang berjalan di bawah akun milik Tentaklik sesuai dengan standar Tentaklik yang didalamnya termasuk dalam syarat dan ketentuan Platform Digital Beriklan. Jika Ads Account yang telah diberikan kepada Anda teregulasi bukan disebabkan oleh pelanggaran Anda, maka Tentaklik akan memberikan Ads Account pengganti secara langsung.</p>
+                  <h5 class="font-bold text-sm">{{ $t('modals.requestAd.tcResp') }}</h5>
+                  <p>{{ $t('modals.requestAd.tcRespDesc') }}</p>
                 </div>
 
                 <div class="space-y-2">
-                  <h5 class="font-bold text-sm">6. Biaya dan Ketentuan Pembayaran</h5>
-                  <p class="font-semibold">a. Management Fee</p>
-                  <p>Anda berkewajiban untuk membayarkan "Management Fee" kepada Tentaklik sebesar: Platform Facebook (4%) dan Platform Google (3%). Pembayaran atas Management Fee akan dilakukan dengan pemotongan langsung dari jumlah Dana Top-Up Anda.</p>
-                  <p class="font-semibold mt-2">b. Biaya Akun</p>
-                  <p>Anda wajib membayarkan "Biaya Akun" kepada Tentaklik pada setiap bulannya, untuk setiap Ads Account yang digunakan. Besar Biaya Akun adalah {{ pricing.managementFeeInfo }}.</p>
+                  <h5 class="font-bold text-sm">{{ $t('modals.requestAd.tcFee') }}</h5>
+                  <p class="font-semibold">{{ $t('modals.requestAd.tcFeeA') }}</p>
+                  <p>{{ $t('modals.requestAd.tcFeeADesc') }}</p>
+                  <p class="font-semibold mt-2">{{ $t('modals.requestAd.tcFeeB') }}</p>
+                  <p>{{ $t('modals.requestAd.tcFeeBDesc', { fee: pricing.managementFeeInfo }) }}</p>
                 </div>
               </div>
               
               <label class="flex items-start gap-3 cursor-pointer group mt-4 bg-orange-50 p-4 rounded-xl border border-orange-200">
                 <input type="checkbox" v-model="form.agreeTc" required class="mt-1 w-5 h-5 text-orange-500 border-orange-300 rounded focus:ring-orange-500 shrink-0" />
-                <span class="text-sm font-bold text-orange-900 group-hover:text-orange-700 transition-colors">Saya menyetujui Syarat dan Ketentuan yang berlaku. Apabila saya melanggar peraturan ini, saya bersedia menerima segala konsekuensi yang berlaku.</span>
+                <span class="text-sm font-bold text-orange-900 group-hover:text-orange-700 transition-colors">Saya menyetujui {{ $t('modals.requestAd.tcTitle') }} yang berlaku. Apabila saya melanggar peraturan ini, saya bersedia menerima segala konsekuensi yang berlaku.</span>
               </label>
             </div>
 
@@ -191,27 +191,27 @@
           <!-- Step 3: Pilih Durasi Sewa -->
           <div v-else-if="step === 3" class="space-y-6 max-w-2xl mx-auto py-4">
             <div class="text-center mb-6">
-              <h4 class="font-bold text-xl text-ink-900 mb-2">Pilih Durasi Sewa Akun</h4>
-              <p class="text-ink-500 text-sm">Pilih masa aktif untuk akun iklan Anda sebelum mengajukan pembuatan akun.</p>
+              <h4 class="font-bold text-xl text-ink-900 mb-2">{{ $t('modals.requestAd.selectDuration') }}</h4>
+              <p class="text-ink-500 text-sm">{{ $t('modals.requestAd.durationDesc') }}</p>
             </div>
             
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div @click="form.subscriptionMonths = 1; form.rentalFee = pricing.monthly" :class="['border-2 rounded-xl p-5 cursor-pointer transition-all text-center', form.subscriptionMonths === 1 ? 'border-orange-500 bg-orange-50' : 'border-ink-100 hover:border-ink-300']">
-                <h5 class="font-bold text-ink-900 mb-1">1 Bulan</h5>
+                <h5 class="font-bold text-ink-900 mb-1">1 {{ $t('modals.extendRent.month') }}</h5>
                 <p class="text-2xl font-bold text-orange-600 mb-2">Rp {{ pricing.monthly.toLocaleString('id-ID') }}</p>
-                <p class="text-xs text-ink-500">Normal</p>
+                <p class="text-xs text-ink-500">{{ $t('modals.extendRent.normal') }}</p>
               </div>
 
               <div @click="form.subscriptionMonths = 3; form.rentalFee = pricing.quarterly" :class="['border-2 rounded-xl p-5 cursor-pointer transition-all relative text-center', form.subscriptionMonths === 3 ? 'border-orange-500 bg-orange-50' : 'border-ink-100 hover:border-ink-300']">
-                <div class="absolute -top-3 inset-x-0 flex justify-center"><span class="bg-orange-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">Hemat 22%</span></div>
-                <h5 class="font-bold text-ink-900 mb-1 mt-1">3 Bulan</h5>
+                <div class="absolute -top-3 inset-x-0 flex justify-center"><span class="bg-orange-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">{{ $t('modals.extendRent.save') }} 22%</span></div>
+                <h5 class="font-bold text-ink-900 mb-1 mt-1">3 {{ $t('modals.extendRent.months') }}</h5>
                 <p class="text-2xl font-bold text-orange-600 mb-2">Rp {{ pricing.quarterly.toLocaleString('id-ID') }}</p>
                 <p class="text-xs text-ink-500 line-through">Rp {{ pricing.quarterlyOriginal.toLocaleString('id-ID') }}</p>
               </div>
 
               <div @click="form.subscriptionMonths = 6; form.rentalFee = pricing.semiannual" :class="['border-2 rounded-xl p-5 cursor-pointer transition-all relative text-center', form.subscriptionMonths === 6 ? 'border-orange-500 bg-orange-50' : 'border-ink-100 hover:border-ink-300']">
-                <div class="absolute -top-3 inset-x-0 flex justify-center"><span class="bg-green-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">Hemat 12%</span></div>
-                <h5 class="font-bold text-ink-900 mb-1 mt-1">6 Bulan</h5>
+                <div class="absolute -top-3 inset-x-0 flex justify-center"><span class="bg-green-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">{{ $t('modals.extendRent.save') }} 12%</span></div>
+                <h5 class="font-bold text-ink-900 mb-1 mt-1">6 {{ $t('modals.extendRent.months') }}</h5>
                 <p class="text-2xl font-bold text-orange-600 mb-2">Rp {{ pricing.semiannual.toLocaleString('id-ID') }}</p>
                 <p class="text-xs text-ink-500 line-through">Rp {{ pricing.semiannualOriginal.toLocaleString('id-ID') }}</p>
               </div>
@@ -219,11 +219,11 @@
 
             <div class="mt-8 bg-ink-50 rounded-xl p-4 border border-ink-100 flex items-center justify-between">
               <div>
-                <p class="text-sm text-ink-500 mb-1">Sisa Saldo Bersih Anda</p>
+                <p class="text-sm text-ink-500 mb-1">{{ $t('modals.extendRent.netBalance') }}</p>
                 <p class="font-bold text-xl text-ink-900" :class="{'text-red-500': netBalance < form.rentalFee}">Rp {{ netBalance.toLocaleString('id-ID') }}</p>
               </div>
               <button type="button" v-if="netBalance < form.rentalFee" @click="() => navigateTo('/dashboard/topup')" class="px-4 py-2 bg-white border border-orange-200 text-orange-600 font-bold rounded-lg text-xs hover:bg-orange-50 transition-colors shadow-sm">
-                Top Up Sekarang
+                {{ $t('modals.extendRent.topupNow') }}
               </button>
             </div>
           </div>
@@ -232,7 +232,7 @@
         <!-- Footer -->
         <div class="px-6 py-4 bg-white flex justify-end gap-3 border-t border-ink-100 shrink-0">
           <button @click="goBack" type="button" class="px-6 py-2.5 bg-white border border-ink-200 text-ink-700 hover:bg-ink-50 font-bold rounded-xl text-sm transition-colors shadow-sm">
-            {{ step > 1 ? 'Kembali' : 'Batal' }}
+            {{ step > 1 ? $t('common.back') : $t('common.cancel') }}
           </button>
           
           <button 
@@ -242,7 +242,7 @@
             :disabled="!isFormValid" 
             class="px-8 py-2.5 bg-orange-500 border border-orange-500 text-white hover:bg-orange-600 font-bold rounded-xl text-sm transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
-            Lanjutkan
+            {{ $t('common.next') }}
           </button>
 
           <button 
@@ -252,8 +252,8 @@
             class="px-8 py-2.5 bg-orange-500 border border-orange-500 text-white hover:bg-orange-600 font-bold rounded-xl text-sm transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
             <span v-if="isSubmitting" class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
-            <template v-else-if="netBalance < form.rentalFee">Saldo Tidak Mencukupi</template>
-            <template v-else>Bayar Sekarang</template>
+            <template v-else-if="netBalance < form.rentalFee">{{ $t('modals.extendRent.insufficientBalance') }}</template>
+            <template v-else>{{ $t('modals.extendRent.payNow') }}</template>
           </button>
         </div>
       </div>
@@ -262,6 +262,17 @@
 
   <!-- Modal Instruksi -->
   <ModalInstructionBmModal v-model="showInstructionBm" :platformName="activePlatformName" />
+
+  <!-- Modal Konfirmasi Tutup -->
+  <ModalConfirmModal
+    v-model:isOpen="showConfirmClose"
+    title="Tutup Form?"
+    message="Terdapat perubahan yang belum disimpan. Apakah Anda yakin ingin menutup form ini?"
+    confirmText="Ya, Tutup"
+    cancelText="Batal"
+    type="warning"
+    @confirm="forceCloseModal"
+  />
 </template>
 
 <script setup lang="ts">
@@ -280,6 +291,7 @@ const toast = useToast()
 const supabase = useSupabaseClient()
 const { user } = useAuth()
 const runtimeConfig = useRuntimeConfig()
+const { t } = useI18n()
 
 const pricing = {
   monthly: Number(runtimeConfig.public.pricingMonthly),
@@ -357,6 +369,7 @@ const goBack = () => {
 
 const isSubmitting = ref(false)
 const showInstructionBm = ref(false)
+const showConfirmClose = ref(false)
 
 const form = reactive({
   fullName: '',
@@ -404,7 +417,8 @@ const isDirty = computed(() => {
 })
 
 const closeModal = () => {
-  if (isDirty.value && !window.confirm('Terdapat perubahan yang belum disimpan. Apakah Anda yakin ingin menutup?')) {
+  if (isDirty.value) {
+    showConfirmClose.value = true
     return
   }
   forceCloseModal()
@@ -443,7 +457,7 @@ const formatSocialUrl = () => {
 const submitPayment = async () => {
   if (!isFormValid.value) return
   if (netBalance.value < form.rentalFee) {
-    toast.addToast('Saldo tidak mencukupi. Silakan top up terlebih dahulu.', 'error')
+    toast.addToast(t('modals.extendRent.errorInsufficient'), 'error')
     return
   }
   
@@ -451,7 +465,7 @@ const submitPayment = async () => {
   
   try {
     const uid = (user.value as any)?.id || (user.value as any)?.sub
-    if (!uid) throw new Error('User tidak ditemukan. Silakan login kembali.')
+    if (!uid) throw new Error(t('modals.requestAd.errNoUser'))
 
     let dbPlatform = 'Meta Ads'
     if (activePlatformName.value.includes('TikTok')) dbPlatform = 'TikTok Ads'
@@ -472,21 +486,24 @@ const submitPayment = async () => {
       }
     }
     
+    const { csrf } = useCsrf()
+    const csrfToken = unref(csrf)
     const requestResponse = await $fetch<any>('/api/ads/request', {
       method: 'POST',
+      headers: csrfToken ? { 'csrf-token': csrfToken } : {},
       body: requestPayload
     })
 
     if (!requestResponse || !requestResponse.requestId) {
-      throw new Error('Gagal mencatat pengajuan')
+      throw new Error(t('modals.requestAd.errFailRecord'))
     }
 
-    toast.addToast('Pengajuan akun berhasil dibuat. Saldo Anda ditahan sementara.', 'success')
+    toast.addToast(t('modals.requestAd.successMsg'), 'success')
     emit('success')
     forceCloseModal()
     
   } catch (err: any) {
-    toast.addToast(err.message || err.data?.statusMessage || 'Gagal memproses pembayaran.', 'error')
+    toast.addToast(err.message || err.data?.statusMessage || t('modals.extendRent.errorProcess'), 'error')
   } finally {
     isSubmitting.value = false
   }

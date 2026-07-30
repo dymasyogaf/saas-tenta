@@ -1,0 +1,49 @@
+{
+  "modals": {
+    "instructionBm": {
+      "title": "Cara mendapatkan ID",
+      "step1a": "Masuk ke halaman",
+      "step2a": "Pilih Portofolio Bisnis yang akan digunakan untuk akun iklan Tentaklik Ads nanti.",
+      "step3a": "Masukkan kode autentikasi terlebih dulu (pastikan kamu sudah mendaftarkan 2FA).",
+      "step4a": "Pilih Info Portofolio Bisnis di sebelah kiri menu.",
+      "step5a": "ID Business Manager terdapat di bawah nama Portofolio Bisnis milikmu.",
+      "step1b": "Masuk ke halaman pusat bisnis tiktok ads di",
+      "step3b": "Pilih Portofolio Bisnis (Business Center) yang akan digunakan untuk akun iklan Tentaklik Ads nanti.",
+      "step4b": "ID Business Center (BC) terdapat di bagian Account Overview.",
+      "ok": "Oke, mengerti",
+      "altFb": "Instruksi Facebook Business Manager",
+      "altTiktok": "Instruksi TikTok Business Center"
+    },
+    "password": {
+      "title": "Ganti Password",
+      "old": "Password Lama",
+      "oldPlaceholder": "Masukkan password saat ini",
+      "new": "Password Baru",
+      "newPlaceholder": "Minimal 8 karakter",
+      "confirm": "Konfirmasi Password",
+      "confirmPlaceholder": "Ulangi password baru",
+      "forgot": "Lupa Password?",
+      "sending": "Mengirim...",
+      "errMismatch": "Konfirmasi password tidak cocok dengan password baru",
+      "errSame": "Password baru tidak boleh sama dengan password lama",
+      "errSession": "Terjadi kesalahan sistem, sesi tidak valid.",
+      "errWrongOld": "Password lama yang Anda masukkan salah.",
+      "success": "Password berhasil diperbarui",
+      "errUpdate": "Gagal memperbarui password",
+      "errNoEmail": "Terjadi kesalahan, email tidak ditemukan.",
+      "resetSuccess": "Tautan reset password telah dikirim ke email Anda!",
+      "resetFail": "Gagal mengirim email reset"
+    },
+    "phone": {
+      "title": "Ubah No Telepon",
+      "current": "No Telepon saat ini:",
+      "new": "No Telepon Baru",
+      "errVerify": "Gagal memverifikasi keamanan"
+    }
+  },
+  "common": {
+    "saving": "Menyimpan...",
+    "saveChanges": "Simpan Perubahan",
+    "confirmation": "Konfirmasi"
+  }
+}

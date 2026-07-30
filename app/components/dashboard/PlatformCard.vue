@@ -23,7 +23,7 @@
               'bg-red-100 text-red-600 border-red-200': platform.rawStatus === 'rejected'
             }"
           >
-            {{ platform.isComingSoon ? 'Segera Hadir' : platform.status }}
+            {{ platform.isComingSoon ? $t('components.platformCard.comingSoon') : platform.status }}
           </span>
         </div>
         <p class="text-sm text-ink-600 mb-3 leading-relaxed" v-html="platform.description" />
@@ -31,26 +31,26 @@
           class="text-sm font-semibold text-orange-500 hover:text-orange-600 flex items-center gap-1 transition-colors"
           @click="showSteps = !showSteps"
         >
-          {{ showSteps ? 'Sembunyikan' : 'Lihat' }} tahapan pembuatan akun
+          {{ showSteps ? $t('components.platformCard.hide') : $t('components.platformCard.show') }} {{ $t('components.platformCard.steps') }}
           <component :is="showSteps ? ChevronUp : ChevronDown" class="w-4 h-4" />
         </button>
       </div>
       <div class="shrink-0 mt-3 md:mt-0 w-full md:w-auto">
         <button v-if="platform.isComingSoon" disabled class="w-full md:w-auto px-6 py-3 rounded-xl text-sm font-bold transition-colors shadow-sm bg-ink-100 text-ink-400 cursor-not-allowed">
-          Segera Hadir
+          {{ $t('components.platformCard.comingSoon') }}
         </button>
         <button v-else-if="!platform.rawStatus" :disabled="isLocked" @click="!isLocked && $emit('request')" class="w-full md:w-auto px-6 py-3 rounded-xl text-sm font-bold transition-colors shadow-sm" :class="isLocked ? 'bg-ink-200 text-ink-500 cursor-not-allowed' : 'bg-orange-500 text-white hover:bg-orange-600'">
-          <span v-if="isLocked" class="flex items-center gap-2 justify-center"><ShieldAlert class="w-4 h-4" /> Terkunci</span>
-          <span v-else>Dapatkan Ads Account</span>
+          <span v-if="isLocked" class="flex items-center gap-2 justify-center"><ShieldAlert class="w-4 h-4" /> {{ $t('components.platformCard.locked') }}</span>
+          <span v-else>{{ $t('components.platformCard.getAccount') }}</span>
         </button>
         <button v-else-if="['pending_review', 'processing'].includes(platform.rawStatus)" disabled class="w-full md:w-auto bg-ink-200 text-ink-500 cursor-not-allowed px-6 py-3 rounded-xl text-sm font-bold shadow-sm">
           {{ platform.status }}
         </button>
         <button v-else-if="platform.rawStatus === 'approved'" @click="$emit('manage')" class="w-full md:w-auto bg-green-600 text-white px-6 py-3 rounded-xl text-sm font-bold hover:bg-green-700 transition-colors shadow-sm">
-          Top Up Saldo
+          {{ $t('components.platformCard.topUp') }}
         </button>
         <button v-else-if="platform.rawStatus === 'rejected'" @click="$emit('request')" class="w-full md:w-auto bg-red-50 text-red-600 border border-red-200 hover:bg-red-100 px-6 py-3 rounded-xl text-sm font-bold transition-colors shadow-sm">
-          Ajukan Ulang
+          {{ $t('components.platformCard.reapply') }}
         </button>
       </div>
     </div>
@@ -73,7 +73,7 @@
           class="text-sm font-semibold text-orange-500 hover:text-orange-600 flex items-center gap-1 transition-colors"
           @click="showSteps = false"
         >
-          Sembunyikan tahapan pembuatan akun <ChevronUp class="w-4 h-4" />
+          {{ $t('components.platformCard.hide') }} {{ $t('components.platformCard.steps') }} <ChevronUp class="w-4 h-4" />
         </button>
       </div>
     </div>
@@ -110,38 +110,39 @@ defineProps<{
 
 defineEmits(['request', 'manage'])
 
+const { t } = useI18n()
 const showSteps = ref(false)
 
-const steps = [
+const steps = computed(() => [
   {
     icon: FileText,
-    title: 'Isi formulir pendaftaran',
-    desc: 'Lengkapi formulir dengan nama sesuai KTP, ID Business, dan setujui Syarat & Ketentuan.',
+    title: t('components.platformCard.step1Title'),
+    desc: t('components.platformCard.step1Desc'),
     colorClass: 'text-cyan-500 bg-cyan-50',
   },
   {
     icon: ShieldCheck,
-    title: 'Review Tim Internal',
-    desc: 'Tim Kepatuhan Tentaklik akan meninjau kelayakan pengajuan akun iklan Anda.',
+    title: t('components.platformCard.step2Title'),
+    desc: t('components.platformCard.step2Desc'),
     colorClass: 'text-pink-500 bg-pink-50',
   },
   {
     icon: Settings,
-    title: 'Pembuatan Ad Account',
-    desc: 'Setelah disetujui, kami akan memproses penautan dan pembuatan akun iklan Whitelisted Anda.',
+    title: t('components.platformCard.step3Title'),
+    desc: t('components.platformCard.step3Desc'),
     colorClass: 'text-blue-500 bg-blue-50',
   },
   {
     icon: Wallet,
-    title: 'Top Up Saldo Akun',
-    desc: 'Isi saldo (Top Up) akun Anda terlebih dahulu melalui dashboard agar iklan bisa berjalan.',
+    title: t('components.platformCard.topUp') + ' Akun',
+    desc: t('components.platformCard.step4Desc'),
     colorClass: 'text-teal-500 bg-teal-50',
   },
   {
     icon: Megaphone,
-    title: 'Langsung gas ngiklan!',
-    desc: 'Akun siap digunakan! Anda bisa langsung menjalankan campaign iklan tanpa hambatan.',
+    title: t('components.platformCard.step5Title'),
+    desc: t('components.platformCard.step5Desc'),
     colorClass: 'text-orange-500 bg-orange-50',
   },
-]
+])
 </script>

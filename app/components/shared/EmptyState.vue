@@ -3,7 +3,7 @@
     <div v-if="$slots.illustration" class="text-ink-300">
       <slot name="illustration"></slot>
     </div>
-    <p class="text-ink-500 text-sm font-medium">{{ message }}</p>
+    <p class="text-ink-500 text-sm font-medium">{{ message || $t('components.emptyState.noData') }}</p>
     <div v-if="$slots.cta" class="mt-2">
       <slot name="cta"></slot>
     </div>

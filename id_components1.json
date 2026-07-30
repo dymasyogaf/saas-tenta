@@ -1,0 +1,46 @@
+{
+  "components": {
+    "platformCard": {
+      "comingSoon": "Segera Hadir",
+      "hide": "Sembunyikan",
+      "show": "Lihat",
+      "steps": "tahapan pembuatan akun",
+      "locked": "Terkunci",
+      "getAccount": "Dapatkan Ads Account",
+      "topUp": "Top Up Saldo",
+      "reapply": "Ajukan Ulang",
+      "step1Title": "Isi formulir pendaftaran",
+      "step1Desc": "Lengkapi formulir dengan nama sesuai KTP, ID Business, dan setujui Syarat & Ketentuan.",
+      "step2Title": "Review Tim Internal",
+      "step2Desc": "Tim Kepatuhan Tentaklik akan meninjau kelayakan pengajuan akun iklan Anda.",
+      "step3Title": "Pembuatan Ad Account",
+      "step3Desc": "Setelah disetujui, kami akan memproses penautan dan pembuatan akun iklan Whitelisted Anda.",
+      "step4Title": "Top Up Saldo Akun",
+      "step4Desc": "Isi saldo (Top Up) akun Anda terlebih dahulu melalui dashboard agar iklan bisa berjalan.",
+      "step5Title": "Langsung gas ngiklan!",
+      "step5Desc": "Akun siap digunakan! Anda bisa langsung menjalankan campaign iklan tanpa hambatan."
+    },
+    "verificationBanner": {
+      "unverifiedTitle": "Verifikasi Identitas Diperlukan",
+      "unverifiedDesc": "Akses fitur platform dibatasi. Silakan verifikasi identitas (eKYC) Anda terlebih dahulu untuk membuka seluruh layanan Tentaklik secara penuh.",
+      "verifyNow": "Verifikasi Sekarang",
+      "pendingTitle": "Verifikasi Sedang Direview",
+      "pendingDesc": "Data identitas Anda sedang ditinjau oleh tim kami. Harap menunggu beberapa saat hingga proses verifikasi selesai.",
+      "checkStatus": "Cek Status"
+    },
+    "dateRangePicker": {
+      "title": "Pilih Rentang Waktu",
+      "startDate": "Mulai Tanggal",
+      "endDate": "Sampai Tanggal",
+      "apply": "Terapkan"
+    },
+    "emptyState": {
+      "noData": "Data tidak ditemukan"
+    },
+    "floatingWhatsApp": {
+      "title": "Hubungi Customer Support",
+      "label": "Tenta Support",
+      "message": "Halo Tim Support Tentaklik, saya butuh bantuan mengenai akun saya. "
+    }
+  }
+}

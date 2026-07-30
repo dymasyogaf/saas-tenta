@@ -64,6 +64,32 @@
 
         <!-- Right side actions -->
         <div class="flex items-center gap-3 sm:gap-5">
+          <!-- Language Dropdown -->
+          <div class="relative">
+            <button class="border border-ink-200 text-ink-700 hover:bg-ink-50 transition-colors px-3 sm:px-4 py-2 rounded-xl flex items-center gap-1.5 sm:gap-2" @click="toggleLang">
+              <Globe class="w-4 h-4 sm:w-5 sm:h-5 text-ink-500" />
+              <span class="text-xs sm:text-sm font-semibold hidden sm:block">{{ locale === 'id' ? 'Indonesia' : 'English' }}</span>
+              <ChevronDown class="w-4 h-4 sm:w-5 sm:h-5 text-ink-400" />
+            </button>
+
+            <!-- Language Popup -->
+            <div
+              v-if="isLangOpen"
+              class="absolute right-0 md:-right-2 top-full mt-4 w-48 bg-white border border-ink-100 rounded-xl shadow-lg shadow-ink-900/5 z-50 py-2 flex flex-col"
+            >
+              <button
+                v-for="loc in locales"
+                :key="loc.code"
+                @click="setLocale(loc.code); isLangOpen = false"
+                class="w-full flex items-center justify-between px-4 py-2.5 hover:bg-ink-50 transition-colors text-left"
+                :class="locale === loc.code ? 'text-orange-600 font-bold bg-orange-50/50' : 'text-ink-700 font-medium'"
+              >
+                <span>{{ loc.name }}</span>
+                <Check v-if="locale === loc.code" class="w-4 h-4 text-orange-500" />
+              </button>
+            </div>
+          </div>
+
           <!-- Notification Bell -->
           <div class="relative">
             <button class="text-ink-500 hover:text-orange-500 transition-colors relative mt-1" @click="toggleNotif">
@@ -79,7 +105,7 @@
               class="absolute right-0 md:-right-4 top-full mt-4 w-72 md:w-80 bg-white border border-ink-100 rounded-xl shadow-lg shadow-ink-900/5 z-50 flex flex-col"
             >
               <div class="flex items-center justify-between p-4 border-b border-ink-100">
-                <h3 class="font-semibold text-ink-900">Notifikasi</h3>
+                <h3 class="font-semibold text-ink-900">{{ $t('header.notifications') }}</h3>
                 <button class="p-1.5 bg-ink-50 hover:bg-ink-100 rounded-md text-ink-500 transition-colors">
                   <Settings class="w-4 h-4" />
                 </button>
@@ -90,7 +116,7 @@
                     <Bell class="w-10 h-10" />
                     <span class="absolute top-2 right-2 text-ink-400 font-bold text-xs transform rotate-12">zZ</span>
                   </div>
-                  <p class="text-ink-500 text-sm">Saat ini anda tidak memiliki notifikasi</p>
+                  <p class="text-ink-500 text-sm">{{ $t('header.noNotifications') }}</p>
                 </div>
                 <div v-else class="divide-y divide-ink-100">
                   <div 
@@ -115,7 +141,7 @@
                   class="w-full text-sm font-semibold text-orange-500 hover:text-orange-600 flex items-center justify-center gap-1.5"
                   @click="isNotifOpen = false"
                 >
-                  Lihat Selengkapnya <ArrowRight class="w-4 h-4" />
+                  {{ $t('header.viewAll') }} <ArrowRight class="w-4 h-4" />
                 </NuxtLink>
               </div>
             </div>
@@ -127,15 +153,15 @@
             class="bg-orange-500 hover:bg-orange-600 text-white px-3 sm:px-5 py-2 rounded-xl text-sm font-semibold shadow-sm transition-all flex items-center gap-1.5 sm:gap-2 whitespace-nowrap shrink-0"
           >
             <Plus class="w-4 h-4 shrink-0" />
-            <span class="hidden sm:inline">Top Up Saldo</span>
-            <span class="sm:hidden">Top Up</span>
+            <span class="hidden sm:inline">{{ $t('header.topUp') }}</span>
+            <span class="sm:hidden">{{ $t('header.topUpShort') }}</span>
           </NuxtLink>
 
           <!-- Profile Dropdown -->
           <div class="relative pl-4 border-l border-ink-100">
             <button
               class="flex items-center gap-3 hover:bg-ink-50 p-1.5 rounded-xl transition-colors"
-              @click="isProfileOpen = !isProfileOpen"
+              @click="isProfileOpen = !isProfileOpen; isNotifOpen = false; isLangOpen = false"
             >
               <div class="w-9 h-9 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center font-bold text-sm shrink-0">
                 {{ userInitials }}
@@ -154,7 +180,7 @@
                 class="w-full flex items-center justify-between px-4 py-2.5 hover:bg-ink-50 transition-colors group"
                 @click="isProfileOpen = false"
               >
-                <span class="font-semibold text-ink-900 group-hover:text-orange-600">Profil</span>
+                <span class="font-semibold text-ink-900 group-hover:text-orange-600">{{ $t('common.profile') }}</span>
                 <div class="flex items-center gap-1.5 px-2 py-1 rounded-full border border-orange-500 text-orange-600 bg-orange-50 text-[10px] font-bold uppercase tracking-wider">
                   <Gem class="w-3 h-3" /> {{ saldoStore.activePackage || 'GRATIS' }}
                 </div>
@@ -168,14 +194,16 @@
                 class="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-ink-50 transition-colors group text-left border-b border-ink-100"
               >
                 <ShieldCheck class="w-4 h-4 text-ink-400 group-hover:text-orange-500" />
-                <span class="font-semibold text-ink-900 group-hover:text-orange-600">Beralih ke Admin</span>
+                <span class="font-semibold text-ink-900 group-hover:text-orange-600">{{ $t('nav.switchToAdmin') }}</span>
               </NuxtLink>
+
+
 
               <button
                 @click="handleLogout"
                 class="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-ink-50 transition-colors group text-left"
               >
-                <span class="font-semibold text-ink-900 group-hover:text-red-600">Logout</span>
+                <span class="font-semibold text-ink-900 group-hover:text-red-600">{{ $t('common.logout') }}</span>
               </button>
             </div>
           </div>
@@ -190,9 +218,9 @@
           <template #error="{ error, clearError }">
             <div class="bg-red-50 border border-red-200 text-red-600 p-6 rounded-xl flex flex-col items-center justify-center text-center mt-4">
               <TriangleAlert class="w-12 h-12 mb-2 text-red-500" />
-              <h3 class="font-bold text-lg mb-1">Terjadi Kesalahan</h3>
+              <h3 class="font-bold text-lg mb-1">{{ $t('common.error') }}</h3>
               <p class="text-sm opacity-80 mb-4">{{ error.message }}</p>
-              <button @click="clearError" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-colors">Coba Lagi</button>
+              <button @click="clearError" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-colors">{{ $t('common.retry') }}</button>
             </div>
           </template>
         </NuxtErrorBoundary>
@@ -201,9 +229,9 @@
 
     <!-- Click outside to close dropdowns -->
     <div
-      v-if="isNotifOpen || isProfileOpen"
+      v-if="isNotifOpen || isProfileOpen || isLangOpen"
       class="fixed inset-0 z-40"
-      @click="isNotifOpen = false; isProfileOpen = false"
+      @click="isNotifOpen = false; isProfileOpen = false; isLangOpen = false"
     />
 
     <!-- Floating WhatsApp -->
@@ -224,7 +252,7 @@
         </div>
         <div class="p-4 border-t border-ink-100 bg-ink-50 rounded-b-2xl shrink-0 flex justify-end">
           <button @click="selectedNotif = null" class="px-5 py-2 bg-white border border-ink-200 text-ink-700 font-semibold rounded-xl hover:bg-ink-50 transition-colors">
-            Tutup
+            {{ $t('common.close') }}
           </button>
         </div>
       </div>
@@ -249,8 +277,20 @@ import {
   Menu,
   ShieldCheck,
   Headset,
-  Gift
+  Gift,
+  Globe,
+  Check
 } from 'lucide-vue-next'
+
+const { t, locale, locales, setLocale } = useI18n()
+
+const availableLocales = computed(() =>
+  (locales.value as Array<{ code: string; name: string }>).filter(l => l.code !== locale.value)
+)
+
+const currentLocaleName = computed(() =>
+  (locales.value as Array<{ code: string; name: string }>).find(l => l.code === locale.value)?.name || locale.value
+)
 
 const { user, logout } = useAuth()
 const router = useRouter()
@@ -268,6 +308,8 @@ const stripHtml = (html: string) => {
 const toggleNotif = async () => {
   isNotifOpen.value = !isNotifOpen.value
   if (isNotifOpen.value) {
+    isLangOpen.value = false
+    isProfileOpen.value = false
     await fetchNotifications()
   }
 }
@@ -335,6 +377,15 @@ const isSidebarOpen = ref(false)
 // Dropdown states
 const isNotifOpen = ref(false)
 const isProfileOpen = ref(false)
+const isLangOpen = ref(false)
+
+const toggleLang = () => {
+  isLangOpen.value = !isLangOpen.value
+  if (isLangOpen.value) {
+    isNotifOpen.value = false
+    isProfileOpen.value = false
+  }
+}
 
 // Navigation items
 interface NavItem {
@@ -344,14 +395,13 @@ interface NavItem {
   badge?: string
 }
 
-const navItems: NavItem[] = [
-  { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { to: '/dashboard/platform', label: 'Platform Iklan', icon: MonitorPlay },
-  { to: '/dashboard/saldo', label: 'Saldo Iklan', icon: Wallet },
-  { to: '/dashboard/bermasalah', label: 'Iklan Bermasalah', icon: TriangleAlert },
-  { to: '/dashboard/referral', label: 'Affiliate', icon: Gift },
-  { to: '/dashboard/support', label: 'Bantuan Tiket', icon: Headset },
-]
+const navItems = computed<NavItem[]>(() => [
+  { to: '/dashboard', label: t('nav.dashboard'), icon: LayoutDashboard },
+  { to: '/dashboard/platform', label: t('nav.adPlatform'), icon: MonitorPlay },
+  { to: '/dashboard/saldo', label: t('nav.adBalance'), icon: Wallet },
+  { to: '/dashboard/referral', label: t('nav.affiliate'), icon: Gift },
+  { to: '/dashboard/support', label: t('nav.supportTicket'), icon: Headset },
+])
 
 // Active route detection
 const route = useRoute()
@@ -366,15 +416,16 @@ function isActiveRoute(path: string) {
 // Dynamic page title
 const pageTitle = computed(() => {
   const titles: Record<string, string> = {
-    '/dashboard': 'Dashboard',
-    '/dashboard/platform': 'Platform Iklan',
-    '/dashboard/saldo': 'Saldo Iklan',
-    '/dashboard/bermasalah': 'Iklan Bermasalah',
-    '/dashboard/notifikasi': 'Pusat Pemberitahuan',
-    '/dashboard/topup': 'My Balance by Pivot',
-    '/dashboard/profile': 'Profile',
-    '/dashboard/support': 'Pusat Bantuan',
+    '/dashboard': t('pageTitles.dashboard'),
+    '/dashboard/platform': t('pageTitles.adPlatform'),
+    '/dashboard/saldo': t('pageTitles.adBalance'),
+    '/dashboard/bermasalah': t('pageTitles.problemAds'),
+    '/dashboard/notifikasi': t('pageTitles.notifications'),
+    '/dashboard/topup': t('pageTitles.topUp'),
+    '/dashboard/profile': t('pageTitles.profile'),
+    '/dashboard/support': t('pageTitles.support'),
+    '/dashboard/referral': t('pageTitles.affiliate'),
   }
-  return titles[route.path] || 'Dashboard'
+  return titles[route.path] || t('pageTitles.dashboard')
 })
 </script>
