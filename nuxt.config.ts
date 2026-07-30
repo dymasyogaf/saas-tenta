@@ -28,6 +28,7 @@ export default defineNuxtConfig({
 
   // Security Configuration
   security: {
+    sri: false,
     csrf: true,
     headers: {
       crossOriginEmbedderPolicy: 'unsafe-none',
