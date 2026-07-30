@@ -427,28 +427,30 @@
     },
     "shareCode": "Share Referral Code",
     "becomeAffiliate": "Become an Affiliate Partner",
-    "affiliateDesc": "Earn 10% commission from every subscription payment made by your friends. Your friends also get a 10% discount.",
+    "affiliateDesc": "Earn 20% commission from every subscription payment made by your friends. Your friends also get a 20% discount.",
     "activateCode": "Activate My Code",
     "shareInstruction": "Give this code to your friends when they register on TentaKlik.",
     "yourCode": "YOUR REFERRAL CODE",
+    "yourLink": "YOUR REFERRAL LINK",
     "copyCode": "Copy Code",
+    "copyLink": "Copy Link",
     "quickShare": "QUICK SHARE",
-    "shareMessage": "Hi! Register on TentaKlik using my referral code: {code} to get a 10% discount on your first payment!",
+    "shareMessage": "Hi! Register on TentaKlik using my referral code: {code} to get a 20% discount on your first payment!",
     "friendCode": {
       "title": "Have a Friend's Referral Code?",
       "usedCode": "You have used a friend's referral code:",
-      "usedCodeBenefit": "You are entitled to a 10% discount on your first subscription payment.",
+      "usedCodeBenefit": "You are entitled to a 20% discount on your first subscription payment.",
       "expired": "The time limit (60 days) to use a referral code has expired.",
       "enterCode": "Enter your friend's referral code below. Time remaining:",
       "days": "days",
       "placeholder": "Example: TENTA-Ref0001",
-      "claimDiscount": "Claim 10% Discount"
+      "claimDiscount": "Claim 20% Discount"
     },
     "howItWorks": {
       "title": "How TentaKlik Affiliate Works",
       "step1": "Get your referral code by clicking \"Activate My Code\".",
       "step2": "Share the code with friends who need TentaKlik tools.",
-      "step3": "Your friend gets a 10% discount, and you get 10% balance when they successfully pay."
+      "step3": "Your friend gets a 20% discount, and you get 20% balance when they successfully pay."
     },
     "history": {
       "title": "Your Referral History",

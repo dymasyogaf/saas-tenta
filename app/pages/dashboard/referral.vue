@@ -34,7 +34,7 @@
       </div>
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
       
       <!-- Kiri: Bagikan Kode / Affiliate -->
       <div class="bg-white border border-ink-100 rounded-2xl shadow-sm overflow-hidden flex flex-col relative">
@@ -74,10 +74,10 @@
               <p class="text-sm text-ink-600">{{ $t('referral.shareInstruction') }}</p>
               
               <div class="bg-ink-50 border border-ink-200 rounded-xl p-6 text-center">
-                <p class="text-xs text-ink-500 uppercase tracking-wider font-bold mb-3">{{ $t('referral.yourCode') }}</p>
+                <p class="text-xs text-ink-500 uppercase tracking-wider font-bold mb-3">{{ $t('referral.yourLink') || 'Link Referral Anda' }}</p>
                 <div class="flex items-center justify-center gap-3">
-                  <span class="text-3xl font-mono font-bold text-orange-600 tracking-wider">
-                    {{ referralStatus.myReferralCode }}
+                  <span class="text-lg sm:text-xl font-mono font-bold text-orange-600 tracking-tight break-all">
+                    {{ referralLink }}
                   </span>
                 </div>
                 <button 
@@ -85,7 +85,7 @@
                   class="mt-4 bg-white border border-ink-200 hover:bg-ink-50 text-ink-700 font-bold py-2 px-6 rounded-md text-sm transition-colors shadow-sm inline-flex items-center justify-center gap-2"
                 >
                   <Copy class="w-4 h-4" />
-                  {{ $t('referral.copyCode') }}
+                  {{ $t('referral.copyLink') || 'Salin Link' }}
                 </button>
               </div>
 
@@ -110,54 +110,6 @@
       <!-- Kanan: Klaim Kode & Aturan -->
       <div class="space-y-6">
         
-        <!-- Box Input Kode Teman -->
-        <div class="bg-white border border-ink-100 rounded-2xl shadow-sm overflow-hidden relative">
-          <div v-if="referralStatus.isLoading" class="absolute inset-0 bg-white/70 flex items-center justify-center z-10"></div>
-          
-          <div class="px-6 pt-5 pb-4 border-b border-ink-100">
-            <h3 class="font-bold text-ink-900 text-base">{{ $t('referral.friendCode.title') }}</h3>
-          </div>
-          <div class="p-6">
-            <template v-if="referralStatus.hasSubmittedCode">
-              <div class="bg-green-50 border border-green-200 text-green-800 rounded-xl p-5 text-center">
-                <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                  <ShieldCheck class="w-6 h-6 text-green-600" />
-                </div>
-                <p class="text-sm font-medium">
-                  {{ $t('referral.friendCode.usedCode') }} <br/>
-                  <span class="font-bold text-lg mt-1 block">{{ referralStatus.submittedCode }}</span>
-                </p>
-                <p class="text-xs mt-3 text-green-700">{{ $t('referral.friendCode.usedCodeBenefit') }}</p>
-              </div>
-            </template>
-            <template v-else-if="!referralStatus.canSubmit">
-              <div class="bg-red-50 border border-red-200 text-red-800 rounded-xl p-5 text-center text-sm font-medium">
-                {{ $t('referral.friendCode.expired') }}
-              </div>
-            </template>
-            <template v-else>
-              <p class="text-ink-600 text-sm mb-4">
-                {{ $t('referral.friendCode.enterCode') }} <span class="text-orange-600 font-bold">{{ referralStatus.daysRemaining }} {{ $t('referral.friendCode.days') }}</span>.
-              </p>
-              <div class="flex flex-col gap-3">
-                <input 
-                  v-model="friendReferralCode" 
-                  type="text" 
-                  class="w-full border border-ink-200 rounded-md px-4 py-3 text-sm text-ink-700 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 bg-white font-mono" 
-                  :placeholder="$t('referral.friendCode.placeholder')" 
-                />
-                <button 
-                  @click="submitReferralCode"
-                  :disabled="isSubmittingReferral || !friendReferralCode"
-                  class="bg-orange-500 hover:bg-orange-600 disabled:bg-ink-200 disabled:text-ink-400 disabled:cursor-not-allowed text-white font-bold py-3 px-8 rounded-md text-sm flex items-center justify-center gap-2 transition-colors w-full"
-                >
-                  <Loader2 v-if="isSubmittingReferral" class="w-4 h-4 animate-spin" />
-                  {{ $t('referral.friendCode.claimDiscount') }}
-                </button>
-              </div>
-            </template>
-          </div>
-        </div>
 
         <!-- Box Aturan Pendek -->
         <div class="bg-ink-50/50 border border-ink-100 rounded-2xl p-6">
@@ -248,9 +200,7 @@ const referralStatus = ref({
   daysRemaining: 0,
   canSubmit: false
 })
-const friendReferralCode = ref('')
 const isRegisteringAffiliate = ref(false)
-const isSubmittingReferral = ref(false)
 const isResetting = ref(false)
 
 const isHistoryLoading = ref(true)
@@ -259,8 +209,15 @@ const totalRegistered = ref(0)
 const totalActive = ref(0)
 const historyList = ref<any[]>([])
 
+const referralLink = computed(() => {
+  if (!referralStatus.value.myReferralCode) return ''
+  return typeof window !== 'undefined' 
+    ? `${window.location.origin}/register?ref=${referralStatus.value.myReferralCode}`
+    : `https://tentaklik.com/register?ref=${referralStatus.value.myReferralCode}`
+})
+
 const shareText = computed(() =>
-  t('referral.shareMessage', { code: referralStatus.value.myReferralCode || '' })
+  t('referral.shareMessage', { code: referralLink.value })
 )
 
 const whatsappShareUrl = computed(() =>
@@ -332,33 +289,12 @@ const registerAffiliate = async () => {
   }
 }
 
-const submitReferralCode = async () => {
-  if (!friendReferralCode.value) return
-  isSubmittingReferral.value = true
-  try {
-    const csrfToken2 = unref(csrf)
-    const res = await $fetch('/api/referral/submit', {
-      method: 'POST',
-      headers: csrfToken2 ? { 'csrf-token': csrfToken2 } : {},
-      body: { code: friendReferralCode.value }
-    }) as any
-    if (res && res.success) {
-      referralStatus.value.hasSubmittedCode = true
-      referralStatus.value.submittedCode = friendReferralCode.value
-      referralStatus.value.canSubmit = false
-      addToast(res.message || t('referral.toast.codeApplied'), 'success')
-    }
-  } catch (error: any) {
-    addToast(error.data?.message || t('referral.toast.codeInvalid'), 'error')
-  } finally {
-    isSubmittingReferral.value = false
-  }
-}
+
 
 const copyReferralCode = async () => {
-  if (!referralStatus.value.myReferralCode) return
+  if (!referralLink.value) return
   try {
-    await navigator.clipboard.writeText(referralStatus.value.myReferralCode)
+    await navigator.clipboard.writeText(referralLink.value)
     addToast(t('referral.toast.codeCopied'), 'success')
   } catch (error) {
     addToast(t('referral.toast.copyFailed'), 'error')

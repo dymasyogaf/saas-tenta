@@ -88,6 +88,7 @@ export const useAuth = () => {
   const register = async (email: string, password: string, fullName: string, phone: string) => {
     loading.value = true
     error.value = null
+    const refCookie = useCookie('ref_code')
     try {
       const { data, error: err } = await supabase.auth.signUp({
         email,
@@ -96,6 +97,7 @@ export const useAuth = () => {
           data: {
             full_name: fullName,
             phone: phone,
+            ref_code: refCookie.value || null,
           },
         },
       })

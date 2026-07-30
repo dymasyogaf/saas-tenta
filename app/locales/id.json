@@ -427,28 +427,30 @@
     },
     "shareCode": "Bagikan Kode Referral",
     "becomeAffiliate": "Jadi Affiliate Partner",
-    "affiliateDesc": "Dapatkan komisi 10% dari setiap pembayaran langganan teman Anda. Teman Anda juga akan mendapat diskon 10%.",
+    "affiliateDesc": "Dapatkan komisi 20% dari setiap pembayaran langganan teman Anda. Teman Anda juga akan mendapat diskon 20%.",
     "activateCode": "Aktifkan Kode Saya",
     "shareInstruction": "Berikan kode ini kepada teman Anda saat mereka mendaftar di TentaKlik.",
     "yourCode": "KODE REFERRAL ANDA",
+    "yourLink": "LINK REFERRAL ANDA",
     "copyCode": "Salin Kode",
+    "copyLink": "Salin Link",
     "quickShare": "BAGIKAN CEPAT",
-    "shareMessage": "Halo! Daftar TentaKlik pakai kode referralku: {code} untuk dapat diskon 10% di pembayaran pertama!",
+    "shareMessage": "Halo! Daftar TentaKlik pakai kode referralku: {code} untuk dapat diskon 20% di pembayaran pertama!",
     "friendCode": {
       "title": "Punya Kode Referral Teman?",
       "usedCode": "Anda telah menggunakan kode referral teman:",
-      "usedCodeBenefit": "Anda berhak mendapatkan diskon 10% untuk pembayaran langganan pertama Anda.",
+      "usedCodeBenefit": "Anda berhak mendapatkan diskon 20% untuk pembayaran langganan pertama Anda.",
       "expired": "Batas waktu (60 hari) untuk menggunakan kode referral telah habis.",
       "enterCode": "Masukkan kode referral teman Anda di bawah ini. Sisa waktu Anda:",
       "days": "hari",
       "placeholder": "Contoh: TENTA-Ref0001",
-      "claimDiscount": "Klaim Diskon 10%"
+      "claimDiscount": "Klaim Diskon 20%"
     },
     "howItWorks": {
       "title": "Cara Kerja Affiliate TentaKlik",
       "step1": "Dapatkan kode referral Anda dengan mengklik \"Aktifkan Kode Saya\".",
       "step2": "Bagikan kode tersebut ke teman-teman yang butuh tools TentaKlik.",
-      "step3": "Teman Anda mendapat diskon 10%, dan Anda mendapat saldo 10% saat teman sukses membayar."
+      "step3": "Teman Anda mendapat diskon 20%, dan Anda mendapat saldo 20% saat teman sukses membayar."
     },
     "history": {
       "title": "Riwayat Referral Anda",

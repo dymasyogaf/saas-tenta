@@ -85,7 +85,7 @@ export default defineEventHandler(async (event) => {
 
     return {
       success: true,
-      message: 'Kode referral berhasil diterapkan. Anda mendapat diskon 10% untuk pembayaran pertama!'
+      message: 'Kode referral berhasil diterapkan. Anda mendapat diskon 20% untuk pembayaran pertama!'
     }
   } catch (error: any) {
     console.error('Referral Submit Error:', error)

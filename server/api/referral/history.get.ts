@@ -50,7 +50,7 @@ export default defineEventHandler(async (event) => {
         date: r.created_at,
         email: maskedEmail,
         status: r.status, // 'pending_reward', 'reward_given'
-        reward: r.status === 'reward_given' ? '10% Saldo' : 'Pending'
+        reward: r.status === 'reward_given' ? '20% Saldo' : 'Pending'
       }
     })
 
