@@ -50,6 +50,25 @@ export default defineEventHandler(async (event) => {
           .from('ad_account_requests')
           .update({ status: 'pending_review', updated_at: new Date().toISOString() })
           .eq('id', requestId)
+          
+        // --- NOTIFICATION LOGIC ---
+        const { data: reqData } = await supabase
+          .from('ad_account_requests')
+          .select('user_id')
+          .eq('id', requestId)
+          .single()
+          
+        if (reqData && reqData.user_id) {
+          // Beri notifikasi ke user bahwa pengajuannya sedang di-review
+          await supabase
+            .from('notifications')
+            .insert({
+              user_id: reqData.user_id,
+              type: 'system',
+              title: 'Pengajuan Akun Sedang Direview',
+              message: `Pembayaran Anda untuk pengajuan sewa akun iklan telah kami terima. Tim kami sedang meninjau permintaan Anda.`
+            })
+        }
         
       } else {
         await supabase

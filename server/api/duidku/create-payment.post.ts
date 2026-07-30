@@ -21,11 +21,11 @@ export default defineEventHandler(async (event) => {
     maxAmount = 5000000;
   } else if (packageType === 'growth') {
     feePercentage = 0.045; // 4.5%
-    minAmount = 300000;
+    minAmount = 5000000;
     maxAmount = 15000000;
   } else if (packageType === 'scale') {
     feePercentage = 0.035; // 3.5%
-    minAmount = 300000;
+    minAmount = 15000000;
   } else {
     throw createError({ statusCode: 400, statusMessage: 'Paket tidak valid. Pilih Starter, Growth, atau Scale.' })
   }

@@ -20,8 +20,19 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, statusMessage: 'Durasi sewa harus antara 1-12 bulan' })
   }
 
-  if (Number(rentalFee) <= 0) {
-    throw createError({ statusCode: 400, statusMessage: 'Biaya sewa tidak valid' })
+  const config = useRuntimeConfig()
+  const pricing = {
+    monthly: Number(config.public.pricingMonthly),
+    quarterly: Number(config.public.pricingQuarterly),
+    semiannual: Number(config.public.pricingSemiannual)
+  }
+
+  let expectedFee = pricing.monthly
+  if (subscriptionMonths === 3) expectedFee = pricing.quarterly
+  else if (subscriptionMonths === 6) expectedFee = pricing.semiannual
+
+  if (Number(rentalFee) < expectedFee) {
+    throw createError({ statusCode: 400, statusMessage: 'Biaya sewa tidak valid / tidak sesuai paket' })
   }
 
   try {

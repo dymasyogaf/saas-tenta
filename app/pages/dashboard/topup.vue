@@ -352,6 +352,9 @@
 import { Calendar, Wallet, Info, Download, Search, ChevronDown } from 'lucide-vue-next'
 import { useSaldoStore } from '~/stores/saldo'
 import { useAdsStore } from '~/stores/ads'
+import { useI18n } from 'vue-i18n'
+import { useToast } from '#imports'
+import { useSupabaseUser } from '#imports'
 
 const { t } = useI18n()
 const toast = useToast()

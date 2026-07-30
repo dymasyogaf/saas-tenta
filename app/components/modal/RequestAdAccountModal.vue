@@ -140,44 +140,8 @@
             <div class="bg-white p-6 rounded-xl border border-ink-200 shadow-sm space-y-4">
               <h4 class="font-bold text-ink-900 text-lg mb-2">{{ $t('modals.requestAd.tcTitle') }}</h4>
               
-              <div class="bg-ink-50 border border-ink-200 rounded-lg p-4 h-64 overflow-y-auto text-xs text-ink-700 space-y-4 custom-scrollbar">
-                <div class="space-y-2">
-                  <h5 class="font-bold text-sm">{{ $t('modals.requestAd.tcDef') }}</h5>
-                  <p>{{ $t('modals.requestAd.tcDef11') }}</p>
-                  <p>{{ $t('modals.requestAd.tcDef12') }}</p>
-                  <p>{{ $t('modals.requestAd.tcDef13') }}</p>
-                  <p>{{ $t('modals.requestAd.tcDef14') }}</p>
-                  <p>{{ $t('modals.requestAd.tcDef15') }}</p>
-                  <p>{{ $t('modals.requestAd.tcDef16') }}</p>
-                </div>
-
-                <div class="space-y-2">
-                  <h5 class="font-bold text-sm">{{ $t('modals.requestAd.tcSvc') }}</h5>
-                  <p class="font-semibold">{{ $t('modals.requestAd.tcSvc21') }}</p>
-                  <ul class="list-disc pl-4 space-y-1">
-                    <li>{{ $t('modals.requestAd.tcSvc21a') }}</li>
-                    <li>{{ $t('modals.requestAd.tcSvc21b') }}</li>
-                    <li>{{ $t('modals.requestAd.tcSvc21c') }}</li>
-                    <li>{{ $t('modals.requestAd.tcSvc21d') }}</li>
-                    <li>{{ $t('modals.requestAd.tcSvc21e') }}</li>
-                    <li>{{ $t('modals.requestAd.tcSvc21f') }}</li>
-                  </ul>
-                  <p class="font-semibold mt-2">{{ $t('modals.requestAd.tcSvc22') }}</p>
-                  <p>{{ $t('modals.requestAd.tcSvc22Desc') }}</p>
-                </div>
-
-                <div class="space-y-2">
-                  <h5 class="font-bold text-sm">{{ $t('modals.requestAd.tcResp') }}</h5>
-                  <p>{{ $t('modals.requestAd.tcRespDesc') }}</p>
-                </div>
-
-                <div class="space-y-2">
-                  <h5 class="font-bold text-sm">{{ $t('modals.requestAd.tcFee') }}</h5>
-                  <p class="font-semibold">{{ $t('modals.requestAd.tcFeeA') }}</p>
-                  <p>{{ $t('modals.requestAd.tcFeeADesc') }}</p>
-                  <p class="font-semibold mt-2">{{ $t('modals.requestAd.tcFeeB') }}</p>
-                  <p>{{ $t('modals.requestAd.tcFeeBDesc', { fee: pricing.managementFeeInfo }) }}</p>
-                </div>
+              <div class="bg-ink-50 border border-ink-200 rounded-lg p-4 h-64 overflow-y-auto text-xs text-ink-700 custom-scrollbar">
+                <ModalTermsAndConditionsAdAccount />
               </div>
               
               <label class="flex items-start gap-3 cursor-pointer group mt-4 bg-orange-50 p-4 rounded-xl border border-orange-200">

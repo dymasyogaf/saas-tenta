@@ -212,11 +212,56 @@
         </table>
       </div>
     </div>
+
+    <!-- Reject Modal -->
+    <div v-if="isRejectModalOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
+      <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden flex flex-col max-h-[90vh]">
+        <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+          <h3 class="font-bold text-lg text-slate-900 flex items-center gap-2">
+            <MessageSquareX class="w-5 h-5 text-red-500" />
+            Tulis Alasan Penolakan
+          </h3>
+          <button @click="closeRejectModal" class="text-slate-400 hover:text-slate-900">
+            <X class="w-5 h-5" />
+          </button>
+        </div>
+        
+        <div class="p-6 overflow-y-auto">
+          <p class="text-sm text-slate-600 mb-3">Silakan pilih atau tulis alasan penolakan untuk pengajuan akun iklan ini. Pesan ini akan dikirimkan langsung ke notifikasi klien.</p>
+          
+          <div class="flex flex-wrap gap-2 mb-4">
+            <button @click="setTemplate('kebijakan')" class="px-3 py-1.5 bg-white border border-red-200 hover:bg-red-50 rounded-lg text-xs font-bold text-red-700 transition-colors flex items-center gap-1.5">Melanggar Kebijakan</button>
+            <button @click="setTemplate('saldo')" class="px-3 py-1.5 bg-white border border-yellow-200 hover:bg-yellow-50 rounded-lg text-xs font-bold text-yellow-700 transition-colors flex items-center gap-1.5">Saldo Tidak Cukup</button>
+            <button @click="setTemplate('data_invalid')" class="px-3 py-1.5 bg-white border border-blue-200 hover:bg-blue-50 rounded-lg text-xs font-bold text-blue-700 transition-colors flex items-center gap-1.5">Data Tidak Valid</button>
+            <button @click="setTemplate('empty')" class="px-3 py-1.5 bg-white border border-slate-200 hover:bg-slate-50 rounded-lg text-xs font-bold text-slate-700 transition-colors">Teks Kosong</button>
+          </div>
+
+          <ClientOnly>
+            <div class="border border-slate-200 rounded-xl overflow-hidden focus-within:ring-2 focus-within:ring-red-500/20 focus-within:border-red-500 bg-white">
+              <QuillEditor theme="snow" v-model:content="rejectReason" contentType="html" class="min-h-[200px]" :toolbar="['bold', 'italic', 'underline', { 'list': 'ordered'}, { 'list': 'bullet' }, 'clean']" />
+            </div>
+            <template #fallback>
+              <textarea v-model="rejectReason" rows="6" placeholder="Memuat editor..." class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none text-sm"></textarea>
+            </template>
+          </ClientOnly>
+        </div>
+        
+        <div class="p-6 border-t border-slate-100 bg-slate-50 flex justify-end gap-3 shrink-0">
+          <button @click="closeRejectModal" class="px-5 py-2.5 text-slate-600 hover:bg-slate-200 bg-slate-100 rounded-xl font-bold text-sm transition-colors">
+            Batal
+          </button>
+          <button @click="submitReject" :disabled="isSubmitting === selectedRequestId || !rejectReason.trim()" class="px-5 py-2.5 bg-red-600 text-white hover:bg-red-700 rounded-xl font-bold text-sm transition-colors shadow-sm disabled:opacity-50 flex items-center gap-2">
+            <span v-if="isSubmitting === selectedRequestId" class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+            Kirim Penolakan
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { RefreshCw, Megaphone, Link, Hash, CheckCircle2, Edit2, Trash2 } from 'lucide-vue-next'
+import { RefreshCw, Megaphone, Link, Hash, CheckCircle2, Edit2, Trash2, MessageSquareX, X } from 'lucide-vue-next'
 import { ref, computed, watch } from 'vue'
 
 definePageMeta({
@@ -232,6 +277,41 @@ const currentAction = ref<string | null>(null)
 const inputModels = ref<Record<string, string>>({})
 
 const isEditing = ref<Record<string, boolean>>({})
+
+// Reject Modal State
+const isRejectModalOpen = ref(false)
+const selectedRequestId = ref<string | null>(null)
+const rejectReason = ref('')
+
+const openRejectModal = (id: string) => {
+  selectedRequestId.value = id
+  rejectReason.value = ''
+  isRejectModalOpen.value = true
+}
+
+const closeRejectModal = () => {
+  isRejectModalOpen.value = false
+  selectedRequestId.value = null
+  rejectReason.value = ''
+}
+
+const setTemplate = (type: string) => {
+  if (type === 'kebijakan') {
+    rejectReason.value = `<p>Mohon maaf, pengajuan akun iklan Anda <strong>ditolak</strong> karena <strong>URL/Website tujuan melanggar kebijakan kami</strong> atau kebijakan platform iklan (misal: mengandung unsur perjudian, pornografi, obat ilegal, dll).</p><p>Silakan perbaiki landing page Anda atau gunakan website lain sebelum mengajukan kembali.</p><p><br></p><p><em>- Tim Iklan Tentaklik</em></p>`
+  } else if (type === 'saldo') {
+    rejectReason.value = `<p>Mohon maaf, pengajuan Anda kami tolak karena <strong>Saldo Bersih</strong> Anda saat ini tidak mencukupi untuk membayar biaya sewa akun iklan ini.</p><p>Mohon lakukan top up terlebih dahulu dan pastikan tidak ada tunggakan sebelum membuat pengajuan kembali.</p><p><br></p><p><em>- Tim Iklan Tentaklik</em></p>`
+  } else if (type === 'data_invalid') {
+    rejectReason.value = `<p>Mohon maaf, pengajuan Anda kami tolak karena <strong>Data Akun yang diberikan tidak valid atau tidak lengkap</strong>.</p><p>Mohon periksa kembali Business Manager ID (BM ID) atau Email Anda saat mengisi form.</p><p><br></p><p><em>- Tim Iklan Tentaklik</em></p>`
+  } else if (type === 'empty') {
+    rejectReason.value = `<p><br></p><p><br></p><p><em>- Tim Iklan Tentaklik</em></p>`
+  }
+}
+
+const submitReject = () => {
+  if (selectedRequestId.value) {
+    processAction(selectedRequestId.value, 'reject')
+  }
+}
 
 // Fetch Data dari Server Endpoint (Bypass RLS)
 const { data: requests, pending, refresh } = useFetch<any[]>('/api/admin/ads-ops', { default: () => [] })
@@ -311,8 +391,14 @@ const resetDev = async () => {
 }
 
 const processAction = async (id: string, action: 'approve' | 'reject' | 'save_id' | 'delete') => {
+  // Jika action = reject tapi belum buka modal, buka modalnya dulu
+  if (action === 'reject' && (!isRejectModalOpen.value || selectedRequestId.value !== id)) {
+    openRejectModal(id)
+    return
+  }
+
   let adAccountId = undefined
-  let rejectReason = undefined
+  let rejectReasonToSubmit = undefined
 
   if (action === 'delete') {
     if (!confirm('Apakah Anda yakin ingin menghapus pengajuan dan ID akun ini dari database secara permanen?')) return
@@ -325,9 +411,8 @@ const processAction = async (id: string, action: 'approve' | 'reject' | 'save_id
       return
     }
   } else if (action === 'reject') {
-    const promptRes = prompt('Masukkan alasan penolakan (opsional):')
-    if (promptRes === null) return // dibatalkan
-    rejectReason = promptRes
+    // Alasan sudah diambil dari rejectReason model yang dikonfirmasi modal
+    rejectReasonToSubmit = rejectReason.value
   }
 
   isSubmitting.value = id
@@ -343,12 +428,15 @@ const processAction = async (id: string, action: 'approve' | 'reject' | 'save_id
         action: action,
         request_id: id,
         ad_account_id: adAccountId,
-        reason: rejectReason
+        reason: rejectReasonToSubmit
       }
     })
 
     toast.addToast((response as any).message, 'success')
     isEditing.value[id] = false
+    if (action === 'reject') {
+      closeRejectModal()
+    }
     await refresh() // Tarik ulang data agar pindah tab
     refreshNuxtData('admin-badges')
   } catch (error: any) {
