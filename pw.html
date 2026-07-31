@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reset Password Anda</title>
+</head>
+
+<body
+    style="margin: 0; padding: 0; font-family: 'Inter', Helvetica, Arial, sans-serif; background-color: #f8fafc; color: #0f172a;">
+    <table width="100%" border="0" cellspacing="0" cellpadding="0" bgcolor="#f8fafc" style="padding: 40px 20px;">
+        <tr>
+            <td align="center">
+                <!-- Main Card -->
+                <table width="100%" max-width="600" border="0" cellspacing="0" cellpadding="0" bgcolor="#ffffff"
+                    style="max-width: 500px; border-radius: 16px; border: 1px solid #e2e8f0; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);">
+
+                    <!-- Header (Logo Tentaklik) -->
+                    <tr>
+                        <td align="center" style="padding: 32px 32px 24px 32px; border-bottom: 1px solid #f1f5f9;">
+                            <!-- Ganti URL ini jika lokasi gambar logo Anda berbeda -->
+                            <img src="https://tentaklik.com/logo-full.png" alt="Tentaklik SaaS"
+                                style="height: 36px; width: auto; display: block;">
+                        </td>
+                    </tr>
+
+                    <!-- Content -->
+                    <tr>
+                        <td align="center" style="padding: 32px;">
+                            <h2 style="margin-top: 0; font-size: 20px; font-weight: 700; color: #0f172a;">Atur Ulang
+                                Password</h2>
+                            <p style="font-size: 15px; line-height: 1.6; color: #64748b; margin-bottom: 32px;">
+                                Kami menerima permintaan untuk mengatur ulang password pada akun Anda. Klik tombol di
+                                bawah ini untuk membuat password baru.
+                            </p>
+
+                            <!-- Tombol Verifikasi (Link Klik) -->
+                            <a href="{{ .ConfirmationURL }}"
+                                style="display: inline-block; background-color: #f97316; color: #ffffff; font-weight: 600; font-size: 16px; text-decoration: none; padding: 14px 32px; border-radius: 12px; margin-bottom: 32px; text-align: center;">Reset
+                                Password</a>
+
+                            <p style="font-size: 13px; line-height: 1.5; color: #94a3b8; margin: 0;">
+                                Jika tombol di atas tidak berfungsi, <a href="{{ .ConfirmationURL }}" style="color: #f97316; text-decoration: underline;">klik di sini</a>.
+                            </p>
+                        </td>
+                    </tr>
+
+                    <!-- Footer -->
+                    <tr>
+                        <td align="center"
+                            style="background-color: #f8fafc; padding: 24px 32px; border-top: 1px solid #f1f5f9;">
+                            <p style="font-size: 12px; color: #94a3b8; margin: 0; line-height: 1.5;">
+                                Jika Anda tidak meminta perubahan password, mohon abaikan email ini. Akun Anda akan
+                                tetap aman.
+                                <br><br>
+                                &copy; 2026 PT Media Pro Indonesia. All rights reserved.
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+
+</html>

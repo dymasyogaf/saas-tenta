@@ -68,6 +68,8 @@
       </div>
     </div>
     </div>
+    
+    <ModalCheckEmailModal v-model="showCheckEmailModal" :email="user?.email || ''" />
   </Teleport>
 </template>
 
@@ -94,6 +96,7 @@ const showNew = ref(false)
 const showConfirm = ref(false)
 const isLoading = ref(false)
 const isResetting = ref(false)
+const showCheckEmailModal = ref(false)
 
 const isFormValid = computed(() => {
   return oldPassword.value.length > 0 && 
@@ -176,7 +179,7 @@ const handleForgotPassword = async () => {
     
     if (error) throw error
     
-    addToast(t('modals.password.resetSuccess'), 'success')
+    showCheckEmailModal.value = true
   } catch (err: any) {
     addToast(err.message || t('modals.password.resetFail'), 'error')
   } finally {

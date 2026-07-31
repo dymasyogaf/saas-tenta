@@ -61,8 +61,8 @@ export default defineEventHandler(async (event) => {
     const totalActive = history.filter((h: any) => h.status === 'reward_given').length
     
     // Hitung total penghasilan dan yang bisa dicairkan
-    const totalEarned = (referrals || []).reduce((sum, r) => sum + (Number(r.reward_amount) || 0), 0)
-    const availableToClaim = (referrals || []).filter(r => r.status === 'reward_given' && !r.is_claimed).reduce((sum, r) => sum + (Number(r.reward_amount) || 0), 0)
+    const totalEarned = (referrals || []).reduce((sum: number, r: any) => sum + (Number(r.reward_amount) || 0), 0)
+    const availableToClaim = (referrals || []).filter((r: any) => r.status === 'reward_given' && !r.is_claimed).reduce((sum: number, r: any) => sum + (Number(r.reward_amount) || 0), 0)
 
     return {
       success: true,

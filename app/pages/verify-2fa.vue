@@ -170,7 +170,8 @@ const verifyOTP = async () => {
     const res = await $fetch('/api/otp/verify', {
       method: 'POST',
       headers: {
-        Authorization: session ? `Bearer ${session.access_token}` : ''
+        Authorization: session ? `Bearer ${session.access_token}` : '',
+        'csrf-token': unref(useCsrf().csrf) || ''
       },
       body: { phone: phone.value, otp: otpString.value }
     }) as any
@@ -201,7 +202,8 @@ const resendOTP = async () => {
     await $fetch('/api/otp/send', {
       method: 'POST',
       headers: {
-        Authorization: session ? `Bearer ${session.access_token}` : ''
+        Authorization: session ? `Bearer ${session.access_token}` : '',
+        'csrf-token': unref(useCsrf().csrf) || ''
       },
       body: { phone: phone.value }
     })

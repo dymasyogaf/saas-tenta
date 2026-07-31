@@ -51,17 +51,27 @@ export default defineEventHandler(async (event) => {
   }
 
   try {
-    await $fetch('https://api.fonnte.com/send', {
+    const params = new URLSearchParams()
+    params.append('target', phone.replace('+', ''))
+    params.append('message', `TENTAKLIK\nKode Verifikasi (OTP) Anda adalah: *${otpCode}*\n\nJangan berikan kode ini kepada siapapun. Kode ini berlaku selama 5 menit.`)
+    params.append('countryCode', '62')
+
+    console.log('Sending OTP via Fonnte to:', phone, 'Token:', fonnteToken ? 'EXISTS' : 'EMPTY')
+
+    const response: any = await $fetch('https://api.fonnte.com/send', {
       method: 'POST',
       headers: {
         'Authorization': fonnteToken
       },
-      body: {
-        target: phone.replace('+', ''), // Hapus tanda + agar formatnya 628... sesuai standar Fonnte
-        message: `TENTAKLIK\nKode Verifikasi (OTP) Anda adalah: *${otpCode}*\n\nJangan berikan kode ini kepada siapapun. Kode ini berlaku selama 5 menit.`,
-        countryCode: '62' // Default fallback
-      }
+      body: params
     })
+
+    console.log('Fonnte Response:', response)
+
+    if (!response || response.status === false) {
+      console.error('Fonnte Rejected:', response)
+      throw new Error(response?.reason || 'Unknown error from Fonnte')
+    }
 
     return { success: true, message: 'OTP berhasil dikirim melalui WhatsApp.' }
   } catch (err: any) {

@@ -169,8 +169,7 @@ const handleRegister = async () => {
 
   const data = await register(email.value, password.value, name.value, fullPhone)
   if (data) {
-    addToast(t('auth.toast.registerSuccess'), 'success')
-    router.push('/login')
+    router.push({ path: '/check-email', query: { email: email.value } })
   }
 }
 

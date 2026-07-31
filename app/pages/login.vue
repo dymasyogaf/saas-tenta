@@ -66,6 +66,9 @@
         {{ $t('auth.noAccount') }} <NuxtLink to="/register" class="text-orange-600 font-bold hover:underline">{{ $t('auth.registerNow') }}</NuxtLink>
       </p>
     </div>
+
+    <!-- Check Email Modal -->
+    <ModalCheckEmailModal v-model="showCheckEmailModal" :email="email" />
   </div>
 </template>
 
@@ -83,6 +86,7 @@ const password = ref('')
 const showPassword = ref(false)
 const remember = ref(false)
 const errorMsg = ref('')
+const showCheckEmailModal = ref(false)
 
 const { login, loading, error: authError } = useAuth()
 const { addToast } = useToast()
@@ -111,7 +115,8 @@ const handleLogin = async () => {
       $fetch('/api/otp/send', {
         method: 'POST',
         headers: {
-          Authorization: session ? `Bearer ${session.access_token}` : ''
+          Authorization: session ? `Bearer ${session.access_token}` : '',
+          'csrf-token': unref(useCsrf().csrf) || ''
         },
         body: { phone: phone }
       }).catch(err => {
@@ -171,7 +176,7 @@ const forgotPassword = async () => {
     
     if (error) throw error
     
-    addToast(t('auth.toast.resetSent'), 'success')
+    showCheckEmailModal.value = true
   } catch (err: any) {
     addToast(err.message || t('auth.toast.resetFailed'), 'error')
   } finally {
