@@ -270,7 +270,7 @@ export default defineEventHandler(async (event) => {
         const notifTitle = (oldAdAccountId && oldAdAccountId !== cleanAdAccountId) ? 'Perubahan ID Akun Iklan' : 'Akun Iklan Telah Aktif'
         const notifMsg = (oldAdAccountId && oldAdAccountId !== cleanAdAccountId)
           ? `Tim Iklan telah memperbarui ID Akun Iklan Anda menjadi <strong>${cleanAdAccountId}</strong> (<strong>${formattedAccountName}</strong>).`
-          : `Selamat! Pengajuan akun iklan Anda telah berhasil disetujui. <strong>${formattedAccountName}</strong> adalah nama akun baru Anda. Aktif sampai dengan <strong>${months} bulan</strong> ke depan, Anda sekarang bisa mengecek dan mengaksesnya di dashboard Platform Anda.`
+          : `Selamat! Pengajuan akun iklan Anda berhasil disetujui. <strong>${formattedAccountName}</strong> telah aktif dan dapat digunakan selama <strong>${months * 30} hari</strong>. Silakan cek email Anda untuk menerima (accept) akses akun whitelist, kemudian cek dan kelola akun melalui dashboard Platform.`
         
         await supabase.from('notifications').insert({
           user_id: request.user_id,
