@@ -17,11 +17,12 @@ export default defineEventHandler(async (event) => {
   if (authenticatedUserId !== userId) {
     throw createError({ statusCode: 403, statusMessage: 'Forbidden: tidak dapat upload untuk user lain' })
   }
-
+  
   const allowedMimes = ['image/jpeg', 'image/jpg', 'image/png']
   if (!allowedMimes.includes(ktp_mime) || !allowedMimes.includes(pasphoto_mime)) {
     throw createError({ statusCode: 400, message: 'Format file harus JPG atau PNG' })
   }
+
 
   const maxBase64Length = 7_000_000 // ~5MB file
   if (ktp_base64.length > maxBase64Length || pasphoto_base64.length > maxBase64Length) {
@@ -34,9 +35,8 @@ export default defineEventHandler(async (event) => {
     const ktpBuffer = Buffer.from(ktp_base64, 'base64')
     const pasphotoBuffer = Buffer.from(pasphoto_base64, 'base64')
 
-    const mimeToExt: Record<string, string> = { 'image/jpeg': 'jpg', 'image/jpg': 'jpg', 'image/png': 'png' }
-    const ktpExt = mimeToExt[ktp_mime] || 'jpg'
-    const pasExt = mimeToExt[pasphoto_mime] || 'jpg'
+    const ktpExt = ktp_mime.split('/')[1] || 'bin'
+    const pasExt = pasphoto_mime.split('/')[1] || 'bin'
 
     const ktpFileName = `${userId}/ktp_${Date.now()}.${ktpExt}`
     const pasPhotoFileName = `${userId}/pasphoto_${Date.now()}.${pasExt}`

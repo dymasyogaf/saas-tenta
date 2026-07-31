@@ -866,7 +866,7 @@
     "verifyCompleteBtn": "Verify & Complete",
     "processing": "Processing...",
     "invalidFormat": "File format must be JPG or PNG.",
-    "invalidSize": "Maximum file size is 2MB.",
+    "invalidSize": "File is too large! Maximum 5 MB per file.",
     "ktpSuccess": "ID Card file successfully selected.",
     "pasPhotoSuccess": "Profile photo successfully selected.",
     "phoneNotFound": "Phone number not found in your profile.",

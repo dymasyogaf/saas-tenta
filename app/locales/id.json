@@ -866,7 +866,7 @@
     "verifyCompleteBtn": "Verifikasi & Selesai",
     "processing": "Memproses...",
     "invalidFormat": "Format file harus JPG atau PNG.",
-    "invalidSize": "Ukuran file maksimal adalah 2MB.",
+    "invalidSize": "Ukuran file terlalu besar! Maksimal 5 MB per file.",
     "ktpSuccess": "File KTP berhasil dipilih.",
     "pasPhotoSuccess": "Pas Photo berhasil dipilih.",
     "phoneNotFound": "Nomor HP tidak ditemukan di profil Anda.",

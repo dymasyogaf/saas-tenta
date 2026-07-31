@@ -30,6 +30,10 @@ export default defineNuxtConfig({
   security: {
     sri: false,
     csrf: true,
+    requestSizeLimiter: {
+      maxRequestSizeInBytes: 15000000,
+      maxUploadFileRequestInBytes: 25000000,
+    },
     headers: {
       crossOriginEmbedderPolicy: 'unsafe-none',
       crossOriginResourcePolicy: 'cross-origin',

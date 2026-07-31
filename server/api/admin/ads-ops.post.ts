@@ -226,71 +226,58 @@ export default defineEventHandler(async (event) => {
         // 1 Bulan dipukul rata = 30 Hari
         expiresAt.setDate(expiresAt.getDate() + (months * 30))
 
+        // Cek apakah ID Akun ini sudah terdaftar untuk user yang berbeda
+        const { data: existingAcc } = await supabase
+          .from('ad_accounts')
+          .select('user_id')
+          .eq('account_id', cleanAdAccountId)
+          .eq('platform', dbPlatform)
+          .single()
+
+        if (existingAcc && existingAcc.user_id !== request.user_id) {
+          throw new Error('ID Akun Iklan ini sudah terdaftar untuk klien lain! Harap periksa kembali.')
+        }
+
+        // Kalau ada oldAdAccountId yang berbeda, berarti admin sedang edit/mengganti ID.
+        // Hapus akun lama (jika ada) milik user ini dengan ID lama.
         if (oldAdAccountId && oldAdAccountId !== cleanAdAccountId) {
-          // PROSES EDIT: Update akun yang sudah ada (menghindari duplikat akun)
-          const { error: updateAccErr } = await supabase
+          await supabase
             .from('ad_accounts')
-            .update({
-              account_id: cleanAdAccountId,
-              account_name: formattedAccountName
-            })
+            .delete()
             .eq('account_id', oldAdAccountId)
             .eq('platform', dbPlatform)
             .eq('user_id', request.user_id)
-
-          if (updateAccErr) {
-            console.error('Gagal mengupdate ad_accounts:', updateAccErr)
-          } else {
-            // Beri notifikasi ke user bahwa ID akun telah diubah
-            await supabase.from('notifications').insert({
-              user_id: request.user_id,
-              type: 'system',
-              title: 'Perubahan ID Akun Iklan',
-              message: `Tim Iklan telah memperbarui ID Akun Iklan Anda menjadi <strong>${cleanAdAccountId}</strong> (<strong>${formattedAccountName}</strong>).`
-            })
-          }
-        } else {
-          // PROSES BARU: Cek duplikat lalu Insert
-          const { data: existingAcc } = await supabase
-            .from('ad_accounts')
-            .select('id')
-            .eq('account_id', cleanAdAccountId)
-            .eq('platform', dbPlatform)
-            .single()
-
-          if (!existingAcc) {
-            const { error: insertErr } = await supabase
-              .from('ad_accounts')
-              .insert({
-                user_id: request.user_id,
-                platform: dbPlatform,
-                account_id: cleanAdAccountId,
-                account_name: formattedAccountName,
-                status: 'active',
-                subscription_expires_at: expiresAt.toISOString()
-              })
-
-            if (insertErr) {
-              console.error('Gagal memasukkan akun ke ad_accounts:', insertErr)
-            } else {
-              // 4. Beri notifikasi ke user bahwa akun telah aktif
-              await supabase.from('notifications').insert({
-                user_id: request.user_id,
-                type: 'system',
-                title: 'Akun Iklan Telah Aktif',
-                message: `Selamat! Pengajuan akun iklan Anda telah berhasil disetujui. <strong>${formattedAccountName}</strong> adalah nama akun baru Anda. Aktif sampai dengan <strong>${months} bulan</strong> ke depan, Anda sekarang bisa mengecek dan mengaksesnya di dashboard Platform Anda.`
-              })
-            }
-          } else {
-            // Jika akun sudah pernah dimasukkan sebelumnya, tetap kirim notifikasi
-            await supabase.from('notifications').insert({
-              user_id: request.user_id,
-              type: 'system',
-              title: 'Akun Iklan Telah Aktif',
-              message: `Selamat! Pengajuan akun iklan Anda telah berhasil disetujui. <strong>${formattedAccountName}</strong> adalah nama akun baru Anda. Aktif sampai dengan <strong>${months} bulan</strong> ke depan, Anda sekarang bisa mengecek dan mengaksesnya di dashboard Platform Anda.`
-            })
-          }
         }
+
+        // Masukkan atau perbarui akun dengan ID baru menggunakan upsert
+        const { error: upsertErr } = await supabase
+          .from('ad_accounts')
+          .upsert({
+            user_id: request.user_id,
+            platform: dbPlatform,
+            account_id: cleanAdAccountId,
+            account_name: formattedAccountName,
+            status: 'active',
+            subscription_expires_at: expiresAt.toISOString()
+          }, { onConflict: 'account_id, platform' })
+
+        if (upsertErr) {
+          console.error('Gagal menyimpan ke database ad_accounts:', upsertErr)
+          throw new Error('Gagal menyimpan ke database: ' + upsertErr.message)
+        }
+
+        // Beri notifikasi ke user bahwa akun telah aktif/diperbarui
+        const notifTitle = (oldAdAccountId && oldAdAccountId !== cleanAdAccountId) ? 'Perubahan ID Akun Iklan' : 'Akun Iklan Telah Aktif'
+        const notifMsg = (oldAdAccountId && oldAdAccountId !== cleanAdAccountId)
+          ? `Tim Iklan telah memperbarui ID Akun Iklan Anda menjadi <strong>${cleanAdAccountId}</strong> (<strong>${formattedAccountName}</strong>).`
+          : `Selamat! Pengajuan akun iklan Anda telah berhasil disetujui. <strong>${formattedAccountName}</strong> adalah nama akun baru Anda. Aktif sampai dengan <strong>${months} bulan</strong> ke depan, Anda sekarang bisa mengecek dan mengaksesnya di dashboard Platform Anda.`
+        
+        await supabase.from('notifications').insert({
+          user_id: request.user_id,
+          type: 'system',
+          title: notifTitle,
+          message: notifMsg
+        })
 
       return { success: true, message: 'ID Akun Iklan berhasil disimpan dan akun aktif' }
     }

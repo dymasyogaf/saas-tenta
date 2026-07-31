@@ -169,7 +169,8 @@
           <div class="grid grid-cols-1 md:grid-cols-2 gap-8 pb-4">
             <!-- {{ $t('verification.uploadKtpBtn') }} -->
             <div>
-              <label class="block text-sm font-bold text-ink-900 mb-3">{{ $t('verification.uploadKtpLabel') }}</label>
+              <label class="block text-sm font-bold text-ink-900 mb-1">{{ $t('verification.uploadKtpLabel') }}</label>
+              <p class="text-xs text-ink-500 mb-3">Format: PNG/JPG (Maks 5 MB)</p>
               <div v-if="!selectedKTP">
                 <label class="bg-orange-500 hover:bg-orange-600 text-white font-bold py-2.5 px-6 rounded-md text-sm transition-colors shadow-sm inline-flex items-center gap-2 cursor-pointer w-full justify-center">
                   <Upload class="w-4 h-4" /> {{ $t('verification.uploadKtpBtn') }}
@@ -192,7 +193,8 @@
 
             <!-- {{ $t('verification.uploadPasPhotoBtn') }} -->
             <div>
-              <label class="block text-sm font-bold text-ink-900 mb-3">{{ $t('verification.uploadPasPhotoLabel') }}</label>
+              <label class="block text-sm font-bold text-ink-900 mb-1">{{ $t('verification.uploadPasPhotoLabel') }}</label>
+              <p class="text-xs text-ink-500 mb-3">Format: PNG/JPG (Maks 5 MB)</p>
               <div v-if="!selectedPasPhoto">
                 <label class="bg-orange-500 hover:bg-orange-600 text-white font-bold py-2.5 px-6 rounded-md text-sm transition-colors shadow-sm inline-flex items-center gap-2 cursor-pointer w-full justify-center">
                   <Upload class="w-4 h-4" /> {{ $t('verification.uploadPasPhotoBtn') }}
@@ -416,8 +418,8 @@ const handleFileUpload = (event: Event, type: 'ktp' | 'pasphoto') => {
       return
     }
 
-    // Validasi Ukuran (2MB)
-    const maxSize = 2 * 1024 * 1024
+    // Validasi Ukuran (5MB)
+    const maxSize = 5 * 1024 * 1024
     if (file.size > maxSize) {
       addToast(t('verification.invalidSize'), 'error')
       target.value = ''
