@@ -35,42 +35,36 @@ export default defineEventHandler(async (event) => {
       throw createError({ statusCode: 400, message: `Minimal pencairan komisi adalah Rp 100.000. Saldo Anda: Rp ${totalClaimAmount.toLocaleString('id-ID')}` })
     }
 
-    // 3. Tambahkan saldo ke ad balance pengguna
-    const { data: currentSaldo, error: saldoError } = await (supabase as any)
-      .from('saldo')
-      .select('id, balance')
-      .eq('user_id', uid)
+    // 3. Buat pengajuan pencairan di affiliate_withdrawals
+    const { data: withdrawal, error: wdError } = await (supabase as any)
+      .from('affiliate_withdrawals')
+      .insert({
+        user_id: uid,
+        amount: totalClaimAmount,
+        status: 'pending'
+      })
+      .select('id')
       .single()
 
-    if (saldoError) {
-      // Jika belum punya saldo, kita insert saja
-      await (supabase as any).from('saldo').insert({ user_id: uid, balance: totalClaimAmount, pending_balance: 0 })
-    } else {
-      const newBalance = (Number(currentSaldo.balance) || 0) + totalClaimAmount
-      await (supabase as any).from('saldo').update({ balance: newBalance, updated_at: new Date().toISOString() }).eq('id', currentSaldo.id)
+    if (wdError) {
+      console.error('Withdrawal Insert Error:', wdError)
+      throw createError({ statusCode: 500, message: 'Gagal membuat pengajuan pencairan.' })
     }
 
-    // 4. Catat di tabel transactions (Opsional tapi direkomendasikan untuk tracking)
-    await (supabase as any).from('transactions').insert({
-      user_id: uid,
-      amount: totalClaimAmount,
-      type: 'affiliate_commission',
-      status: 'success',
-      payment_method: 'system',
-      description: 'Pencairan komisi afiliasi ke saldo iklan',
-      reference_id: `AF-${Date.now()}`
-    })
-
-    // 5. Tandai referral sebagai sudah diklaim
+    // 4. Tandai referral sebagai sudah diklaim dan tautkan ke pengajuan ini
     const referralIds = referrals.map((r: any) => r.id)
     await (supabase as any)
       .from('referrals')
-      .update({ is_claimed: true, updated_at: new Date().toISOString() })
+      .update({ 
+        is_claimed: true, 
+        withdrawal_id: withdrawal.id,
+        updated_at: new Date().toISOString() 
+      })
       .in('id', referralIds)
 
     return {
       success: true,
-      message: `Berhasil mencairkan komisi sebesar Rp ${totalClaimAmount.toLocaleString('id-ID')} ke saldo iklan Anda.`,
+      message: `Berhasil mengajukan pencairan komisi sebesar Rp ${totalClaimAmount.toLocaleString('id-ID')}. Tim Finance akan segera memprosesnya.`,
       amount: totalClaimAmount
     }
 

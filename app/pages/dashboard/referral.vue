@@ -25,14 +25,14 @@
         <h3 class="text-2xl font-bold text-ink-900 mt-2">Rp {{ totalEarned.toLocaleString(locale === 'id' ? 'id-ID' : 'en-US') }}</h3>
         
         <div v-if="availableToClaim > 0" class="mt-4 pt-4 border-t border-ink-100">
-          <button 
-            @click="claimCommission"
-            :disabled="isClaiming"
-            class="w-full bg-green-500 hover:bg-green-600 disabled:opacity-50 text-white font-bold py-2 px-4 rounded-md text-sm transition-colors shadow-sm flex items-center justify-center gap-2"
-          >
-            <Loader2 v-if="isClaiming" class="w-4 h-4 animate-spin" />
-            Cairkan ke Saldo
-          </button>
+            <button 
+              @click="claimCommission"
+              :disabled="isClaiming"
+              class="w-full bg-green-500 hover:bg-green-600 disabled:opacity-50 text-white font-bold py-2 px-4 rounded-md text-sm transition-colors shadow-sm flex items-center justify-center gap-2"
+            >
+              <Loader2 v-if="isClaiming" class="w-4 h-4 animate-spin" />
+              Ajukan Pencairan
+            </button>
         </div>
       </div>
       <div class="bg-white border border-ink-100 rounded-2xl p-5 shadow-sm">
@@ -62,21 +62,21 @@
         <div class="p-6 flex-1 flex flex-col justify-center">
           
           <template v-if="!referralStatus.isAffiliate">
-            <div class="text-center py-6">
-              <div class="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Users class="w-8 h-8 text-orange-500" />
+            <div class="py-4 text-center">
+              <div class="mb-6">
+                <div class="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Users class="w-8 h-8 text-orange-500" />
+                </div>
+                <h4 class="font-bold text-ink-900 mb-2">{{ $t('referral.becomeAffiliate') }}</h4>
+                <p class="text-sm text-ink-500 mb-6 max-w-sm mx-auto">{{ $t('referral.affiliateDesc') }}</p>
+                
+                <button 
+                  @click="showTermsModal = true"
+                  class="bg-orange-500 hover:bg-orange-600 text-white font-bold py-2.5 px-8 rounded-md text-sm transition-colors shadow-sm inline-flex items-center justify-center gap-2"
+                >
+                  Buat Link Referral
+                </button>
               </div>
-              <h4 class="font-bold text-ink-900 mb-2">{{ $t('referral.becomeAffiliate') }}</h4>
-              <p class="text-sm text-ink-500 mb-6 max-w-sm mx-auto">{{ $t('referral.affiliateDesc') }}</p>
-              
-              <button 
-                @click="showTermsModal = true"
-                :disabled="isRegisteringAffiliate"
-                class="bg-orange-500 hover:bg-orange-600 disabled:opacity-50 text-white font-bold py-2.5 px-8 rounded-md text-sm transition-colors shadow-sm inline-flex items-center justify-center gap-2"
-              >
-                <Loader2 v-if="isRegisteringAffiliate" class="w-4 h-4 animate-spin" />
-                {{ $t('referral.activateCode') }}
-              </button>
             </div>
           </template>
           
@@ -208,12 +208,12 @@
       </div>
     </div>
     
-    <!-- Terms & Conditions Modal -->
+    <!-- Registration & Terms Modal -->
     <div v-if="showTermsModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-ink-900/60 backdrop-blur-sm">
       <div class="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] flex flex-col shadow-xl overflow-hidden">
         <!-- Header -->
-        <div class="px-6 py-4 border-b border-ink-100 flex justify-between items-center">
-          <h2 class="text-lg font-bold text-ink-900">{{ $t('referral.termsModal.title') }}</h2>
+        <div class="px-6 py-4 border-b border-ink-100 flex justify-between items-center bg-orange-50/50">
+          <h2 class="text-lg font-bold text-ink-900">Pengajuan Program Afiliasi</h2>
           <button @click="showTermsModal = false" class="text-ink-400 hover:text-ink-600 p-1 rounded-md hover:bg-ink-50 transition-colors">
             <span class="sr-only">Close</span>
             <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
@@ -221,47 +221,79 @@
         </div>
         
         <!-- Body -->
-        <div class="p-6 overflow-y-auto flex-1 space-y-6 text-sm text-ink-700">
-          <p>{{ $t('referral.termsModal.intro1') }}</p>
-          <p>{{ $t('referral.termsModal.intro2') }}</p>
-          
-          <div>
-            <h4 class="font-bold text-ink-900 text-base mb-2">{{ $t('referral.termsModal.section1Title') }}</h4>
-            <ul class="list-disc pl-5 mt-1 space-y-1">
-              <li>{{ $t('referral.termsModal.section1Item1') }}</li>
-              <li>{{ $t('referral.termsModal.section1Item2') }}</li>
-              <li>{{ $t('referral.termsModal.section1Item3') }}</li>
-            </ul>
+        <div class="p-6 overflow-y-auto flex-1 text-sm text-ink-700">
+          <form @submit.prevent="registerAffiliate" id="affiliateForm" class="space-y-4 mb-6">
+            <div>
+              <label class="block text-xs font-bold text-ink-700 mb-1">Nama Lengkap <span class="text-red-500">*</span></label>
+              <input v-model="affiliateForm.fullName" type="text" required class="w-full bg-white border border-ink-200 rounded-lg px-3 py-2 text-sm text-ink-900 focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 transition-shadow" placeholder="Masukkan nama lengkap sesuai KTP" />
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-ink-700 mb-1">Pilih Bank <span class="text-red-500">*</span></label>
+              <select v-model="affiliateForm.bankName" required class="w-full bg-white border border-ink-200 rounded-lg px-3 py-2 text-sm text-ink-900 focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 transition-shadow">
+                <option value="" disabled selected>Pilih Bank Anda</option>
+                <option v-for="bank in bankList" :key="bank" :value="bank">{{ bank }}</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-ink-700 mb-1">Nomor Rekening <span class="text-red-500">*</span></label>
+              <input v-model="affiliateForm.bankAccount" type="text" inputmode="numeric" @input="affiliateForm.bankAccount = affiliateForm.bankAccount.replace(/\D/g, '')" required class="w-full bg-white border border-ink-200 rounded-lg px-3 py-2 text-sm text-ink-900 focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 transition-shadow" placeholder="Misal: 1234567890" />
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-ink-700 mb-1">Atas Nama Rekening <span class="text-red-500">*</span></label>
+              <input v-model="affiliateForm.accountName" type="text" required class="w-full bg-white border border-ink-200 rounded-lg px-3 py-2 text-sm text-ink-900 focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 transition-shadow" placeholder="Nama pemilik rekening bank" />
+            </div>
+          </form>
+
+          <div class="border-t border-ink-100 pt-6 space-y-4">
+            <h4 class="font-bold text-ink-900 text-base">Syarat & Ketentuan</h4>
+            <div class="bg-ink-50 rounded-xl p-4 text-xs space-y-4 text-ink-600 max-h-40 overflow-y-auto border border-ink-100">
+              <p>{{ $t('referral.termsModal.intro1') }}</p>
+              <p>{{ $t('referral.termsModal.intro2') }}</p>
+              
+              <div>
+                <h5 class="font-bold text-ink-900 mb-1">{{ $t('referral.termsModal.section1Title') }}</h5>
+                <ul class="list-disc pl-4 space-y-1">
+                  <li>{{ $t('referral.termsModal.section1Item1') }}</li>
+                  <li>{{ $t('referral.termsModal.section1Item2') }}</li>
+                  <li>{{ $t('referral.termsModal.section1Item3') }}</li>
+                </ul>
+              </div>
+              
+              <div>
+                <h5 class="font-bold text-ink-900 mb-1">{{ $t('referral.termsModal.section2Title') }}</h5>
+                <ul class="list-disc pl-4 space-y-1">
+                  <li>{{ $t('referral.termsModal.section2Item1') }}</li>
+                  <li>{{ $t('referral.termsModal.section2Item2') }}</li>
+                  <li>{{ $t('referral.termsModal.section2Item3') }}</li>
+                </ul>
+              </div>
+              
+              <div>
+                <h5 class="font-bold text-ink-900 mb-1">{{ $t('referral.termsModal.section3Title') }}</h5>
+                <ul class="list-disc pl-4 space-y-1">
+                  <li>{{ $t('referral.termsModal.section3Item1') }}</li>
+                  <li>{{ $t('referral.termsModal.section3Item2') }}</li>
+                  <li>{{ $t('referral.termsModal.section3Item3') }}</li>
+                  <li>{{ $t('referral.termsModal.section3Item4') }}</li>
+                </ul>
+              </div>
+              
+              <div>
+                <h5 class="font-bold text-ink-900 mb-1">{{ $t('referral.termsModal.section4Title') }}</h5>
+                <ul class="list-disc pl-4 space-y-1">
+                  <li>{{ $t('referral.termsModal.section4Item1') }}</li>
+                  <li>{{ $t('referral.termsModal.section4Item2') }}</li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="flex items-start gap-2 pt-2">
+              <input v-model="affiliateForm.agreeTerms" type="checkbox" id="agreeTermsModal" class="mt-0.5 rounded border-ink-300 text-orange-500 focus:ring-orange-500" />
+              <label for="agreeTermsModal" class="text-xs font-medium text-ink-700 leading-tight cursor-pointer">
+                Saya telah membaca dan menyetujui Syarat & Ketentuan Program Afiliasi TentaKlik. <span class="text-red-500">*</span>
+              </label>
+            </div>
           </div>
-          
-          <div>
-            <h4 class="font-bold text-ink-900 text-base mb-2">{{ $t('referral.termsModal.section2Title') }}</h4>
-            <ul class="list-disc pl-5 mt-1 space-y-1">
-              <li>{{ $t('referral.termsModal.section2Item1') }}</li>
-              <li>{{ $t('referral.termsModal.section2Item2') }}</li>
-              <li>{{ $t('referral.termsModal.section2Item3') }}</li>
-            </ul>
-          </div>
-          
-          <div>
-            <h4 class="font-bold text-ink-900 text-base mb-2">{{ $t('referral.termsModal.section3Title') }}</h4>
-            <ul class="list-disc pl-5 mt-1 space-y-1">
-              <li>{{ $t('referral.termsModal.section3Item1') }}</li>
-              <li>{{ $t('referral.termsModal.section3Item2') }}</li>
-              <li>{{ $t('referral.termsModal.section3Item3') }}</li>
-              <li>{{ $t('referral.termsModal.section3Item4') }}</li>
-            </ul>
-          </div>
-          
-          <div>
-            <h4 class="font-bold text-ink-900 text-base mb-2">{{ $t('referral.termsModal.section4Title') }}</h4>
-            <ul class="list-disc pl-5 mt-1 space-y-1">
-              <li>{{ $t('referral.termsModal.section4Item1') }}</li>
-              <li>{{ $t('referral.termsModal.section4Item2') }}</li>
-            </ul>
-          </div>
-          
-          <p class="font-medium text-ink-900 pt-2 border-t border-ink-100">{{ $t('referral.termsModal.closing') }}</p>
         </div>
         
         <!-- Footer -->
@@ -273,12 +305,13 @@
             Batal
           </button>
           <button 
-            @click="acceptTermsAndRegister"
-            :disabled="isRegisteringAffiliate"
+            type="submit"
+            form="affiliateForm"
+            :disabled="isRegisteringAffiliate || !affiliateForm.agreeTerms || !affiliateForm.fullName || !affiliateForm.bankName || !affiliateForm.bankAccount || !affiliateForm.accountName"
             class="bg-orange-500 hover:bg-orange-600 disabled:opacity-50 text-white font-bold py-2.5 px-6 rounded-md text-sm transition-colors shadow-sm inline-flex items-center justify-center gap-2"
           >
             <Loader2 v-if="isRegisteringAffiliate" class="w-4 h-4 animate-spin" />
-            {{ $t('referral.termsModal.agreeBtn') }}
+            Kirim Pengajuan
           </button>
         </div>
       </div>
@@ -313,6 +346,27 @@ const referralStatus = ref({
 const isRegisteringAffiliate = ref(false)
 const showTermsModal = ref(false)
 const isResetting = ref(false)
+
+const affiliateForm = ref({
+  fullName: '',
+  bankName: '',
+  bankAccount: '',
+  accountName: '',
+  agreeTerms: false
+})
+
+const bankList = [
+  'Bank Mandiri', 'Bank Rakyat Indonesia (BRI)', 'Bank Negara Indonesia (BNI)', 'Bank Tabungan Negara (BTN)', 'Bank Syariah Indonesia (BSI)',
+  'BCA (Bank Central Asia)', 'CIMB Niaga', 'Bank Danamon', 'Bank Permata', 'Panin Bank', 'Bank Mega', 'Bank OCBC NISP', 'Bank Maybank Indonesia', 'Bank KB Bukopin', 'Bank Sinarmas', 'Bank Muamalat', 'Bank BTPN',
+  'Bank Jago', 'Seabank', 'Blu by BCA Digital', 'Jenius (BTPN)', 'TMRW by UOB', 'Allo Bank', 'Bank Neo Commerce (BNC)', 'Krom Bank', 'Line Bank', 'Superbank', 'Hibank',
+  'Bank DKI', 'Bank BJB', 'Bank BJB Syariah', 'Bank Jateng', 'Bank Jatim', 'Bank BPD DIY', 'Bank Banten', 'Bank Nagari', 'Bank Sumut', 'Bank Sumsel Babel', 'Bank Lampung', 'Bank Jambi', 'Bank Riau Kepri Syariah', 'Bank Sulselbar', 'Bank SulutGo', 'Bank Kaltimtara', 'Bank Kalbar', 'Bank Kalsel', 'Bank Kalteng', 'Bank Maluku Malut', 'Bank Papua', 'Bank NTB Syariah', 'Bank NTT', 'Bank Bali',
+  'Bank Victoria', 'Bank Artha Graha', 'Bank Bumi Arta', 'Bank Ina Perdana', 'Bank Index Selindo', 'Bank JTrust', 'Bank Maspion', 'Bank Mayapada', 'Bank Mestika Dharma', 'Bank Multiarta Sentosa (MAS)', 'Bank Nationalnobu', 'Bank QNB Indonesia', 'Bank SBI Indonesia',
+  'Lainnya'
+].sort((a, b) => {
+  if (a === 'Lainnya') return 1;
+  if (b === 'Lainnya') return -1;
+  return a.localeCompare(b);
+})
 
 const isHistoryLoading = ref(true)
 const totalEarned = ref(0)
@@ -386,10 +440,25 @@ const fetchHistory = async () => {
 }
 
 const registerAffiliate = async () => {
+  if (!affiliateForm.value.fullName || !affiliateForm.value.bankName || !affiliateForm.value.bankAccount || !affiliateForm.value.accountName) {
+    addToast('Mohon lengkapi semua data formulir', 'error')
+    return
+  }
+
   isRegisteringAffiliate.value = true
   try {
     const csrfToken = unref(csrf)
-    const res = await $fetch('/api/referral/register', { method: 'POST', headers: csrfToken ? { 'csrf-token': csrfToken } : {} }) as any
+    const res = await $fetch('/api/referral/register', { 
+      method: 'POST', 
+      headers: csrfToken ? { 'csrf-token': csrfToken } : {},
+      body: {
+        fullName: affiliateForm.value.fullName,
+        bankName: affiliateForm.value.bankName,
+        bankAccount: affiliateForm.value.bankAccount,
+        accountName: affiliateForm.value.accountName
+      }
+    }) as any
+
     if (res && res.success) {
       referralStatus.value.isAffiliate = true
       referralStatus.value.myReferralCode = res.code
@@ -401,10 +470,6 @@ const registerAffiliate = async () => {
   } finally {
     isRegisteringAffiliate.value = false
   }
-}
-
-const acceptTermsAndRegister = () => {
-  registerAffiliate()
 }
 
 
@@ -446,7 +511,7 @@ const claimCommission = async () => {
     return
   }
 
-  if (!confirm('Apakah Anda yakin ingin mencairkan komisi ini ke Saldo Iklan Anda?')) return
+  if (!confirm('Apakah Anda yakin ingin mencairkan komisi ini ke Rekening Bank Anda? Tim Finance akan memproses pengajuan Anda.')) return
   
   isClaiming.value = true
   try {

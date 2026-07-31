@@ -91,23 +91,32 @@
                 
                 <template v-else>
                   <span class="text-ink-900 mr-2">{{ phone }}</span>
-                  <!-- Unverified State -->
-                  <template v-if="!isPhoneVerified">
-                    <div class="flex items-center gap-1.5 text-orange-600">
-                      <AlertCircle class="w-4 h-4" />
-                      <span class="font-bold text-sm">{{ $t('profile.notVerified') }}</span>
-                    </div>
-                    <button @click="isVerifyPhoneOpen = true" class="text-orange-500 hover:text-orange-600 font-medium ml-2 underline underline-offset-2">{{ $t('profile.verify') }}</button>
-                    <button @click="isPhoneOpen = true" class="text-orange-500 hover:text-orange-600 font-medium ml-2 underline underline-offset-2">{{ $t('profile.change') }}</button>
+                  
+                  <!-- Empty State -->
+                  <template v-if="phone === 'Belum diatur'">
+                    <button @click="isPhoneOpen = true" class="text-orange-500 hover:text-orange-600 font-medium ml-2 underline underline-offset-2">Tambah Nomor</button>
                   </template>
 
-                  <!-- Verified State -->
+                  <!-- Filled State -->
                   <template v-else>
-                    <div class="flex items-center gap-1.5 bg-green-50 text-green-600 px-3 py-1 rounded-lg">
-                      <ShieldCheck class="w-4 h-4" />
-                      <span class="font-bold text-sm">{{ $t('profile.verified') }}</span>
-                    </div>
-                    <button @click="isPhoneOpen = true" class="text-orange-500 hover:text-orange-600 font-medium ml-2 underline underline-offset-2">{{ $t('profile.change') }}</button>
+                    <!-- Unverified State -->
+                    <template v-if="!isPhoneVerified">
+                      <div class="flex items-center gap-1.5 text-orange-600">
+                        <AlertCircle class="w-4 h-4" />
+                        <span class="font-bold text-sm">{{ $t('profile.notVerified') }}</span>
+                      </div>
+                      <button @click="isVerifyPhoneOpen = true" class="text-orange-500 hover:text-orange-600 font-medium ml-2 underline underline-offset-2">{{ $t('profile.verify') }}</button>
+                      <button @click="isPhoneOpen = true" class="text-orange-500 hover:text-orange-600 font-medium ml-2 underline underline-offset-2">{{ $t('profile.change') }}</button>
+                    </template>
+  
+                    <!-- Verified State -->
+                    <template v-else>
+                      <div class="flex items-center gap-1.5 bg-green-50 text-green-600 px-3 py-1 rounded-lg">
+                        <ShieldCheck class="w-4 h-4" />
+                        <span class="font-bold text-sm">{{ $t('profile.verified') }}</span>
+                      </div>
+                      <button @click="isPhoneOpen = true" class="text-orange-500 hover:text-orange-600 font-medium ml-2 underline underline-offset-2">{{ $t('profile.change') }}</button>
+                    </template>
                   </template>
                 </template>
               </div>

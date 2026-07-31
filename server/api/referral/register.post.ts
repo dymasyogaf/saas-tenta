@@ -13,7 +13,30 @@ export default defineEventHandler(async (event) => {
 
   const supabase = await serverSupabaseServiceRole(event)
 
+  const body = await readBody(event)
+  const { fullName, bankName, bankAccount, accountName } = body || {}
+
+  if (!fullName || !bankName || !bankAccount || !accountName) {
+    throw createError({ statusCode: 400, message: 'Harap lengkapi semua data formulir (Nama, Bank, No. Rekening, Atas Nama)' })
+  }
+
   try {
+    // Save bank details to affiliate_profiles (UPSERT)
+    const { error: profileError } = await (supabase as any)
+      .from('affiliate_profiles')
+      .upsert({
+        user_id: uid,
+        full_name: fullName,
+        bank_name: bankName,
+        bank_account: bankAccount,
+        account_name: accountName
+      }, { onConflict: 'user_id' })
+
+    if (profileError) {
+      console.error('Profile Insert Error:', profileError)
+      throw createError({ statusCode: 500, message: `Gagal menyimpan profil afiliasi: ${profileError.message}` })
+    }
+
     // Check if user already has a referral code
     const { data: existingCode } = await (supabase as any)
       .from('referral_codes')
