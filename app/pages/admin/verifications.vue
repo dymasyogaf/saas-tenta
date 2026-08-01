@@ -234,14 +234,7 @@ const closeReviewModal = () => {
 const fetchPendingUsers = async () => {
   isLoading.value = true
   try {
-    const { data, error } = await (supabase as any)
-      .from('users')
-      .select('id, email, phone, full_name, verification_status, verification_details, created_at, updated_at')
-      .eq('verification_status', 'pending')
-      .order('updated_at', { ascending: false })
-      
-    if (error) throw error
-    
+    const data = await $fetch<any[]>('/api/admin/verifications')
     pendingUsers.value = data || []
   } catch (error: any) {
     addToast(error.message || 'Gagal mengambil data verifikasi.', 'error')
