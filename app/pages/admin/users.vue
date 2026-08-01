@@ -50,7 +50,7 @@
             </tr>
             
             <!-- Empty State -->
-            <tr v-else-if="staffList.length === 0">
+            <tr v-else-if="staffList?.length === 0">
               <td colspan="4" class="px-6 py-12 text-center text-slate-500">
                 <ShieldX class="w-12 h-12 text-slate-300 mx-auto mb-3" />
                 <p class="font-medium text-slate-600">Belum ada staf yang diangkat.</p>
@@ -59,7 +59,7 @@
             </tr>
 
             <!-- Data Rows -->
-            <tr v-else v-for="staff in staffList" :key="staff.id" class="hover:bg-slate-50 transition-colors group">
+            <tr v-else v-for="staff in staffList || []" :key="staff.id" class="hover:bg-slate-50 transition-colors group">
               <td class="px-6 py-4">
                 <div class="flex items-center gap-3">
                   <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm shrink-0 border"

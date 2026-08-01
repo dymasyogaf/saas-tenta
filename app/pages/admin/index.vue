@@ -401,6 +401,8 @@ interface AdminStats {
   totalUsers: number;
   totalAds: number;
   totalFee: number;
+  verifiedUsers: number;
+  uniqueClients: number;
   recentTxs: {
     id: string;
     type: string;
@@ -409,6 +411,7 @@ interface AdminStats {
     created_at: string;
   }[];
   chartSeries: { name: string; data: number[] }[];
+  userChartSeries: { name: string; data: number[] }[];
   chartLabels: string[];
 }
 

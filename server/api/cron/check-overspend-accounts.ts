@@ -29,7 +29,8 @@ export default defineEventHandler(async (event) => {
     // 2. Loop and check spend vs limit
     for (const account of activeAccounts) {
       const platformStr = (account.platform || '').toLowerCase()
-      const limit = account.users?.package_weekly_limit || 0
+      const usersObj: any = account.users
+      const limit = (Array.isArray(usersObj) ? usersObj[0]?.package_weekly_limit : usersObj?.package_weekly_limit) || 0
       
       let isOverspend = false
       let liveSpend = 0

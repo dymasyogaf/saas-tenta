@@ -314,22 +314,17 @@
             </div>
             
             <div>
-              <label class="block text-sm font-medium text-ink-700 mb-2">{{ $t('topup.paymentMethod') }}</label>
-              <div class="relative">
-                <select v-model="selectedMethod" class="w-full appearance-none pl-4 pr-10 py-3 bg-white border-2 border-ink-200 rounded-xl focus:outline-none focus:border-orange-500 focus:ring-4 focus:ring-orange-500/20 font-bold text-ink-900 text-sm transition-all cursor-pointer">
-                  <optgroup :label="$t('topup.virtualAccount')">
-                    <option value="BC">BCA Virtual Account</option>
-                    <option value="BM">Mandiri Virtual Account</option>
-                    <option value="BR">BRI Virtual Account</option>
-                  </optgroup>
-                  <optgroup :label="$t('topup.ewallet')">
-                    <option value="OV">OVO</option>
-                    <option value="SA">ShopeePay App</option>
-                    <option value="DA">DANA</option>
-                    <option value="SP">QRIS</option>
-                  </optgroup>
-                </select>
-                <ChevronDown class="w-5 h-5 absolute right-4 top-1/2 -translate-y-1/2 text-ink-500 pointer-events-none" />
+              <label class="block text-sm font-medium text-ink-700 mb-3">{{ $t('topup.paymentMethod') }}</label>
+              <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                <div v-for="method in paymentMethods" :key="method.value" 
+                     @click="selectedMethod = method.value"
+                     :class="['border-2 rounded-xl p-3 cursor-pointer transition-all flex flex-col items-center justify-center gap-2 h-24 text-center relative', selectedMethod === method.value ? 'border-orange-500 bg-orange-50 shadow-sm' : 'border-ink-200 bg-white hover:border-ink-300 hover:bg-ink-50']">
+                  <div v-if="selectedMethod === method.value" class="absolute top-2 right-2 text-orange-500">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+                  </div>
+                  <img :src="method.logo" :alt="method.name" class="h-6 w-full object-contain mix-blend-multiply" />
+                  <span class="text-xs font-bold text-ink-800 leading-tight">{{ method.name }}</span>
+                </div>
               </div>
             </div>
           </div>
@@ -360,6 +355,15 @@ const { t } = useI18n()
 const toast = useToast()
 const saldoStore = useSaldoStore()
 const adsStore = useAdsStore()
+
+const paymentMethods = [
+  { value: 'M2', name: 'Mandiri VA', logo: '/logos/mandiri.png' },
+  { value: 'I1', name: 'BNI VA', logo: '/logos/bni.png' },
+  { value: 'B1', name: 'BSI VA', logo: '/logos/bsi.png' },
+  { value: 'A1', name: 'ATM Bersama', logo: '/logos/atmbersama.png' },
+  { value: 'FT', name: 'Alfamart', logo: '/logos/alfamart.svg' },
+  { value: 'IR', name: 'Indomaret', logo: '/logos/indomaret.png' },
+]
 
 definePageMeta({
   layout: 'dashboard',
@@ -492,7 +496,7 @@ const isTopupModalOpen = ref(false)
 const topupStep = ref(1)
 const selectedPackage = ref('starter')
 const topupAmount = ref<number | ''>('')
-const selectedMethod = ref('OV')
+const selectedMethod = ref('M2')
 const user = useSupabaseUser()
 
 const activeRentals = computed(() => {
@@ -548,7 +552,7 @@ const handleTopup = () => {
   topupStep.value = 1
   selectedPackage.value = 'starter'
   topupAmount.value = 300000
-  selectedMethod.value = 'OV'
+  selectedMethod.value = 'M2'
 }
 
 const submitTopup = async () => {

@@ -46,7 +46,7 @@
     <div class="flex flex-col sm:flex-row sm:justify-between items-start sm:items-center mb-4 gap-4">
       <h3 class="font-display font-bold text-xl md:text-2xl text-ink-900">{{ $t('platform.servicesTitle') }}</h3>
       
-      <button @click="resetDev" class="flex items-center gap-2 px-4 py-2 bg-red-50 border border-red-200 rounded-lg text-sm font-bold text-red-600 hover:bg-red-100 transition-colors shadow-sm shrink-0">
+      <button v-if="isAdmin" @click="resetDev" class="flex items-center gap-2 px-4 py-2 bg-red-50 border border-red-200 rounded-lg text-sm font-bold text-red-600 hover:bg-red-100 transition-colors shadow-sm shrink-0">
         <Trash2 class="w-4 h-4" /> {{ $t('platform.resetDev') }}
       </button>
     </div>
@@ -97,6 +97,11 @@ const { t } = useI18n()
 const supabase = useSupabaseClient()
 const { user } = useAuth()
 const { csrf } = useCsrf()
+
+const isAdmin = computed(() => {
+  const role = user.value?.user_metadata?.role || user.value?.app_metadata?.role
+  return role === 'admin' || role === 'super_admin'
+})
 
 const isModalOpen = ref(false)
 const selectedPlatformName = ref('')

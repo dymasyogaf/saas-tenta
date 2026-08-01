@@ -59,14 +59,14 @@
                   <div class="flex w-full items-center justify-center gap-2 bg-green-50 text-green-600 px-4 py-2.5 rounded-md text-sm font-semibold border border-green-200">
                     <ShieldCheck class="w-4 h-4" /> {{ $t('profile.profileVerified') }}
                   </div>
-                  <button @click="resetVerification" class="text-xs text-ink-400 hover:text-red-500 underline mt-1 sm:mt-0">{{ $t('profile.resetDev') }}</button>
+                  <button v-if="isAdmin" @click="resetVerification" class="text-xs text-ink-400 hover:text-red-500 underline mt-1 sm:mt-0">{{ $t('profile.resetDev') }}</button>
                 </div>
                 
                 <div v-else-if="verificationStatus === 'pending'" class="flex flex-col sm:flex-row items-center gap-2 shrink-0">
                   <div class="flex w-full items-center justify-center gap-2 bg-orange-50 text-orange-600 px-4 py-2.5 rounded-md text-sm font-semibold border border-orange-200">
                     <ShieldCheck class="w-4 h-4" /> {{ $t('profile.underReview') }}
                   </div>
-                  <button @click="resetVerification" class="text-xs text-ink-400 hover:text-red-500 underline mt-1 sm:mt-0">{{ $t('profile.resetDev') }}</button>
+                  <button v-if="isAdmin" @click="resetVerification" class="text-xs text-ink-400 hover:text-red-500 underline mt-1 sm:mt-0">{{ $t('profile.resetDev') }}</button>
                 </div>
 
                 <NuxtLink v-else to="/dashboard/verification" class="flex items-center justify-center gap-2 border border-orange-500 text-orange-500 px-4 py-2.5 rounded-md text-sm font-semibold hover:bg-orange-50 transition-colors shrink-0">
@@ -318,6 +318,11 @@ const activePackage = ref('starter')
 
 const { user } = useAuth()
 const adsStore = useAdsStore()
+
+const isAdmin = computed(() => {
+  const role = user.value?.user_metadata?.role || user.value?.app_metadata?.role
+  return role === 'admin' || role === 'super_admin'
+})
 
 const fullName = computed(() => user.value?.user_metadata?.full_name || 'User')
 const verificationStatus = ref('unverified')

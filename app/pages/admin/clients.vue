@@ -98,6 +98,9 @@
               </td>
               <td class="px-6 py-4 text-center">
                 <div class="flex items-center justify-center gap-2">
+                  <button v-if="isSuperAdmin" @click="resetClient(client.id, client.full_name)" class="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="Reset Data Klien">
+                    <RotateCcw class="w-4 h-4" />
+                  </button>
                   <button class="p-2 text-slate-400 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-colors" title="Lihat Detail Klien">
                     <ExternalLink class="w-4 h-4" />
                   </button>
@@ -115,7 +118,7 @@
 </template>
 
 <script setup lang="ts">
-import { Search, Users, ExternalLink, Trash2 } from 'lucide-vue-next'
+import { Search, Users, ExternalLink, Trash2, RotateCcw } from 'lucide-vue-next'
 
 definePageMeta({
   layout: 'admin',
@@ -123,12 +126,31 @@ definePageMeta({
 })
 
 const supabase = useSupabaseClient()
+const user = useSupabaseUser()
 const { csrf } = useCsrf()
 const searchQuery = ref('')
 const statusFilter = ref('all')
 
+const isSuperAdmin = ref(false)
+
+onMounted(async () => {
+  if (user.value?.user_metadata?.role === 'super_admin' || user.value?.app_metadata?.role === 'super_admin') {
+    isSuperAdmin.value = true
+    return
+  }
+  
+  // Fallback ke database jika metadata belum tersinkronisasi
+  if (user.value) {
+    const response = await (supabase as any).from('users').select('role').eq('id', user.value.id).single()
+    const data = response.data
+    if (data?.role === 'super_admin') {
+      isSuperAdmin.value = true
+    }
+  }
+})
+
 // Fetch and merge Data dari Server Endpoint (Bypass RLS)
-const { data: clients, pending } = useFetch<any[]>('/api/admin/clients')
+const { data: clients, pending, refresh } = useFetch<any[]>('/api/admin/clients')
 
 // Filter Dinamis Berdasarkan Pencarian & Dropdown Status
 const filteredClients = computed(() => {
@@ -172,6 +194,24 @@ const deleteClient = async (id: string, name: string) => {
     }
   } catch (err: any) {
     alert(err.data?.statusMessage || 'Terjadi kesalahan saat menghapus klien')
+  }
+}
+
+// Reset Klien
+const resetClient = async (id: string, name: string) => {
+  if (!confirm(`Apakah Anda yakin ingin MERESET data klien ${name || 'ini'}? Semua data akun iklan, transaksi, dan saldo akan dihapus. Tindakan ini tidak dapat dibatalkan.`)) return
+  
+  try {
+    const csrfToken = unref(csrf)
+    const res = await $fetch(`/api/admin/users/${id}/reset`, {
+      method: 'POST',
+      headers: csrfToken ? { 'csrf-token': csrfToken } : {}
+    })
+    
+    alert('Data Klien berhasil direset.')
+    await refresh()
+  } catch (err: any) {
+    alert(err.data?.statusMessage || 'Terjadi kesalahan saat mereset data klien. Pastikan endpoint sudah dibuat di backend.')
   }
 }
 </script>

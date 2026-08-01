@@ -129,7 +129,7 @@ export const useSaldoStore = defineStore('saldo', {
           throw new Error('Gagal mendapatkan link pembayaran')
         }
       } catch (e: any) {
-        this.error = e.statusMessage || e.message || 'Terjadi kesalahan'
+        this.error = e.data?.statusMessage || e.data?.message || e.statusMessage || e.message || 'Terjadi kesalahan'
         if (toast) {
           toast.addToast('Gagal Top Up: ' + this.error, 'error')
         } else {

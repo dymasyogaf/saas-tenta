@@ -7,7 +7,7 @@
         <p class="text-slate-500 text-sm mt-1">Buat akun iklan di platform, lalu masukkan ID-nya ke sini untuk dihubungkan ke dasbor Klien.</p>
       </div>
       <div class="flex flex-col sm:flex-row items-center gap-3">
-        <button @click="resetDev" class="flex items-center justify-center gap-2 px-4 py-2 bg-red-50 border border-red-200 rounded-lg text-sm font-bold text-red-600 hover:bg-red-100 transition-colors shadow-sm w-full sm:w-auto">
+        <button v-if="isAdmin" @click="resetDev" class="flex items-center justify-center gap-2 px-4 py-2 bg-red-50 border border-red-200 rounded-lg text-sm font-bold text-red-600 hover:bg-red-100 transition-colors shadow-sm w-full sm:w-auto">
           <Trash2 class="w-4 h-4" /> Reset Dev (Wipe Data)
         </button>
         <button @click="() => refresh()" class="flex items-center justify-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-lg text-sm font-bold text-slate-700 hover:bg-slate-50 transition-colors shadow-sm w-full sm:w-auto">
@@ -270,6 +270,12 @@ definePageMeta({
 })
 
 const { csrf } = useCsrf()
+
+const user = useSupabaseUser()
+const isAdmin = computed(() => {
+  const role = user.value?.user_metadata?.role || user.value?.app_metadata?.role
+  return role === 'admin' || role === 'super_admin'
+})
 
 const activeTab = ref('new')
 const isSubmitting = ref<string | null>(null)

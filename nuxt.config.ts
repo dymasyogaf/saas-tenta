@@ -72,7 +72,7 @@ export default defineNuxtConfig({
   // App metadata
   app: {
     head: {
-      title: 'Tentaklik SaaS',
+      title: 'Member Tentaklik',
       meta: [
         { charset: 'utf-8' },
         { name: 'viewport', content: 'width=device-width, initial-scale=1' },

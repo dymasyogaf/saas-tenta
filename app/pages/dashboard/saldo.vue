@@ -425,7 +425,7 @@
     </div>
 
     <!-- Histori Pindah Saldo -->
-    <div v-else-if="activeTab === 'histori-pindah'">
+    <div v-else-if="activeTab === 'histori-tambahan'">
       <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
         <button class="bg-ink-50 border border-ink-100 text-ink-500 px-4 py-2 rounded-md font-semibold text-sm flex items-center gap-2 hover:bg-ink-100 hover:text-ink-700 transition-colors">
           <Download class="w-4 h-4" /> {{ $t('saldo.downloadReport') }}

@@ -122,6 +122,12 @@ export default defineEventHandler(async (event) => {
     if (result.statusCode === '00') {
       // 6. Simpan transaksi berstatus 'pending' ke Supabase
       const methodNames: Record<string, string> = {
+        'M2': 'Mandiri Virtual Account',
+        'I1': 'BNI Virtual Account',
+        'B1': 'BSI Virtual Account',
+        'A1': 'ATM Bersama',
+        'FT': 'Alfamart / Pegadaian',
+        'IR': 'Indomaret',
         'BC': 'BCA Virtual Account',
         'BM': 'Mandiri Virtual Account',
         'BR': 'BRI Virtual Account',

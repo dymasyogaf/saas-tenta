@@ -34,7 +34,7 @@ export default defineEventHandler(async (event) => {
   const payload = {
     merchantCode,
     paymentAmount,
-    paymentMethod: method || 'OV',
+    paymentMethod: method || 'M2',
     merchantOrderId,
     productDetails: `Pembayaran Sewa Akun Iklan`,
     additionalParam: '',

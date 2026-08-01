@@ -7,6 +7,7 @@
       </div>
       <div>
         <button 
+          v-if="isAdmin"
           @click="resetDevData"
           :disabled="isResetting"
           class="bg-red-50 hover:bg-red-100 text-red-600 font-bold py-2 px-4 rounded-md text-sm border border-red-200 shadow-sm flex items-center gap-2 transition-colors"
@@ -333,6 +334,12 @@ definePageMeta({
 const { t, locale } = useI18n()
 const { addToast } = useToast()
 const { csrf } = useCsrf()
+
+const user = useSupabaseUser()
+const isAdmin = computed(() => {
+  const role = user.value?.user_metadata?.role || user.value?.app_metadata?.role
+  return role === 'admin' || role === 'super_admin'
+})
 
 const referralStatus = ref({
   isLoading: true,
