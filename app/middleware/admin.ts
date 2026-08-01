@@ -44,8 +44,8 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
       return navigateTo('/admin')
     }
     
-    // Tim Finance
-    if (path.startsWith('/admin/finance') && role !== 'admin_finance') {
+    // Tim Finance & Tim Audit
+    if (path.startsWith('/admin/finance') && role !== 'admin_finance' && role !== 'admin_compliance') {
       return navigateTo('/admin')
     }
 

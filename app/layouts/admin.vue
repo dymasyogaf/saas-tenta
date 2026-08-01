@@ -232,7 +232,7 @@ const navItems = computed(() => {
       label: t('admin.financeTeam'),
       icon: WalletCards,
       badge: pendingFinanceCount.value > 0 ? pendingFinanceCount.value.toString() : undefined,
-      allowed: ['super_admin', 'admin_finance']
+      allowed: ['super_admin', 'admin_finance', 'admin_compliance']
     },
     { to: '/admin/support', label: t('admin.supportTickets'), icon: Headset, allowed: ['super_admin', 'admin_compliance'] },
     { to: '/admin/clients', label: t('admin.clientList'), icon: Users, allowed: ['super_admin', 'admin_finance', 'admin_ads_ops', 'admin_compliance'] },
