@@ -1,6 +1,8 @@
 import { serverSupabaseServiceRole } from '#supabase/server'
 
 export default defineEventHandler(async (event) => {
+  await requireAdmin(event, ['admin_compliance', 'super_admin'])
+  
   try {
     const supabase = serverSupabaseServiceRole<any>(event)
     const body = await readBody(event)
@@ -28,7 +30,7 @@ export default defineEventHandler(async (event) => {
       .from('notifications')
       .insert({
         user_id: userId,
-        type: 'verification',
+        type: 'system',
         title,
         message: notifMessage
       })

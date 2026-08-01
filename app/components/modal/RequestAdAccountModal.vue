@@ -74,7 +74,7 @@
                   <option value="" disabled>{{ $t('modals.requestAd.categoryPlaceholder') }}</option>
                   <option value="UMKM">{{ $t('modals.requestAd.catUMKM') }}</option>
                   <option value="Produk Kecantikan">{{ $t('modals.requestAd.catBeauty') }}</option>
-                  <option value="Kesehatan">{{ $t('modals.requestAd.catHealth') }}</option>
+                  <option value="FnB">{{ $t('modals.requestAd.catFnb') }}</option>
                   <option value="Konsultan Pendidikan">{{ $t('modals.requestAd.catEdu') }}</option>
                   <option value="Fashion">{{ $t('modals.requestAd.catFashion') }}</option>
                   <option value="Lainnya">{{ $t('modals.requestAd.catOther') }}</option>
