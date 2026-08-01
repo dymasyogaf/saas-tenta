@@ -241,7 +241,7 @@
                 <!-- Nominal & API indicator -->
                 <div class="flex items-center gap-2 whitespace-nowrap mb-1.5">
                   <span class="font-bold text-[14px]" :class="getBudgetColor(account)">
-                    {{ formatCurrency(Math.max(0, account.saldo)) }}
+                    {{ formatCurrency(getBudgetRemaining(account)) }}
                   </span>
                   <span v-if="account.api_balance_active" class="inline-flex items-center gap-1 text-[9px] font-bold text-emerald-600" title="Sinkron dari API platform">
                     <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
@@ -258,10 +258,10 @@
                   ></div>
                 </div>
 
-                <!-- Info text: {{ $t('saldo.used') }} / total -->
+                <!-- Info text -->
                 <div class="flex items-center justify-between mt-1">
-                  <span class="text-[10px] text-ink-400 font-medium">
-                    {{ formatCompact(getBudgetSpent(account)) }} / {{ formatCompact(getBudgetTotal(account)) }} {{ $t('saldo.used') }}
+                  <span class="text-[10px] text-ink-500 font-medium">
+                    {{ formatCompact(getBudgetSpent(account)) }} / {{ formatCompact(getBudgetTotal(account)) }}
                   </span>
                   <span class="text-[10px] font-bold" :class="getBudgetColor(account)">
                     {{ getBudgetUsagePercent(account) }}%
@@ -269,16 +269,22 @@
                 </div>
 
                 <!-- Warning states -->
-                <div v-if="account.saldo <= 0" class="mt-1.5">
-                  <NuxtLink to="/dashboard/topup" class="inline-flex items-center gap-1 bg-red-50 text-red-600 border border-red-100 text-[10px] font-bold px-2 py-1 rounded-md hover:bg-red-100 transition-colors">
-                    <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                    {{ $t('saldo.budgetEmpty') }}
+                <div v-if="getBudgetTotal(account) <= 0" class="mt-2.5">
+                  <NuxtLink to="/dashboard/topup" class="w-full flex justify-center items-center gap-1.5 bg-ink-50 border border-ink-200 text-ink-600 text-[10px] font-bold px-3 py-1.5 rounded-lg hover:bg-ink-100 hover:text-ink-800 transition-colors">
+                    <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                    Alokasikan Anggaran
                   </NuxtLink>
                 </div>
-                <div v-else-if="account.saldo <= (0.2 * getBudgetTotal(account))" class="mt-1.5">
-                  <span class="inline-flex items-center gap-1 text-[10px] font-bold text-amber-600">
-                    <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-                    {{ $t('saldo.budgetLow') }}
+                <div v-else-if="getBudgetRemaining(account) <= 0" class="mt-2.5">
+                  <NuxtLink to="/dashboard/topup" class="w-full flex justify-center items-center gap-1.5 bg-red-50 border border-red-100 text-red-600 text-[10px] font-bold px-3 py-1.5 rounded-lg hover:bg-red-100 hover:text-red-700 transition-colors">
+                    <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                    Anggaran Habis — Tambah
+                  </NuxtLink>
+                </div>
+                <div v-else-if="getBudgetRemaining(account) <= (0.2 * getBudgetTotal(account))" class="mt-2.5">
+                  <span class="inline-flex items-center gap-1.5 text-[10px] font-bold text-amber-600">
+                    <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                    Anggaran Menipis
                   </span>
                 </div>
               </td>
@@ -307,6 +313,14 @@
                   <span class="text-[10px] font-bold" :class="getLimitColor(account)">
                     {{ getLimitUsagePercent(account) }}%
                   </span>
+                </div>
+                
+                <!-- Update Paket Button -->
+                <div v-if="getLimitUsagePercent(account) >= 100" class="mt-2">
+                  <NuxtLink to="/dashboard/settings?tab=subscription" class="inline-flex w-full justify-center items-center gap-1 bg-red-500 text-white text-[10px] font-bold px-2 py-1 rounded hover:bg-red-600 transition-colors shadow-sm">
+                    <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                    Update Paket
+                  </NuxtLink>
                 </div>
               </td>
               <td class="py-4 px-5 whitespace-nowrap" :class="{'opacity-30 grayscale blur-[1.5px] pointer-events-none': getDaysLeftNum(account.subscription_expires_at) !== null && getDaysLeftNum(account.subscription_expires_at)! <= 0}">
@@ -704,11 +718,18 @@ const formatCompact = (value: number) => {
 }
 
 const getBudgetTotal = (account: any) => {
-  // Prioritas: api_budget_total (dari platform API), fallback ke penggunaan + saldo
+  // Prioritas: api_budget_total (dari platform API), fallback ke saldo (alokasi lokal)
   if (account.api_budget_total !== undefined && account.api_budget_total > 0) {
     return account.api_budget_total
   }
-  return (account.penggunaan || 0) + Math.max(0, account.saldo || 0)
+  return account.saldo || 0
+}
+
+const getBudgetRemaining = (account: any) => {
+  if (account.api_balance_active && account.saldo !== undefined) {
+    return account.saldo // Jika pakai api_balance, saldo memang sisa
+  }
+  return Math.max(0, getBudgetTotal(account) - getBudgetSpent(account))
 }
 
 const getBudgetSpent = (account: any) => {
@@ -722,20 +743,24 @@ const getBudgetSpent = (account: any) => {
 const getBudgetUsagePercent = (account: any) => {
   const total = getBudgetTotal(account)
   const spent = getBudgetSpent(account)
-  if (total <= 0) return 100
+  if (total <= 0) return 0
   return Math.min(100, Math.round((spent / total) * 100))
 }
 
 const getBudgetColor = (account: any) => {
+  const total = getBudgetTotal(account)
+  if (total <= 0) return 'text-ink-400'
   const pct = getBudgetUsagePercent(account)
-  if (pct >= 100 || account.saldo <= 0) return 'text-red-500'
+  if (pct >= 100 || getBudgetRemaining(account) <= 0) return 'text-red-500'
   if (pct >= 80) return 'text-amber-500'
   return 'text-ink-900'
 }
 
 const getBudgetBarColor = (account: any) => {
+  const total = getBudgetTotal(account)
+  if (total <= 0) return 'bg-ink-300'
   const pct = getBudgetUsagePercent(account)
-  if (pct >= 100 || account.saldo <= 0) return 'bg-red-500'
+  if (pct >= 100 || getBudgetRemaining(account) <= 0) return 'bg-red-500'
   if (pct >= 80) return 'bg-amber-400'
   if (pct >= 50) return 'bg-blue-500'
   return 'bg-emerald-500'

@@ -62,7 +62,7 @@ export default defineEventHandler(async (event) => {
       
       const { data: request, error: fetchErr } = await supabase
         .from('ad_account_requests')
-        .select('user_id, platform, account_name, details, rental_fee, subscription_months')
+        .select('user_id, platform, account_name, details, rental_fee, subscription_months, status')
         .eq('id', request_id)
         .single()
 
@@ -104,32 +104,34 @@ export default defineEventHandler(async (event) => {
 
       if (updateErr) throw updateErr
 
-      // Finalisasi Pemotongan Saldo
-      const { data: saldoData } = await supabase
-        .from('saldo')
-        .select('balance, pending_balance')
-        .eq('user_id', request.user_id)
-        .single()
-        
-      if (saldoData) {
-        const fee = Number(request.rental_fee || 0)
-        const newBalance = Number(saldoData.balance) - fee
-        const newPending = Number(saldoData.pending_balance) - fee
-        
-        await supabase
+      // Finalisasi Pemotongan Saldo (Hanya jika belum approved sebelumnya)
+      if (request.status !== 'approved') {
+        const { data: saldoData } = await supabase
           .from('saldo')
-          .update({ balance: newBalance, pending_balance: newPending })
+          .select('balance, pending_balance')
           .eq('user_id', request.user_id)
+          .single()
           
-        await supabase.from('transactions').insert({
-          user_id: request.user_id,
-          amount: fee,
-          type: 'payment',
-          status: 'success',
-          description: 'Pembayaran Sewa Akun Iklan',
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        })
+        if (saldoData) {
+          const fee = Number(request.rental_fee || 0)
+          const newBalance = Number(saldoData.balance) - fee
+          const newPending = Number(saldoData.pending_balance) - fee
+          
+          await supabase
+            .from('saldo')
+            .update({ balance: newBalance, pending_balance: newPending })
+            .eq('user_id', request.user_id)
+            
+          await supabase.from('transactions').insert({
+            user_id: request.user_id,
+            amount: fee,
+            type: 'payment',
+            status: 'success',
+            description: 'Pembayaran Sewa Akun Iklan',
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          })
+        }
       }
 
       // Ambil Ad Account ID lama jika ada (berarti ini adalah proses EDIT ID)
@@ -249,17 +251,32 @@ export default defineEventHandler(async (event) => {
             .eq('user_id', request.user_id)
         }
 
-        // Masukkan atau perbarui akun dengan ID baru menggunakan upsert
-        const { error: upsertErr } = await supabase
-          .from('ad_accounts')
-          .upsert({
-            user_id: request.user_id,
-            platform: dbPlatform,
-            account_id: cleanAdAccountId,
-            account_name: formattedAccountName,
-            status: 'active',
-            subscription_expires_at: expiresAt.toISOString()
-          }, { onConflict: 'account_id, platform' })
+        let upsertErr;
+        if (existingAcc) {
+          const { error } = await supabase
+            .from('ad_accounts')
+            .update({
+              account_name: formattedAccountName,
+              status: 'active',
+              subscription_expires_at: expiresAt.toISOString()
+            })
+            .eq('account_id', cleanAdAccountId)
+            .eq('platform', dbPlatform)
+            .eq('user_id', request.user_id);
+          upsertErr = error;
+        } else {
+          const { error } = await supabase
+            .from('ad_accounts')
+            .insert({
+              user_id: request.user_id,
+              platform: dbPlatform,
+              account_id: cleanAdAccountId,
+              account_name: formattedAccountName,
+              status: 'active',
+              subscription_expires_at: expiresAt.toISOString()
+            });
+          upsertErr = error;
+        }
 
         if (upsertErr) {
           console.error('Gagal menyimpan ke database ad_accounts:', upsertErr)

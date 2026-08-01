@@ -1,10 +1,8 @@
-import { serverSupabaseServiceRole, serverSupabaseUser } from '#supabase/server'
+import { serverSupabaseServiceRole } from '#supabase/server'
+import { requireUser } from '../../utils/requireUser'
 
 export default defineEventHandler(async (event) => {
-  const user = await serverSupabaseUser(event)
-  if (!user) {
-    throw createError({ statusCode: 401, message: 'Unauthorized' })
-  }
+  const user = await requireUser(event)
 
   const uid = user.id || (user as any).sub
   if (!uid) {

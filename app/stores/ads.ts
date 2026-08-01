@@ -126,7 +126,7 @@ export const useAdsStore = defineStore('ads', {
         this.adAccounts = accounts.map(acc => {
           const limit = saldoStore.weeklyLimit || 0
           const penggunaan = 0 // Akan di-update via live fetch
-          const saldo = limit - penggunaan
+          const saldo = acc.saldo || 0 // Murni dari database lokal (alokasi klien)
           return {
             ...acc,
             platform: acc.platform.charAt(0).toUpperCase() + acc.platform.slice(1),
@@ -153,8 +153,8 @@ export const useAdsStore = defineStore('ads', {
                    const api_budget_total = res.data.api_budget_total
                    const api_amount_spent = res.data.api_amount_spent
                    
-                   // Gunakan API balance (jika ada), jika tidak gunakan Limit - Penggunaan
-                   const saldo = api_balance !== undefined ? api_balance : (limit - penggunaan)
+                   // Gunakan API balance (jika ada), jika tidak gunakan saldo lokal dari DB
+                   const saldo = api_balance !== undefined ? api_balance : (this.adAccounts[index].saldo || 0)
                    
                    this.adAccounts[index].penggunaan = penggunaan
                    this.adAccounts[index].saldo = saldo
@@ -196,8 +196,8 @@ export const useAdsStore = defineStore('ads', {
                    const api_budget_total = res.data.api_budget_total
                    const api_amount_spent = res.data.api_amount_spent
                    
-                   // Gunakan API balance (jika ada), jika tidak gunakan Limit - Penggunaan
-                   const saldo = api_balance !== undefined ? api_balance : (limit - penggunaan)
+                   // Gunakan API balance (jika ada), jika tidak gunakan saldo lokal dari DB
+                   const saldo = api_balance !== undefined ? api_balance : (this.adAccounts[index].saldo || 0)
                    
                    this.adAccounts[index].penggunaan = penggunaan
                    

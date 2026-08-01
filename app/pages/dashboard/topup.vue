@@ -43,6 +43,9 @@
           <button @click="handleTopup" :disabled="saldoStore.isLoading" class="w-full bg-orange-500 border-2 border-orange-500 text-white hover:bg-orange-600 font-bold py-2.5 rounded-lg text-sm transition-colors disabled:opacity-50">
             {{ saldoStore.isLoading ? $t('topup.processing') : $t('topup.addBalance') }}
           </button>
+          <button @click="openAllocateBudgetModal" class="w-full bg-white border-2 border-orange-500 text-orange-600 hover:bg-orange-50 font-bold py-2.5 rounded-lg text-sm transition-colors">
+            Alokasikan Anggaran
+          </button>
         </div>
         
         <hr class="border-ink-100 mb-6">
@@ -340,21 +343,74 @@
       </div>
     </div>
 
+    <!-- Allocate Budget Modal -->
+    <div v-if="isAllocateBudgetModalOpen" class="fixed inset-0 bg-ink-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4" @click.self="isAllocateBudgetModalOpen = false">
+        <div class="bg-white rounded-2xl w-full max-w-md overflow-hidden shadow-xl animate-scale-up">
+          <div class="p-6">
+            <div class="flex items-center justify-between mb-6">
+              <h3 class="text-xl font-display font-bold text-ink-900">Alokasikan Anggaran Iklan</h3>
+              <button @click="isAllocateBudgetModalOpen = false" class="text-ink-400 hover:text-ink-600 p-1 rounded-full hover:bg-ink-50 transition-colors">
+                <X class="w-5 h-5" />
+              </button>
+            </div>
+            
+            <div class="space-y-5">
+              <div>
+                <label class="block text-sm font-bold text-ink-900 mb-1.5">Pilih Akun Iklan</label>
+                <select v-model="allocateSelectedAccount" class="w-full px-4 py-2.5 bg-ink-50 border border-ink-200 rounded-xl text-ink-900 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500">
+                  <option value="" disabled>-- Pilih Akun Iklan --</option>
+                  <option v-for="acc in adsStore.adAccounts" :key="acc.id" :value="acc.id">
+                    {{ acc.name }} ({{ acc.platform }})
+                  </option>
+                </select>
+              </div>
+
+              <div class="bg-blue-50 border border-blue-100 rounded-xl p-4 flex items-center justify-between">
+                <div>
+                  <p class="text-xs font-medium text-blue-600 mb-0.5">Sisa Saldo Utama (Ad Balance)</p>
+                  <p class="text-lg font-bold text-blue-700">{{ formatRupiah(saldoStore.balance) }}</p>
+                </div>
+                <Wallet class="w-6 h-6 text-blue-300" />
+              </div>
+
+              <div>
+                <label class="block text-sm font-bold text-ink-900 mb-1.5">Nominal Tambah Anggaran</label>
+                <div class="relative">
+                  <span class="absolute left-4 top-1/2 -translate-y-1/2 text-ink-500 font-medium">Rp</span>
+                  <input type="text" v-model="allocateAmountInput" @input="formatAllocateInput" placeholder="1.000.000" class="w-full pl-11 pr-4 py-3 bg-white border border-ink-200 rounded-xl text-ink-900 text-lg font-bold focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition-all placeholder:font-normal placeholder:text-ink-300" />
+                </div>
+                <p v-if="allocateAmount > saldoStore.balance" class="text-xs text-red-500 font-medium mt-1.5 flex items-center gap-1">
+                  <Info class="w-3.5 h-3.5" /> Saldo Utama tidak mencukupi
+                </p>
+              </div>
+            </div>
+
+            <div class="mt-8 flex gap-3">
+              <button @click="isAllocateBudgetModalOpen = false" class="flex-1 px-4 py-2.5 border border-ink-200 text-ink-600 rounded-xl font-bold hover:bg-ink-50 transition-colors">Batal</button>
+              <button @click="submitAllocateBudget" :disabled="isAllocatingBudget || !allocateSelectedAccount || allocateAmount <= 0 || allocateAmount > saldoStore.balance" class="flex-1 px-4 py-2.5 bg-orange-500 text-white rounded-xl font-bold hover:bg-orange-600 transition-colors disabled:opacity-50 flex items-center justify-center gap-2">
+                <Loader2 v-if="isAllocatingBudget" class="w-4 h-4 animate-spin" />
+                {{ isAllocatingBudget ? 'Memproses...' : 'Simpan Alokasi' }}
+              </button>
+            </div>
+          </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { Calendar, Wallet, Info, Download, Search, ChevronDown } from 'lucide-vue-next'
+import { Calendar, Wallet, Info, Download, Search, ChevronDown, X, Loader2 } from 'lucide-vue-next'
 import { useSaldoStore } from '~/stores/saldo'
 import { useAdsStore } from '~/stores/ads'
 import { useI18n } from 'vue-i18n'
 import { useToast } from '#imports'
-import { useSupabaseUser } from '#imports'
+import { useSupabaseUser, useCsrf } from '#imports'
 
 const { t } = useI18n()
 const toast = useToast()
 const saldoStore = useSaldoStore()
 const adsStore = useAdsStore()
+const { csrf } = useCsrf()
 
 const paymentMethods = [
   { value: 'M2', name: 'Mandiri VA', logo: '/logos/mandiri.png' },
@@ -378,8 +434,15 @@ const today = new Date()
 const thirtyDaysAgo = new Date()
 thirtyDaysAgo.setDate(today.getDate() - 30)
 
-const startDate = ref<string>(thirtyDaysAgo.toISOString().split('T')[0] as string)
-const endDate = ref<string>(today.toISOString().split('T')[0] as string)
+const getLocalYYYYMMDD = (d: Date) => {
+  const y = d.getFullYear()
+  const m = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${y}-${m}-${day}`
+}
+
+const startDate = ref<string>(getLocalYYYYMMDD(thirtyDaysAgo))
+const endDate = ref<string>(getLocalYYYYMMDD(today))
 
 const formattedDateRange = computed(() => {
   const start = new Date(startDate.value)
@@ -563,6 +626,62 @@ const submitTopup = async () => {
   }
 }
 
+const isAllocateBudgetModalOpen = ref(false)
+const allocateSelectedAccount = ref('')
+const allocateAmountInput = ref('')
+const allocateAmount = ref(0)
+const isAllocatingBudget = ref(false)
+
+const openAllocateBudgetModal = () => {
+  allocateSelectedAccount.value = ''
+  allocateAmountInput.value = ''
+  allocateAmount.value = 0
+  isAllocateBudgetModalOpen.value = true
+}
+
+const formatAllocateInput = (e: Event) => {
+  const target = e.target as HTMLInputElement
+  let val = target.value.replace(/\D/g, '')
+  if (!val) {
+    allocateAmountInput.value = ''
+    allocateAmount.value = 0
+    return
+  }
+  allocateAmount.value = parseInt(val, 10)
+  allocateAmountInput.value = new Intl.NumberFormat('id-ID').format(allocateAmount.value)
+}
+
+const submitAllocateBudget = async () => {
+  if (!allocateSelectedAccount.value || allocateAmount.value <= 0 || allocateAmount.value > saldoStore.balance) {
+    return
+  }
+  
+  isAllocatingBudget.value = true
+  try {
+    const csrfToken = unref(csrf)
+    const res = await $fetch('/api/ads/add-budget', {
+      method: 'POST',
+      headers: csrfToken ? { 'csrf-token': csrfToken } : {},
+      body: {
+        accountId: allocateSelectedAccount.value,
+        amount: allocateAmount.value
+      }
+    })
+    
+    toast.addToast('Anggaran iklan berhasil dialokasikan', 'success')
+    
+    // Refresh data
+    await saldoStore.fetchSaldo()
+    await saldoStore.fetchTransactions()
+    await adsStore.fetchAdAccounts()
+    isAllocateBudgetModalOpen.value = false
+  } catch (error: any) {
+    toast.addToast(error.data?.message || error.message || 'Gagal mengalokasikan anggaran', 'error')
+  } finally {
+    isAllocatingBudget.value = false
+  }
+}
+
 onMounted(async () => {
   // Cek apakah user baru saja kembali dari halaman Duitku (Return URL)
   const route = useRoute()
@@ -586,6 +705,7 @@ onMounted(async () => {
 
   saldoStore.fetchSaldo()
   saldoStore.fetchTransactions()
+  adsStore.fetchAdAccounts()
   await adsStore.fetchAllPerformance(startDate.value, endDate.value)
 })
 </script>
