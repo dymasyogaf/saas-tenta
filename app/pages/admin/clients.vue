@@ -104,7 +104,7 @@
                   <button class="p-2 text-slate-400 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-colors" title="Lihat Detail Klien">
                     <ExternalLink class="w-4 h-4" />
                   </button>
-                  <button @click="deleteClient(client.id, client.full_name)" class="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Hapus Klien">
+                  <button v-if="isSuperAdmin" @click="deleteClient(client.id, client.full_name)" class="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Hapus Klien">
                     <Trash2 class="w-4 h-4" />
                   </button>
                 </div>

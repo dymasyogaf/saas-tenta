@@ -51,14 +51,23 @@ export default defineEventHandler(async (event) => {
       }).length
     }
 
+    const queryParams = getQuery(event)
+    const platform = queryParams.platform as string
+
     // 3. Aktivitas Terkini (Recent Activities)
     // Ambil 5 riwayat alokasi anggaran terakhir
-    const { data: recentBudgets } = await supabase
+    let recentQuery = supabase
       .from('ad_budget_requests')
-      .select('id, amount, status, updated_at, ad_accounts(account_name, platform), users(full_name)')
+      .select('id, amount, status, updated_at, ad_accounts!inner(account_name, platform), users(full_name)')
       .neq('status', 'pending')
       .order('updated_at', { ascending: false })
       .limit(5)
+      
+    if (platform && platform !== 'all') {
+      recentQuery = recentQuery.ilike('ad_accounts.platform', platform)
+    }
+
+    const { data: recentBudgets } = await recentQuery
 
     return {
       success: true,
