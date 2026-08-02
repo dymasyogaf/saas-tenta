@@ -141,14 +141,7 @@
                   </SharedTooltip>
                 </div>
               </th>
-              <th class="py-4 px-5 whitespace-nowrap">
-                <div class="flex items-center gap-1.5 w-max">
-                  {{ $t('saldo.table.dailySpend') }}
-                  <SharedTooltip :text="$t('saldo.table.dailySpendTooltip')">
-                    <Info class="w-3.5 h-3.5 text-ink-400 hover:text-ink-600 transition-colors cursor-help" />
-                  </SharedTooltip>
-                </div>
-              </th>
+
               <th class="py-4 px-5 whitespace-nowrap">
                 <div class="flex items-center gap-1.5 w-max">
                   {{ $t('saldo.table.lastUpdate') }}
@@ -328,14 +321,7 @@
                   {{ formatCurrency(account.penggunaan) }}
                 </div>
               </td>
-              <td class="py-4 px-5 whitespace-nowrap" :class="{'opacity-30 grayscale blur-[1.5px] pointer-events-none': getDaysLeftNum(account.subscription_expires_at) !== null && getDaysLeftNum(account.subscription_expires_at)! <= 0}">
-                <div class="flex items-center gap-2">
-                  <span class="font-bold text-[13px] text-ink-900">{{ account.daily_limit ? formatCurrency(account.daily_limit) : $t('saldo.notSet') }}</span>
-                  <button @click="openDailyLimitModal(account)" class="text-ink-400 hover:text-orange-500 transition-colors p-1" :title="$t('saldo.dailyLimitModal.title')">
-                    <svg class="w-3.5 h-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4 Z"></path></svg>
-                  </button>
-                </div>
-              </td>
+
               <td class="py-4 px-5 text-ink-500 text-[13px] whitespace-nowrap" :class="{'opacity-30 grayscale blur-[1.5px] pointer-events-none': getDaysLeftNum(account.subscription_expires_at) !== null && getDaysLeftNum(account.subscription_expires_at)! <= 0}">{{ formatLastUpdated(account.updated_at) }}</td>
             </tr>
             <!-- Empty State -->
@@ -624,32 +610,6 @@
       :account="selectedAccountForExtend"
       @success="() => { adsStore.fetchAdAccounts(); saldoStore.fetchTransactions(); }"
     />
-
-    <!-- Modal Set Daily Limit -->
-    <div v-if="isDailyLimitModalOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-ink-900/50 backdrop-blur-sm">
-      <div class="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden relative">
-        <div class="px-6 pt-6 pb-4 border-b border-ink-100 flex justify-between items-center">
-          <h3 class="text-xl font-display font-bold text-ink-900">{{ $t('saldo.dailyLimitModal.title') }}</h3>
-          <button @click="isDailyLimitModalOpen = false" class="text-ink-400 hover:text-ink-600 transition-colors">
-            <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-          </button>
-        </div>
-        <div class="p-6">
-          <label class="block text-sm font-medium text-ink-700 mb-2">{{ $t('saldo.dailyLimitModal.label') }}</label>
-          <div class="relative">
-            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-ink-500 font-medium">Rp</span>
-            <input type="text" v-model="formattedDailyLimitInput" class="w-full pl-11 pr-4 py-2.5 border border-ink-200 rounded-lg text-ink-900 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 font-medium" placeholder="100.000" />
-          </div>
-          <p class="text-[11px] text-ink-500 mt-2">{{ $t('saldo.dailyLimitModal.desc') }}</p>
-        </div>
-        <div class="px-6 py-4 bg-ink-50 flex gap-3 justify-end border-t border-ink-100">
-          <button @click="isDailyLimitModalOpen = false" class="px-4 py-2 text-sm font-bold text-ink-600 hover:bg-ink-200 rounded-lg transition-colors">{{ $t('common.cancel') }}</button>
-          <button @click="saveDailyLimit" :disabled="isSavingDailyLimit" class="px-4 py-2 text-sm font-bold text-white bg-orange-500 hover:bg-orange-600 rounded-lg transition-colors disabled:opacity-50">
-            {{ isSavingDailyLimit ? $t('saldo.dailyLimitModal.saving') : $t('saldo.dailyLimitModal.save') }}
-          </button>
-        </div>
-      </div>
-    </div>
   </div>
 </template>
 
@@ -862,55 +822,6 @@ const selectedAccountForExtend = ref<any>(null)
 const openExtendRentModal = (account: any) => {
   selectedAccountForExtend.value = account
   isExtendRentModalOpen.value = true
-}
-
-const isDailyLimitModalOpen = ref(false)
-const dailyLimitInput = ref<number | null>(null)
-const selectedAccountForLimit = ref<any>(null)
-const isSavingDailyLimit = ref(false)
-
-const formattedDailyLimitInput = computed({
-  get: () => {
-    if (!dailyLimitInput.value) return ''
-    return new Intl.NumberFormat('id-ID').format(Number(dailyLimitInput.value))
-  },
-  set: (val: string) => {
-    const numericString = val.replace(/\D/g, '')
-    dailyLimitInput.value = numericString ? Number(numericString) : null
-  }
-})
-
-const openDailyLimitModal = (account: any) => {
-  selectedAccountForLimit.value = account
-  dailyLimitInput.value = account.daily_limit || null
-  isDailyLimitModalOpen.value = true
-}
-
-const saveDailyLimit = async () => {
-  if (!selectedAccountForLimit.value) return
-  if (!confirm(t('saldo.dailyLimitModal.confirmChange'))) return
-  isSavingDailyLimit.value = true
-  try {
-    await $fetch('/api/ads/set-daily-limit', {
-      method: 'POST',
-      headers: {
-        'csrf-token': unref(useCsrf().csrf)
-      },
-      body: {
-        accountId: selectedAccountForLimit.value.id,
-        dailyLimit: dailyLimitInput.value
-      }
-    })
-    const toast = useToast()
-    toast.addToast(t('saldo.toast.dailyLimitSuccess'), 'success')
-    isDailyLimitModalOpen.value = false
-    adsStore.fetchAdAccounts()
-  } catch (err: any) {
-    const toast = useToast()
-    toast.addToast(err.statusMessage || t('saldo.toast.dailyLimitFailed'), 'error')
-  } finally {
-    isSavingDailyLimit.value = false
-  }
 }
 
 const activeTab = ref('list-saldo')
