@@ -12,10 +12,19 @@ export default defineEventHandler(async (event) => {
       .eq('verification_status', 'pending')
 
     // 2. Hitung antrean Ads Ops
-    const { count: adsCount } = await supabase
+    // a. Request Akun Baru
+    const { count: adsAccountCount } = await supabase
       .from('ad_account_requests')
       .select('*', { count: 'exact', head: true })
       .in('status', ['pending_review', 'processing'])
+
+    // b. Request Top Up Anggaran
+    const { count: adsBudgetCount } = await supabase
+      .from('ad_budget_requests')
+      .select('*', { count: 'exact', head: true })
+      .eq('status', 'pending')
+
+    const adsCount = (adsAccountCount || 0) + (adsBudgetCount || 0)
 
     // 3. Hitung antrean Keuangan (Finance)
     const { count: financeCount } = await supabase

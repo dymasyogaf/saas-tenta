@@ -250,7 +250,7 @@
                 </div>
 
                 <!-- Progress bar -->
-                <div class="w-full bg-ink-100 rounded-full h-1.5 overflow-hidden">
+                <div v-if="getBudgetTotal(account) > 0" class="w-full bg-ink-100 rounded-full h-1.5 overflow-hidden">
                   <div 
                     class="h-full rounded-full transition-all duration-500"
                     :class="getBudgetBarColor(account)"
@@ -259,7 +259,7 @@
                 </div>
 
                 <!-- Info text -->
-                <div class="flex items-center justify-between mt-1">
+                <div v-if="getBudgetTotal(account) > 0" class="flex items-center justify-between mt-1">
                   <span class="text-[10px] text-ink-500 font-medium">
                     {{ formatCompact(getBudgetSpent(account)) }} / {{ formatCompact(getBudgetTotal(account)) }}
                   </span>
@@ -269,8 +269,8 @@
                 </div>
 
                 <!-- Warning states -->
-                <div v-if="getBudgetTotal(account) <= 0" class="mt-2.5">
-                  <NuxtLink to="/dashboard/topup" class="w-full flex justify-center items-center gap-1.5 bg-ink-50 border border-ink-200 text-ink-600 text-[10px] font-bold px-3 py-1.5 rounded-lg hover:bg-ink-100 hover:text-ink-800 transition-colors">
+                <div v-if="getBudgetTotal(account) <= 0" class="mt-2">
+                  <NuxtLink to="/dashboard/topup" class="w-full flex justify-center items-center gap-1.5 bg-orange-50 border border-orange-200 text-orange-600 text-[10px] font-bold px-3 py-1.5 rounded-lg hover:bg-orange-100 hover:text-orange-700 transition-colors shadow-sm">
                     <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
                     Alokasikan Anggaran
                   </NuxtLink>
@@ -282,10 +282,10 @@
                   </NuxtLink>
                 </div>
                 <div v-else-if="getBudgetRemaining(account) <= (0.2 * getBudgetTotal(account))" class="mt-2.5">
-                  <span class="inline-flex items-center gap-1.5 text-[10px] font-bold text-amber-600">
+                  <NuxtLink to="/dashboard/topup" class="w-full flex justify-center items-center gap-1.5 bg-amber-50 border border-amber-200 text-amber-700 text-[10px] font-bold px-3 py-1.5 rounded-lg hover:bg-amber-100 hover:text-amber-800 transition-colors">
                     <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-                    Anggaran Menipis
-                  </span>
+                    Anggaran Menipis — Tambah
+                  </NuxtLink>
                 </div>
               </td>
               <td class="py-4 px-5 min-w-[200px]" :class="{'opacity-30 grayscale blur-[1.5px] pointer-events-none': getDaysLeftNum(account.subscription_expires_at) !== null && getDaysLeftNum(account.subscription_expires_at)! <= 0}">

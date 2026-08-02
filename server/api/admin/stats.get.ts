@@ -28,10 +28,16 @@ export default defineEventHandler(async (event) => {
       supabase.from('users').select('*', { count: 'exact', head: true }).eq('verification_status', 'pending')
     )
 
-    // 2. Request Akun (Meta/Google/TikTok)
-    const { count: adsCount } = await applyDateFilter(
+    // 2. Request Akun (Meta/Google/TikTok) & Top Up Anggaran
+    const { count: adsAccountCount } = await applyDateFilter(
       supabase.from('ad_account_requests').select('*', { count: 'exact', head: true }).eq('status', 'pending_review')
     )
+    
+    const { count: adsBudgetCount } = await applyDateFilter(
+      supabase.from('ad_budget_requests').select('*', { count: 'exact', head: true }).eq('status', 'pending')
+    )
+
+    const adsCount = (adsAccountCount || 0) + (adsBudgetCount || 0)
 
     // 3. Antrean Keuangan (Withdraw & Alokasi Transfer)
     const { count: withdrawCount } = await applyDateFilter(

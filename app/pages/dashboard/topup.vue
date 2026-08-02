@@ -27,6 +27,17 @@
       </div>
     </div>
 
+    <!-- Pending Budget Request Alert -->
+    <div v-if="saldoStore.pendingBalance > 0" class="bg-orange-50 border border-orange-200 p-4 rounded-xl mb-6 flex gap-3 items-start shadow-sm">
+      <div class="mt-0.5 text-orange-600 bg-orange-100 p-1.5 rounded-full shrink-0">
+        <Info class="w-5 h-5" />
+      </div>
+      <div>
+        <h4 class="font-bold text-orange-900 text-sm mb-1">Pengajuan Alokasi Anggaran Sedang Diproses</h4>
+        <p class="text-sm text-orange-800">Anda memiliki pengajuan alokasi anggaran iklan yang sedang menunggu persetujuan tim iklan. Saldo utama Anda senilai <strong class="font-bold">{{ formatRupiah(saldoStore.pendingBalance) }}</strong> dibekukan sementara hingga pengajuan disetujui.</p>
+      </div>
+    </div>
+
     <!-- Top Section: Summary Cards -->
     <div class="flex flex-col lg:flex-row gap-6 mb-8">
       <!-- Left Card: Saldo -->
@@ -367,8 +378,8 @@
 
               <div class="bg-blue-50 border border-blue-100 rounded-xl p-4 flex items-center justify-between">
                 <div>
-                  <p class="text-xs font-medium text-blue-600 mb-0.5">Sisa Saldo Utama (Ad Balance)</p>
-                  <p class="text-lg font-bold text-blue-700">{{ formatRupiah(saldoStore.balance) }}</p>
+                  <p class="text-xs font-medium text-blue-600 mb-0.5">Sisa Saldo Tersedia (Available Balance)</p>
+                  <p class="text-lg font-bold text-blue-700">{{ formatRupiah(availableBalance) }}</p>
                 </div>
                 <Wallet class="w-6 h-6 text-blue-300" />
               </div>
@@ -379,17 +390,17 @@
                   <span class="absolute left-4 top-1/2 -translate-y-1/2 text-ink-500 font-medium">Rp</span>
                   <input type="text" v-model="allocateAmountInput" @input="formatAllocateInput" placeholder="1.000.000" class="w-full pl-11 pr-4 py-3 bg-white border border-ink-200 rounded-xl text-ink-900 text-lg font-bold focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition-all placeholder:font-normal placeholder:text-ink-300" />
                 </div>
-                <p v-if="allocateAmount > saldoStore.balance" class="text-xs text-red-500 font-medium mt-1.5 flex items-center gap-1">
-                  <Info class="w-3.5 h-3.5" /> Saldo Utama tidak mencukupi
+                <p v-if="allocateAmount > availableBalance" class="text-xs text-red-500 font-medium mt-1.5 flex items-center gap-1">
+                  <Info class="w-3.5 h-3.5" /> Saldo Tersedia tidak mencukupi
                 </p>
               </div>
             </div>
 
             <div class="mt-8 flex gap-3">
               <button @click="isAllocateBudgetModalOpen = false" class="flex-1 px-4 py-2.5 border border-ink-200 text-ink-600 rounded-xl font-bold hover:bg-ink-50 transition-colors">Batal</button>
-              <button @click="submitAllocateBudget" :disabled="isAllocatingBudget || !allocateSelectedAccount || allocateAmount <= 0 || allocateAmount > saldoStore.balance" class="flex-1 px-4 py-2.5 bg-orange-500 text-white rounded-xl font-bold hover:bg-orange-600 transition-colors disabled:opacity-50 flex items-center justify-center gap-2">
+              <button @click="submitAllocateBudget" :disabled="isAllocatingBudget || !allocateSelectedAccount || allocateAmount <= 0 || allocateAmount > availableBalance" class="flex-1 px-4 py-2.5 bg-orange-500 text-white rounded-xl font-bold hover:bg-orange-600 transition-colors disabled:opacity-50 flex items-center justify-center gap-2">
                 <Loader2 v-if="isAllocatingBudget" class="w-4 h-4 animate-spin" />
-                {{ isAllocatingBudget ? 'Memproses...' : 'Simpan Alokasi' }}
+                {{ isAllocatingBudget ? 'Memproses...' : 'Kirim Pengajuan' }}
               </button>
             </div>
           </div>
@@ -472,6 +483,10 @@ const formatRupiah = (angka: number) => {
     minimumFractionDigits: 0
   }).format(angka || 0)
 }
+
+const availableBalance = computed(() => {
+  return Number(saldoStore.balance || 0) - Number(saldoStore.pendingBalance || 0)
+})
 
 const formatDate = (dateString: string) => {
   if (!dateString) return '-'
@@ -652,7 +667,7 @@ const formatAllocateInput = (e: Event) => {
 }
 
 const submitAllocateBudget = async () => {
-  if (!allocateSelectedAccount.value || allocateAmount.value <= 0 || allocateAmount.value > saldoStore.balance) {
+  if (!allocateSelectedAccount.value || allocateAmount.value <= 0 || allocateAmount.value > availableBalance.value) {
     return
   }
   
@@ -668,7 +683,7 @@ const submitAllocateBudget = async () => {
       }
     })
     
-    toast.addToast('Anggaran iklan berhasil dialokasikan', 'success')
+    toast.addToast((res as any).message || 'Permintaan anggaran berhasil dikirim', 'success')
     
     // Refresh data
     await saldoStore.fetchSaldo()

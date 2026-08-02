@@ -5,8 +5,8 @@
         <h2 class="text-2xl font-display font-bold text-slate-900">Dashboard Operasional</h2>
         <p class="text-slate-500 text-sm mt-1">Ringkasan aktivitas internal dan kesehatan bisnis agensi Tentaklik.</p>
       </div>
-      <button @click="() => refresh()" class="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-lg text-sm font-bold text-slate-700 hover:bg-slate-50 transition-colors shadow-sm">
-        <RefreshCw class="w-4 h-4" :class="{ 'animate-spin': pending }" /> Segarkan Data
+      <button @click="refreshAll" class="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-lg text-sm font-bold text-slate-700 hover:bg-slate-50 transition-colors shadow-sm">
+        <RefreshCw class="w-4 h-4" :class="{ 'animate-spin': pending || pendingAdsOps }" /> Segarkan Data
       </button>
     </div>
 
@@ -21,7 +21,9 @@
       </div>
     </div>
 
-    <!-- Row 1: Operational Stats -->
+    <!-- Default Admin / Super Admin Dashboard -->
+    <div v-if="userRole !== 'admin_ads_ops'">
+      <!-- Row 1: Operational Stats -->
     <div class="flex flex-col sm:flex-row sm:items-center justify-between pt-2 border-b border-slate-200 pb-2 mb-4 gap-3">
       <h3 class="text-lg font-bold text-slate-900">Antrean Operasional (To-Do)</h3>
       
@@ -312,6 +314,96 @@
         </div>
       </div>
     </div>
+    </div> <!-- End Default Dashboard -->
+
+    <!-- Ads Ops Dashboard -->
+    <div v-else-if="userRole === 'admin_ads_ops'">
+      <h3 class="text-lg font-bold text-slate-900 pt-2 border-b border-slate-200 pb-2 mb-4">Antrean Pekerjaan (To-Do)</h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+        <!-- Request Akun -->
+        <NuxtLink to="/admin/ads-ops?tab=akun" class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm hover:border-blue-400 transition-colors group">
+          <div class="flex items-center gap-3 mb-2">
+            <div class="w-8 h-8 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center">
+              <Megaphone class="w-4 h-4" />
+            </div>
+            <p class="text-sm font-bold text-slate-700 group-hover:text-blue-600">Request Akun Baru</p>
+          </div>
+          <div v-if="pendingAdsOps" class="h-9 w-16 bg-ink-200 rounded animate-pulse my-1"></div>
+          <p v-else class="text-3xl font-display font-bold text-slate-900">{{ adsOpsStats?.pendingAdsAccount || 0 }}</p>
+          <p class="text-xs font-medium text-slate-500 mt-2">Menunggu pembuatan akun oleh tim iklan</p>
+        </NuxtLink>
+
+        <!-- Request Top Up -->
+        <NuxtLink to="/admin/ads-ops?tab=topup" class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm hover:border-orange-400 transition-colors group">
+          <div class="flex items-center gap-3 mb-2">
+            <div class="w-8 h-8 rounded-lg bg-orange-100 text-orange-600 flex items-center justify-center">
+              <WalletCards class="w-4 h-4" />
+            </div>
+            <p class="text-sm font-bold text-slate-700 group-hover:text-orange-600">Request Top Up Anggaran</p>
+          </div>
+          <div v-if="pendingAdsOps" class="h-9 w-16 bg-ink-200 rounded animate-pulse my-1"></div>
+          <p v-else class="text-3xl font-display font-bold text-slate-900">{{ adsOpsStats?.pendingBudget || 0 }}</p>
+          <p class="text-xs font-medium text-slate-500 mt-2">Menunggu alokasi saldo ke platform iklan</p>
+        </NuxtLink>
+      </div>
+
+      <h3 class="text-lg font-bold text-slate-900 pt-2 border-b border-slate-200 pb-2 mb-4">Kesehatan Akun (Monitoring)</h3>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+        <div class="bg-slate-900 border border-slate-800 rounded-xl p-6 shadow-md relative overflow-hidden">
+          <p class="text-sm font-medium text-slate-400 mb-1">Total Akun Aktif</p>
+          <div v-if="pendingAdsOps" class="h-10 w-20 bg-slate-800 rounded animate-pulse my-1"></div>
+          <p v-else class="text-4xl font-display font-bold text-white">{{ adsOpsStats?.activeAccounts || 0 }}</p>
+          <p class="text-xs text-slate-500 mt-2">Berjalan normal tanpa masalah</p>
+        </div>
+        <div class="bg-red-50 border border-red-200 rounded-xl p-6 shadow-sm">
+          <p class="text-sm font-medium text-red-600 mb-1">Akun Bermasalah / Banned</p>
+          <div v-if="pendingAdsOps" class="h-10 w-20 bg-red-200 rounded animate-pulse my-1"></div>
+          <p v-else class="text-4xl font-display font-bold text-red-700">{{ adsOpsStats?.bannedAccounts || 0 }}</p>
+          <p class="text-xs text-red-500 mt-2">Perlu tindakan perbaikan segera</p>
+        </div>
+        <div class="bg-amber-50 border border-amber-200 rounded-xl p-6 shadow-sm">
+          <p class="text-sm font-medium text-amber-600 mb-1">Akun Saldo Menipis</p>
+          <div v-if="pendingAdsOps" class="h-10 w-20 bg-amber-200 rounded animate-pulse my-1"></div>
+          <p v-else class="text-4xl font-display font-bold text-amber-700">{{ adsOpsStats?.lowBalanceAccounts || 0 }}</p>
+          <p class="text-xs text-amber-500 mt-2">Saldo &lt; 20% dari limit</p>
+        </div>
+      </div>
+
+      <div class="bg-white border border-slate-200 rounded-xl shadow-sm flex flex-col">
+        <div class="p-5 border-b border-slate-100">
+          <h3 class="font-bold text-slate-900">Aktivitas Terkini</h3>
+        </div>
+        <div class="flex-1 overflow-y-auto p-2">
+          <div v-if="pendingAdsOps" class="p-4 space-y-4">
+            <div v-for="i in 3" :key="i" class="h-12 bg-slate-100 rounded animate-pulse"></div>
+          </div>
+          <div v-else-if="!adsOpsStats?.recentBudgets?.length" class="p-8 text-center text-slate-400 text-sm">
+            Belum ada aktivitas.
+          </div>
+          <div v-else class="divide-y divide-slate-100">
+            <div v-for="act in adsOpsStats?.recentBudgets" :key="act.id" class="p-3 hover:bg-slate-50 flex items-center justify-between transition-colors rounded-lg">
+              <div>
+                <p class="text-sm font-bold text-slate-800">{{ act.users?.full_name || 'Klien' }} - {{ act.ad_accounts?.account_name || 'Akun' }}</p>
+                <p class="text-xs text-slate-500 mt-0.5">Alokasi: <span class="font-bold">{{ formatCurrencyShort(act.amount) }}</span></p>
+              </div>
+              <div class="text-right">
+                <span class="text-[10px] px-1.5 py-0.5 rounded font-medium"
+                  :class="{
+                    'bg-green-100 text-green-700': act.status === 'approved',
+                    'bg-red-100 text-red-700': act.status === 'rejected',
+                  }">
+                  {{ act.status === 'approved' ? 'Disetujui' : 'Ditolak' }}
+                </span>
+                <p class="text-[10px] text-slate-400 mt-1">
+                  {{ new Date(act.updated_at).toLocaleDateString('id-ID', { day: '2-digit', month: 'short' }) }}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
   </div>
 </template>
 
@@ -325,6 +417,8 @@ definePageMeta({
 })
 
 const supabase = useSupabaseClient()
+const { user } = useAuth()
+const userRole = computed(() => user.value?.user_metadata?.role || 'admin')
 
 const showDatePopover = ref(false)
 
@@ -423,6 +517,14 @@ const { data: stats, pending, refresh } = useFetch<AdminStats>('/api/admin/stats
   },
   watch: [startDate, endDate]
 })
+
+// Fetch Ads Ops stats
+const { data: adsOpsStats, pending: pendingAdsOps, refresh: refreshAdsOps } = useFetch<any>('/api/admin/ads-ops-stats')
+
+const refreshAll = () => {
+  refresh()
+  refreshAdsOps()
+}
 
 // Helper untuk format rupiah yang singkat
 const formatCurrency = (val: number) => {

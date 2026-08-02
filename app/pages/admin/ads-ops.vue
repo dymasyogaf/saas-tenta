@@ -10,211 +10,344 @@
         <button v-if="isAdmin" @click="resetDev" class="flex items-center justify-center gap-2 px-4 py-2 bg-red-50 border border-red-200 rounded-lg text-sm font-bold text-red-600 hover:bg-red-100 transition-colors shadow-sm w-full sm:w-auto">
           <Trash2 class="w-4 h-4" /> Reset Dev (Wipe Data)
         </button>
-        <button @click="() => refresh()" class="flex items-center justify-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-lg text-sm font-bold text-slate-700 hover:bg-slate-50 transition-colors shadow-sm w-full sm:w-auto">
-          <RefreshCw class="w-4 h-4" :class="{ 'animate-spin': pending }" /> Segarkan Data
+        <button @click="() => refreshAll()" class="flex items-center justify-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-lg text-sm font-bold text-slate-700 hover:bg-slate-50 transition-colors shadow-sm w-full sm:w-auto">
+          <RefreshCw class="w-4 h-4" :class="{ 'animate-spin': pending || pendingBudget }" /> Segarkan Data
         </button>
       </div>
     </div>
 
-    <!-- Alert Info -->
-    <div class="bg-blue-50 border border-blue-200 rounded-xl p-4 flex items-start gap-3">
-      <Megaphone class="w-5 h-5 text-blue-600 shrink-0 mt-0.5" />
-      <div>
-        <h3 class="text-sm font-bold text-blue-900">Ruang Eksekusi Tim Iklan</h3>
-        <p class="text-xs text-blue-700 mt-1">Daftar di bawah ini adalah klien yang <b>baru saja mengajukan</b> pembuatan akun iklan. Tugas Anda adalah membuatkan akun iklan di Business Manager Meta/TikTok/Google mereka, lalu menyalin <b>Ad Account ID</b> yang terbentuk ke dalam kolom di bawah ini.</p>
+    <!-- Mode Switcher -->
+    <div class="flex gap-2 mb-4 bg-slate-100 p-1 rounded-xl w-max">
+      <button @click="viewMode = 'akun'" :class="viewMode === 'akun' ? 'bg-white shadow-sm text-slate-800' : 'text-slate-500 hover:text-slate-700'" class="px-4 py-2 rounded-lg font-bold text-sm transition-all flex items-center gap-2">
+        Pembuatan Akun Iklan
+        <span v-if="newList.length > 0" class="bg-red-100 text-red-700 py-0.5 px-2 rounded-full text-[10px]">{{ newList.length }}</span>
+      </button>
+      <button @click="viewMode = 'anggaran'" :class="viewMode === 'anggaran' ? 'bg-white shadow-sm text-slate-800' : 'text-slate-500 hover:text-slate-700'" class="px-4 py-2 rounded-lg font-bold text-sm transition-all flex items-center gap-2">
+        Top Up Anggaran
+        <span v-if="pendingBudgetList.length > 0" class="bg-orange-100 text-orange-700 py-0.5 px-2 rounded-full text-[10px]">{{ pendingBudgetList.length }}</span>
+      </button>
+    </div>
+
+    <template v-if="viewMode === 'akun'">
+      <!-- Alert Info -->
+      <div class="bg-blue-50 border border-blue-200 rounded-xl p-4 flex items-start gap-3">
+        <Megaphone class="w-5 h-5 text-blue-600 shrink-0 mt-0.5" />
+        <div>
+          <h3 class="text-sm font-bold text-blue-900">Ruang Eksekusi Tim Iklan</h3>
+          <p class="text-xs text-blue-700 mt-1">Daftar di bawah ini adalah klien yang <b>baru saja mengajukan</b> pembuatan akun iklan. Tugas Anda adalah membuatkan akun iklan di Business Manager Meta/TikTok/Google mereka, lalu menyalin <b>Ad Account ID</b> yang terbentuk ke dalam kolom di bawah ini.</p>
+        </div>
       </div>
-    </div>
 
-    <!-- Tabs/Filter -->
-    <div class="flex border-b border-slate-200 mt-6 gap-6">
-      <button 
-        @click="activeTab = 'new'"
-        class="pb-3 text-sm font-semibold transition-colors border-b-2"
-        :class="activeTab === 'new' ? 'border-blue-500 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-700'"
-      >
-        Permintaan Baru 
-        <span class="ml-1 bg-red-100 text-red-700 py-0.5 px-2 rounded-full text-[10px]">{{ newList.length }}</span>
-      </button>
-      <button 
-        @click="activeTab = 'processing'"
-        class="pb-3 text-sm font-semibold transition-colors border-b-2"
-        :class="activeTab === 'processing' ? 'border-blue-500 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-700'"
-      >
-        Perlu Eksekusi
-        <span class="ml-1 bg-blue-100 text-blue-700 py-0.5 px-2 rounded-full text-[10px]">{{ processingList.length }}</span>
-      </button>
-      <button 
-        @click="activeTab = 'completed'"
-        class="pb-3 text-sm font-semibold transition-colors border-b-2"
-        :class="activeTab === 'completed' ? 'border-blue-500 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-700'"
-      >
-        Sudah Diberi ID Akun
-      </button>
-    </div>
+      <!-- Tabs/Filter -->
+      <div class="flex border-b border-slate-200 mt-6 gap-6">
+        <button 
+          @click="activeTab = 'new'"
+          class="pb-3 text-sm font-semibold transition-colors border-b-2"
+          :class="activeTab === 'new' ? 'border-blue-500 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-700'"
+        >
+          Permintaan Baru 
+          <span class="ml-1 bg-red-100 text-red-700 py-0.5 px-2 rounded-full text-[10px]">{{ newList.length }}</span>
+        </button>
+        <button 
+          @click="activeTab = 'processing'"
+          class="pb-3 text-sm font-semibold transition-colors border-b-2"
+          :class="activeTab === 'processing' ? 'border-blue-500 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-700'"
+        >
+          Perlu Eksekusi
+          <span class="ml-1 bg-blue-100 text-blue-700 py-0.5 px-2 rounded-full text-[10px]">{{ processingList.length }}</span>
+        </button>
+        <button 
+          @click="activeTab = 'completed'"
+          class="pb-3 text-sm font-semibold transition-colors border-b-2"
+          :class="activeTab === 'completed' ? 'border-blue-500 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-700'"
+        >
+          Sudah Diberi ID Akun
+        </button>
+      </div>
 
-    <!-- Table Container -->
-    <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden mt-4">
-      <div class="overflow-x-auto">
-        <table class="w-full text-left text-sm">
-          <thead class="bg-slate-50 border-b border-slate-200 text-slate-600 font-semibold">
-            <tr>
-              <th class="px-6 py-4">Klien & Target URL</th>
-              <th class="px-6 py-4">Platform & Info Akun</th>
-              <th class="px-6 py-4 w-72">Ad Account ID</th>
-              <th class="px-6 py-4 text-center">Aksi</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-slate-100">
-            <!-- Loading Skeleton -->
-            <tr v-if="pending" v-for="i in 3" :key="'skel'+i" class="animate-pulse bg-white">
-              <td class="px-6 py-4">
-                <div class="h-4 w-32 bg-ink-200 rounded mb-2"></div>
-                <div class="h-3 w-48 bg-ink-200 rounded"></div>
-              </td>
-              <td class="px-6 py-4">
-                <div class="flex items-center gap-2">
-                  <div class="w-6 h-6 bg-ink-200 rounded-full"></div>
-                  <div class="h-4 w-24 bg-ink-200 rounded"></div>
-                </div>
-              </td>
-              <td class="px-6 py-4"><div class="h-10 w-full bg-ink-200 rounded-lg"></div></td>
-              <td class="px-6 py-4"><div class="h-10 w-24 bg-ink-200 rounded-lg mx-auto"></div></td>
-            </tr>
-            
-            <!-- Empty State -->
-            <tr v-else-if="currentList.length === 0">
-              <td colspan="4" class="px-6 py-12 text-center text-slate-500">
-                <CheckCircle2 v-if="activeTab === 'new'" class="w-12 h-12 text-green-400 mx-auto mb-3" />
-                <CheckCircle2 v-else-if="activeTab === 'processing'" class="w-12 h-12 text-blue-400 mx-auto mb-3" />
-                <Megaphone v-else class="w-12 h-12 text-slate-300 mx-auto mb-3" />
-                <p class="font-medium text-slate-600">
-                  {{ activeTab === 'new' ? 'Tidak ada permintaan baru.' : (activeTab === 'processing' ? 'Hore! Semua akun klien sudah dieksekusi.' : 'Belum ada data riwayat akun.') }}
-                </p>
-              </td>
-            </tr>
-
-            <!-- Data Rows -->
-            <tr v-else v-for="req in currentList" :key="req.id" class="hover:bg-slate-50 transition-colors group">
-              <!-- Klien Info -->
-              <td class="px-6 py-4">
-                <p class="font-bold text-slate-900">{{ req.users?.full_name || 'Tanpa Nama' }}</p>
-                <div class="flex items-center gap-1 mt-1 text-slate-500">
-                  <Link class="w-3 h-3" />
-                  <a v-if="req.target_url" :href="req.target_url" target="_blank" class="text-xs hover:text-blue-600 hover:underline line-clamp-1 max-w-[200px]">
-                    {{ req.target_url }}
-                  </a>
-                  <span v-else class="text-xs italic text-slate-400">Tanpa Web</span>
-                </div>
-                <div v-if="req.details?.social_link" class="flex items-center gap-1 mt-1 text-slate-500">
-                  <span class="text-[10px] font-bold text-blue-500 uppercase px-1 py-0.5 bg-blue-50 rounded">Sosmed</span>
-                  <a :href="req.details.social_link" target="_blank" class="text-xs hover:text-blue-600 hover:underline line-clamp-1 max-w-[150px]">
-                    {{ req.details.social_link }}
-                  </a>
-                </div>
-                <p class="text-[10px] text-slate-400 mt-2">Diajukan: {{ new Date(req.created_at).toLocaleDateString('id-ID') }}</p>
-              </td>
-
-              <!-- Platform Info -->
-              <td class="px-6 py-4">
-                <div class="flex items-center gap-2 mb-2">
-                  <img :src="getPlatformLogo(req.platform)" class="w-5 h-5 object-contain" />
-                  <span class="font-bold text-slate-800 text-xs">{{ req.platform }}</span>
-                </div>
-                <div class="text-[11px] text-slate-600 space-y-0.5">
-                  <p v-if="req.details?.full_name"><span class="font-semibold">Nama KTP:</span> {{ req.details.full_name }}</p>
-                  
-                  <template v-if="req.platform.includes('TikTok')">
-                    <p v-if="req.details?.bm_id"><span class="font-semibold">BC ID:</span> {{ req.details.bm_id }}</p>
-                  </template>
-                  <template v-else-if="req.platform.includes('Google')">
-                    <p v-if="req.details?.shared_email"><span class="font-semibold">Email:</span> {{ req.details.shared_email }}</p>
-                  </template>
-                  <template v-else>
-                    <p v-if="req.details?.bm_id"><span class="font-semibold">BM ID:</span> {{ req.details.bm_id }}</p>
-                  </template>
-
-                  <p><span class="font-semibold">Kategori:</span> {{ req.details?.ad_category || '-' }}</p>
-                </div>
-              </td>
-
-              <!-- Input Ad Account ID -->
-              <td class="px-6 py-4">
-                <div v-if="activeTab !== 'new'" class="space-y-3">
-                  <div class="relative">
-                    <input 
-                      v-model="inputModels[req.id]"
-                      @input="formatInput(req.id, req.platform)"
-                      type="text" 
-                      placeholder="ID: Misal 123456789" 
-                      class="w-full pl-9 pr-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 bg-white"
-                      :disabled="isSubmitting === req.id || (activeTab === 'completed' && !isEditing[req.id])"
-                    />
-                    <Hash class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+      <!-- Table Container -->
+      <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden mt-4">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-sm">
+            <thead class="bg-slate-50 border-b border-slate-200 text-slate-600 font-semibold">
+              <tr>
+                <th class="px-6 py-4">Klien & Target URL</th>
+                <th class="px-6 py-4">Platform & Info Akun</th>
+                <th class="px-6 py-4 w-72">Ad Account ID</th>
+                <th class="px-6 py-4 text-center">Aksi</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+              <!-- Loading Skeleton -->
+              <tr v-if="pending" v-for="i in 3" :key="'skel'+i" class="animate-pulse bg-white">
+                <td class="px-6 py-4">
+                  <div class="h-4 w-32 bg-ink-200 rounded mb-2"></div>
+                  <div class="h-3 w-48 bg-ink-200 rounded"></div>
+                </td>
+                <td class="px-6 py-4">
+                  <div class="flex items-center gap-2">
+                    <div class="w-6 h-6 bg-ink-200 rounded-full"></div>
+                    <div class="h-4 w-24 bg-ink-200 rounded"></div>
                   </div>
-                  <p class="text-[10px] text-slate-400 mt-1 italic">Nama akun akan diambil otomatis dari API.</p>
-                </div>
-                <div v-else class="text-xs text-slate-400 italic">Menunggu persetujuan...</div>
-              </td>
+                </td>
+                <td class="px-6 py-4"><div class="h-10 w-full bg-ink-200 rounded-lg"></div></td>
+                <td class="px-6 py-4"><div class="h-10 w-24 bg-ink-200 rounded-lg mx-auto"></div></td>
+              </tr>
+              
+              <!-- Empty State -->
+              <tr v-else-if="currentList.length === 0">
+                <td colspan="4" class="px-6 py-12 text-center text-slate-500">
+                  <CheckCircle2 v-if="activeTab === 'new'" class="w-12 h-12 text-green-400 mx-auto mb-3" />
+                  <CheckCircle2 v-else-if="activeTab === 'processing'" class="w-12 h-12 text-blue-400 mx-auto mb-3" />
+                  <Megaphone v-else class="w-12 h-12 text-slate-300 mx-auto mb-3" />
+                  <p class="font-medium text-slate-600">
+                    {{ activeTab === 'new' ? 'Tidak ada permintaan baru.' : (activeTab === 'processing' ? 'Hore! Semua akun klien sudah dieksekusi.' : 'Belum ada data riwayat akun.') }}
+                  </p>
+                </td>
+              </tr>
 
-              <!-- Actions -->
-              <td class="px-6 py-4 text-center">
-                <template v-if="activeTab === 'new'">
-                  <div class="flex flex-col gap-2">
+              <!-- Data Rows -->
+              <tr v-else v-for="req in currentList" :key="req.id" class="hover:bg-slate-50 transition-colors group">
+                <!-- Klien Info -->
+                <td class="px-6 py-4">
+                  <p class="font-bold text-slate-900">{{ req.users?.full_name || 'Tanpa Nama' }}</p>
+                  <div class="flex items-center gap-1 mt-1 text-slate-500">
+                    <Link class="w-3 h-3" />
+                    <a v-if="req.target_url" :href="req.target_url" target="_blank" class="text-xs hover:text-blue-600 hover:underline line-clamp-1 max-w-[200px]">
+                      {{ req.target_url }}
+                    </a>
+                    <span v-else class="text-xs italic text-slate-400">Tanpa Web</span>
+                  </div>
+                  <div v-if="req.details?.social_link" class="flex items-center gap-1 mt-1 text-slate-500">
+                    <span class="text-[10px] font-bold text-blue-500 uppercase px-1 py-0.5 bg-blue-50 rounded">Sosmed</span>
+                    <a :href="req.details.social_link" target="_blank" class="text-xs hover:text-blue-600 hover:underline line-clamp-1 max-w-[150px]">
+                      {{ req.details.social_link }}
+                    </a>
+                  </div>
+                  <p class="text-[10px] text-slate-400 mt-2">Diajukan: {{ new Date(req.created_at).toLocaleDateString('id-ID') }}</p>
+                </td>
+
+                <!-- Platform Info -->
+                <td class="px-6 py-4">
+                  <div class="flex items-center gap-2 mb-2">
+                    <img :src="getPlatformLogo(req.platform)" class="w-5 h-5 object-contain" />
+                    <span class="font-bold text-slate-800 text-xs">{{ req.platform }}</span>
+                  </div>
+                  <div class="text-[11px] text-slate-600 space-y-0.5">
+                    <p v-if="req.details?.full_name"><span class="font-semibold">Nama KTP:</span> {{ req.details.full_name }}</p>
+                    
+                    <template v-if="req.platform.includes('TikTok')">
+                      <p v-if="req.details?.bm_id"><span class="font-semibold">BC ID:</span> {{ req.details.bm_id }}</p>
+                    </template>
+                    <template v-else-if="req.platform.includes('Google')">
+                      <p v-if="req.details?.shared_email"><span class="font-semibold">Email:</span> {{ req.details.shared_email }}</p>
+                    </template>
+                    <template v-else>
+                      <p v-if="req.details?.bm_id"><span class="font-semibold">BM ID:</span> {{ req.details.bm_id }}</p>
+                    </template>
+
+                    <p><span class="font-semibold">Kategori:</span> {{ req.details?.ad_category || '-' }}</p>
+                  </div>
+                </td>
+
+                <!-- Input Ad Account ID -->
+                <td class="px-6 py-4">
+                  <div v-if="activeTab !== 'new'" class="space-y-3">
+                    <div class="relative">
+                      <input 
+                        v-model="inputModels[req.id]"
+                        @input="formatInput(req.id, req.platform)"
+                        type="text" 
+                        placeholder="ID: Misal 123456789" 
+                        class="w-full pl-9 pr-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 bg-white"
+                        :disabled="isSubmitting === req.id || (activeTab === 'completed' && !isEditing[req.id])"
+                      />
+                      <Hash class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                    </div>
+                    <p class="text-[10px] text-slate-400 mt-1 italic">Nama akun akan diambil otomatis dari API.</p>
+                  </div>
+                  <div v-else class="text-xs text-slate-400 italic">Menunggu persetujuan...</div>
+                </td>
+
+                <!-- Actions -->
+                <td class="px-6 py-4 text-center">
+                  <template v-if="activeTab === 'new'">
+                    <div class="flex flex-col gap-2">
+                      <button 
+                        @click="processAction(req.id, 'approve', 'akun')"
+                        :disabled="isSubmitting === req.id"
+                        class="px-4 py-2 bg-green-600 hover:bg-green-700 disabled:bg-green-300 text-white text-xs font-bold rounded-lg transition-colors flex items-center justify-center w-full gap-2"
+                      >
+                        <span v-if="isSubmitting === req.id" class="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                        Setujui
+                      </button>
+                      <button 
+                        @click="processAction(req.id, 'reject', 'akun')"
+                        :disabled="isSubmitting === req.id"
+                        class="px-4 py-2 bg-red-50 text-red-600 hover:bg-red-100 disabled:opacity-50 text-xs font-bold rounded-lg transition-colors flex items-center justify-center w-full gap-2"
+                      >
+                        Tolak
+                      </button>
+                    </div>
+                  </template>
+                  <template v-else-if="activeTab === 'processing' || isEditing[req.id]">
                     <button 
-                      @click="processAction(req.id, 'approve')"
-                      :disabled="isSubmitting === req.id"
-                      class="px-4 py-2 bg-green-600 hover:bg-green-700 disabled:bg-green-300 text-white text-xs font-bold rounded-lg transition-colors flex items-center justify-center w-full gap-2"
+                      @click="processAction(req.id, 'save_id', 'akun')"
+                      :disabled="!inputModels[req.id] || isSubmitting === req.id"
+                      class="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-300 text-white text-xs font-bold rounded-lg transition-colors flex items-center justify-center w-full gap-2"
                     >
                       <span v-if="isSubmitting === req.id" class="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
-                      Setujui
+                      Simpan ID
                     </button>
-                    <button 
-                      @click="processAction(req.id, 'reject')"
-                      :disabled="isSubmitting === req.id"
-                      class="px-4 py-2 bg-red-50 text-red-600 hover:bg-red-100 disabled:opacity-50 text-xs font-bold rounded-lg transition-colors flex items-center justify-center w-full gap-2"
-                    >
-                      Tolak
-                    </button>
-                  </div>
-                </template>
-                <template v-else-if="activeTab === 'processing' || isEditing[req.id]">
-                  <button 
-                    @click="processAction(req.id, 'save_id')"
-                    :disabled="!inputModels[req.id] || isSubmitting === req.id"
-                    class="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-300 text-white text-xs font-bold rounded-lg transition-colors flex items-center justify-center w-full gap-2"
-                  >
-                    <span v-if="isSubmitting === req.id" class="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
-                    Simpan ID
-                  </button>
-                  <button v-if="isEditing[req.id]" @click="cancelEdit(req.id, req.details?.ad_account_id)" class="text-[10px] text-slate-500 hover:text-slate-700 mt-2 font-medium">Batal</button>
-                </template>
-                <template v-else>
-                  <div class="flex flex-col gap-2">
-                    <button 
-                      @click="startEdit(req.id)"
-                      class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-lg transition-colors flex items-center justify-center w-full gap-2"
-                    >
-                      <Edit2 class="w-3 h-3" /> Edit ID
-                    </button>
-                    <button 
-                      @click="processAction(req.id, 'delete')"
-                      :disabled="isSubmitting === req.id"
-                      class="px-4 py-2 bg-red-50 hover:bg-red-100 disabled:opacity-50 text-red-600 text-xs font-bold rounded-lg transition-colors flex items-center justify-center w-full gap-2"
-                    >
-                      <span v-if="isSubmitting === req.id && currentAction === 'delete'" class="w-3 h-3 border-2 border-red-600/30 border-t-red-600 rounded-full animate-spin"></span>
-                      <Trash2 v-else class="w-3 h-3" /> Hapus
-                    </button>
-                  </div>
-                </template>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+                    <button v-if="isEditing[req.id]" @click="cancelEdit(req.id, req.details?.ad_account_id)" class="text-[10px] text-slate-500 hover:text-slate-700 mt-2 font-medium">Batal</button>
+                  </template>
+                  <template v-else>
+                    <div class="flex flex-col gap-2">
+                      <button 
+                        @click="startEdit(req.id)"
+                        class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-lg transition-colors flex items-center justify-center w-full gap-2"
+                      >
+                        <Edit2 class="w-3 h-3" /> Edit ID
+                      </button>
+                      <button 
+                        @click="processAction(req.id, 'delete', 'akun')"
+                        :disabled="isSubmitting === req.id"
+                        class="px-4 py-2 bg-red-50 hover:bg-red-100 disabled:opacity-50 text-red-600 text-xs font-bold rounded-lg transition-colors flex items-center justify-center w-full gap-2"
+                      >
+                        <span v-if="isSubmitting === req.id && currentAction === 'delete'" class="w-3 h-3 border-2 border-red-600/30 border-t-red-600 rounded-full animate-spin"></span>
+                        <Trash2 v-else class="w-3 h-3" /> Hapus
+                      </button>
+                    </div>
+                  </template>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
-    </div>
+    </template>
+
+    <template v-else-if="viewMode === 'anggaran'">
+      <!-- Alert Info -->
+      <div class="bg-orange-50 border border-orange-200 rounded-xl p-4 flex items-start gap-3">
+        <Megaphone class="w-5 h-5 text-orange-600 shrink-0 mt-0.5" />
+        <div>
+          <h3 class="text-sm font-bold text-orange-900">Alokasi Anggaran Iklan</h3>
+          <p class="text-xs text-orange-700 mt-1">Daftar klien yang melakukan penambahan anggaran. <b>Tugas Anda:</b> Tambahkan saldo di Business Manager klien terlebih dahulu. Jika sudah berhasil masuk, barulah klik <b>Setujui</b> di sini agar saldo klien terpotong di sistem.</p>
+        </div>
+      </div>
+
+      <!-- Tabs/Filter -->
+      <div class="flex border-b border-slate-200 mt-6 gap-6">
+        <button 
+          @click="budgetTab = 'new'"
+          class="pb-3 text-sm font-semibold transition-colors border-b-2"
+          :class="budgetTab === 'new' ? 'border-orange-500 text-orange-600' : 'border-transparent text-slate-500 hover:text-slate-700'"
+        >
+          Permintaan Baru 
+          <span class="ml-1 bg-red-100 text-red-700 py-0.5 px-2 rounded-full text-[10px]">{{ pendingBudgetList.length }}</span>
+        </button>
+        <button 
+          @click="budgetTab = 'history'"
+          class="pb-3 text-sm font-semibold transition-colors border-b-2"
+          :class="budgetTab === 'history' ? 'border-orange-500 text-orange-600' : 'border-transparent text-slate-500 hover:text-slate-700'"
+        >
+          Riwayat
+        </button>
+      </div>
+
+      <!-- Table Container -->
+      <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden mt-4">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-sm">
+            <thead class="bg-slate-50 border-b border-slate-200 text-slate-600 font-semibold">
+              <tr>
+                <th class="px-6 py-4">Klien</th>
+                <th class="px-6 py-4">Akun Iklan</th>
+                <th class="px-6 py-4">Nominal</th>
+                <th class="px-6 py-4 text-center">Aksi / Status</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+              <!-- Loading Skeleton -->
+              <tr v-if="pendingBudget" v-for="i in 3" :key="'skel_b'+i" class="animate-pulse bg-white">
+                <td class="px-6 py-4">
+                  <div class="h-4 w-32 bg-ink-200 rounded mb-2"></div>
+                </td>
+                <td class="px-6 py-4">
+                  <div class="flex items-center gap-2">
+                    <div class="h-4 w-24 bg-ink-200 rounded"></div>
+                  </div>
+                </td>
+                <td class="px-6 py-4"><div class="h-4 w-24 bg-ink-200 rounded"></div></td>
+                <td class="px-6 py-4"><div class="h-10 w-24 bg-ink-200 rounded-lg mx-auto"></div></td>
+              </tr>
+              
+              <!-- Empty State -->
+              <tr v-else-if="currentBudgetList.length === 0">
+                <td colspan="4" class="px-6 py-12 text-center text-slate-500">
+                  <CheckCircle2 v-if="budgetTab === 'new'" class="w-12 h-12 text-green-400 mx-auto mb-3" />
+                  <Megaphone v-else class="w-12 h-12 text-slate-300 mx-auto mb-3" />
+                  <p class="font-medium text-slate-600">
+                    {{ budgetTab === 'new' ? 'Tidak ada permintaan alokasi anggaran baru.' : 'Belum ada riwayat alokasi anggaran.' }}
+                  </p>
+                </td>
+              </tr>
+
+              <!-- Data Rows -->
+              <tr v-else v-for="req in currentBudgetList" :key="req.id" class="hover:bg-slate-50 transition-colors group">
+                <td class="px-6 py-4">
+                  <p class="font-bold text-slate-900">{{ req.users?.full_name || 'Tanpa Nama' }}</p>
+                  <p class="text-[10px] text-slate-400 mt-1">Diajukan: {{ new Date(req.created_at).toLocaleDateString('id-ID') }} {{ new Date(req.created_at).toLocaleTimeString('id-ID', {hour: '2-digit', minute:'2-digit'}) }}</p>
+                </td>
+                <td class="px-6 py-4">
+                  <div class="flex items-center gap-2 mb-1">
+                    <img v-if="req.ad_accounts?.platform" :src="getPlatformLogo(req.ad_accounts.platform)" class="w-4 h-4 object-contain" />
+                    <span class="font-bold text-slate-800 text-xs">{{ req.ad_accounts?.account_name || '-' }}</span>
+                  </div>
+                  <p class="text-xs text-slate-500 font-mono">{{ req.ad_accounts?.account_id || '-' }}</p>
+                </td>
+                <td class="px-6 py-4">
+                  <p class="font-bold text-orange-600 text-base">{{ formatRupiah(req.amount) }}</p>
+                </td>
+                <td class="px-6 py-4 text-center">
+                  <template v-if="budgetTab === 'new'">
+                    <div class="flex flex-col gap-2">
+                      <button 
+                        @click="processAction(req.id, 'approve', 'anggaran')"
+                        :disabled="isSubmitting === req.id"
+                        class="px-4 py-2 bg-green-600 hover:bg-green-700 disabled:bg-green-300 text-white text-xs font-bold rounded-lg transition-colors flex items-center justify-center w-full gap-2"
+                      >
+                        <span v-if="isSubmitting === req.id" class="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                        Setujui
+                      </button>
+                      <button 
+                        @click="processAction(req.id, 'reject', 'anggaran')"
+                        :disabled="isSubmitting === req.id"
+                        class="px-4 py-2 bg-red-50 text-red-600 hover:bg-red-100 disabled:opacity-50 text-xs font-bold rounded-lg transition-colors flex items-center justify-center w-full gap-2"
+                      >
+                        Tolak
+                      </button>
+                    </div>
+                  </template>
+                  <template v-else>
+                    <span class="px-3 py-1 rounded-full text-xs font-bold capitalize" :class="req.status === 'approved' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'">
+                      {{ req.status }}
+                    </span>
+                    <p v-if="req.status === 'rejected' && req.rejection_reason" class="text-[10px] text-slate-500 mt-2 max-w-[200px] mx-auto line-clamp-2" :title="req.rejection_reason.replace(/<[^>]*>?/gm, '')">
+                      {{ req.rejection_reason.replace(/<[^>]*>?/gm, '') }}
+                    </p>
+                  </template>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </template>
 
     <!-- Reject Modal -->
-    <div v-if="isRejectModalOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
+    <div v-if="isRejectModalOpen" class="fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
       <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden flex flex-col max-h-[90vh]">
         <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
           <h3 class="font-bold text-lg text-slate-900 flex items-center gap-2">
@@ -227,12 +360,20 @@
         </div>
         
         <div class="p-6 overflow-y-auto">
-          <p class="text-sm text-slate-600 mb-3">Silakan pilih atau tulis alasan penolakan untuk pengajuan akun iklan ini. Pesan ini akan dikirimkan langsung ke notifikasi klien.</p>
+          <p class="text-sm text-slate-600 mb-3">Silakan pilih atau tulis alasan penolakan untuk pengajuan ini. Pesan ini akan dikirimkan langsung ke notifikasi klien.</p>
           
-          <div class="flex flex-wrap gap-2 mb-4">
-            <button @click="setTemplate('kebijakan')" class="px-3 py-1.5 bg-white border border-red-200 hover:bg-red-50 rounded-lg text-xs font-bold text-red-700 transition-colors flex items-center gap-1.5">Melanggar Kebijakan</button>
-            <button @click="setTemplate('saldo')" class="px-3 py-1.5 bg-white border border-yellow-200 hover:bg-yellow-50 rounded-lg text-xs font-bold text-yellow-700 transition-colors flex items-center gap-1.5">Saldo Tidak Cukup</button>
-            <button @click="setTemplate('data_invalid')" class="px-3 py-1.5 bg-white border border-blue-200 hover:bg-blue-50 rounded-lg text-xs font-bold text-blue-700 transition-colors flex items-center gap-1.5">Data Tidak Valid</button>
+          <!-- Template Khusus Pembuatan Akun -->
+          <div v-if="rejectContext === 'akun'" class="flex flex-wrap gap-2 mb-4">
+            <button @click="setTemplate('kebijakan', 'akun')" class="px-3 py-1.5 bg-white border border-red-200 hover:bg-red-50 rounded-lg text-xs font-bold text-red-700 transition-colors">Melanggar Kebijakan</button>
+            <button @click="setTemplate('saldo', 'akun')" class="px-3 py-1.5 bg-white border border-yellow-200 hover:bg-yellow-50 rounded-lg text-xs font-bold text-yellow-700 transition-colors">Saldo Tidak Cukup</button>
+            <button @click="setTemplate('data_invalid', 'akun')" class="px-3 py-1.5 bg-white border border-blue-200 hover:bg-blue-50 rounded-lg text-xs font-bold text-blue-700 transition-colors">Data Tidak Valid</button>
+            <button @click="setTemplate('empty')" class="px-3 py-1.5 bg-white border border-slate-200 hover:bg-slate-50 rounded-lg text-xs font-bold text-slate-700 transition-colors">Teks Kosong</button>
+          </div>
+
+          <!-- Template Khusus Anggaran -->
+          <div v-else-if="rejectContext === 'anggaran'" class="flex flex-wrap gap-2 mb-4">
+            <button @click="setTemplate('suspend', 'anggaran')" class="px-3 py-1.5 bg-white border border-red-200 hover:bg-red-50 rounded-lg text-xs font-bold text-red-700 transition-colors">Akun Tersuspend</button>
+            <button @click="setTemplate('limit', 'anggaran')" class="px-3 py-1.5 bg-white border border-yellow-200 hover:bg-yellow-50 rounded-lg text-xs font-bold text-yellow-700 transition-colors">Kena Limit Platform</button>
             <button @click="setTemplate('empty')" class="px-3 py-1.5 bg-white border border-slate-200 hover:bg-slate-50 rounded-lg text-xs font-bold text-slate-700 transition-colors">Teks Kosong</button>
           </div>
 
@@ -277,7 +418,9 @@ const isAdmin = computed(() => {
   return role === 'admin' || role === 'super_admin'
 })
 
+const viewMode = ref<'akun' | 'anggaran'>('akun')
 const activeTab = ref('new')
+const budgetTab = ref('new')
 const isSubmitting = ref<string | null>(null)
 const currentAction = ref<string | null>(null)
 const inputModels = ref<Record<string, string>>({})
@@ -288,9 +431,11 @@ const isEditing = ref<Record<string, boolean>>({})
 const isRejectModalOpen = ref(false)
 const selectedRequestId = ref<string | null>(null)
 const rejectReason = ref('')
+const rejectContext = ref<'akun' | 'anggaran'>('akun')
 
-const openRejectModal = (id: string) => {
+const openRejectModal = (id: string, context: 'akun' | 'anggaran') => {
   selectedRequestId.value = id
+  rejectContext.value = context
   rejectReason.value = ''
   isRejectModalOpen.value = true
 }
@@ -301,26 +446,42 @@ const closeRejectModal = () => {
   rejectReason.value = ''
 }
 
-const setTemplate = (type: string) => {
-  if (type === 'kebijakan') {
-    rejectReason.value = `<p>Mohon maaf, pengajuan akun iklan Anda <strong>ditolak</strong> karena <strong>URL/Website tujuan melanggar kebijakan kami</strong> atau kebijakan platform iklan (misal: mengandung unsur perjudian, pornografi, obat ilegal, dll).</p><p>Silakan perbaiki landing page Anda atau gunakan website lain sebelum mengajukan kembali.</p><p><br></p><p><em>- Tim Iklan Tentaklik</em></p>`
-  } else if (type === 'saldo') {
-    rejectReason.value = `<p>Mohon maaf, pengajuan Anda kami tolak karena <strong>Saldo Bersih</strong> Anda saat ini tidak mencukupi untuk membayar biaya sewa akun iklan ini.</p><p>Mohon lakukan top up terlebih dahulu dan pastikan tidak ada tunggakan sebelum membuat pengajuan kembali.</p><p><br></p><p><em>- Tim Iklan Tentaklik</em></p>`
-  } else if (type === 'data_invalid') {
-    rejectReason.value = `<p>Mohon maaf, pengajuan Anda kami tolak karena <strong>Data Akun yang diberikan tidak valid atau tidak lengkap</strong>.</p><p>Mohon periksa kembali Business Manager ID (BM ID) atau Email Anda saat mengisi form.</p><p><br></p><p><em>- Tim Iklan Tentaklik</em></p>`
-  } else if (type === 'empty') {
-    rejectReason.value = `<p><br></p><p><br></p><p><em>- Tim Iklan Tentaklik</em></p>`
+const setTemplate = (type: string, context: 'akun' | 'anggaran' = 'akun') => {
+  if (context === 'akun') {
+    if (type === 'kebijakan') {
+      rejectReason.value = `<p>Mohon maaf, pengajuan akun iklan Anda <strong>ditolak</strong> karena <strong>URL/Website tujuan melanggar kebijakan kami</strong> atau kebijakan platform iklan (misal: mengandung unsur perjudian, pornografi, obat ilegal, dll).</p><p>Silakan perbaiki landing page Anda atau gunakan website lain sebelum mengajukan kembali.</p><p><br></p><p><em>- Tim Iklan Tentaklik</em></p>`
+    } else if (type === 'saldo') {
+      rejectReason.value = `<p>Mohon maaf, pengajuan Anda kami tolak karena <strong>Saldo Bersih</strong> Anda saat ini tidak mencukupi untuk membayar biaya sewa akun iklan ini.</p><p>Mohon lakukan top up terlebih dahulu dan pastikan tidak ada tunggakan sebelum membuat pengajuan kembali.</p><p><br></p><p><em>- Tim Iklan Tentaklik</em></p>`
+    } else if (type === 'data_invalid') {
+      rejectReason.value = `<p>Mohon maaf, pengajuan Anda kami tolak karena <strong>Data Akun yang diberikan tidak valid atau tidak lengkap</strong>.</p><p>Mohon periksa kembali Business Manager ID (BM ID) atau Email Anda saat mengisi form.</p><p><br></p><p><em>- Tim Iklan Tentaklik</em></p>`
+    } else if (type === 'empty') {
+      rejectReason.value = `<p><br></p><p><br></p><p><em>- Tim Iklan Tentaklik</em></p>`
+    }
+  } else if (context === 'anggaran') {
+    if (type === 'suspend') {
+      rejectReason.value = `<p>Mohon maaf, penambahan anggaran <strong>ditolak</strong> karena <strong>Akun Iklan Anda berstatus Suspended / Banned</strong> oleh platform.</p><p>Saldo Anda yang dibekukan telah kami kembalikan ke Saldo Utama. Harap hubungi tim support untuk pemulihan akun.</p><p><br></p><p><em>- Tim Iklan Tentaklik</em></p>`
+    } else if (type === 'limit') {
+      rejectReason.value = `<p>Mohon maaf, penambahan anggaran kami tolak karena <strong>Akun Iklan Anda sedang terkena limit harian</strong> dari platform, sehingga top up sebesar ini belum dapat diproses.</p><p>Saldo Anda telah dikembalikan. Silakan ajukan nominal yang lebih kecil atau tunggu hingga limit akun Anda naik.</p><p><br></p><p><em>- Tim Iklan Tentaklik</em></p>`
+    } else if (type === 'empty') {
+      rejectReason.value = `<p><br></p><p><br></p><p><em>- Tim Iklan Tentaklik</em></p>`
+    }
   }
 }
 
 const submitReject = () => {
   if (selectedRequestId.value) {
-    processAction(selectedRequestId.value, 'reject')
+    processAction(selectedRequestId.value, 'reject', rejectContext.value)
   }
 }
 
 // Fetch Data dari Server Endpoint (Bypass RLS)
-const { data: requests, pending, refresh } = useFetch<any[]>('/api/admin/ads-ops', { default: () => [] })
+const { data: requests, pending, refresh: refreshAkun } = useFetch<any[]>('/api/admin/ads-ops', { default: () => [] })
+const { data: budgetRequests, pending: pendingBudget, refresh: refreshBudget } = useFetch<any[]>('/api/admin/ads/budget-requests', { default: () => [] })
+
+const refreshAll = () => {
+  refreshAkun()
+  refreshBudget()
+}
 
 // Inisialisasi Input Model jika data ditarik
 watch(requests, (newVals) => {
@@ -330,7 +491,6 @@ watch(requests, (newVals) => {
       if (!inputModels.value[req.id]) {
         inputModels.value[req.id] = req.details?.ad_account_id || ''
       }
-
     })
   }
 }, { immediate: true })
@@ -354,11 +514,32 @@ const currentList = computed(() => {
   return completedList.value
 })
 
+const pendingBudgetList = computed(() => {
+  return budgetRequests.value.filter(req => req.status === 'pending')
+})
+
+const historyBudgetList = computed(() => {
+  return budgetRequests.value.filter(req => req.status !== 'pending')
+})
+
+const currentBudgetList = computed(() => {
+  if (budgetTab.value === 'new') return pendingBudgetList.value
+  return historyBudgetList.value
+})
+
 const getPlatformLogo = (platform: string) => {
   if (platform.includes('Meta')) return '/icon-meta-ads.png'
   if (platform.includes('TikTok')) return '/tiktok.svg'
   if (platform.includes('Google')) return '/icon-google-ads.png'
   return '/icon-meta-ads.png'
+}
+
+const formatRupiah = (angka: number) => {
+  return new Intl.NumberFormat('id-ID', {
+    style: 'currency',
+    currency: 'IDR',
+    minimumFractionDigits: 0
+  }).format(angka || 0)
 }
 
 const startEdit = (id: string) => {
@@ -389,17 +570,17 @@ const resetDev = async () => {
     const csrfToken = unref(csrf)
     const res = await $fetch('/api/dev/reset-ads', { method: 'POST', headers: csrfToken ? { 'csrf-token': csrfToken } : {} })
     toast.addToast((res as any).message, 'success')
-    await refresh()
+    await refreshAll()
     refreshNuxtData('admin-badges')
   } catch(e: any) {
     toast.addToast(e.data?.statusMessage || 'Gagal mereset data', 'error')
   }
 }
 
-const processAction = async (id: string, action: 'approve' | 'reject' | 'save_id' | 'delete') => {
+const processAction = async (id: string, action: 'approve' | 'reject' | 'save_id' | 'delete', context: 'akun' | 'anggaran' = 'akun') => {
   // Jika action = reject tapi belum buka modal, buka modalnya dulu
   if (action === 'reject' && (!isRejectModalOpen.value || selectedRequestId.value !== id)) {
-    openRejectModal(id)
+    openRejectModal(id, context)
     return
   }
 
@@ -407,8 +588,8 @@ const processAction = async (id: string, action: 'approve' | 'reject' | 'save_id
   let rejectReasonToSubmit = undefined
 
   if (action === 'delete') {
-    if (!confirm('Apakah Anda yakin ingin menghapus pengajuan dan ID akun ini dari database secara permanen?')) return
-  } else if (action === 'save_id') {
+    if (!confirm('Apakah Anda yakin ingin menghapus pengajuan ini dari database secara permanen?')) return
+  } else if (action === 'save_id' && context === 'akun') {
     const req = requests.value.find((r: any) => r.id === id)
     adAccountId = inputModels.value[id]?.trim()
     
@@ -417,7 +598,6 @@ const processAction = async (id: string, action: 'approve' | 'reject' | 'save_id
       return
     }
   } else if (action === 'reject') {
-    // Alasan sudah diambil dari rejectReason model yang dikonfirmasi modal
     rejectReasonToSubmit = rejectReason.value
   }
 
@@ -427,23 +607,38 @@ const processAction = async (id: string, action: 'approve' | 'reject' | 'save_id
 
   try {
     const csrfToken2 = unref(csrf)
-    const response = await $fetch('/api/admin/ads-ops', {
-      method: 'POST',
-      headers: csrfToken2 ? { 'csrf-token': csrfToken2 } : {},
-      body: {
+    
+    let endpoint = '/api/admin/ads-ops'
+    let bodyData: any = {
+      action: action,
+      request_id: id,
+      ad_account_id: adAccountId,
+      reason: rejectReasonToSubmit
+    }
+
+    if (context === 'anggaran') {
+      endpoint = '/api/admin/ads/budget-requests'
+      bodyData = {
         action: action,
         request_id: id,
-        ad_account_id: adAccountId,
         reason: rejectReasonToSubmit
       }
+    }
+
+    const response = await $fetch(endpoint, {
+      method: 'POST',
+      headers: csrfToken2 ? { 'csrf-token': csrfToken2 } : {},
+      body: bodyData
     })
 
     toast.addToast((response as any).message, 'success')
     isEditing.value[id] = false
+    
     if (action === 'reject') {
       closeRejectModal()
     }
-    await refresh() // Tarik ulang data agar pindah tab
+    
+    await refreshAll()
     refreshNuxtData('admin-badges')
   } catch (error: any) {
     toast.addToast(error.data?.statusMessage || 'Gagal memproses aksi', 'error')

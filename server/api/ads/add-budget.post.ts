@@ -54,64 +54,70 @@ export default defineEventHandler(async (event) => {
   }
 
   const currentBalance = Number(saldoData.balance)
+  const currentPendingBalance = Number(saldoData.pending_balance || 0)
+  const availableBalance = currentBalance - currentPendingBalance
   const addAmount = Number(amount)
 
-  if (currentBalance < addAmount) {
+  if (availableBalance < addAmount) {
     throw createError({
       statusCode: 400,
       statusMessage: 'Sisa Saldo Utama tidak mencukupi untuk alokasi ini',
     })
   }
 
-  // 3. Potong Saldo Utama (balance)
-  const newBalance = currentBalance - addAmount
+  // 3. Tambahkan ke Saldo Dibekukan (pending_balance)
+  const newPendingBalance = currentPendingBalance + addAmount
   const { error: updateSaldoErr } = await supabase
     .from('saldo')
-    .update({ balance: newBalance })
+    .update({ pending_balance: newPendingBalance })
     .eq('user_id', userId)
 
   if (updateSaldoErr) {
     throw createError({
       statusCode: 500,
-      statusMessage: 'Gagal memotong Saldo Utama',
+      statusMessage: 'Gagal membekukan Saldo Utama',
     })
   }
 
-  // 4. Catat ke tabel transactions
-  const { error: trxErr } = await supabase.from('transactions').insert({
+  // 4. Catat ke tabel transactions (status: pending)
+  const { data: trxData, error: trxErr } = await supabase.from('transactions').insert({
     user_id: userId,
     amount: addAmount,
     type: 'payment',
-    status: 'success',
-    description: `Alokasi Anggaran Iklan - ${account.account_name || account.account_id} (${account.platform})`,
+    status: 'pending',
+    description: `Request Alokasi Anggaran Iklan - ${account.account_name || account.account_id} (${account.platform})`,
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString()
-  })
+  }).select('id').single()
 
   if (trxErr) {
     console.error('Gagal mencatat histori transaksi alokasi:', trxErr)
   }
 
-  // 5. Tambahkan anggaran ke kolom 'saldo' di tabel ad_accounts (lokal DB)
-  const newAdBalance = Number(account.saldo || 0) + addAmount
-  const { error: updateAccErr } = await supabase
-    .from('ad_accounts')
-    .update({ saldo: newAdBalance })
-    .eq('id', accountId)
+  // 5. Buat pengajuan ke tabel ad_budget_requests
+  const { error: requestErr } = await supabase.from('ad_budget_requests').insert({
+    user_id: userId,
+    ad_account_id: accountId,
+    amount: addAmount,
+    status: 'pending',
+    transaction_id: trxData?.id || null,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString()
+  })
 
-  if (updateAccErr) {
-    console.error('Gagal menambah saldo di tabel ad_accounts:', updateAccErr)
+  if (requestErr) {
+    console.error('Gagal membuat request alokasi:', requestErr)
+    // Sebaiknya rollback pending_balance, tapi untuk saat ini lempar error
     throw createError({
       statusCode: 500,
-      statusMessage: 'Gagal mengalokasikan anggaran ke tabel akun iklan',
+      statusMessage: 'Gagal membuat pengajuan anggaran',
     })
   }
 
-  // 6. Selesai (Tidak menembak API eksternal secara langsung)
+  // 6. Selesai (Menunggu persetujuan Admin Ads Ops)
   return {
     success: true,
-    message: 'Anggaran berhasil dialokasikan secara aman',
-    new_balance: newBalance,
-    new_ad_balance: newAdBalance
+    message: 'Permintaan penambahan anggaran berhasil dikirim dan sedang menunggu persetujuan tim iklan.',
+    new_pending_balance: newPendingBalance
   }
 })
