@@ -20,8 +20,8 @@
 <script setup lang="ts">
 const { t } = useI18n()
 const openWhatsApp = () => {
-  // Ganti nomor dengan nomor tujuan sebenarnya, pastikan format berawalan 62
-  const phoneNumber = '6287756000215' 
+  // Nomor CS / Support TentaKlik
+  const phoneNumber = '6281128506652'
   const message = encodeURIComponent(t('components.floatingWhatsApp.message'))
   const url = `https://wa.me/${phoneNumber}?text=${message}`
   
