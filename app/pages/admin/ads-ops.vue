@@ -152,72 +152,110 @@
 
                 <!-- Input Ad Account ID -->
                 <td class="px-6 py-4">
-                  <div v-if="activeTab !== 'new'" class="space-y-3">
-                    <div class="relative">
-                      <input 
-                        v-model="inputModels[req.id]"
-                        @input="formatInput(req.id, req.platform)"
-                        type="text" 
-                        placeholder="ID: Misal 123456789" 
-                        class="w-full pl-9 pr-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 bg-white"
-                        :disabled="isSubmitting === req.id || (activeTab === 'completed' && !isEditing[req.id])"
-                      />
-                      <Hash class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                  <!-- Audit: tampilkan read-only saja -->
+                  <template v-if="isAuditMode">
+                    <div v-if="inputModels[req.id]" class="flex items-center gap-1.5">
+                      <Hash class="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                      <span class="text-sm font-mono text-slate-700">{{ inputModels[req.id] }}</span>
                     </div>
-                    <p class="text-[10px] text-slate-400 mt-1 italic">Nama akun akan diambil otomatis dari API.</p>
-                  </div>
-                  <div v-else class="text-xs text-slate-400 italic">Menunggu persetujuan...</div>
+                    <span v-else class="text-xs text-slate-400 italic">Belum diisi</span>
+                  </template>
+                  <!-- Normal mode -->
+                  <template v-else>
+                    <div v-if="activeTab !== 'new'" class="space-y-3">
+                      <div class="relative">
+                        <input 
+                          v-model="inputModels[req.id]"
+                          @input="formatInput(req.id, req.platform)"
+                          type="text" 
+                          placeholder="ID: Misal 123456789" 
+                          class="w-full pl-9 pr-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 bg-white"
+                          :disabled="isSubmitting === req.id || (activeTab === 'completed' && !isEditing[req.id])"
+                        />
+                        <Hash class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                      </div>
+                      <p class="text-[10px] text-slate-400 mt-1 italic">Nama akun akan diambil otomatis dari API.</p>
+                    </div>
+                    <div v-else class="text-xs text-slate-400 italic">Menunggu persetujuan...</div>
+                  </template>
                 </td>
 
                 <!-- Actions -->
                 <td class="px-6 py-4 text-center">
-                  <template v-if="activeTab === 'new'">
-                    <div class="flex flex-col gap-2">
+                  <!-- READ-ONLY MODE: Tim Audit -->
+                  <template v-if="isAuditMode">
+                    <!-- Tombol Hubungi WA jika masih pending/processing -->
+                    <div v-if="activeTab === 'new' || activeTab === 'processing'" class="flex flex-col items-center gap-1.5">
+                      <button
+                        @click="openContactModal(req)"
+                        :class="getFollowUpTime(req.id)
+                          ? 'bg-white hover:bg-slate-50 border-slate-200 text-slate-600'
+                          : 'bg-green-50 hover:bg-green-100 border-green-200 text-green-700'"
+                        class="flex items-center justify-center gap-1.5 px-3 py-2 border text-xs font-bold rounded-lg transition-all w-full"
+                      >
+                        <MessageCircle class="w-3.5 h-3.5" />
+                        {{ getFollowUpTime(req.id) ? 'Follow up lagi' : 'Hubungi Tim' }}
+                      </button>
+                      <p v-if="getFollowUpTime(req.id)" class="text-[10px] text-green-600 font-medium">
+                        Sudah di-follow up {{ getFollowUpTime(req.id) }}
+                      </p>
+                    </div>
+                    <!-- Badge saja jika sudah selesai -->
+                    <span v-else class="px-3 py-1.5 bg-green-100 text-green-700 text-xs font-bold rounded-full">
+                      ✓ Selesai
+                    </span>
+                  </template>
+
+                  <!-- NORMAL MODE: Tim Iklan / Super Admin -->
+                  <template v-else>
+                    <template v-if="activeTab === 'new'">
+                      <div class="flex flex-col gap-2">
+                        <button 
+                          @click="processAction(req.id, 'approve', 'akun')"
+                          :disabled="isSubmitting === req.id"
+                          class="px-4 py-2 bg-green-600 hover:bg-green-700 disabled:bg-green-300 text-white text-xs font-bold rounded-lg transition-colors flex items-center justify-center w-full gap-2"
+                        >
+                          <span v-if="isSubmitting === req.id" class="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                          Setujui
+                        </button>
+                        <button 
+                          @click="processAction(req.id, 'reject', 'akun')"
+                          :disabled="isSubmitting === req.id"
+                          class="px-4 py-2 bg-red-50 text-red-600 hover:bg-red-100 disabled:opacity-50 text-xs font-bold rounded-lg transition-colors flex items-center justify-center w-full gap-2"
+                        >
+                          Tolak
+                        </button>
+                      </div>
+                    </template>
+                    <template v-else-if="activeTab === 'processing' || isEditing[req.id]">
                       <button 
-                        @click="processAction(req.id, 'approve', 'akun')"
-                        :disabled="isSubmitting === req.id"
-                        class="px-4 py-2 bg-green-600 hover:bg-green-700 disabled:bg-green-300 text-white text-xs font-bold rounded-lg transition-colors flex items-center justify-center w-full gap-2"
+                        @click="processAction(req.id, 'save_id', 'akun')"
+                        :disabled="!inputModels[req.id] || isSubmitting === req.id"
+                        class="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-300 text-white text-xs font-bold rounded-lg transition-colors flex items-center justify-center w-full gap-2"
                       >
                         <span v-if="isSubmitting === req.id" class="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
-                        Setujui
+                        Simpan ID
                       </button>
-                      <button 
-                        @click="processAction(req.id, 'reject', 'akun')"
-                        :disabled="isSubmitting === req.id"
-                        class="px-4 py-2 bg-red-50 text-red-600 hover:bg-red-100 disabled:opacity-50 text-xs font-bold rounded-lg transition-colors flex items-center justify-center w-full gap-2"
-                      >
-                        Tolak
-                      </button>
-                    </div>
-                  </template>
-                  <template v-else-if="activeTab === 'processing' || isEditing[req.id]">
-                    <button 
-                      @click="processAction(req.id, 'save_id', 'akun')"
-                      :disabled="!inputModels[req.id] || isSubmitting === req.id"
-                      class="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-300 text-white text-xs font-bold rounded-lg transition-colors flex items-center justify-center w-full gap-2"
-                    >
-                      <span v-if="isSubmitting === req.id" class="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
-                      Simpan ID
-                    </button>
-                    <button v-if="isEditing[req.id]" @click="cancelEdit(req.id, req.details?.ad_account_id)" class="text-[10px] text-slate-500 hover:text-slate-700 mt-2 font-medium">Batal</button>
-                  </template>
-                  <template v-else>
-                    <div class="flex flex-col gap-2">
-                      <button 
-                        @click="startEdit(req.id)"
-                        class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-lg transition-colors flex items-center justify-center w-full gap-2"
-                      >
-                        <Edit2 class="w-3 h-3" /> Edit ID
-                      </button>
-                      <button 
-                        @click="processAction(req.id, 'delete', 'akun')"
-                        :disabled="isSubmitting === req.id"
-                        class="px-4 py-2 bg-red-50 hover:bg-red-100 disabled:opacity-50 text-red-600 text-xs font-bold rounded-lg transition-colors flex items-center justify-center w-full gap-2"
-                      >
-                        <span v-if="isSubmitting === req.id && currentAction === 'delete'" class="w-3 h-3 border-2 border-red-600/30 border-t-red-600 rounded-full animate-spin"></span>
-                        <Trash2 v-else class="w-3 h-3" /> Hapus
-                      </button>
-                    </div>
+                      <button v-if="isEditing[req.id]" @click="cancelEdit(req.id, req.details?.ad_account_id)" class="text-[10px] text-slate-500 hover:text-slate-700 mt-2 font-medium">Batal</button>
+                    </template>
+                    <template v-else>
+                      <div class="flex flex-col gap-2">
+                        <button 
+                          @click="startEdit(req.id)"
+                          class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-lg transition-colors flex items-center justify-center w-full gap-2"
+                        >
+                          <Edit2 class="w-3 h-3" /> Edit ID
+                        </button>
+                        <button 
+                          @click="processAction(req.id, 'delete', 'akun')"
+                          :disabled="isSubmitting === req.id"
+                          class="px-4 py-2 bg-red-50 hover:bg-red-100 disabled:opacity-50 text-red-600 text-xs font-bold rounded-lg transition-colors flex items-center justify-center w-full gap-2"
+                        >
+                          <span v-if="isSubmitting === req.id && currentAction === 'delete'" class="w-3 h-3 border-2 border-red-600/30 border-t-red-600 rounded-full animate-spin"></span>
+                          <Trash2 v-else class="w-3 h-3" /> Hapus
+                        </button>
+                      </div>
+                    </template>
                   </template>
                 </td>
               </tr>
@@ -311,32 +349,57 @@
                   <p class="font-bold text-orange-600 text-base">{{ formatRupiah(req.amount) }}</p>
                 </td>
                 <td class="px-6 py-4 text-center">
-                  <template v-if="budgetTab === 'new'">
-                    <div class="flex flex-col gap-2">
-                      <button 
-                        @click="processAction(req.id, 'approve', 'anggaran')"
-                        :disabled="isSubmitting === req.id"
-                        class="px-4 py-2 bg-green-600 hover:bg-green-700 disabled:bg-green-300 text-white text-xs font-bold rounded-lg transition-colors flex items-center justify-center w-full gap-2"
+                  <!-- READ-ONLY: Tim Audit -->
+                  <template v-if="isAuditMode">
+                    <div v-if="budgetTab === 'new'" class="flex flex-col items-center gap-1.5">
+                      <button
+                        @click="openContactModal(req, 'anggaran')"
+                        :class="getFollowUpTime(req.id)
+                          ? 'bg-white hover:bg-slate-50 border-slate-200 text-slate-600'
+                          : 'bg-green-50 hover:bg-green-100 border-green-200 text-green-700'"
+                        class="flex items-center justify-center gap-1.5 px-3 py-2 border text-xs font-bold rounded-lg transition-all w-full"
                       >
-                        <span v-if="isSubmitting === req.id" class="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
-                        Setujui
+                        <MessageCircle class="w-3.5 h-3.5" />
+                        {{ getFollowUpTime(req.id) ? 'Follow up lagi' : 'Hubungi Tim' }}
                       </button>
-                      <button 
-                        @click="processAction(req.id, 'reject', 'anggaran')"
-                        :disabled="isSubmitting === req.id"
-                        class="px-4 py-2 bg-red-50 text-red-600 hover:bg-red-100 disabled:opacity-50 text-xs font-bold rounded-lg transition-colors flex items-center justify-center w-full gap-2"
-                      >
-                        Tolak
-                      </button>
+                      <p v-if="getFollowUpTime(req.id)" class="text-[10px] text-green-600 font-medium">
+                        Sudah di-follow up {{ getFollowUpTime(req.id) }}
+                      </p>
                     </div>
-                  </template>
-                  <template v-else>
-                    <span class="px-3 py-1 rounded-full text-xs font-bold capitalize" :class="req.status === 'approved' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'">
+                    <span v-else class="px-3 py-1 rounded-full text-xs font-bold capitalize" :class="req.status === 'approved' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'">
                       {{ req.status }}
                     </span>
-                    <p v-if="req.status === 'rejected' && req.rejection_reason" class="text-[10px] text-slate-500 mt-2 max-w-[200px] mx-auto line-clamp-2" :title="req.rejection_reason.replace(/<[^>]*>?/gm, '')">
-                      {{ req.rejection_reason.replace(/<[^>]*>?/gm, '') }}
-                    </p>
+                  </template>
+
+                  <!-- NORMAL MODE: Tim Iklan -->
+                  <template v-else>
+                    <template v-if="budgetTab === 'new'">
+                      <div class="flex flex-col gap-2">
+                        <button 
+                          @click="processAction(req.id, 'approve', 'anggaran')"
+                          :disabled="isSubmitting === req.id"
+                          class="px-4 py-2 bg-green-600 hover:bg-green-700 disabled:bg-green-300 text-white text-xs font-bold rounded-lg transition-colors flex items-center justify-center w-full gap-2"
+                        >
+                          <span v-if="isSubmitting === req.id" class="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                          Setujui
+                        </button>
+                        <button 
+                          @click="processAction(req.id, 'reject', 'anggaran')"
+                          :disabled="isSubmitting === req.id"
+                          class="px-4 py-2 bg-red-50 text-red-600 hover:bg-red-100 disabled:opacity-50 text-xs font-bold rounded-lg transition-colors flex items-center justify-center w-full gap-2"
+                        >
+                          Tolak
+                        </button>
+                      </div>
+                    </template>
+                    <template v-else>
+                      <span class="px-3 py-1 rounded-full text-xs font-bold capitalize" :class="req.status === 'approved' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'">
+                        {{ req.status }}
+                      </span>
+                      <p v-if="req.status === 'rejected' && req.rejection_reason" class="text-[10px] text-slate-500 mt-2 max-w-[200px] mx-auto line-clamp-2" :title="req.rejection_reason.replace(/<[^>]*>?/gm, '')">
+                        {{ req.rejection_reason.replace(/<[^>]*>?/gm, '') }}
+                      </p>
+                    </template>
                   </template>
                 </td>
               </tr>
@@ -399,10 +462,19 @@
       </div>
     </div>
   </div>
+
+  <!-- Modal Hubungi Tim Iklan (hanya untuk Tim Audit) -->
+  <ModalContactAdsTeamModal
+    v-if="isContactModalOpen"
+    :request="contactRequest"
+    :type="contactType"
+    @close="isContactModalOpen = false"
+    @contacted="handleContacted"
+  />
 </template>
 
 <script setup lang="ts">
-import { RefreshCw, Megaphone, Link, Hash, CheckCircle2, Edit2, Trash2, MessageSquareX, X } from 'lucide-vue-next'
+import { RefreshCw, Megaphone, Link, Hash, CheckCircle2, Edit2, Trash2, MessageSquareX, X, MessageCircle } from 'lucide-vue-next'
 import { ref, computed, watch } from 'vue'
 
 definePageMeta({
@@ -417,6 +489,54 @@ const isAdmin = computed(() => {
   const role = user.value?.user_metadata?.role || user.value?.app_metadata?.role
   return role === 'admin' || role === 'super_admin'
 })
+
+// Mode read-only untuk Tim Audit (admin_compliance)
+const userRole = computed(() => user.value?.user_metadata?.role || user.value?.app_metadata?.role || '')
+const isAuditMode = computed(() => userRole.value === 'admin_compliance')
+
+// State modal kontak WA
+const isContactModalOpen = ref(false)
+const contactRequest = ref<any>(null)
+const contactType = ref<'akun' | 'anggaran'>('akun')
+
+// Tracking follow-up via localStorage
+const FOLLOWUP_KEY = 'tentaklik_audit_followups'
+const followUpTracker = ref<Record<string, string>>({})
+
+// Load dari localStorage saat mount
+onMounted(() => {
+  try {
+    const saved = localStorage.getItem(FOLLOWUP_KEY)
+    if (saved) followUpTracker.value = JSON.parse(saved)
+  } catch {}
+})
+
+const markFollowedUp = (id: string) => {
+  followUpTracker.value[id] = new Date().toISOString()
+  localStorage.setItem(FOLLOWUP_KEY, JSON.stringify(followUpTracker.value))
+}
+
+const getFollowUpTime = (id: string) => {
+  const iso = followUpTracker.value[id]
+  if (!iso) return null
+  return new Date(iso).toLocaleString('id-ID', { dateStyle: 'short', timeStyle: 'short' })
+}
+
+const openContactModal = (req: any, type: 'akun' | 'anggaran' = 'akun') => {
+  contactRequest.value = req
+  contactType.value = type
+  isContactModalOpen.value = true
+}
+
+const handleContactClose = () => {
+  // Hanya mark jika user sudah klik WA (modal emits 'contacted' saat WA terbuka)
+  isContactModalOpen.value = false
+}
+
+const handleContacted = (id: string) => {
+  markFollowedUp(id)
+  isContactModalOpen.value = false
+}
 
 const viewMode = ref<'akun' | 'anggaran'>('akun')
 const activeTab = ref('new')

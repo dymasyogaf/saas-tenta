@@ -14,14 +14,31 @@ export default defineEventHandler(async (event) => {
         status, 
         rejection_reason,
         created_at,
-        users(email),
-        affiliate_profiles(full_name, bank_name, bank_account, account_name)
+        users (
+          email,
+          affiliate_profiles (full_name, bank_name, bank_account, account_name)
+        )
       `)
       .order('created_at', { ascending: false })
 
     if (error) throw error
 
-    return data
+    // Map the nested users.affiliate_profiles back to the root level for the frontend
+    const mappedData = data?.map((item: any) => {
+      // In PostgREST, a one-to-one reverse relationship might come back as an array
+      let profile = item.users?.affiliate_profiles
+      if (Array.isArray(profile)) {
+        profile = profile[0]
+      }
+      
+      return {
+        ...item,
+        users: { email: item.users?.email },
+        affiliate_profiles: profile || null
+      }
+    }) || []
+
+    return mappedData
   } catch (error: any) {
     console.error('Error fetching affiliate withdrawals:', error)
     throw createError({

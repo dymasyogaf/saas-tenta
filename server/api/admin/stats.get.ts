@@ -1,4 +1,5 @@
 import { serverSupabaseServiceRole } from '#supabase/server'
+import { getChartDateLabel, getStartOfDay, getEndOfDay } from '../../utils/date'
 
 export default defineEventHandler(async (event) => {
   await requireAdmin(event)
@@ -101,17 +102,11 @@ export default defineEventHandler(async (event) => {
         const d = new Date(end)
         d.setDate(d.getDate() - i)
         
-        const dayNames = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab']
-        const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des']
-        
-        const label = `${dayNames[d.getDay()]}, ${d.getDate()} ${monthNames[d.getMonth()]}`
+        const label = getChartDateLabel(d)
         chartLabels.push(label)
         
-        const dStart = new Date(d)
-        dStart.setHours(0, 0, 0, 0)
-        
-        const dEnd = new Date(d)
-        dEnd.setHours(23, 59, 59, 999)
+        const dStart = getStartOfDay(d)
+        const dEnd = getEndOfDay(d)
         
         // Cari transaksi di hari tersebut
         const dayTotal = topupData?.filter((tx: any) => {

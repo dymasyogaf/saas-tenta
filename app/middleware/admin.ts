@@ -49,8 +49,8 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
       return navigateTo('/admin')
     }
 
-    // Tim Ads Ops
-    if (path.startsWith('/admin/ads-ops') && role !== 'admin_ads_ops') {
+    // Tim Ads Ops (Tim Audit boleh lihat, tapi read-only di UI)
+    if (path.startsWith('/admin/ads-ops') && role !== 'admin_ads_ops' && role !== 'admin_compliance') {
       return navigateTo('/admin')
     }
 

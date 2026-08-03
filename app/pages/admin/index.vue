@@ -22,7 +22,7 @@
     </div>
 
     <!-- Default Admin / Super Admin Dashboard -->
-    <div v-if="userRole !== 'admin_ads_ops'">
+    <div v-if="userRole !== 'admin_ads_ops' && userRole !== 'admin_compliance'">
       <!-- Row 1: Operational Stats -->
     <div class="flex flex-col sm:flex-row sm:items-center justify-between pt-2 border-b border-slate-200 pb-2 mb-4 gap-3">
       <h3 class="text-lg font-bold text-slate-900">Antrean Operasional (To-Do)</h3>
@@ -316,6 +316,220 @@
     </div>
     </div> <!-- End Default Dashboard -->
 
+    <!-- ═══════════════════════════════════════════════════════════
+         AUDIT DASHBOARD (admin_compliance)
+         ═══════════════════════════════════════════════════════════ -->
+    <div v-else-if="userRole === 'admin_compliance'">
+
+      <!-- Alert Banner: Antrean Menumpuk -->
+      <div v-if="(auditStats?.kycPending || 0) > 5" class="mb-6 bg-red-50 border border-red-200 rounded-xl p-4 flex items-start gap-4">
+        <div class="w-9 h-9 bg-red-100 text-red-600 rounded-full flex items-center justify-center shrink-0 mt-0.5">
+          <AlertTriangle class="w-5 h-5" />
+        </div>
+        <div>
+          <h3 class="text-sm font-bold text-red-900">Antrean KYC Menumpuk!</h3>
+          <p class="text-red-700 text-xs mt-1">
+            Ada <span class="font-bold">{{ auditStats?.kycPending }}</span> pengajuan KYC yang menunggu review. Segera selesaikan antrean agar klien tidak menunggu terlalu lama.
+          </p>
+        </div>
+        <NuxtLink to="/admin/verifications" class="ml-auto shrink-0 text-xs font-bold text-red-600 hover:text-red-700 flex items-center gap-1 whitespace-nowrap">
+          Review Sekarang <ArrowRight class="w-3.5 h-3.5" />
+        </NuxtLink>
+      </div>
+
+      <!-- ── Section 1: Statistik KYC ─────────────────────────────── -->
+      <div class="flex items-center justify-between pt-2 border-b border-slate-200 pb-2 mb-4">
+        <h3 class="text-lg font-bold text-slate-900">Statistik KYC</h3>
+        <NuxtLink to="/admin/verifications" class="text-xs font-bold text-orange-600 hover:text-orange-700 flex items-center gap-1">
+          Buka Halaman Review <ArrowRight class="w-3.5 h-3.5" />
+        </NuxtLink>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <!-- KYC Pending -->
+        <NuxtLink to="/admin/verifications" class="bg-white border-2 border-orange-300 rounded-xl p-5 shadow-sm hover:border-orange-400 hover:shadow-md transition-all group">
+          <div class="flex items-center gap-3 mb-3">
+            <div class="w-9 h-9 rounded-lg bg-orange-100 text-orange-600 flex items-center justify-center">
+              <Clock class="w-5 h-5" />
+            </div>
+            <p class="text-sm font-bold text-slate-700">Menunggu Review</p>
+          </div>
+          <div v-if="pendingAudit" class="h-9 w-16 bg-slate-200 rounded animate-pulse my-1"></div>
+          <p v-else class="text-4xl font-display font-bold text-orange-600">{{ auditStats?.kycPending || 0 }}</p>
+          <p class="text-xs font-medium text-slate-500 mt-2">Pengajuan KYC pending</p>
+        </NuxtLink>
+
+        <!-- Disetujui Hari Ini -->
+        <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+          <div class="flex items-center gap-3 mb-3">
+            <div class="w-9 h-9 rounded-lg bg-green-100 text-green-600 flex items-center justify-center">
+              <CheckCircle2 class="w-5 h-5" />
+            </div>
+            <p class="text-sm font-bold text-slate-700">Disetujui Hari Ini</p>
+          </div>
+          <div v-if="pendingAudit" class="h-9 w-16 bg-slate-200 rounded animate-pulse my-1"></div>
+          <p v-else class="text-4xl font-display font-bold text-green-600">{{ auditStats?.kycApprovedToday || 0 }}</p>
+          <p class="text-xs font-medium text-slate-500 mt-2">KYC terverifikasi hari ini</p>
+        </div>
+
+        <!-- Ditolak Hari Ini -->
+        <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+          <div class="flex items-center gap-3 mb-3">
+            <div class="w-9 h-9 rounded-lg bg-red-100 text-red-600 flex items-center justify-center">
+              <XCircle class="w-5 h-5" />
+            </div>
+            <p class="text-sm font-bold text-slate-700">Ditolak Hari Ini</p>
+          </div>
+          <div v-if="pendingAudit" class="h-9 w-16 bg-slate-200 rounded animate-pulse my-1"></div>
+          <p v-else class="text-4xl font-display font-bold text-red-600">{{ auditStats?.kycRejectedToday || 0 }}</p>
+          <p class="text-xs font-medium text-slate-500 mt-2">KYC tidak memenuhi syarat</p>
+        </div>
+
+        <!-- Belum Submit KYC -->
+        <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+          <div class="flex items-center gap-3 mb-3">
+            <div class="w-9 h-9 rounded-lg bg-slate-100 text-slate-500 flex items-center justify-center">
+              <UserX class="w-5 h-5" />
+            </div>
+            <p class="text-sm font-bold text-slate-700">Belum Submit KYC</p>
+          </div>
+          <div v-if="pendingAudit" class="h-9 w-16 bg-slate-200 rounded animate-pulse my-1"></div>
+          <p v-else class="text-4xl font-display font-bold text-slate-600">{{ auditStats?.kycNeverSubmitted || 0 }}</p>
+          <p class="text-xs font-medium text-slate-500 mt-2">Terdaftar tapi belum mengisi</p>
+        </div>
+      </div>
+
+      <!-- ── Section 2 & 3: Chart Trend + Activity Feed ────────────── -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+
+        <!-- Chart Trend KYC 7 Hari -->
+        <div class="lg:col-span-2 bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
+          <div class="mb-4">
+            <h3 class="font-bold text-xl text-slate-900">Trend KYC (7 Hari Terakhir)</h3>
+            <p class="text-sm text-slate-500 mt-1">Perbandingan KYC masuk vs diselesaikan per hari</p>
+          </div>
+          <div class="border border-slate-100 rounded-xl p-4 bg-slate-50 relative pt-8">
+            <p class="absolute top-3 left-4 text-xs font-bold text-slate-400">Jumlah (Pengajuan)</p>
+            <div class="h-56 w-full">
+              <div v-if="pendingAudit" class="w-full h-full animate-pulse bg-slate-100 rounded-lg"></div>
+              <ClientOnly v-else>
+                <VueApexCharts
+                  type="line"
+                  height="100%"
+                  width="100%"
+                  :options="auditChartOptions"
+                  :series="auditStats?.kycChartSeries || []"
+                />
+              </ClientOnly>
+            </div>
+          </div>
+        </div>
+
+        <!-- Antrean KYC Terbaru (Activity Feed) -->
+        <div class="bg-white border border-slate-200 rounded-xl shadow-sm flex flex-col">
+          <div class="p-5 border-b border-slate-100">
+            <h3 class="font-bold text-slate-900">Antrean KYC Terbaru</h3>
+            <p class="text-xs text-slate-500 mt-0.5">Pending & butuh review segera</p>
+          </div>
+          <div class="flex-1 overflow-y-auto p-2">
+            <div v-if="pendingAudit" class="p-4 space-y-3">
+              <div v-for="i in 4" :key="i" class="h-14 bg-slate-100 rounded animate-pulse"></div>
+            </div>
+            <div v-else-if="!auditStats?.recentKyc?.length" class="p-8 text-center">
+              <CheckCircle2 class="w-10 h-10 text-green-400 mx-auto mb-2" />
+              <p class="text-sm font-medium text-slate-500">Antrean KYC kosong!</p>
+              <p class="text-xs text-slate-400 mt-1">Semua pengajuan sudah ditangani.</p>
+            </div>
+            <div v-else class="divide-y divide-slate-100">
+              <div v-for="kyc in auditStats?.recentKyc" :key="kyc.id" class="p-3 hover:bg-orange-50 transition-colors rounded-lg">
+                <div class="flex items-start justify-between gap-2">
+                  <div class="min-w-0">
+                    <p class="text-sm font-bold text-slate-800 truncate">{{ kyc.full_name || '(Belum diisi)' }}</p>
+                    <p class="text-xs text-slate-500 truncate">{{ kyc.email }}</p>
+                  </div>
+                  <span class="text-[10px] px-1.5 py-0.5 rounded bg-orange-100 text-orange-700 font-bold shrink-0 mt-0.5">Pending</span>
+                </div>
+                <p class="text-[10px] text-slate-400 mt-1.5 flex items-center gap-1">
+                  <Clock class="w-3 h-3" />
+                  {{ new Date(kyc.updated_at || kyc.created_at).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }) }}
+                </p>
+              </div>
+            </div>
+          </div>
+          <div class="p-3 border-t border-slate-100 text-center">
+            <NuxtLink to="/admin/verifications" class="text-xs font-bold text-orange-600 hover:text-orange-700">Review Semua KYC &rarr;</NuxtLink>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Section 4: Request Akun Iklan ─────────────────────────── -->
+      <div class="border-t border-slate-200 pt-6">
+        <div class="flex items-center justify-between pb-2 mb-4">
+          <div>
+            <h3 class="text-lg font-bold text-slate-900">Antrean Request Akun Iklan</h3>
+            <p class="text-xs text-slate-500 mt-0.5">Pengajuan pembuatan akun iklan dari klien yang perlu disetujui</p>
+          </div>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+          <!-- Pending Review -->
+          <NuxtLink to="/admin/verifications" class="bg-white border-2 border-blue-200 rounded-xl p-5 shadow-sm hover:border-blue-400 hover:shadow-md transition-all group">
+            <div class="flex items-center gap-3 mb-3">
+              <div class="w-9 h-9 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center">
+                <Megaphone class="w-5 h-5" />
+              </div>
+              <p class="text-sm font-bold text-slate-700">Menunggu Persetujuan</p>
+            </div>
+            <div v-if="pendingAudit" class="h-9 w-16 bg-slate-200 rounded animate-pulse my-1"></div>
+            <p v-else class="text-4xl font-display font-bold text-blue-600">{{ auditStats?.requestPending || 0 }}</p>
+            <p class="text-xs font-medium text-slate-500 mt-2">Request akun belum di-review</p>
+          </NuxtLink>
+
+          <!-- Approved Hari Ini -->
+          <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+            <div class="flex items-center gap-3 mb-3">
+              <div class="w-9 h-9 rounded-lg bg-green-100 text-green-600 flex items-center justify-center">
+                <CheckCircle2 class="w-5 h-5" />
+              </div>
+              <p class="text-sm font-bold text-slate-700">Disetujui Hari Ini</p>
+            </div>
+            <div v-if="pendingAudit" class="h-9 w-16 bg-slate-200 rounded animate-pulse my-1"></div>
+            <p v-else class="text-4xl font-display font-bold text-green-600">{{ auditStats?.requestApprovedToday || 0 }}</p>
+            <p class="text-xs font-medium text-slate-500 mt-2">Request diteruskan ke Tim Ads</p>
+          </div>
+        </div>
+
+        <!-- List Request Terbaru -->
+        <div class="bg-white border border-slate-200 rounded-xl shadow-sm">
+          <div class="p-5 border-b border-slate-100">
+            <h4 class="font-bold text-slate-900 text-sm">Request Pending Terbaru</h4>
+          </div>
+          <div class="p-2">
+            <div v-if="pendingAudit" class="p-4 space-y-3">
+              <div v-for="i in 3" :key="i" class="h-12 bg-slate-100 rounded animate-pulse"></div>
+            </div>
+            <div v-else-if="!auditStats?.recentRequests?.length" class="p-6 text-center text-slate-400 text-sm">
+              <Megaphone class="w-8 h-8 text-slate-200 mx-auto mb-2" />
+              Tidak ada request akun yang pending.
+            </div>
+            <div v-else class="divide-y divide-slate-100">
+              <div v-for="req in auditStats?.recentRequests" :key="req.id" class="p-3 hover:bg-slate-50 flex items-center justify-between transition-colors rounded-lg">
+                <div class="min-w-0">
+                  <p class="text-sm font-bold text-slate-800 truncate">{{ req.users?.full_name || 'Klien' }}</p>
+                  <p class="text-xs text-slate-500">{{ req.account_name || req.platform }} &bull; {{ req.platform }}</p>
+                </div>
+                <div class="text-right shrink-0 ml-3">
+                  <span class="text-[10px] px-1.5 py-0.5 rounded bg-blue-100 text-blue-700 font-bold">Pending Review</span>
+                  <p class="text-[10px] text-slate-400 mt-1">
+                    {{ new Date(req.created_at).toLocaleDateString('id-ID', { day: '2-digit', month: 'short' }) }}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div> <!-- End Audit Dashboard -->
+
     <!-- Ads Ops Dashboard -->
     <div v-else-if="userRole === 'admin_ads_ops'">
       <h3 class="text-lg font-bold text-slate-900 pt-2 border-b border-slate-200 pb-2 mb-4">Antrean Pekerjaan (To-Do)</h3>
@@ -434,7 +648,7 @@
 
 <script setup lang="ts">
 import VueApexCharts from 'vue3-apexcharts'
-import { ShieldCheck, Megaphone, TrendingUp, WalletCards, Info, RefreshCw, Calendar, Users } from 'lucide-vue-next'
+import { ShieldCheck, Megaphone, TrendingUp, WalletCards, Info, RefreshCw, Calendar, Users, AlertTriangle, CheckCircle2, XCircle, UserX, Clock, ArrowRight } from 'lucide-vue-next'
 
 definePageMeta({
   layout: 'admin',
@@ -551,9 +765,13 @@ const { data: adsOpsStats, pending: pendingAdsOps, refresh: refreshAdsOps } = us
   watch: [adsOpsPlatformFilter]
 })
 
+// Fetch Audit stats (admin_compliance)
+const { data: auditStats, pending: pendingAudit, refresh: refreshAudit } = useFetch<any>('/api/admin/audit-stats')
+
 const refreshAll = () => {
   refresh()
   refreshAdsOps()
+  refreshAudit()
 }
 
 // Helper untuk format rupiah yang singkat
@@ -727,6 +945,59 @@ const userChartOptions = computed<any>(() => ({
                 ${label} <span style="color: #3b82f6">&bull;</span> <span style="color: #3b82f6">${val} Orang</span>
               </div>`
     }
+  }
+}))
+
+// ─── Chart Options: Audit KYC Trend ──────────────────────────────────────────
+const auditChartOptions = computed<any>(() => ({
+  chart: {
+    type: 'line',
+    toolbar: { show: false },
+    fontFamily: 'Inter, sans-serif',
+    dropShadow: {
+      enabled: true,
+      color: ['#f97316', '#22c55e'],
+      top: 8,
+      blur: 8,
+      opacity: 0.1
+    }
+  },
+  colors: ['#f97316', '#22c55e'],
+  stroke: { curve: 'smooth', width: [2.5, 2.5] },
+  markers: {
+    size: 5,
+    strokeColors: '#fff',
+    strokeWidth: 2,
+    hover: { size: 7 }
+  },
+  dataLabels: { enabled: false },
+  legend: {
+    position: 'top',
+    horizontalAlign: 'right',
+    labels: { colors: '#64748b' }
+  },
+  xaxis: {
+    categories: auditStats.value?.chartLabels || [],
+    labels: { style: { colors: '#94a3b8', fontSize: '11px' } },
+    axisBorder: { show: false },
+    axisTicks: { show: false }
+  },
+  yaxis: {
+    min: 0,
+    labels: {
+      formatter: (val: number) => Math.round(val),
+      style: { colors: '#94a3b8', fontSize: '11px' }
+    }
+  },
+  grid: {
+    borderColor: '#f1f5f9',
+    strokeDashArray: 4,
+    padding: { top: 0, right: 10, bottom: 0, left: 0 }
+  },
+  tooltip: {
+    theme: 'light',
+    shared: true,
+    intersect: false
   }
 }))
 </script>

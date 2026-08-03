@@ -225,7 +225,7 @@ const navItems = computed(() => {
       label: t('admin.adsOpsTeam'),
       icon: Megaphone,
       badge: pendingAdsCount.value > 0 ? pendingAdsCount.value.toString() : undefined,
-      allowed: ['super_admin', 'admin_ads_ops']
+      allowed: ['super_admin', 'admin_ads_ops', 'admin_compliance']
     },
     {
       to: '/admin/finance',
