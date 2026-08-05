@@ -1,5 +1,13 @@
+import { serverSupabaseUser } from '#supabase/server'
+
 export default defineEventHandler(async (event) => {
   try {
+    // PROTECT: Pastikan hanya pengguna terautentikasi yang bisa trigger webhook
+    const user = await serverSupabaseUser(event)
+    if (!user) {
+      throw createError({ statusCode: 401, statusMessage: 'Unauthorized' })
+    }
+
     const body = await readBody(event)
     
     // Webhook URL dari Google Apps Script

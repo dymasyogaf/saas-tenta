@@ -48,7 +48,17 @@
     <!-- Campaign Performance Table -->
     <div class="bg-white rounded-2xl shadow-sm border border-ink-100 overflow-hidden">
       <div class="px-6 py-5 border-b border-ink-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <h4 class="font-display font-bold text-lg text-ink-900">{{ $t('dashboard.topCampaignPerformance') }}</h4>
+        <div>
+          <h4 class="font-display font-bold text-lg text-ink-900 flex items-center gap-2">
+            {{ $t('dashboard.topCampaignPerformance') }}
+            <button @click="handleSync" :disabled="adsLive.isSyncing.value" class="p-1.5 hover:bg-ink-100 rounded-md transition-colors text-ink-500 hover:text-ink-700" title="Sync Sekarang">
+              <RefreshCw class="w-4 h-4" :class="{ 'animate-spin': adsLive.isSyncing.value }" />
+            </button>
+          </h4>
+          <p v-if="adsLive.lastRefreshed.value" class="text-xs text-ink-400 mt-1 flex items-center gap-1">
+            <Clock class="w-3 h-3" /> Update terakhir: {{ formatTime(adsLive.lastRefreshed.value) }}
+          </p>
+        </div>
         <div class="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
           <!-- Platform Filter -->
           <div class="relative w-full sm:w-44">
@@ -167,10 +177,14 @@
 </template>
 
 <script setup lang="ts">
-import { TrendingUp, Activity, ShieldAlert, ChevronDown } from 'lucide-vue-next'
-import { onMounted, ref, computed, watch } from 'vue'
+import { TrendingUp, Activity, ShieldAlert, ChevronDown, RefreshCw, Clock } from 'lucide-vue-next'
+import { onMounted, onUnmounted, ref, computed, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
+import { useAuth } from '~/composables/useAuth'
+import { useSupabaseClient, useSupabaseUser } from '#imports'
 import { useSaldoStore } from '~/stores/saldo'
 import { useAdsStore } from '~/stores/ads'
+import { useAdsLive } from '~/composables/useAdsLive'
 
 definePageMeta({
   layout: 'dashboard',
@@ -179,6 +193,7 @@ definePageMeta({
 const { t, locale } = useI18n()
 const saldoStore = useSaldoStore()
 const adsStore = useAdsStore()
+const adsLive = useAdsLive()
 
 const { user } = useAuth()
 const supabase = useSupabaseClient()
@@ -200,32 +215,67 @@ const displayedCampaigns = computed(() => {
 // Refetch on date change
 watch(dateRange, (newDate) => {
   if (newDate && newDate.start && newDate.end) {
-    adsStore.fetchAllPerformance(newDate.start, newDate.end)
+    adsLive.fetch(newDate.start, newDate.end)
   }
 }, { deep: true })
 
-onMounted(async () => {
+// Watch user ready — fix race condition dimana user belum tersedia saat onMounted
+const supabaseUser = useSupabaseUser()
+let hasFetchedOnce = false
+
+const doInitialFetch = async () => {
+  if (hasFetchedOnce) return
+  if (!supabaseUser.value) return
+  hasFetchedOnce = true
+
   saldoStore.fetchSaldo()
-  adsStore.fetchAllPerformance()
+  adsLive.fetch()
+  adsLive.startAutoRefresh()
 
   // Fetch verification status
-  if (user.value) {
-    const uid = (user.value as any).id || (user.value as any).sub
-    if (uid) {
-      const { data } = await (supabase as any)
-        .from('users')
-        .select('verification_status')
-        .eq('id', uid)
-        .single()
-        
-      if (data && data.verification_status) {
-        verificationStatus.value = data.verification_status
-      } else {
-        verificationStatus.value = 'unverified'
-      }
+  const uid = (supabaseUser.value as any).id || (supabaseUser.value as any).sub
+  if (uid) {
+    const { data } = await (supabase as any)
+      .from('users')
+      .select('verification_status')
+      .eq('id', uid)
+      .single()
+
+    if (data && data.verification_status) {
+      verificationStatus.value = data.verification_status
+    } else {
+      verificationStatus.value = 'unverified'
     }
   }
+}
+
+onMounted(() => {
+  // Coba fetch langsung jika user sudah tersedia
+  doInitialFetch()
 })
+
+// Jika user belum ready saat onMounted, tunggu via watcher
+watch(supabaseUser, (val) => {
+  if (val) doInitialFetch()
+}, { immediate: true })
+
+
+onUnmounted(() => {
+  adsLive.stopAutoRefresh()
+})
+
+const handleSync = () => {
+  adsLive.syncNow(dateRange.value.start, dateRange.value.end)
+}
+
+const formatTime = (date: Date | string | null | undefined) => {
+  if (!date) return ''
+  const d = new Date(date)
+  if (isNaN(d.getTime())) return ''
+  return new Intl.DateTimeFormat(locale.value === 'id' ? 'id-ID' : 'en-US', {
+    hour: '2-digit', minute: '2-digit', second: '2-digit'
+  }).format(d)
+}
 
 const formatCurrency = (value: number) => {
   return new Intl.NumberFormat(locale.value === 'id' ? 'id-ID' : 'en-US', {

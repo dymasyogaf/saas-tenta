@@ -47,27 +47,29 @@ export default defineEventHandler(async (event) => {
     const { error: pasErr } = await supabase.storage.from('kyc_documents').upload(pasPhotoFileName, pasphotoBuffer, { contentType: pasphoto_mime, upsert: true })
     if (pasErr) throw pasErr
 
-    const { data: ktpPublic } = supabase.storage.from('kyc_documents').getPublicUrl(ktpFileName)
-    const { data: pasPublic } = supabase.storage.from('kyc_documents').getPublicUrl(pasPhotoFileName)
-
     // Update database (Bypass RLS)
+    // Simpan raw path, BUKAN publicUrl, karena bucket sekarang private.
     const { error: dbErr } = await (supabase as any).from('users').update({
       verification_status: 'pending',
       verification_details: {
         name: nama,
         nik: nik,
         dob: tanggal_lahir,
-        ktp_url: ktpPublic.publicUrl,
-        pasphoto_url: pasPublic.publicUrl
+        ktp_url: ktpFileName,
+        pasphoto_url: pasPhotoFileName
       }
     }).eq('id', userId)
 
     if (dbErr) throw dbErr
 
+    // Generate signed URLs untuk preview instan di frontend
+    const { data: ktpSigned } = await supabase.storage.from('kyc_documents').createSignedUrl(ktpFileName, 3600)
+    const { data: pasSigned } = await supabase.storage.from('kyc_documents').createSignedUrl(pasPhotoFileName, 3600)
+
     return {
       success: true,
-      ktp_url: ktpPublic.publicUrl || '',
-      pasphoto_url: pasPublic.publicUrl || ''
+      ktp_url: ktpSigned?.signedUrl || '',
+      pasphoto_url: pasSigned?.signedUrl || ''
     }
   } catch (error: any) {
     console.error('Error uploading to storage:', error)

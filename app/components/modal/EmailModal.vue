@@ -98,7 +98,7 @@ const showPassword = ref(false)
 const isLoading = ref(false)
 
 const isValid = computed(() => {
-  return newEmail.value.length > 5 && newEmail.value.includes('@') && newEmail.value !== props.currentEmail && password.value.length >= 6
+  return newEmail.value.length > 5 && newEmail.value.includes('@') && newEmail.value !== props.currentEmail && password.value.length >= 8
 })
 
 const saveEmail = async () => {

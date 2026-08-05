@@ -121,7 +121,7 @@ const fullPhone = computed(() => {
 })
 
 const isValid = computed(() => {
-  return newPhone.value.length >= 8 && fullPhone.value !== props.currentPhone && password.value.length >= 6
+  return newPhone.value.length >= 8 && fullPhone.value !== props.currentPhone && password.value.length >= 8
 })
 
 const savePhone = async () => {

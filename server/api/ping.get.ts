@@ -11,9 +11,28 @@
  * - Menggunakan serverSupabaseServiceRole agar bypass RLS (kompatibel Cloudflare Pages)
  */
 
-import { serverSupabaseServiceRole } from '#supabase/server'
+import { serverSupabaseServiceRole, serverSupabaseUser } from '#supabase/server'
 
 export default defineEventHandler(async (event) => {
+  // Otorisasi: 
+  // 1. Cek secret header dari cron-job.org
+  // 2. ATAU cek apakah user sedang login (dari browser client)
+  const reqSecret = getRequestHeader(event, 'x-ping-secret')
+  const validSecret = process.env.NUXT_PING_SECRET
+  
+  let isAuthorized = false
+  if (reqSecret && reqSecret === validSecret) {
+    isAuthorized = true
+  } else {
+    // Coba cek auth token
+    const user = await serverSupabaseUser(event).catch(() => null)
+    if (user) isAuthorized = true
+  }
+
+  if (!isAuthorized) {
+    throw createError({ statusCode: 403, statusMessage: 'Forbidden' })
+  }
+
   const supabase = await serverSupabaseServiceRole(event)
   const now = new Date().toISOString()
 

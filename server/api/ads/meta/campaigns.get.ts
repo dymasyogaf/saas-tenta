@@ -68,31 +68,31 @@ export default defineCachedEventHandler(async (event): Promise<AdsResponse> => {
       ? adAccountIdParam 
       : `act_${adAccountIdParam}`
 
-    let timeRangeParam: any = { date_preset: 'last_30d' }
+    let timeRangeParam: any = {}
     if (startDate && endDate) {
       timeRangeParam = { time_range: JSON.stringify({ since: startDate, until: endDate }) }
     }
 
     // Untuk mendapatkan status campaign yang akurat, kita harus tembak endpoint /campaigns
     // dan mengambil data performa melalui field nested 'insights'
+    // PENTING: $fetch akan URL-encode { dan } menjadi %7B %7D jika dipass lewat params object.
+    // Meta API butuh kurung kurawal literal, jadi fields harus diembed langsung di URL string.
     let insightsField = 'insights'
     if (timeRangeParam.time_range) {
-      // time_range is an object {since, until} as JSON string. URL encode it for the nested field.
-      // Alternatively, pass it in the main params, but for nested insights we can pass it as a field param: insights.time_range({'since':'...','until':'...'})
-      // To keep it simple, we use the global time_range param which Meta will apply to nested insights if we don't specify date_preset.
       insightsField = 'insights{spend,reach,inline_link_clicks,cost_per_inline_link_click,purchase_roas}'
     } else {
-      // Default fallback
       insightsField = 'insights.date_preset(last_30d){spend,reach,inline_link_clicks,cost_per_inline_link_click,purchase_roas}'
     }
 
-    const metaResponse: any = await $fetch(`https://graph.facebook.com/v19.0/${adAccountId}/campaigns`, {
-      params: {
-        fields: `id,name,effective_status,${insightsField}`,
-        ...timeRangeParam,
-        access_token: metaToken
-      }
-    })
+    const fieldsParam = `id,name,effective_status,${insightsField}`
+    let queryString = `fields=${fieldsParam}&access_token=${metaToken}`
+    if (timeRangeParam.time_range) {
+      queryString += `&time_range=${encodeURIComponent(timeRangeParam.time_range)}`
+    }
+
+    const metaResponse: any = await $fetch(
+      `https://graph.facebook.com/v19.0/${adAccountId}/campaigns?${queryString}`
+    )
 
     // Ambil info saldo akun (Prepaid / Spend Cap)
     let api_balance: number | undefined = undefined
@@ -180,6 +180,9 @@ export default defineCachedEventHandler(async (event): Promise<AdsResponse> => {
 
   } catch (error: any) {
     console.error('Meta API Proxy Error:', error.message || error)
+    if (error.data) {
+      console.error('Meta API Error Details:', JSON.stringify(error.data, null, 2))
+    }
     throw createError({ 
       statusCode: error.response?.status || 500, 
       message: error.data?.error?.message || 'Gagal terhubung ke API Meta Ads' 

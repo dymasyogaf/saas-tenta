@@ -60,17 +60,14 @@ export default defineEventHandler(async (event) => {
     const uniqueClients = new Set(adsData?.map((a: any) => a.user_id)).size
 
     // 6. Top Up Berdasarkan Filter Custom Date
-    let topupQuery = supabase.from('transactions').select('amount, created_at').eq('type', 'topup').eq('status', 'success')
+    let topupQuery = supabase.from('transactions').select('amount, fee_amount, created_at').eq('type', 'topup').eq('status', 'success')
     topupQuery = applyDateFilter(topupQuery)
     
     const { data: topupData } = await topupQuery
     const topupTotal = topupData?.reduce((sum: number, tx: any) => sum + (Number(tx.amount) || 0), 0) || 0
+    const totalActualFee = topupData?.reduce((sum: number, tx: any) => sum + (Number(tx.fee_amount) || 0), 0) || 0
 
-    // 7. Estimasi Management Fee (Semua Top Up sukses dikali rata-rata 3.5%)
-    // Gunakan filter yang sama dengan Top Up
-    const estimatedFee = topupTotal * 0.035
-
-    // 8. Recent Transactions
+    // 7. Recent Transactions
     let recentTxsQuery = supabase
       .from('transactions')
       .select('id, type, amount, status, created_at')
@@ -135,7 +132,7 @@ export default defineEventHandler(async (event) => {
       verifiedUsers: verifiedUsers || 0,
       uniqueClients: uniqueClients || 0,
       totalAds: totalAds || 0,
-      totalFee: estimatedFee,
+      totalFee: totalActualFee,
       recentTxs: recentTxs || [],
       chartSeries: [
         { name: 'Total Top Up', data: chartData }

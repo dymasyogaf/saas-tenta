@@ -78,6 +78,7 @@
     "invalidToken": "Token is invalid or expired.",
     "sessionNotFound": "Session not found or invalid token.",
     "toast": {
+      "passwordTooShort": "Password must be at least 8 characters",
       "passwordMismatch": "Password confirmation does not match",
       "updateSuccess": "Password updated successfully! Please login.",
       "updateFailed": "Failed to update password",

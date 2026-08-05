@@ -139,10 +139,10 @@
       <div class="bg-gradient-to-br from-orange-500 to-orange-600 border border-orange-400 rounded-xl p-6 shadow-lg shadow-orange-500/20 relative overflow-hidden">
         <div class="absolute right-0 top-0 w-32 h-32 bg-white/20 rounded-full blur-3xl"></div>
         <div class="relative z-10">
-          <p class="text-sm font-medium text-orange-100 mb-1">Estimasi Management Fee (Bulan Ini)</p>
+          <p class="text-sm font-medium text-orange-100 mb-1">Total Pendapatan Fee Top-Up</p>
           <div v-if="pending" class="h-10 w-32 bg-orange-400/50 rounded animate-pulse my-1"></div>
           <p v-else class="text-4xl font-display font-bold text-white">{{ formatCurrency(stats?.totalFee || 0) }}</p>
-          <p class="text-xs text-orange-100 mt-2">Potongan 3-4% dari total spend iklan</p>
+          <p class="text-xs text-orange-100 mt-2">Dari akumulasi fee top-up (rentang terpilih)</p>
         </div>
       </div>
     </div>

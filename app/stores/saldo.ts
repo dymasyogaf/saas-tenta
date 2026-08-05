@@ -1,5 +1,8 @@
 import { defineStore } from 'pinia'
 import { useAdsStore } from './ads'
+import { useSupabaseUser, useSupabaseClient, useCsrf } from '#imports'
+import { useToast } from '~/composables/useToast'
+
 
 export const useSaldoStore = defineStore('saldo', {
   state: () => ({
@@ -122,9 +125,38 @@ export const useSaldoStore = defineStore('saldo', {
           }
         })
         
-        // Redirect ke payment URL
-        if (response && response.success && response.paymentUrl) {
-          window.location.href = response.paymentUrl
+        // Metode e-wallet / QRIS → tetap redirect ke Duitku
+        const eWalletMethods = ['OV', 'SA', 'DA', 'SP', 'FT', 'IR']
+        const isEWallet = eWalletMethods.includes(method)
+
+        if (response && response.success) {
+          if (isEWallet && response.paymentUrl) {
+            // E-wallet: redirect ke halaman Duitku seperti biasa
+            window.location.href = response.paymentUrl
+          } else if (response.vaNumber || response.paymentCode) {
+            // Virtual Account: redirect ke halaman custom kita sendiri
+            const router = useRouter()
+            await router.push({
+              path: '/dashboard/topup/payment',
+              query: {
+                orderId: response.merchantOrderId,
+                ref: response.reference,
+                va: response.vaNumber || response.paymentCode,
+                bank: response.paymentMethod,
+                bankCode: response.bankCode,
+                method: response.paymentName,
+                amount: String(response.paymentAmount),
+                net: String(response.netAmount),
+                fee: String(response.feeAmount),
+                pkg: response.packageType,
+              }
+            })
+          } else if (response.paymentUrl) {
+            // Fallback: redirect ke Duitku jika tidak ada data VA
+            window.location.href = response.paymentUrl
+          } else {
+            throw new Error('Gagal mendapatkan data pembayaran')
+          }
         } else {
           throw new Error('Gagal mendapatkan link pembayaran')
         }

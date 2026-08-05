@@ -74,6 +74,10 @@
 
 <script setup lang="ts">
 import { AlertCircle, Mail, Lock, ArrowRight, Eye, EyeOff } from 'lucide-vue-next'
+import { useI18n } from 'vue-i18n'
+import { useAuth } from '~/composables/useAuth'
+import { useToast } from '~/composables/useToast'
+import { useSupabaseClient, useSupabaseUser, useCsrf } from '#imports'
 
 definePageMeta({
   layout: 'default',

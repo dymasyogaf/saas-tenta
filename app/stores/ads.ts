@@ -14,15 +14,18 @@ export const useAdsStore = defineStore('ads', {
   }),
 
   actions: {
-    getEndpoint(platform: string, accountId: string, startDate?: string, endDate?: string) {
+    getEndpoint(platform: string, accountId: string, startDate?: string, endDate?: string, force = false) {
       const p = platform.toLowerCase()
-      if (p.includes('meta')) return { endpoint: '/api/ads/meta/campaigns', params: { ad_account_id: accountId, start_date: startDate, end_date: endDate }, platform: 'meta' }
-      if (p.includes('google')) return { endpoint: '/api/ads/google/campaigns', params: { customer_id: accountId, start_date: startDate, end_date: endDate }, platform: 'google' }
-      if (p.includes('tiktok')) return { endpoint: '/api/ads/tiktok/campaigns', params: { advertiser_id: accountId, start_date: startDate, end_date: endDate }, platform: 'tiktok' }
+      const baseParams: any = { start_date: startDate, end_date: endDate }
+      if (force) baseParams.force = 'true'
+
+      if (p.includes('meta')) return { endpoint: '/api/ads/meta/campaigns', params: { ...baseParams, ad_account_id: accountId }, platform: 'meta' }
+      if (p.includes('google')) return { endpoint: '/api/ads/google/campaigns', params: { ...baseParams, customer_id: accountId }, platform: 'google' }
+      if (p.includes('tiktok')) return { endpoint: '/api/ads/tiktok/campaigns', params: { ...baseParams, advertiser_id: accountId }, platform: 'tiktok' }
       return { endpoint: '', params: {}, platform: '' }
     },
 
-    async fetchAllPerformance(startDate?: string, endDate?: string) {
+    async fetchAllPerformance(startDate?: string, endDate?: string, force = false) {
       this.isLoading = true
       this.error = null
       this.totalSpend = 0
@@ -56,7 +59,7 @@ export const useAdsStore = defineStore('ads', {
            const adAccountId = acc.details?.ad_account_id
            if (!adAccountId) return null
 
-           const { endpoint, params, platform: p } = this.getEndpoint(acc.platform, adAccountId, startDate, endDate)
+           const { endpoint, params, platform: p } = this.getEndpoint(acc.platform, adAccountId, startDate, endDate, force)
 
            if (endpoint) {
               const res = await $fetch<any>(endpoint, { method: 'GET', params }).catch(() => null)

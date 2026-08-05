@@ -13,6 +13,7 @@ export default defineEventHandler(async (event) => {
         user_id, 
         type, 
         amount, 
+        fee_amount,
         status, 
         payment_gateway_ref,
         description,

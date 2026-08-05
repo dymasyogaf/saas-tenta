@@ -88,9 +88,10 @@ export default defineEventHandler(async (event) => {
 
     // 4. Update status berdasarkan respons Duitku
     if (resultCode === '00') {
+      const netAmount = transaction.amount || 0
       const { data: rpcResult, error: rpcError } = await supabase.rpc('process_topup_success', {
         p_transaction_id: transaction.id,
-        p_amount: amount
+        p_amount: netAmount
       })
 
       if (rpcError) throw rpcError

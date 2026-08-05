@@ -123,6 +123,9 @@
 <script setup lang="ts">
 import { User, Mail, Lock, LockKeyhole, ArrowRight, Loader2, AlertCircle, Eye, EyeOff } from 'lucide-vue-next'
 import { countryCodes } from '~/utils/countryCodes'
+import { useI18n } from 'vue-i18n'
+import { useAuth } from '~/composables/useAuth'
+import { useToast } from '~/composables/useToast'
 
 definePageMeta({
   layout: 'default',
@@ -158,6 +161,11 @@ watchEffect(() => {
 const handleRegister = async () => {
   errorMsg.value = ''
   
+  if (password.value.length < 8) {
+    errorMsg.value = t('auth.toast.passwordTooShort')
+    return
+  }
+
   if (password.value !== confirmPassword.value) {
     errorMsg.value = t('auth.toast.passwordMismatch')
     return

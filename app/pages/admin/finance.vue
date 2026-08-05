@@ -20,6 +20,18 @@
       </div>
     </div>
 
+    <!-- Revenue Card -->
+    <div class="bg-gradient-to-br from-slate-900 to-slate-800 border border-slate-700 rounded-xl p-6 shadow-md mt-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div>
+        <p class="text-sm font-medium text-slate-400 mb-1">Total Pendapatan Fee (Gross)</p>
+        <p class="text-3xl font-display font-bold text-white">{{ formatCurrency(totalFeeRevenue) }}</p>
+        <p class="text-xs text-slate-500 mt-1">Akumulasi dari seluruh potongan fee sesuai paket klien (Starter/Growth/Scale) untuk transaksi Top Up yang sukses.</p>
+      </div>
+      <div class="w-12 h-12 bg-white/10 rounded-full flex items-center justify-center shrink-0">
+        <Receipt class="w-6 h-6 text-white" />
+      </div>
+    </div>
+
     <!-- Tabs/Filter -->
     <div class="flex border-b border-slate-200 mt-6 gap-6 overflow-x-auto whitespace-nowrap pb-1 scrollbar-hide">
       <button 
@@ -486,6 +498,12 @@ const filteredHistory = computed(() => {
     history = history.filter(tx => tx.type === typeFilter.value)
   }
   return history
+})
+
+const totalFeeRevenue = computed(() => {
+  return transactions.value
+    .filter(tx => tx.type === 'topup' && tx.status === 'success')
+    .reduce((sum, tx) => sum + (Number(tx.fee_amount) || 0), 0)
 })
 
 // Modal Confirmation State (Top Up Withdraw)

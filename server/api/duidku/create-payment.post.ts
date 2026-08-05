@@ -156,12 +156,34 @@ export default defineEventHandler(async (event) => {
         throw createError({ statusCode: 500, statusMessage: `Gagal mencatat transaksi di database internal: ${dbError.message}` })
       }
 
-      // Berhasil
+      // Kode Bank berdasarkan metode pembayaran
+      const bankCodes: Record<string, string> = {
+        'M2': '008', 'BM': '008',
+        'I1': '009',
+        'B1': '427',
+        'BC': '014',
+        'BR': '002',
+        'A1': '166',
+        'FT': '', 'IR': '',
+      }
+
+      // Berhasil — kembalikan data VA agar frontend bisa tampil halaman custom
       return {
         success: true,
         paymentUrl: result.paymentUrl,
         reference: result.reference,
-        merchantOrderId
+        merchantOrderId,
+        // Data untuk halaman custom VA
+        vaNumber: result.vaNumber || result.paymentCode || null,
+        paymentCode: result.paymentCode || result.vaNumber || null,
+        bankCode: bankCodes[method] || null,
+        paymentName,
+        paymentMethod: method,
+        paymentAmount,
+        netAmount,
+        feeAmount,
+        packageType,
+        expiryMinutes: 60,
       }
     } else {
       console.error('Duitku Error:', result)

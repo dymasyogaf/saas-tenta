@@ -9,8 +9,13 @@
 export const useSupabaseKeepalive = () => {
   if (import.meta.server) return
 
+  const { user } = useAuth()
+
   onMounted(async () => {
     try {
+      // Hanya kirim ping jika user sudah login (sesuai update keamanan backend)
+      if (!user.value) return
+
       const res = await $fetch<{ ok: boolean; message: string; timestamp: string }>('/api/ping')
       if (res.ok) {
         console.debug(`[Keepalive] ✓ Supabase ping — ${res.timestamp}`)

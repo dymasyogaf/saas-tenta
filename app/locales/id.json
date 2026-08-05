@@ -78,6 +78,7 @@
     "invalidToken": "Token tidak valid atau sudah kadaluarsa.",
     "sessionNotFound": "Sesi tidak ditemukan atau token tidak valid.",
     "toast": {
+      "passwordTooShort": "Password minimal 8 karakter",
       "passwordMismatch": "Konfirmasi password tidak cocok",
       "updateSuccess": "Password berhasil diupdate! Silakan login.",
       "updateFailed": "Gagal mengupdate password",
