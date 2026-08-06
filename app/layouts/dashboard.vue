@@ -281,7 +281,6 @@ import {
   ShieldCheck,
   Headset,
   Gift,
-  Globe,
   Check
 } from 'lucide-vue-next'
 

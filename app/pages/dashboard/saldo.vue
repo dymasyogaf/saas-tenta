@@ -783,19 +783,10 @@ const syncAds = async () => {
   const lastSync = localStorage.getItem('last_ads_sync')
   if (lastSync) {
     const timeDiff = new Date().getTime() - new Date(lastSync).getTime()
-    if (timeDiff < 5 * 60 * 1000) { // 5 menit
-      const remainingMs = 5 * 60 * 1000 - timeDiff
-      const remainingMinutes = Math.floor(remainingMs / 60000)
-      const remainingSeconds = Math.floor((remainingMs % 60000) / 1000)
-      
-      let timeString = ''
-      if (remainingMinutes > 0) {
-        timeString += `${remainingMinutes} ${t('saldo.toast.minutes')} `
-      }
-      timeString += `${remainingSeconds} ${t('saldo.toast.seconds')}`
-
+    if (timeDiff < 30 * 1000) { // 30 detik
+      const remainingSeconds = Math.floor((30 * 1000 - timeDiff) / 1000)
       const toast = useToast()
-      toast.addToast(t('saldo.toast.syncTooFast', { time: timeString }), 'error')
+      toast.addToast(t('saldo.toast.syncTooFast', { time: `${remainingSeconds} ${t('saldo.toast.seconds')}` }), 'error')
       return
     }
   }
@@ -804,9 +795,9 @@ const syncAds = async () => {
   
   const toast = useToast()
   if (dateRange.value.start && dateRange.value.end) {
-    await adsStore.fetchLiveSpendOnly(dateRange.value.start, dateRange.value.end)
+    await adsStore.fetchLiveSpendOnly(dateRange.value.start, dateRange.value.end, true)
   } else {
-    await adsStore.fetchLiveSpendOnly()
+    await adsStore.fetchLiveSpendOnly(undefined, undefined, true)
   }
   toast.addToast(t('saldo.toast.syncSuccess'), 'success')
 }

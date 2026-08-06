@@ -110,7 +110,7 @@ export default defineCachedEventHandler(async (event): Promise<AdsResponse> => {
     try {
       const accountInfo: any = await $fetch(`https://graph.facebook.com/v19.0/${adAccountId}`, {
         params: {
-          fields: 'balance,spend_cap,amount_spent,name',
+          fields: 'balance,spend_cap,amount_spent,name,currency',
           access_token: metaToken
         }
       })
@@ -134,11 +134,16 @@ export default defineCachedEventHandler(async (event): Promise<AdsResponse> => {
         const cap = parseFloat(parsedAccountInfo.spend_cap)
         const spent = parseFloat(parsedAccountInfo.amount_spent)
         
-        // Meta mereturn mata uang (termasuk IDR) dalam satuan subunit (dibagi 100)
-        api_amount_spent = spent / 100
+        // Meta mereturn mata uang (termasuk IDR) dalam satuan subunit.
+        // IDR, JPY, KRW, VND adalah mata uang tanpa desimal (offset = 1). USD dll (offset = 100).
+        const currency = (parsedAccountInfo.currency || 'IDR').toUpperCase()
+        const zeroDecimalCurrencies = ['IDR', 'JPY', 'KRW', 'VND', 'CLP', 'PYG', 'TWD', 'HUF']
+        const offset = zeroDecimalCurrencies.includes(currency) ? 1 : 100
+        
+        api_amount_spent = spent / offset
         
         if (cap > 0) {
-          api_budget_total = cap / 100
+          api_budget_total = cap / offset
           api_balance = api_budget_total - api_amount_spent
         }
         // Jika cap == 0, berarti akun tersebut tidak dilimit dari FB (unlimited).

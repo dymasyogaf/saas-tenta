@@ -190,12 +190,12 @@ export const useAdsStore = defineStore('ads', {
       }
     },
 
-    async fetchLiveSpendOnly(startDate?: string, endDate?: string) {
+    async fetchLiveSpendOnly(startDate?: string, endDate?: string, force = false) {
       this.isFetchingAccounts = true
       
       try {
         const promises = this.adAccounts.map(async (acc, index) => {
-          const { endpoint, params } = this.getEndpoint(acc.platform, acc.account_id, startDate, endDate)
+          const { endpoint, params } = this.getEndpoint(acc.platform, acc.account_id, startDate, endDate, force)
           
           if (endpoint) {
              try {
@@ -229,7 +229,7 @@ export const useAdsStore = defineStore('ads', {
                    // AUTO-HEALING: Update nama akun jika ditarik dari API dan belum diset (berawalan "Ad Account") atau berbeda
                    if (api_account_name && this.adAccounts[index].name !== api_account_name) {
                      this.adAccounts[index].name = api_account_name
-                     const supabase = useSupabaseClient()
+                     const supabase = useSupabaseClient<any>()
                      supabase.from('ad_accounts').update({ account_name: api_account_name }).eq('account_id', acc.account_id).then()
                    }
                 }
