@@ -39,7 +39,7 @@ export default defineNuxtConfig({
       crossOriginResourcePolicy: 'cross-origin',
       xFrameOptions: 'DENY',
       contentSecurityPolicy: {
-        'img-src': ["'self'", "data:", "https://pjmsnphhnporuownasxe.supabase.co"],
+        'img-src': ["'self'", "data:", "https://pjmsnphhnporuownasxe.supabase.co", "https://flagcdn.com"],
       }
     },
     corsHandler: {

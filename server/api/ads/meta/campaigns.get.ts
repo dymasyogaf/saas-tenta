@@ -28,6 +28,7 @@ interface AdsResponse {
     api_balance?: number
     api_budget_total?: number
     api_amount_spent?: number
+    api_account_name?: string
     debug_error?: string
     debug_info?: any
   }

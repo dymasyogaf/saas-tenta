@@ -48,13 +48,13 @@
     <!-- Main Content -->
     <main class="flex-1 flex flex-col h-screen overflow-hidden">
       <!-- Header -->
-      <header class="h-16 bg-white border-b border-ink-100 flex items-center justify-between px-4 sm:px-6 shrink-0 gap-2">
+      <header class="h-16 bg-white border-b border-ink-100 flex items-center justify-between px-3 sm:px-6 shrink-0 gap-1 sm:gap-2">
         <!-- Mobile: menu + logo -->
-        <div class="flex items-center gap-2 sm:gap-4 lg:hidden shrink-0">
-          <button class="text-ink-600 hover:text-orange-500 shrink-0" @click="isSidebarOpen = true">
-            <Menu class="w-6 h-6" />
+        <div class="flex items-center gap-1.5 sm:gap-4 lg:hidden shrink-0">
+          <button class="text-ink-600 hover:text-orange-500 shrink-0 p-1" @click="isSidebarOpen = true">
+            <Menu class="w-5 h-5 sm:w-6 sm:h-6" />
           </button>
-          <img src="/logo-full.png" alt="Tentaklik Logo" class="h-5 sm:h-6 w-auto shrink-0 object-contain" />
+          <img src="/logo-full.png" alt="Tentaklik Logo" class="h-4 sm:h-6 w-auto shrink-0 object-contain" />
         </div>
 
         <!-- Desktop: page title -->
@@ -63,13 +63,13 @@
         </div>
 
         <!-- Right side actions -->
-        <div class="flex items-center gap-3 sm:gap-5">
+        <div class="flex items-center gap-1.5 sm:gap-5">
           <!-- Language Dropdown -->
           <div class="relative">
-            <button class="border border-ink-200 text-ink-700 hover:bg-ink-50 transition-colors px-3 sm:px-4 py-2 rounded-xl flex items-center gap-1.5 sm:gap-2" @click="toggleLang">
-              <Globe class="w-4 h-4 sm:w-5 sm:h-5 text-ink-500" />
+            <button class="border border-ink-200 text-ink-700 hover:bg-ink-50 transition-colors p-1.5 sm:px-4 sm:py-2 rounded-lg sm:rounded-xl flex items-center gap-2" @click="toggleLang">
+              <img :src="`https://flagcdn.com/${locale === 'en' ? 'gb' : locale}.svg`" alt="Flag" class="w-4 h-4 sm:w-5 sm:h-5 object-cover rounded-[2px] shadow-sm shrink-0 border border-ink-100" />
               <span class="text-xs sm:text-sm font-semibold hidden sm:block">{{ locale === 'id' ? 'Indonesia' : 'English' }}</span>
-              <ChevronDown class="w-4 h-4 sm:w-5 sm:h-5 text-ink-400" />
+              <ChevronDown class="w-4 h-4 sm:w-5 sm:h-5 text-ink-400 hidden sm:block" />
             </button>
 
             <!-- Language Popup -->
@@ -84,7 +84,10 @@
                 class="w-full flex items-center justify-between px-4 py-2.5 hover:bg-ink-50 transition-colors text-left"
                 :class="locale === loc.code ? 'text-orange-600 font-bold bg-orange-50/50' : 'text-ink-700 font-medium'"
               >
-                <span>{{ loc.name }}</span>
+                <div class="flex items-center gap-2.5">
+                  <img :src="`https://flagcdn.com/${loc.code === 'en' ? 'gb' : loc.code}.svg`" alt="Flag" class="w-4 h-4 object-cover rounded-[2px] shadow-sm shrink-0 border border-ink-100" />
+                  <span>{{ loc.name }}</span>
+                </div>
                 <Check v-if="locale === loc.code" class="w-4 h-4 text-orange-500" />
               </button>
             </div>
@@ -92,9 +95,9 @@
 
           <!-- Notification Bell -->
           <div class="relative">
-            <button class="text-ink-500 hover:text-orange-500 transition-colors relative mt-1" @click="toggleNotif">
-              <Bell class="w-5 h-5" />
-              <span v-if="unreadCount > 0" class="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full border-2 border-white">
+            <button class="text-ink-500 hover:text-orange-500 transition-colors relative mt-1 p-1" @click="toggleNotif">
+              <Bell class="w-4 h-4 sm:w-5 sm:h-5" />
+              <span v-if="unreadCount > 0" class="absolute -top-1 -right-1 bg-red-500 text-white text-[9px] sm:text-[10px] font-bold px-1 sm:px-1.5 py-0.5 rounded-full border-2 border-white leading-none">
                 {{ unreadCount }}
               </span>
             </button>
@@ -150,24 +153,24 @@
           <!-- Top Up Button -->
           <NuxtLink
             to="/dashboard/topup"
-            class="bg-orange-500 hover:bg-orange-600 text-white px-3 sm:px-5 py-2 rounded-xl text-sm font-semibold shadow-sm transition-all flex items-center gap-1.5 sm:gap-2 whitespace-nowrap shrink-0"
+            class="bg-orange-500 hover:bg-orange-600 text-white px-2.5 py-1.5 sm:px-5 sm:py-2 rounded-lg sm:rounded-xl text-xs sm:text-sm font-semibold shadow-sm transition-all flex items-center gap-1 sm:gap-2 whitespace-nowrap shrink-0"
           >
-            <Plus class="w-4 h-4 shrink-0" />
+            <Plus class="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
             <span class="hidden sm:inline">{{ $t('header.topUp') }}</span>
             <span class="sm:hidden">{{ $t('header.topUpShort') }}</span>
           </NuxtLink>
 
           <!-- Profile Dropdown -->
-          <div class="relative pl-4 border-l border-ink-100">
+          <div class="relative pl-1.5 sm:pl-4 border-l border-ink-100">
             <button
-              class="flex items-center gap-3 hover:bg-ink-50 p-1.5 rounded-xl transition-colors"
+              class="flex items-center gap-1 sm:gap-3 hover:bg-ink-50 p-1 sm:p-1.5 rounded-xl transition-colors"
               @click="isProfileOpen = !isProfileOpen; isNotifOpen = false; isLangOpen = false"
             >
-              <div class="w-9 h-9 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center font-bold text-sm shrink-0">
+              <div class="w-7 h-7 sm:w-9 sm:h-9 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center font-bold text-xs sm:text-sm shrink-0">
                 {{ userInitials }}
               </div>
               <span class="font-bold text-ink-900 hidden lg:block">{{ userName }}</span>
-              <ChevronDown class="w-4 h-4 text-ink-900" />
+              <ChevronDown class="w-3 h-3 sm:w-4 sm:h-4 text-ink-900 hidden sm:block lg:hidden" />
             </button>
 
             <!-- Profile Menu -->
