@@ -1,3 +1,5 @@
+import { serverSupabaseServiceRole } from '#supabase/server'
+
 interface CampaignData {
   id: string
   name: string
@@ -101,16 +103,30 @@ export default defineCachedEventHandler(async (event): Promise<AdsResponse> => {
     let debug_error: string | undefined = undefined
     let debug_info: any = {}
 
+    let api_account_name: string | undefined = undefined
+
     let parsedAccountInfo: any = {}
     try {
       const accountInfo: any = await $fetch(`https://graph.facebook.com/v19.0/${adAccountId}`, {
         params: {
-          fields: 'balance,spend_cap,amount_spent',
+          fields: 'balance,spend_cap,amount_spent,name',
           access_token: metaToken
         }
       })
       
       parsedAccountInfo = typeof accountInfo === 'string' ? JSON.parse(accountInfo) : accountInfo
+      
+      if (parsedAccountInfo.name) {
+        api_account_name = parsedAccountInfo.name
+        
+        // AUTO-HEALING: Update nama akun secara asinkron (Fire and Forget)
+        // Menggunakan service role agar tidak terhalang RLS (klien tidak boleh punya akses UPDATE)
+        const supabase = serverSupabaseServiceRole<any>(event)
+        supabase.from('ad_accounts')
+          .update({ account_name: api_account_name })
+          .eq('account_id', adAccountId.replace('act_', ''))
+          .then()
+      }
 
       // Hitung sisa saldo (balance) dari spend_cap - amount_spent (Meniru cara kerja Google Ads)
       if (parsedAccountInfo.spend_cap !== undefined && parsedAccountInfo.amount_spent !== undefined) {
@@ -165,6 +181,7 @@ export default defineCachedEventHandler(async (event): Promise<AdsResponse> => {
         api_balance,
         api_budget_total,
         api_amount_spent,
+        api_account_name,
         debug_error,
         debug_info,
         currency: 'IDR',

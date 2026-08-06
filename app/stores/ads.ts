@@ -156,6 +156,8 @@ export const useAdsStore = defineStore('ads', {
                    const api_budget_total = res.data.api_budget_total
                    const api_amount_spent = res.data.api_amount_spent
                    
+                   const api_account_name = res.data.api_account_name
+                   
                    // Gunakan API balance (jika ada), jika tidak gunakan saldo lokal dari DB
                    const saldo = api_balance !== undefined ? api_balance : (this.adAccounts[index].saldo || 0)
                    
@@ -166,6 +168,12 @@ export const useAdsStore = defineStore('ads', {
                    this.adAccounts[index].api_amount_spent = api_amount_spent
                    this.adAccounts[index].alert_saldo = (saldo < limit * 0.1 && limit > 0) ? 'Segera Top Up' : null
                    this.adAccounts[index].updated_at = new Date().toISOString()
+                   
+                   // AUTO-HEALING: Update nama akun jika ditarik dari API dan belum diset (berawalan "Ad Account") atau berbeda
+                   if (api_account_name && this.adAccounts[index].name !== api_account_name) {
+                     // Update UI immediately (Backend will sync DB automatically)
+                     this.adAccounts[index].name = api_account_name
+                   }
                 }
              } catch (e) {
                 // Ignore if fetch fails for one account
@@ -199,6 +207,8 @@ export const useAdsStore = defineStore('ads', {
                    const api_budget_total = res.data.api_budget_total
                    const api_amount_spent = res.data.api_amount_spent
                    
+                   const api_account_name = res.data.api_account_name
+                   
                    // Gunakan API balance (jika ada), jika tidak gunakan saldo lokal dari DB
                    const saldo = api_balance !== undefined ? api_balance : (this.adAccounts[index].saldo || 0)
                    
@@ -215,6 +225,13 @@ export const useAdsStore = defineStore('ads', {
                    this.adAccounts[index].api_amount_spent = api_amount_spent
                    this.adAccounts[index].alert_saldo = (saldo < limit * 0.1 && limit > 0) ? 'Segera Top Up' : null
                    this.adAccounts[index].updated_at = new Date().toISOString() // Real-time UX
+                   
+                   // AUTO-HEALING: Update nama akun jika ditarik dari API dan belum diset (berawalan "Ad Account") atau berbeda
+                   if (api_account_name && this.adAccounts[index].name !== api_account_name) {
+                     this.adAccounts[index].name = api_account_name
+                     const supabase = useSupabaseClient()
+                     supabase.from('ad_accounts').update({ account_name: api_account_name }).eq('account_id', acc.account_id).then()
+                   }
                 }
              } catch (e) {
                 // Ignore if fetch fails for one account

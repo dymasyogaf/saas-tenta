@@ -456,7 +456,8 @@ const pendingAllocations = computed(() => {
 const extractAccountName = (desc: string) => {
   if (!desc) return ''
   const parts = desc.split(' - ')
-  return parts.length > 1 ? parts[1] : desc
+  // Gabungkan kembali sisa array jika nama akun mengandung karakter strip (dash)
+  return parts.length > 1 ? parts.slice(1).join(' - ') : desc
 }
 
 const fetchPendingRequests = async () => {

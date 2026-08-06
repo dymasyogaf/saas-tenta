@@ -91,6 +91,7 @@ export default defineEventHandler(async (event) => {
       const updatedDetails = {
         ...(request.details || {}),
         ad_account_id: cleanAdAccountId,
+        ad_account_name: ad_account_name || '',
         assigned_at: new Date().toISOString()
       }
 
@@ -137,7 +138,8 @@ export default defineEventHandler(async (event) => {
       // Ambil Ad Account ID lama jika ada (berarti ini adalah proses EDIT ID)
       const oldAdAccountId = request.details?.ad_account_id
 
-      let formattedAccountName = `Ad Account ${cleanAdAccountId}`
+      // Jika admin memasukkan nama secara manual, jadikan ini sebagai default awal
+      let formattedAccountName = ad_account_name ? ad_account_name : `Ad Account ${cleanAdAccountId}`
         
       if (dbPlatform === 'meta') {
         // AUTO-FETCH: Ambil nama akun dari Meta Graph API
@@ -285,9 +287,18 @@ export default defineEventHandler(async (event) => {
 
         // Beri notifikasi ke user bahwa akun telah aktif/diperbarui
         const notifTitle = (oldAdAccountId && oldAdAccountId !== cleanAdAccountId) ? 'Perubahan ID Akun Iklan' : 'Akun Iklan Telah Aktif'
+        let platformInstruction = `Silakan cek email Anda untuk menerima (accept) akses akun whitelist, kemudian cek dan kelola akun melalui dashboard Platform.`
+        if (dbPlatform === 'meta') {
+           platformInstruction = `Silakan buka <a href="https://business.facebook.com/" target="_blank" class="text-orange-600 font-bold underline">Meta Business Manager</a> untuk menerima akses akun, atau cek undangan di email Anda.`
+        } else if (dbPlatform === 'google') {
+           platformInstruction = `Silakan cek email Anda untuk menerima undangan akses akun Google Ads, kemudian kelola akun melalui dashboard Platform.`
+        } else if (dbPlatform === 'tiktok') {
+           platformInstruction = `Silakan cek email Anda untuk menerima undangan akses akun TikTok Ads, kemudian kelola akun melalui dashboard Platform.`
+        }
+
         const notifMsg = (oldAdAccountId && oldAdAccountId !== cleanAdAccountId)
           ? `Tim Iklan telah memperbarui ID Akun Iklan Anda menjadi <strong>${cleanAdAccountId}</strong> (<strong>${formattedAccountName}</strong>).`
-          : `Selamat! Pengajuan akun iklan Anda berhasil disetujui. <strong>${formattedAccountName}</strong> telah aktif dan dapat digunakan selama <strong>${months * 30} hari</strong>. Silakan cek email Anda untuk menerima (accept) akses akun whitelist, kemudian cek dan kelola akun melalui dashboard Platform.`
+          : `Selamat! Pengajuan akun iklan Anda berhasil disetujui. <strong>${formattedAccountName}</strong> telah aktif dan dapat digunakan selama <strong>${months * 30} hari</strong>. ${platformInstruction}`
         
         await supabase.from('notifications').insert({
           user_id: request.user_id,

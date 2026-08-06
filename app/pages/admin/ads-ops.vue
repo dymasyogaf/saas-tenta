@@ -174,7 +174,16 @@
                         />
                         <Hash class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
                       </div>
-                      <p class="text-[10px] text-slate-400 mt-1 italic">Nama akun akan diambil otomatis dari API.</p>
+                      <div class="relative">
+                        <input 
+                          v-model="inputNameModels[req.id]"
+                          type="text" 
+                          placeholder="Nama (Opsional): MP - KOSONG" 
+                          class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 bg-white"
+                          :disabled="isSubmitting === req.id || (activeTab === 'completed' && !isEditing[req.id])"
+                        />
+                      </div>
+                      <p class="text-[10px] text-slate-400 mt-1 italic">Nama akun akan diambil otomatis dari API atau gunakan nama di atas.</p>
                     </div>
                     <div v-else class="text-xs text-slate-400 italic">Menunggu persetujuan...</div>
                   </template>
@@ -236,7 +245,7 @@
                         <span v-if="isSubmitting === req.id" class="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
                         Simpan ID
                       </button>
-                      <button v-if="isEditing[req.id]" @click="cancelEdit(req.id, req.details?.ad_account_id)" class="text-[10px] text-slate-500 hover:text-slate-700 mt-2 font-medium">Batal</button>
+                      <button v-if="isEditing[req.id]" @click="cancelEdit(req.id, req.details?.ad_account_id, req.details?.ad_account_name)" class="text-[10px] text-slate-500 hover:text-slate-700 mt-2 font-medium">Batal</button>
                     </template>
                     <template v-else>
                       <div class="flex flex-col gap-2">
@@ -544,6 +553,7 @@ const budgetTab = ref('new')
 const isSubmitting = ref<string | null>(null)
 const currentAction = ref<string | null>(null)
 const inputModels = ref<Record<string, string>>({})
+const inputNameModels = ref<Record<string, string>>({})
 
 const isEditing = ref<Record<string, boolean>>({})
 
@@ -610,6 +620,9 @@ watch(requests, (newVals) => {
       // Set default input text dari database jika sudah ada
       if (!inputModels.value[req.id]) {
         inputModels.value[req.id] = req.details?.ad_account_id || ''
+      }
+      if (!inputNameModels.value[req.id]) {
+        inputNameModels.value[req.id] = req.details?.ad_account_name || ''
       }
     })
   }
@@ -682,6 +695,7 @@ const formatInput = (id: string, platform: string) => {
 const cancelEdit = (id: string, originalValue: string, originalNameValue: string = '') => {
   isEditing.value[id] = false
   inputModels.value[id] = originalValue || ''
+  inputNameModels.value[id] = originalNameValue || ''
 }
 
 const resetDev = async () => {
@@ -734,6 +748,7 @@ const processAction = async (id: string, action: 'approve' | 'reject' | 'save_id
       action: action,
       request_id: id,
       ad_account_id: adAccountId,
+      ad_account_name: inputNameModels.value[id]?.trim(),
       reason: rejectReasonToSubmit
     }
 
