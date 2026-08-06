@@ -24,6 +24,7 @@ export function useAdsLive() {
    * Aman dipanggil berkali-kali — hanya satu timer yang berjalan.
    */
   function startAutoRefresh() {
+    if (!import.meta.client) return // Prevent running on the server during SSR
     if (_autoRefreshTimer) return // Already running, skip
     _autoRefreshTimer = setInterval(() => {
       if (!isSyncing.value) _doFetch()

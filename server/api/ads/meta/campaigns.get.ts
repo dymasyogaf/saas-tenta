@@ -112,25 +112,20 @@ export default defineCachedEventHandler(async (event): Promise<AdsResponse> => {
       
       parsedAccountInfo = typeof accountInfo === 'string' ? JSON.parse(accountInfo) : accountInfo
 
-      // Hitung dari spend_cap jika balance tidak ada
-      if (parsedAccountInfo.balance !== undefined && parsedAccountInfo.balance !== '0') {
-        api_balance = parseFloat(parsedAccountInfo.balance) / 100
-        if (parsedAccountInfo.spend_cap !== undefined && parsedAccountInfo.amount_spent !== undefined) {
-          const cap = parseFloat(parsedAccountInfo.spend_cap)
-          const spent = parseFloat(parsedAccountInfo.amount_spent)
-          if (cap > 0) {
-            api_budget_total = cap / 100
-            api_amount_spent = spent / 100
-          }
-        }
-      } else if (parsedAccountInfo.spend_cap !== undefined && parsedAccountInfo.amount_spent !== undefined) {
+      // Hitung sisa saldo (balance) dari spend_cap - amount_spent (Meniru cara kerja Google Ads)
+      if (parsedAccountInfo.spend_cap !== undefined && parsedAccountInfo.amount_spent !== undefined) {
         const cap = parseFloat(parsedAccountInfo.spend_cap)
         const spent = parseFloat(parsedAccountInfo.amount_spent)
+        
+        // Meta mereturn mata uang (termasuk IDR) dalam satuan subunit (dibagi 100)
+        api_amount_spent = spent / 100
+        
         if (cap > 0) {
-          api_balance = (cap - spent) / 100
           api_budget_total = cap / 100
-          api_amount_spent = spent / 100
+          api_balance = api_budget_total - api_amount_spent
         }
+        // Jika cap == 0, berarti akun tersebut tidak dilimit dari FB (unlimited).
+        // Biarkan api_budget_total dan api_balance undefined agar frontend fallback ke Saldo Lokal Tenta.
       }
     } catch (e: any) {
       console.warn('Gagal mengambil balance/spend_cap:', e)

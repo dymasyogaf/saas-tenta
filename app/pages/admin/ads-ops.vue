@@ -648,9 +648,10 @@ const currentBudgetList = computed(() => {
 })
 
 const getPlatformLogo = (platform: string) => {
-  if (platform.includes('Meta')) return '/icon-meta-ads.png'
-  if (platform.includes('TikTok')) return '/tiktok.svg'
-  if (platform.includes('Google')) return '/icon-google-ads.png'
+  const p = (platform || '').toLowerCase()
+  if (p.includes('meta')) return '/icon-meta-ads.png'
+  if (p.includes('tiktok')) return '/tiktok.svg'
+  if (p.includes('google')) return '/icon-google-ads.png'
   return '/icon-meta-ads.png'
 }
 

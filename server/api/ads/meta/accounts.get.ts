@@ -49,25 +49,6 @@ export default defineEventHandler(async (event): Promise<AccountsResponse> => {
       currency: item.currency || 'IDR'
     }))
 
-    // Filter secara paksa ke MP - PENDIDIKAN (3351307381691170)
-    // Coba ambil dari process.env atau langsung gunakan ID-nya
-    const targetAccountId = process.env.NUXT_META_TARGET_ACCOUNT_ID || '3351307381691170'
-    const cleanTargetId = targetAccountId.replace('act_', '')
-    
-    // Lakukan filter
-    accounts = accounts.filter(acc => acc.id.includes(cleanTargetId))
-
-    // JIKA hasilnya 0 (berarti API Facebook tidak me-return ID ini di endpoint /me/adaccounts)
-    // Kita tambahkan secara manual agar tetap muncul di UI Anda dan bisa di-klik untuk cek campaign-nya
-    if (accounts.length === 0) {
-      accounts.push({
-        id: cleanTargetId,
-        name: 'MP - PENDIDIKAN',
-        status: 'ACTIVE',
-        currency: 'IDR'
-      })
-    }
-
     return {
       success: true,
       source: 'live',

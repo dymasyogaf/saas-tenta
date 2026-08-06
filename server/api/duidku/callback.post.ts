@@ -1,6 +1,10 @@
 import { serverSupabaseServiceRole } from '#supabase/server'
 import crypto from 'node:crypto'
 
+// Memory lock untuk mencegah Race Condition (Double Credit)
+// saat Duitku mengirim webhook berbarengan dalam milidetik yang sama.
+const processingLocks = new Set<string>()
+
 export default defineEventHandler(async (event) => {
   // 1. Ambil data dari webhook Duitku
   // Duitku callback umumnya dikirim sebagai x-www-form-urlencoded
@@ -40,53 +44,7 @@ export default defineEventHandler(async (event) => {
   const supabase = serverSupabaseServiceRole<any>(event)
 
   try {
-    // Cek apakah ini transaksi Subscription (Sewa Akun)
-    if (merchantOrderId.startsWith('SUB-')) {
-      const requestId = merchantOrderId.replace('SUB-', '')
-      
-      if (resultCode === '00') {
-        // Success
-        await supabase
-          .from('ad_account_requests')
-          .update({ status: 'pending_review', updated_at: new Date().toISOString() })
-          .eq('id', requestId)
-          
-        // --- NOTIFICATION LOGIC ---
-        const { data: reqData } = await supabase
-          .from('ad_account_requests')
-          .select('user_id')
-          .eq('id', requestId)
-          .single()
-          
-        if (reqData && reqData.user_id) {
-          // Beri notifikasi ke user bahwa pengajuannya sedang di-review
-          await supabase
-            .from('notifications')
-            .insert({
-              user_id: reqData.user_id,
-              type: 'system',
-              title: 'Pengajuan Akun Sedang Direview',
-              message: `Pembayaran Anda untuk pengajuan sewa akun iklan telah kami terima. Tim kami sedang meninjau permintaan Anda.`
-            })
-        }
-        
-      } else {
-        await supabase
-          .from('ad_account_requests')
-          .update({ status: 'rejected', updated_at: new Date().toISOString() })
-          .eq('id', requestId)
-      }
-      
-      // Update transaction log if it exists
-      await supabase
-        .from('transactions')
-        .update({ status: resultCode === '00' ? 'success' : 'failed', updated_at: new Date().toISOString() })
-        .eq('reference_id', merchantOrderId)
-
-      return { statusCode: 200, message: 'OK' }
-    }
-
-    // Alur Top Up Biasa
+    // 4. Cari Transaksi
     const { data: transaction, error: fetchTxError } = await supabase
       .from('transactions')
       .select('*, user_id')
@@ -101,20 +59,34 @@ export default defineEventHandler(async (event) => {
       return { statusCode: 200, message: 'Transaction already processed' }
     }
 
-    if (resultCode === '00') {
-      const netAmount = transaction.amount || 0
-      const { data: rpcResult, error: rpcError } = await supabase.rpc('process_topup_success', {
-        p_transaction_id: transaction.id,
-        p_amount: netAmount
-      })
+    // Cek Memory Lock
+    if (processingLocks.has(transaction.id)) {
+      console.warn('Idempotency lock triggered for transaction:', transaction.id)
+      return { statusCode: 200, message: 'Transaction is already being processed' }
+    }
+    
+    // Kunci transaksi
+    processingLocks.add(transaction.id)
 
-      if (rpcError) throw rpcError
-    } else {
-      const { error: rpcError } = await supabase.rpc('process_topup_failed', {
-        p_transaction_id: transaction.id
-      })
+    try {
+      if (resultCode === '00') {
+        const netAmount = transaction.amount || 0
+        const { data: rpcResult, error: rpcError } = await supabase.rpc('process_topup_success', {
+          p_transaction_id: transaction.id,
+          p_amount: netAmount
+        })
 
-      if (rpcError) throw rpcError
+        if (rpcError) throw rpcError
+      } else {
+        const { error: rpcError } = await supabase.rpc('process_topup_failed', {
+          p_transaction_id: transaction.id
+        })
+
+        if (rpcError) throw rpcError
+      }
+    } finally {
+      // Lepaskan kunci setelah selesai (berhasil/gagal)
+      processingLocks.delete(transaction.id)
     }
 
     return { statusCode: 200, message: 'OK' }

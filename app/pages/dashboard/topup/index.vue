@@ -27,14 +27,25 @@
       </div>
     </div>
 
+    <!-- Pending Ad Account Alert -->
+    <div v-for="req in pendingAccountRequests" :key="req.id" class="bg-blue-50 border border-blue-200 p-4 rounded-xl mb-6 flex gap-3 items-start shadow-sm animate-fade-in">
+      <div class="mt-0.5 text-blue-600 bg-blue-100 p-1.5 rounded-full shrink-0">
+        <Info class="w-5 h-5" />
+      </div>
+      <div>
+        <h4 class="font-bold text-blue-900 text-sm mb-1">Pengajuan Akun Iklan {{ req.platform === 'meta' || req.platform === 'Meta Ads' ? 'Meta Ads' : req.platform === 'google' || req.platform === 'Google Ads' ? 'Google Ads' : req.platform }} Sedang Diproses</h4>
+        <p class="text-sm text-blue-800">Anda memiliki pengajuan sewa akun iklan <strong>{{ req.platform === 'meta' || req.platform === 'Meta Ads' ? 'Meta Ads' : req.platform === 'google' || req.platform === 'Google Ads' ? 'Google Ads' : req.platform }}</strong> yang sedang menunggu persetujuan tim iklan. Saldo utama Anda senilai <strong class="font-bold">{{ formatRupiah(req.rental_fee || 150000) }}</strong> dibekukan sementara hingga pengajuan disetujui.</p>
+      </div>
+    </div>
+
     <!-- Pending Budget Request Alert -->
-    <div v-if="saldoStore.pendingBalance > 0" class="bg-orange-50 border border-orange-200 p-4 rounded-xl mb-6 flex gap-3 items-start shadow-sm">
+    <div v-for="trx in pendingAllocations" :key="trx.id" class="bg-orange-50 border border-orange-200 p-4 rounded-xl mb-6 flex gap-3 items-start shadow-sm animate-fade-in">
       <div class="mt-0.5 text-orange-600 bg-orange-100 p-1.5 rounded-full shrink-0">
         <Info class="w-5 h-5" />
       </div>
       <div>
         <h4 class="font-bold text-orange-900 text-sm mb-1">Pengajuan Alokasi Anggaran Sedang Diproses</h4>
-        <p class="text-sm text-orange-800">Anda memiliki pengajuan alokasi anggaran iklan yang sedang menunggu persetujuan tim iklan. Saldo utama Anda senilai <strong class="font-bold">{{ formatRupiah(saldoStore.pendingBalance) }}</strong> dibekukan sementara hingga pengajuan disetujui.</p>
+        <p class="text-sm text-orange-800">Pengajuan Alokasi Anggaran Iklan <strong>{{ extractAccountName(trx.description) }}</strong> sebesar <strong class="font-bold">{{ formatRupiah(trx.amount) }}</strong> Sedang Diproses.</p>
       </div>
     </div>
 
@@ -436,6 +447,35 @@ definePageMeta({
   layout: 'dashboard',
 })
 
+const pendingAccountRequests = ref<any[]>([])
+
+const pendingAllocations = computed(() => {
+  return saldoStore.transactions.filter(t => t.type === 'payment' && t.status === 'pending' && t.description?.includes('Alokasi Anggaran'))
+})
+
+const extractAccountName = (desc: string) => {
+  if (!desc) return ''
+  const parts = desc.split(' - ')
+  return parts.length > 1 ? parts[1] : desc
+}
+
+const fetchPendingRequests = async () => {
+  const supabase = useSupabaseClient<any>()
+  const u = useSupabaseUser()
+  const uid = u.value?.id || (u.value as any)?.sub
+  if (!uid) return
+  
+  const { data } = await supabase
+    .from('ad_account_requests')
+    .select('*')
+    .eq('user_id', uid)
+    .in('status', ['pending_review', 'processing'])
+    
+  if (data) {
+    pendingAccountRequests.value = data
+  }
+}
+
 const activeTab = ref('semua')
 const isDatePopoverOpen = ref(false)
 const searchQuery = ref('')
@@ -722,5 +762,6 @@ onMounted(async () => {
   saldoStore.fetchTransactions()
   adsStore.fetchAdAccounts()
   await adsStore.fetchAllPerformance(startDate.value, endDate.value)
+  fetchPendingRequests()
 })
 </script>
