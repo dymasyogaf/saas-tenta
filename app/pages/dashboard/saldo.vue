@@ -167,7 +167,7 @@
             <tr v-else-if="filteredAdAccounts.length > 0" v-for="account in filteredAdAccounts" :key="account.id" class="transition-colors group border-b border-ink-100 relative" :class="getDaysLeftNum(account.subscription_expires_at) !== null && getDaysLeftNum(account.subscription_expires_at)! <= 0 ? 'bg-ink-50/50' : 'hover:bg-ink-50/50'">
               
               <!-- Kolom Pertama dengan Overlay Badge (Center Row) -->
-              <td class="py-4 px-5 whitespace-nowrap static">
+              <td class="py-4 px-5 whitespace-nowrap static align-top">
                 
                 <div v-if="getDaysLeftNum(account.subscription_expires_at) !== null && getDaysLeftNum(account.subscription_expires_at)! <= 0" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 flex flex-col items-center justify-center pointer-events-auto">
                   <div class="bg-ink-700 text-white font-bold px-6 py-1.5 rounded-full -rotate-6 shadow-xl uppercase tracking-widest text-sm border-2 border-white shadow-ink-900/20">
@@ -185,7 +185,7 @@
                   {{ account.account_id }}
                 </span>
               </td>
-              <td class="py-4 px-5 font-medium text-ink-900 whitespace-nowrap" :class="{'opacity-30 grayscale blur-[1.5px] pointer-events-none': getDaysLeftNum(account.subscription_expires_at) !== null && getDaysLeftNum(account.subscription_expires_at)! <= 0}">
+              <td class="py-4 px-5 font-medium text-ink-900 whitespace-nowrap align-top" :class="{'opacity-30 grayscale blur-[1.5px] pointer-events-none': getDaysLeftNum(account.subscription_expires_at) !== null && getDaysLeftNum(account.subscription_expires_at)! <= 0}">
                 <div>{{ account.name }}</div>
                 <div v-if="account.subscription_expires_at" class="mt-1.5 flex flex-wrap items-center gap-2">
                   <div class="text-[11px] text-ink-500 flex items-center gap-1">
@@ -211,7 +211,7 @@
                   </button>
                 </div>
               </td>
-              <td class="py-4 px-5" :class="{'opacity-30 grayscale blur-[1.5px] pointer-events-none': getDaysLeftNum(account.subscription_expires_at) !== null && getDaysLeftNum(account.subscription_expires_at)! <= 0}">
+              <td class="py-4 px-5 align-top" :class="{'opacity-30 grayscale blur-[1.5px] pointer-events-none': getDaysLeftNum(account.subscription_expires_at) !== null && getDaysLeftNum(account.subscription_expires_at)! <= 0}">
                 <div class="flex items-center gap-2.5 font-bold text-ink-800">
                   <div v-if="account.platform === 'Meta'" class="w-6 h-6 flex items-center justify-center shrink-0">
                     <img src="/icon-meta-ads.png" alt="Meta" class="w-5 h-5 object-contain" />
@@ -230,7 +230,7 @@
                   {{ account.platform }}
                 </div>
               </td>
-              <td class="py-4 px-5 min-w-[200px]" :class="{'opacity-30 grayscale blur-[1.5px] pointer-events-none': getDaysLeftNum(account.subscription_expires_at) !== null && getDaysLeftNum(account.subscription_expires_at)! <= 0}">
+              <td class="py-4 px-5 min-w-[200px] align-top" :class="{'opacity-30 grayscale blur-[1.5px] pointer-events-none': getDaysLeftNum(account.subscription_expires_at) !== null && getDaysLeftNum(account.subscription_expires_at)! <= 0}">
                 <!-- Nominal & API indicator -->
                 <div class="flex items-center gap-2 whitespace-nowrap mb-1.5">
                   <span class="font-bold text-[14px]" :class="getBudgetColor(account)">
@@ -262,7 +262,7 @@
                 </div>
 
                 <!-- Warning states -->
-                <div v-if="getBudgetTotal(account) <= 0" class="mt-2">
+                <div v-if="getBudgetTotal(account) <= 0" class="mt-2.5">
                   <NuxtLink to="/dashboard/topup" class="w-full flex justify-center items-center gap-1.5 bg-orange-50 border border-orange-200 text-orange-600 text-[10px] font-bold px-3 py-1.5 rounded-lg hover:bg-orange-100 hover:text-orange-700 transition-colors shadow-sm">
                     <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
                     Alokasikan Anggaran
@@ -281,7 +281,7 @@
                   </NuxtLink>
                 </div>
               </td>
-              <td class="py-4 px-5 min-w-[200px]" :class="{'opacity-30 grayscale blur-[1.5px] pointer-events-none': getDaysLeftNum(account.subscription_expires_at) !== null && getDaysLeftNum(account.subscription_expires_at)! <= 0}">
+              <td class="py-4 px-5 min-w-[200px] align-top" :class="{'opacity-30 grayscale blur-[1.5px] pointer-events-none': getDaysLeftNum(account.subscription_expires_at) !== null && getDaysLeftNum(account.subscription_expires_at)! <= 0}">
                 <!-- Nominal limit -->
                 <div class="flex items-center gap-2 whitespace-nowrap mb-1.5">
                   <span class="font-bold text-[14px]" :class="getLimitColor(account)">
@@ -301,7 +301,7 @@
                 <!-- Info text: {{ $t('saldo.used') }} / total -->
                 <div class="flex items-center justify-between mt-1">
                   <span class="text-[10px] text-ink-400 font-medium">
-                    {{ formatCompact(account.penggunaan) }} / {{ formatCompact(account.limit) }} {{ $t('saldo.used') }}
+                    {{ formatCompact(account.weeklySpend) }} / {{ formatCompact(account.limit) }} {{ $t('saldo.used') }}
                   </span>
                   <span class="text-[10px] font-bold" :class="getLimitColor(account)">
                     {{ getLimitUsagePercent(account) }}%
@@ -309,20 +309,20 @@
                 </div>
                 
                 <!-- Update Paket Button -->
-                <div v-if="getLimitUsagePercent(account) >= 100" class="mt-2">
+                <div v-if="getLimitUsagePercent(account) >= 100" class="mt-2.5">
                   <NuxtLink to="/dashboard/settings?tab=subscription" class="inline-flex w-full justify-center items-center gap-1 bg-red-500 text-white text-[10px] font-bold px-2 py-1 rounded hover:bg-red-600 transition-colors shadow-sm">
                     <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
                     Update Paket
                   </NuxtLink>
                 </div>
               </td>
-              <td class="py-4 px-5 whitespace-nowrap" :class="{'opacity-30 grayscale blur-[1.5px] pointer-events-none': getDaysLeftNum(account.subscription_expires_at) !== null && getDaysLeftNum(account.subscription_expires_at)! <= 0}">
+              <td class="py-4 px-5 whitespace-nowrap align-top" :class="{'opacity-30 grayscale blur-[1.5px] pointer-events-none': getDaysLeftNum(account.subscription_expires_at) !== null && getDaysLeftNum(account.subscription_expires_at)! <= 0}">
                 <div class="font-bold text-[13px] text-ink-900">
-                  {{ formatCurrency(account.penggunaan) }}
+                  {{ formatCurrency(account.api_amount_spent !== undefined ? account.api_amount_spent : account.penggunaan) }}
                 </div>
               </td>
 
-              <td class="py-4 px-5 text-ink-500 text-[13px] whitespace-nowrap" :class="{'opacity-30 grayscale blur-[1.5px] pointer-events-none': getDaysLeftNum(account.subscription_expires_at) !== null && getDaysLeftNum(account.subscription_expires_at)! <= 0}">{{ formatLastUpdated(account.updated_at) }}</td>
+              <td class="py-4 px-5 text-ink-500 text-[13px] whitespace-nowrap align-top" :class="{'opacity-30 grayscale blur-[1.5px] pointer-events-none': getDaysLeftNum(account.subscription_expires_at) !== null && getDaysLeftNum(account.subscription_expires_at)! <= 0}">{{ formatLastUpdated(account.updated_at) }}</td>
             </tr>
             <!-- Empty State -->
             <tr v-else>
@@ -728,7 +728,7 @@ const getBudgetBarColor = (account: any) => {
 
 const getLimitUsagePercent = (account: any) => {
   const limit = account.limit || 0
-  const spent = account.penggunaan || 0
+  const spent = account.weeklySpend || 0 // Spend siklus 7 hari saat ini (bukan total selama sewa)
   if (limit <= 0) return 0
   return Math.min(100, Math.round((spent / limit) * 100))
 }

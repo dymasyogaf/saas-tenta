@@ -98,6 +98,9 @@
               </td>
               <td class="px-6 py-4 text-center">
                 <div class="flex items-center justify-center gap-2">
+                  <button v-if="isSuperAdmin" @click="impersonateClient(client.id, client.full_name)" class="p-2 text-slate-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors" title="Login Sebagai Klien (Impersonate)">
+                    <UserCheck class="w-4 h-4" />
+                  </button>
                   <button v-if="isSuperAdmin" @click="resetClient(client.id, client.full_name)" class="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="Reset Data Klien">
                     <RotateCcw class="w-4 h-4" />
                   </button>
@@ -118,7 +121,7 @@
 </template>
 
 <script setup lang="ts">
-import { Search, Users, ExternalLink, Trash2, RotateCcw } from 'lucide-vue-next'
+import { Search, Users, ExternalLink, Trash2, RotateCcw, UserCheck } from 'lucide-vue-next'
 
 definePageMeta({
   layout: 'admin',
@@ -212,6 +215,42 @@ const resetClient = async (id: string, name: string) => {
     await refresh()
   } catch (err: any) {
     alert(err.data?.statusMessage || 'Terjadi kesalahan saat mereset data klien. Pastikan endpoint sudah dibuat di backend.')
+  }
+}
+
+// Impersonate Klien
+const impersonateClient = async (id: string, name: string) => {
+  if (!confirm(`Anda akan dialihkan ke dashboard sebagai ${name || 'klien ini'}. Sesi admin Anda saat ini akan diakhiri. Lanjutkan?`)) return
+  
+  try {
+    const csrfToken = unref(csrf)
+    const res = await $fetch<any>(`/api/admin/users/${id}/impersonate`, {
+      method: 'POST',
+      headers: csrfToken ? { 'csrf-token': csrfToken } : {}
+    })
+    
+    if (res && res.accessToken && res.refreshToken) {
+      // Hapus sesi admin saat ini terlebih dahulu untuk mencegah konflik
+      await supabase.auth.signOut()
+
+      // Set session secara langsung menggunakan token (lebih aman dan anti-gagal di local)
+      const { error } = await supabase.auth.setSession({
+        access_token: res.accessToken,
+        refresh_token: res.refreshToken
+      })
+      if (error) throw error
+
+      // Tunggu sebentar agar background process Nuxt Supabase sempat mengupdate cookie sesi di server
+      // sebelum kita berpindah halaman
+      await new Promise(resolve => setTimeout(resolve, 1500))
+
+      alert(`Berhasil login sebagai ${name}.`)
+      window.location.href = '/dashboard'
+    } else {
+      throw new Error('Gagal mendapatkan sesi dari server')
+    }
+  } catch (err: any) {
+    alert(err.data?.statusMessage || err.message || 'Terjadi kesalahan saat memproses login.')
   }
 }
 </script>

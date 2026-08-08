@@ -25,6 +25,35 @@ export const useAdsStore = defineStore('ads', {
       return { endpoint: '', params: {}, platform: '' }
     },
 
+    /**
+     * Menghitung tanggal awal siklus limit mingguan saat ini.
+     * Siklus 7 hari dihitung dari tanggal created_at akun (bukan kalender Senin-Minggu).
+     * Contoh: akun dibuat Kamis 16 Juli → siklus reset setiap Kamis.
+     */
+    getWeeklyCycleStart(createdAt: string): string {
+      const start = new Date(createdAt)
+      start.setHours(0, 0, 0, 0)
+      const now = new Date()
+      now.setHours(0, 0, 0, 0)
+      const diffMs = now.getTime() - start.getTime()
+      const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24))
+      const dayInCycle = diffDays % 7
+      const cycleStart = new Date(now)
+      cycleStart.setDate(cycleStart.getDate() - dayInCycle)
+      const y = cycleStart.getFullYear()
+      const m = String(cycleStart.getMonth() + 1).padStart(2, '0')
+      const d = String(cycleStart.getDate()).padStart(2, '0')
+      return `${y}-${m}-${d}`
+    },
+
+    getToday(): string {
+      const now = new Date()
+      const y = now.getFullYear()
+      const m = String(now.getMonth() + 1).padStart(2, '0')
+      const d = String(now.getDate()).padStart(2, '0')
+      return `${y}-${m}-${d}`
+    },
+
     async fetchAllPerformance(startDate?: string, endDate?: string, force = false) {
       this.isLoading = true
       this.error = null
@@ -43,10 +72,10 @@ export const useAdsStore = defineStore('ads', {
       try {
         const uid = user.value.id || (user.value as any).sub
         const { data: accounts, error } = await supabase
-          .from('ad_account_requests')
-          .select('platform, details')
+          .from('ad_accounts')
+          .select('platform, account_id')
           .eq('user_id', uid)
-          .eq('status', 'approved')
+          .eq('status', 'active')
 
         if (error) throw error
         
@@ -56,7 +85,7 @@ export const useAdsStore = defineStore('ads', {
         }
 
         const promises = accounts.map(async (acc: any) => {
-           const adAccountId = acc.details?.ad_account_id
+           const adAccountId = acc.account_id
            if (!adAccountId) return null
 
            const { endpoint, params, platform: p } = this.getEndpoint(acc.platform, adAccountId, startDate, endDate, force)
@@ -128,7 +157,8 @@ export const useAdsStore = defineStore('ads', {
         
         this.adAccounts = accounts.map(acc => {
           const limit = saldoStore.weeklyLimit || 0
-          const penggunaan = 0 // Akan di-update via live fetch
+          const penggunaan = 0 // Akan di-update via live fetch (total selama sewa)
+          const weeklySpend = 0 // Akan di-update via live fetch (siklus 7 hari saat ini)
           const saldo = acc.saldo || 0 // Murni dari database lokal (alokasi klien)
           return {
             ...acc,
@@ -136,18 +166,23 @@ export const useAdsStore = defineStore('ads', {
             name: acc.account_name || acc.account_id,
             limit,
             penggunaan,
+            weeklySpend,
             saldo,
             alert_saldo: (saldo < limit * 0.1 && limit > 0) ? 'Segera Top Up' : null
           }
         })
 
-        // Fetch live spend from Meta/Google proxy endpoints for each account
+        // Fetch live spend dari API untuk setiap akun
+        // 1. Penggunaan = total spend selama sewa (tanpa filter tanggal = lifetime, karena akun khusus sewa)
+        // 2. Weekly Spend = spend siklus 7 hari saat ini (untuk limit progress bar)
+        const todayStr = this.getToday()
         const promises = this.adAccounts.map(async (acc, index) => {
-          const { endpoint, params } = this.getEndpoint(acc.platform, acc.account_id)
+          const { endpoint, params: defaultParams } = this.getEndpoint(acc.platform, acc.account_id)
           
           if (endpoint) {
              try {
-                const res = await $fetch<any>(endpoint, { params })
+                // Fetch 1: Penggunaan total selama masa sewa (tanpa filter tanggal)
+                const res = await $fetch<any>(endpoint, { params: defaultParams })
                 if (res && res.success && res.data) {
                    const penggunaan = res.data.totalSpend || 0
                    const saldoStore = useSaldoStore()
@@ -169,11 +204,18 @@ export const useAdsStore = defineStore('ads', {
                    this.adAccounts[index].alert_saldo = (saldo < limit * 0.1 && limit > 0) ? 'Segera Top Up' : null
                    this.adAccounts[index].updated_at = new Date().toISOString()
                    
-                   // AUTO-HEALING: Update nama akun jika ditarik dari API dan belum diset (berawalan "Ad Account") atau berbeda
+                   // AUTO-HEALING: Update nama akun jika ditarik dari API dan belum diset
                    if (api_account_name && this.adAccounts[index].name !== api_account_name) {
-                     // Update UI immediately (Backend will sync DB automatically)
                      this.adAccounts[index].name = api_account_name
                    }
+                }
+
+                // Fetch 2: Weekly spend untuk siklus limit 7 hari saat ini
+                const cycleStart = this.getWeeklyCycleStart(acc.created_at)
+                const { params: weeklyParams } = this.getEndpoint(acc.platform, acc.account_id, cycleStart, todayStr)
+                const weeklyRes = await $fetch<any>(endpoint, { params: weeklyParams })
+                if (weeklyRes && weeklyRes.success && weeklyRes.data) {
+                  this.adAccounts[index].weeklySpend = weeklyRes.data.totalSpend || 0
                 }
              } catch (e) {
                 // Ignore if fetch fails for one account

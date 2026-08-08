@@ -227,8 +227,8 @@ export default defineEventHandler(async (event) => {
         
         const months = Number(request.subscription_months || 1)
         const expiresAt = new Date()
-        // 1 Bulan dipukul rata = 30 Hari
-        expiresAt.setDate(expiresAt.getDate() + (months * 30))
+        // 1 Bulan = 4 Minggu = 28 Hari (agar siklus limit mingguan selalu pas)
+        expiresAt.setDate(expiresAt.getDate() + (months * 28))
 
         // Cek apakah ID Akun ini sudah terdaftar untuk user yang berbeda
         const { data: existingAcc } = await supabase
@@ -298,7 +298,7 @@ export default defineEventHandler(async (event) => {
 
         const notifMsg = (oldAdAccountId && oldAdAccountId !== cleanAdAccountId)
           ? `Tim Iklan telah memperbarui ID Akun Iklan Anda menjadi <strong>${cleanAdAccountId}</strong> (<strong>${formattedAccountName}</strong>).`
-          : `Selamat! Pengajuan akun iklan Anda berhasil disetujui. <strong>${formattedAccountName}</strong> telah aktif dan dapat digunakan selama <strong>${months * 30} hari</strong>. ${platformInstruction}`
+          : `Selamat! Pengajuan akun iklan Anda berhasil disetujui. <strong>${formattedAccountName}</strong> telah aktif dan dapat digunakan selama <strong>${months * 28} hari</strong>. ${platformInstruction}`
         
         await supabase.from('notifications').insert({
           user_id: request.user_id,

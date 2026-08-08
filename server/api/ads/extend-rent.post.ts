@@ -124,8 +124,8 @@ export default defineEventHandler(async (event) => {
       }
     }
     
-    // Tambahkan jumlah bulan (diasumsikan 1 bulan = 30 hari untuk konsistensi di file ops.post.ts)
-    const addedDays = Number(subscriptionMonths) * 30
+    // Tambahkan jumlah bulan (1 bulan = 4 minggu = 28 hari, agar siklus limit mingguan pas)
+    const addedDays = Number(subscriptionMonths) * 28
     currentExpiresAt.setDate(currentExpiresAt.getDate() + addedDays)
 
     const { error: updateAccErr } = await supabase
