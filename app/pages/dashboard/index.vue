@@ -18,15 +18,15 @@
       </div>
 
       <div class="bg-white p-6 rounded-2xl shadow-sm border border-ink-100">
-        <p class="text-sm font-medium text-ink-500 mb-2">{{ $t('dashboard.totalAdSpend') }}</p>
-        <template v-if="adsStore.isLoading">
+        <p class="text-sm font-medium text-ink-500 mb-2">Total Penggunaan</p>
+        <template v-if="adsStore.isLoading || adsStore.isFetchingAccounts">
           <div class="h-9 w-32 bg-ink-200 rounded-md animate-pulse mb-3 mt-1"></div>
           <div class="h-4 w-24 bg-ink-200 rounded-md animate-pulse mt-4"></div>
         </template>
         <template v-else>
-          <h3 class="text-2xl xl:text-3xl font-display font-bold text-ink-900">{{ formatCurrency(adsStore.totalSpend) }}</h3>
+          <h3 class="text-2xl xl:text-3xl font-display font-bold text-ink-900">{{ formatCurrency(totalPenggunaan) }}</h3>
           <p class="text-sm text-ink-500 mt-3 flex items-center gap-1">
-            <Activity class="w-4 h-4 text-orange-500" /> {{ $t('dashboard.last30days') }}
+            <Activity class="w-4 h-4 text-orange-500" /> Semua Akun Aktif
           </p>
         </template>
       </div>
@@ -212,6 +212,16 @@ const displayedCampaigns = computed(() => {
   return filtered
 })
 
+// Computed total penggunaan
+const totalPenggunaan = computed(() => {
+  return adsStore.adAccounts.reduce((sum, account) => {
+    const spent = account.api_amount_spent !== undefined && account.api_amount_spent > 0 
+      ? account.api_amount_spent 
+      : (account.penggunaan || 0)
+    return sum + spent
+  }, 0)
+})
+
 // Refetch on date change
 watch(dateRange, (newDate) => {
   if (newDate && newDate.start && newDate.end) {
@@ -229,6 +239,7 @@ const doInitialFetch = async () => {
   hasFetchedOnce = true
 
   saldoStore.fetchSaldo()
+  adsStore.fetchAdAccounts()
   adsLive.fetch()
   adsLive.startAutoRefresh()
 
