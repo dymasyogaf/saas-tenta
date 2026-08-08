@@ -53,7 +53,7 @@ export default defineEventHandler(async (event) => {
     const verifiedUsers = usersData?.filter((u: any) => u.verification_status === 'verified').length || 0
 
     // 5. Total Ad Accounts & Unique Advertising Clients
-    let adsQuery = supabase.from('ad_account_requests').select('user_id').eq('status', 'approved')
+    let adsQuery = supabase.from('ad_accounts').select('user_id').eq('status', 'active')
     adsQuery = applyDateFilter(adsQuery)
     const { data: adsData } = await adsQuery
     const totalAds = adsData?.length || 0

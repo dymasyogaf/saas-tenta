@@ -19,11 +19,11 @@ export default defineEventHandler(async (event) => {
       .from('saldo')
       .select('user_id, balance')
 
-    // 3. Ambil data jumlah akun iklan (Hanya yang Approved)
+    // 3. Ambil data jumlah akun iklan (Hanya yang Aktif)
     const { data: adsData } = await supabase
-      .from('ad_account_requests')
+      .from('ad_accounts')
       .select('user_id')
-      .eq('status', 'approved')
+      .eq('status', 'active')
 
     // Gabungkan semua data
     const merged = usersData.map((user: any) => {
