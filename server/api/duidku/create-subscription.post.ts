@@ -1,5 +1,6 @@
 import { serverSupabaseServiceRole } from '#supabase/server'
 import crypto from 'node:crypto'
+import { sendVaEmail } from '../../utils/email'
 
 export default defineEventHandler(async (event) => {
   const body = await readBody(event)
@@ -40,7 +41,7 @@ export default defineEventHandler(async (event) => {
     additionalParam: '',
     merchantUserInfo: userId,
     customerVaName: userName || 'Member',
-    email: userEmail || 'member@tentaklik.com',
+    email: 'billing@tentaklik.com', // Dummy — email notifikasi dikirim manual via Resend
     phoneNumber: userPhone || '',
     itemDetails: [{
       name: 'Sewa Akun Iklan',
@@ -50,7 +51,7 @@ export default defineEventHandler(async (event) => {
     customerDetail: {
       firstName: userName || 'Member',
       lastName: '',
-      email: userEmail || 'member@tentaklik.com',
+      email: 'billing@tentaklik.com', // Dummy
       phoneNumber: userPhone || '',
     },
     callbackUrl,
@@ -83,6 +84,24 @@ export default defineEventHandler(async (event) => {
       reference_id: merchantOrderId,
       payment_url: result.paymentUrl
     })
+
+    // Kirim email notifikasi VA ke customer (brand Tentaklik)
+    if (userEmail) {
+      sendVaEmail({
+        to: userEmail,
+        customerName: userName || 'Member Tentaklik',
+        paymentName: 'Virtual Account',
+        vaNumber: result.vaNumber || null,
+        paymentCode: result.paymentCode || null,
+        netAmount: paymentAmount,
+        feeAmount: 0,
+        paymentAmount,
+        packageType: 'subscription',
+        merchantOrderId,
+        expiryMinutes: 60,
+        productDetails: 'Sewa Akun Iklan',
+      }).catch((err: Error) => console.error('[Email] Error kirim VA email subscription:', err))
+    }
 
     return {
       success: true,

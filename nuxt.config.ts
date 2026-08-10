@@ -105,6 +105,7 @@ export default defineNuxtConfig({
     googleClientId: '',
     googleClientSecret: '',
     googleRefreshToken: '',
+    resendApiKey: '',
     // Public keys (exposed to client)
     public: {
       appName: 'Tentaklik',

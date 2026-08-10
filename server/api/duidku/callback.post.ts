@@ -1,5 +1,6 @@
 import { serverSupabaseServiceRole } from '#supabase/server'
 import crypto from 'node:crypto'
+import { sendPaymentSuccessEmail } from '../../utils/email'
 
 // Memory lock untuk mencegah Race Condition (Double Credit)
 // saat Duitku mengirim webhook berbarengan dalam milidetik yang sama.
@@ -77,6 +78,19 @@ export default defineEventHandler(async (event) => {
         })
 
         if (rpcError) throw rpcError
+
+        // Kirim email pembayaran berhasil ke customer
+        // Ambil data user untuk email
+        const { data: userData } = await supabase.auth.admin.getUserById(transaction.user_id)
+        if (userData?.user?.email) {
+          sendPaymentSuccessEmail({
+            to: userData.user.email,
+            customerName: userData.user.user_metadata?.full_name || 'Member Tentaklik',
+            productDetails: transaction.description || 'Top Up Saldo Iklan',
+            paymentAmount: parseInt(amount),
+            merchantOrderId,
+          }).catch((err: Error) => console.error('[Email] Error kirim email sukses:', err))
+        }
       } else {
         const { error: rpcError } = await supabase.rpc('process_topup_failed', {
           p_transaction_id: transaction.id

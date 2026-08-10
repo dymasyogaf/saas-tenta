@@ -1,5 +1,6 @@
 import { serverSupabaseServiceRole, serverSupabaseUser } from '#supabase/server'
 import crypto from 'node:crypto'
+import { sendVaEmail } from '../../utils/email'
 
 export default defineEventHandler(async (event) => {
   // 1. Ambil body dari request frontend
@@ -83,7 +84,7 @@ export default defineEventHandler(async (event) => {
     additionalParam: '',
     merchantUserInfo: userId,
     customerVaName: userName || 'Member Tentaklik',
-    email: userEmail,
+    email: 'billing@tentaklik.com', // Kirim ke email dummy agar Duitku tidak kirim email ke customer
     phoneNumber: userPhone || '',
     itemDetails: [
       {
@@ -95,7 +96,7 @@ export default defineEventHandler(async (event) => {
     customerDetail: {
       firstName: userName || 'Member',
       lastName: 'Tentaklik',
-      email: userEmail,
+      email: 'billing@tentaklik.com', // Dummy email ke Duitku
       phoneNumber: userPhone || '',
     },
     callbackUrl,
@@ -166,6 +167,23 @@ export default defineEventHandler(async (event) => {
         'A1': '166',
         'FT': '', 'IR': '',
       }
+
+      // Kirim email notifikasi VA ke customer (brand Tentaklik, bukan Duitku)
+      // Dijalankan secara async agar tidak memperlambat respons ke frontend
+      sendVaEmail({
+        to: userEmail,
+        customerName: userName || 'Member Tentaklik',
+        paymentName,
+        vaNumber: result.vaNumber || null,
+        paymentCode: result.paymentCode || null,
+        netAmount,
+        feeAmount,
+        paymentAmount,
+        packageType,
+        merchantOrderId,
+        expiryMinutes: 60,
+        productDetails: 'Top Up Saldo Iklan',
+      }).catch((err: Error) => console.error('[Email] Error kirim VA email:', err))
 
       // Berhasil — kembalikan data VA agar frontend bisa tampil halaman custom
       return {
