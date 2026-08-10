@@ -264,7 +264,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted } from 'vue'
+import { onMounted, onUnmounted } from 'vue'
 import { stripHtml } from '../../utils/formatters'
 import { useSaldoStore } from '~/stores/saldo'
 import {
@@ -345,6 +345,7 @@ const viewNotification = async (notif: any) => {
   if (!notif.is_read) {
     notif.is_read = true
     await supabase.from('notifications').update({ is_read: true }).eq('id', notif.id)
+    window.dispatchEvent(new CustomEvent('refresh-notifications'))
   }
 }
 
@@ -353,7 +354,14 @@ onMounted(() => {
   if (saldoStore.activePackage === null) {
     saldoStore.fetchSaldo()
   }
-  fetchNotifications()
+  if (user.value) {
+    fetchNotifications()
+    window.addEventListener('refresh-notifications', fetchNotifications)
+  }
+})
+
+onUnmounted(() => {
+  window.removeEventListener('refresh-notifications', fetchNotifications)
 })
 
 const userName = computed(() => {

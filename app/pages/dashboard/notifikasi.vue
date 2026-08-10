@@ -1,9 +1,29 @@
 <template>
   <div class="max-w-7xl mx-auto space-y-6 pb-12">
     <!-- Header -->
-    <div class="mb-8">
-      <h2 class="text-2xl font-display font-bold text-ink-900 mb-2">{{ $t('dashboard.notifications.title') }}</h2>
-      <p class="text-ink-600">{{ $t('dashboard.notifications.subtitle') }}</p>
+    <div class="mb-8 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+      <div>
+        <h2 class="text-2xl font-display font-bold text-ink-900 mb-2">{{ $t('dashboard.notifications.title') }}</h2>
+        <p class="text-ink-600">{{ $t('dashboard.notifications.subtitle') }}</p>
+      </div>
+      <div class="flex items-center gap-3">
+        <button 
+          @click="markAllRead"
+          :disabled="notifications.filter(n => !n.is_read).length === 0"
+          class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-ink-600 bg-white border border-ink-200 rounded-xl hover:bg-ink-50 hover:text-ink-900 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm"
+        >
+          <CheckCheck class="w-4 h-4" />
+          Baca Semua
+        </button>
+        <button 
+          @click="deleteAll"
+          :disabled="notifications.length === 0"
+          class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-red-600 bg-white border border-red-200 rounded-xl hover:bg-red-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm"
+        >
+          <Trash2 class="w-4 h-4" />
+          Hapus Semua
+        </button>
+      </div>
     </div>
 
     <div class="bg-white border border-ink-100 rounded-2xl shadow-sm overflow-hidden flex flex-col min-h-[400px]">
@@ -47,6 +67,14 @@
             
             <p class="text-xs sm:text-sm text-ink-600 line-clamp-2 leading-relaxed">{{ stripHtml(notif.message) }}</p>
           </div>
+          
+          <button 
+            @click.stop="deleteNotif(notif.id)"
+            class="shrink-0 p-2 text-ink-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors mt-1 opacity-0 group-hover:opacity-100 sm:opacity-100"
+            title="Hapus"
+          >
+            <Trash2 class="w-5 h-5" />
+          </button>
         </div>
       </div>
     </div>
@@ -86,8 +114,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import { Bell, Plus } from 'lucide-vue-next'
+import { ref, onMounted, onUnmounted } from 'vue'
+import { Bell, Plus, Trash2, CheckCheck } from 'lucide-vue-next'
 import { stripHtml } from '../../../utils/formatters'
 import { useAuth } from '~/composables/useAuth'
 
@@ -142,10 +170,62 @@ const viewNotification = async (notif: any) => {
   if (!notif.is_read) {
     notif.is_read = true
     await supabase.from('notifications').update({ is_read: true }).eq('id', notif.id)
+    window.dispatchEvent(new CustomEvent('refresh-notifications'))
+  }
+}
+
+const markAllRead = async () => {
+  if (!user.value) return
+  const userId = user.value.id || (user.value as any).sub
+  loading.value = true
+  try {
+    await $fetch('/api/notifications/read-all', {
+      method: 'PUT',
+      body: { userId }
+    })
+    await fetchNotifications()
+    window.dispatchEvent(new CustomEvent('refresh-notifications'))
+  } catch (err) {
+    console.error('Error marking all as read:', err)
+    loading.value = false
+  }
+}
+
+const deleteAll = async () => {
+  if (!user.value || !confirm('Yakin ingin menghapus SEMUA notifikasi? Aksi ini tidak dapat dibatalkan.')) return
+  const userId = user.value.id || (user.value as any).sub
+  loading.value = true
+  try {
+    await $fetch('/api/notifications/all', {
+      method: 'DELETE',
+      body: { userId }
+    })
+    await fetchNotifications()
+    window.dispatchEvent(new CustomEvent('refresh-notifications'))
+  } catch (err) {
+    console.error('Error deleting all notifications:', err)
+    loading.value = false
+  }
+}
+
+const deleteNotif = async (id: string) => {
+  try {
+    // Optimistic UI update
+    notifications.value = notifications.value.filter(n => n.id !== id)
+    await $fetch(`/api/notifications/${id}`, { method: 'DELETE' })
+    window.dispatchEvent(new CustomEvent('refresh-notifications'))
+  } catch (err) {
+    console.error('Error deleting notification:', err)
+    fetchNotifications() // Revert UI if error
   }
 }
 
 onMounted(() => {
   fetchNotifications()
+  window.addEventListener('refresh-notifications', fetchNotifications)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('refresh-notifications', fetchNotifications)
 })
 </script>
