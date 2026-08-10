@@ -1,15 +1,33 @@
-import { Resend } from 'resend'
+// ─── Resend via HTTP API (tanpa SDK) ─────────────────────────────────────────
+// SDK `resend` tidak kompatibel dengan Cloudflare Pages karena dependency
+// `@react-email/render`. Sebagai gantinya, kita gunakan Resend REST API
+// langsung via fetch().
 
-let _resend: Resend | null = null
+const RESEND_API_URL = 'https://api.resend.com/emails'
 
-function getResend(): Resend {
-  if (!_resend) {
-    const config = useRuntimeConfig()
-    const apiKey = config.resendApiKey || process.env.NUXT_RESEND_API_KEY
-    if (!apiKey) throw new Error('Resend API Key tidak ditemukan di environment variables.')
-    _resend = new Resend(apiKey)
+async function sendEmail(payload: {
+  from: string
+  to: string[]
+  subject: string
+  html: string
+}): Promise<void> {
+  const config = useRuntimeConfig()
+  const apiKey = config.resendApiKey || process.env.NUXT_RESEND_API_KEY
+  if (!apiKey) throw new Error('Resend API Key tidak ditemukan di environment variables.')
+
+  const response = await fetch(RESEND_API_URL, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${apiKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(payload),
+  })
+
+  if (!response.ok) {
+    const errorBody = await response.text()
+    throw new Error(`Resend API Error (${response.status}): ${errorBody}`)
   }
-  return _resend
 }
 
 // ─── HELPER: Format angka ke Rupiah ─────────────────────────────────────────
@@ -170,19 +188,17 @@ export async function sendVaEmail(payload: VaEmailPayload): Promise<void> {
 </html>
   `.trim()
 
-  const resend = getResend()
-  const { error } = await resend.emails.send({
-    from: 'Tentaklik <no-reply@tentaklik.com>',
-    to: [to],
-    subject: `Instruksi Pembayaran ${paymentName} — ${formatRupiah(paymentAmount)}`,
-    html,
-  })
-
-  if (error) {
+  try {
+    await sendEmail({
+      from: 'Tentaklik <no-reply@tentaklik.com>',
+      to: [to],
+      subject: `Instruksi Pembayaran ${paymentName} — ${formatRupiah(paymentAmount)}`,
+      html,
+    })
+    console.log(`[Email] Email VA berhasil dikirim ke ${to}`)
+  } catch (error) {
     console.error('[Email] Gagal mengirim email VA:', error)
     // Tidak throw error agar flow utama tidak terganggu jika email gagal
-  } else {
-    console.log(`[Email] Email VA berhasil dikirim ke ${to}`)
   }
 }
 
@@ -269,17 +285,15 @@ export async function sendPaymentSuccessEmail(payload: {
 </html>
   `.trim()
 
-  const resend = getResend()
-  const { error } = await resend.emails.send({
-    from: 'Tentaklik <no-reply@tentaklik.com>',
-    to: [to],
-    subject: `✅ Pembayaran Berhasil — ${formatRupiah(paymentAmount)}`,
-    html,
-  })
-
-  if (error) {
-    console.error('[Email] Gagal mengirim email sukses:', error)
-  } else {
+  try {
+    await sendEmail({
+      from: 'Tentaklik <no-reply@tentaklik.com>',
+      to: [to],
+      subject: `✅ Pembayaran Berhasil — ${formatRupiah(paymentAmount)}`,
+      html,
+    })
     console.log(`[Email] Email sukses berhasil dikirim ke ${to}`)
+  } catch (error) {
+    console.error('[Email] Gagal mengirim email sukses:', error)
   }
 }
