@@ -342,7 +342,8 @@
     </div>
 
     <!-- Custom Confirmation Modal for Withdraw Top Up -->
-    <div v-if="isConfirmModalOpen" class="fixed inset-0 z-[100] flex items-center justify-center bg-ink-900/50 backdrop-blur-sm p-4">
+    <Teleport to="body">
+<div v-if="isConfirmModalOpen" class="fixed inset-0 z-[100] flex items-center justify-center bg-ink-900/50 backdrop-blur-sm p-4">
       <div class="bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden relative border border-ink-100 transform transition-all">
         <div class="p-6 text-center">
           <div class="w-16 h-16 rounded-full mx-auto flex items-center justify-center mb-4"
@@ -367,9 +368,12 @@
         </div>
       </div>
     </div>
+    </Teleport>
+
 
     <!-- Reject Referral Modal -->
-    <div v-if="isRejectRefModalOpen" class="fixed inset-0 z-[100] flex items-center justify-center bg-ink-900/50 backdrop-blur-sm p-4">
+    <Teleport to="body">
+<div v-if="isRejectRefModalOpen" class="fixed inset-0 z-[100] flex items-center justify-center bg-ink-900/50 backdrop-blur-sm p-4">
       <div class="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden relative border border-ink-100 transform transition-all">
         <div class="px-6 py-4 border-b border-ink-100 flex justify-between items-center bg-slate-50">
           <h3 class="font-bold text-slate-900 flex items-center gap-2">
@@ -427,6 +431,8 @@
         </div>
       </div>
     </div>
+    </Teleport>
+
   </div>
 </template>
 

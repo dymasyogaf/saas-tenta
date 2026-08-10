@@ -1,5 +1,5 @@
 <template>
-  <div class="p-4 md:p-8 max-w-6xl mx-auto space-y-8 pb-24">
+  <div class="max-w-7xl mx-auto space-y-8 pb-12">
     <!-- Intro State -->
     <div v-if="currentStep === 'intro'" class="space-y-8">
       <div>

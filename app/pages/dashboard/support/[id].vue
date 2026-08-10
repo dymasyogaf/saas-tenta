@@ -1,5 +1,5 @@
 <template>
-  <div class="space-y-6 pb-20">
+  <div class="max-w-7xl mx-auto space-y-6 pb-12">
     <!-- Header Tiket -->
     <div class="bg-white border border-ink-100 rounded-2xl p-6 shadow-sm shadow-ink-900/5 relative overflow-hidden">
       <!-- Decorative left border -->

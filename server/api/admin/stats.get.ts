@@ -59,6 +59,30 @@ export default defineEventHandler(async (event) => {
     const totalAds = adsData?.length || 0
     const uniqueClients = new Set(adsData?.map((a: any) => a.user_id)).size
 
+    // 5.5 Expiring Rentals
+    const sevenDaysFromNow = new Date()
+    sevenDaysFromNow.setDate(sevenDaysFromNow.getDate() + 7)
+    
+    let expiringQuery = supabase.from('ad_accounts').select('id').eq('status', 'active').not('subscription_expires_at', 'is', null).lte('subscription_expires_at', sevenDaysFromNow.toISOString())
+    // Note: Do we apply date filter to expiring rentals? Probably not, since it's a current state alert.
+    const { data: expiringData } = await expiringQuery
+    const expiringRentals = expiringData?.length || 0
+
+    // 5.6 Low Balance Rentals (< 300.000)
+    let lowBalanceQuery = supabase.from('ad_accounts').select('saldo, limit_amount, weekly_spend').eq('status', 'active').gt('limit_amount', 0)
+    const { data: lbData } = await lowBalanceQuery
+    const lowBalanceRentals = (lbData || []).filter((acc: any) => {
+      const saldo = Number(acc.saldo) || 0
+      return saldo < 300000
+    }).length
+
+    // 5.7 Low Limit Rentals (limit_amount - weekly_spend < 300.000)
+    const lowLimitRentals = (lbData || []).filter((acc: any) => {
+      const limit = Number(acc.limit_amount) || 0
+      const weeklySpend = Number(acc.weekly_spend) || 0
+      return (limit - weeklySpend) < 300000
+    }).length
+
     // 6. Top Up Berdasarkan Filter Custom Date
     let topupQuery = supabase.from('transactions').select('amount, fee_amount, created_at').eq('type', 'topup').eq('status', 'success')
     topupQuery = applyDateFilter(topupQuery)
@@ -133,6 +157,9 @@ export default defineEventHandler(async (event) => {
       uniqueClients: uniqueClients || 0,
       totalAds: totalAds || 0,
       totalFee: totalActualFee,
+      expiringRentals: expiringRentals || 0,
+      lowBalanceRentals: lowBalanceRentals || 0,
+      lowLimitRentals: lowLimitRentals || 0,
       recentTxs: recentTxs || [],
       chartSeries: [
         { name: 'Total Top Up', data: chartData }

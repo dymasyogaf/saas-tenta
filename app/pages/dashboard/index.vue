@@ -1,5 +1,5 @@
 <template>
-  <div class="space-y-6 max-w-6xl mx-auto">
+  <div class="max-w-7xl mx-auto space-y-6 pb-12">
 
     <!-- Stats Cards Row 1 -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">

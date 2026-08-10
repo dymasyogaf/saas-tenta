@@ -17,7 +17,7 @@
     </div>
 
     <!-- Mode Switcher -->
-    <div class="flex gap-2 mb-4 bg-slate-100 p-1 rounded-xl w-max">
+    <div class="flex flex-wrap gap-2 mb-4 bg-slate-100 p-1 rounded-xl w-max max-w-full">
       <button @click="viewMode = 'akun'" :class="viewMode === 'akun' ? 'bg-white shadow-sm text-slate-800' : 'text-slate-500 hover:text-slate-700'" class="px-4 py-2 rounded-lg font-bold text-sm transition-all flex items-center gap-2">
         Pembuatan Akun Iklan
         <span v-if="newList.length > 0" class="bg-red-100 text-red-700 py-0.5 px-2 rounded-full text-[10px]">{{ newList.length }}</span>
@@ -25,6 +25,18 @@
       <button @click="viewMode = 'anggaran'" :class="viewMode === 'anggaran' ? 'bg-white shadow-sm text-slate-800' : 'text-slate-500 hover:text-slate-700'" class="px-4 py-2 rounded-lg font-bold text-sm transition-all flex items-center gap-2">
         Top Up Anggaran
         <span v-if="pendingBudgetList.length > 0" class="bg-orange-100 text-orange-700 py-0.5 px-2 rounded-full text-[10px]">{{ pendingBudgetList.length }}</span>
+      </button>
+      <button @click="viewMode = 'expiring'" :class="viewMode === 'expiring' ? 'bg-white shadow-sm text-slate-800' : 'text-slate-500 hover:text-slate-700'" class="px-4 py-2 rounded-lg font-bold text-sm transition-all flex items-center gap-2">
+        Sewa Mau Habis
+        <span v-if="expiringRentals.length > 0" class="bg-red-100 text-red-700 py-0.5 px-2 rounded-full text-[10px]">{{ expiringRentals.length }}</span>
+      </button>
+      <button @click="viewMode = 'low-balance'" :class="viewMode === 'low-balance' ? 'bg-white shadow-sm text-slate-800' : 'text-slate-500 hover:text-slate-700'" class="px-4 py-2 rounded-lg font-bold text-sm transition-all flex items-center gap-2">
+        Sisa Anggaran Menipis
+        <span v-if="lowBalanceRentals.length > 0" class="bg-orange-100 text-orange-700 py-0.5 px-2 rounded-full text-[10px]">{{ lowBalanceRentals.length }}</span>
+      </button>
+      <button @click="viewMode = 'low-limit'" :class="viewMode === 'low-limit' ? 'bg-white shadow-sm text-slate-800' : 'text-slate-500 hover:text-slate-700'" class="px-4 py-2 rounded-lg font-bold text-sm transition-all flex items-center gap-2">
+        Sisa Limit Menipis
+        <span v-if="lowLimitRentals.length > 0" class="bg-yellow-100 text-yellow-700 py-0.5 px-2 rounded-full text-[10px]">{{ lowLimitRentals.length }}</span>
       </button>
     </div>
 
@@ -418,8 +430,212 @@
       </div>
     </template>
 
+    <!-- Mode Sewa Mau Habis -->
+    <template v-else-if="viewMode === 'expiring'">
+      <div class="bg-red-50 border border-red-200 rounded-xl p-4 flex items-start gap-3">
+        <Megaphone class="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
+        <div>
+          <h3 class="text-sm font-bold text-red-900">Perhatian: Sewa Segera Habis (H-7)</h3>
+          <p class="text-xs text-red-700 mt-1">Daftar klien di bawah ini masa sewa akun iklannya akan habis dalam waktu kurang dari 7 hari. Silakan klik tombol Follow Up untuk menghubungi klien via WhatsApp.</p>
+        </div>
+      </div>
+
+      <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden mt-6">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-sm">
+            <thead class="bg-slate-50 border-b border-slate-200 text-slate-600 font-semibold">
+              <tr>
+                <th class="px-6 py-4">Klien & Kontak</th>
+                <th class="px-6 py-4">Akun Iklan</th>
+                <th class="px-6 py-4">Sisa Waktu</th>
+                <th class="px-6 py-4 text-center">Aksi</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+              <tr v-if="pendingExpiring" v-for="i in 3" :key="'exp-skel'+i" class="animate-pulse bg-white">
+                <td class="px-6 py-4"><div class="h-4 w-32 bg-ink-200 rounded mb-2"></div></td>
+                <td class="px-6 py-4"><div class="h-4 w-24 bg-ink-200 rounded mb-2"></div></td>
+                <td class="px-6 py-4"><div class="h-4 w-20 bg-ink-200 rounded"></div></td>
+                <td class="px-6 py-4"><div class="h-8 w-24 bg-ink-200 rounded-lg mx-auto"></div></td>
+              </tr>
+              
+              <tr v-else-if="expiringRentals.length === 0">
+                <td colspan="4" class="px-6 py-12 text-center text-slate-500">
+                  <CheckCircle2 class="w-12 h-12 text-green-400 mx-auto mb-3" />
+                  <p class="font-medium text-slate-600">Aman! Tidak ada akun yang sewanya hampir habis.</p>
+                </td>
+              </tr>
+
+              <tr v-else v-for="req in expiringRentals" :key="'exp'+req.id" class="hover:bg-slate-50 transition-colors">
+                <td class="px-6 py-4">
+                  <p class="font-bold text-slate-900">{{ req.users?.full_name || 'Tanpa Nama' }}</p>
+                  <p class="text-xs text-slate-500 mt-1 font-mono">{{ req.users?.phone || '-' }}</p>
+                </td>
+                <td class="px-6 py-4">
+                  <div class="flex items-center gap-2 mb-1">
+                    <img :src="getPlatformLogo(req.platform)" class="w-4 h-4 object-contain" />
+                    <span class="font-bold text-slate-800 text-xs">{{ req.account_name || '-' }}</span>
+                  </div>
+                  <p class="text-[10px] text-slate-500 font-mono">{{ req.account_id }}</p>
+                </td>
+                <td class="px-6 py-4">
+                  <p class="font-bold text-red-600">
+                    {{ Math.ceil((new Date(req.subscription_expires_at).getTime() - new Date().getTime()) / (1000 * 3600 * 24)) }} Hari Lagi
+                  </p>
+                  <p class="text-[10px] text-slate-500 mt-1">Exp: {{ new Date(req.subscription_expires_at).toLocaleDateString('id-ID') }}</p>
+                </td>
+                <td class="px-6 py-4 text-center">
+                  <a v-if="req.users?.phone" :href="`https://wa.me/${req.users.phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent('Halo Bapak/Ibu ' + (req.users?.full_name || '') + ', masa sewa akun iklan ' + req.platform + ' Anda akan habis dalam ' + Math.ceil((new Date(req.subscription_expires_at).getTime() - new Date().getTime()) / (1000 * 3600 * 24)) + ' hari. Apakah ingin diperpanjang?')}`" target="_blank" class="inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-green-500 hover:bg-green-600 text-white text-xs font-bold rounded-lg transition-colors">
+                    <MessageCircle class="w-3.5 h-3.5" /> Follow Up WA
+                  </a>
+                  <span v-else class="text-xs text-slate-400 italic">No WA tidak tersedia</span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </template>
+
+    <!-- Mode Saldo Menipis -->
+    <template v-else-if="viewMode === 'low-balance'">
+      <div class="bg-orange-50 border border-orange-200 rounded-xl p-4 flex items-start gap-3">
+        <WalletCards class="w-5 h-5 text-orange-600 shrink-0 mt-0.5" />
+        <div>
+          <h3 class="text-sm font-bold text-orange-900">Perhatian: Sisa Anggaran Menipis (<= 15%)</h3>
+          <p class="text-xs text-orange-700 mt-1">Daftar klien di bawah ini sisa anggaran akun iklannya sudah mencapai 85% pemakaian (tersisa <= 15% dari total anggaran). Silakan klik tombol Follow Up untuk mengingatkan klien Top Up.</p>
+        </div>
+      </div>
+
+      <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden mt-6">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-sm">
+            <thead class="bg-slate-50 border-b border-slate-200 text-slate-600 font-semibold">
+              <tr>
+                <th class="px-6 py-4">Klien & Kontak</th>
+                <th class="px-6 py-4">Akun Iklan</th>
+                <th class="px-6 py-4">Sisa Anggaran</th>
+                <th class="px-6 py-4 text-center">Aksi</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+              <tr v-if="pendingLowBalance" v-for="i in 3" :key="'lb-skel'+i" class="animate-pulse bg-white">
+                <td class="px-6 py-4"><div class="h-4 w-32 bg-ink-200 rounded mb-2"></div></td>
+                <td class="px-6 py-4"><div class="h-4 w-24 bg-ink-200 rounded mb-2"></div></td>
+                <td class="px-6 py-4"><div class="h-4 w-20 bg-ink-200 rounded"></div></td>
+                <td class="px-6 py-4"><div class="h-8 w-24 bg-ink-200 rounded-lg mx-auto"></div></td>
+              </tr>
+              
+              <tr v-else-if="lowBalanceRentals.length === 0">
+                <td colspan="4" class="px-6 py-12 text-center text-slate-500">
+                  <CheckCircle2 class="w-12 h-12 text-green-400 mx-auto mb-3" />
+                  <p class="font-medium text-slate-600">Aman! Tidak ada akun yang sisa anggarannya kritis.</p>
+                </td>
+              </tr>
+
+              <tr v-else v-for="req in lowBalanceRentals" :key="'lb'+req.id" class="hover:bg-slate-50 transition-colors">
+                <td class="px-6 py-4">
+                  <p class="font-bold text-slate-900">{{ req.users?.full_name || 'Tanpa Nama' }}</p>
+                  <p class="text-xs text-slate-500 mt-1 font-mono">{{ req.users?.phone || '-' }}</p>
+                </td>
+                <td class="px-6 py-4">
+                  <div class="flex items-center gap-2 mb-1">
+                    <img :src="getPlatformLogo(req.platform)" class="w-4 h-4 object-contain" />
+                    <span class="font-bold text-slate-800 text-xs">{{ req.account_name || '-' }}</span>
+                  </div>
+                  <p class="text-[10px] text-slate-500 font-mono">{{ req.account_id }}</p>
+                </td>
+                <td class="px-6 py-4">
+                  <p class="font-bold text-orange-600">
+                    {{ formatRupiah(req.saldo || 0) }}
+                  </p>
+                  <p class="text-[10px] text-slate-500 mt-1">Total Anggaran: {{ formatRupiah(req.limit_amount || 0) }}</p>
+                </td>
+                <td class="px-6 py-4 text-center">
+                  <a v-if="req.users?.phone" :href="`https://wa.me/${req.users.phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent('Halo Bapak/Ibu ' + (req.users?.full_name || '') + ', sisa anggaran pada akun iklan ' + req.platform + ' (' + (req.account_name || '') + ') Anda saat ini tersisa ' + formatRupiah(req.saldo || 0) + '. Silakan lakukan Top Up agar iklan Anda tetap berjalan lancar.')}`" target="_blank" class="inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-green-500 hover:bg-green-600 text-white text-xs font-bold rounded-lg transition-colors">
+                    <MessageCircle class="w-3.5 h-3.5" /> Follow Up WA
+                  </a>
+                  <span v-else class="text-xs text-slate-400 italic">No WA tidak tersedia</span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </template>
+
+    <!-- Mode Sisa Limit Menipis -->
+    <template v-else-if="viewMode === 'low-limit'">
+      <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-4 flex items-start gap-3">
+        <Activity class="w-5 h-5 text-yellow-600 shrink-0 mt-0.5" />
+        <div>
+          <h3 class="text-sm font-bold text-yellow-900">Perhatian: Sisa Limit Menipis (Tersisa < Rp 300.000)</h3>
+          <p class="text-xs text-yellow-700 mt-1">Daftar klien di bawah ini pemakaian batas limit iklannya sudah sangat tinggi, sehingga sisa limitnya di bawah Rp 300.000. Silakan klik tombol Follow Up untuk mengingatkan klien Top Up.</p>
+        </div>
+      </div>
+
+      <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden mt-6">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-sm">
+            <thead class="bg-slate-50 border-b border-slate-200 text-slate-600 font-semibold">
+              <tr>
+                <th class="px-6 py-4">Klien & Kontak</th>
+                <th class="px-6 py-4">Akun Iklan</th>
+                <th class="px-6 py-4">Sisa Limit</th>
+                <th class="px-6 py-4 text-center">Aksi</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+              <!-- Skeleton Loading -->
+              <tr v-if="pendingLowLimit">
+                <td colspan="4" class="px-6 py-8 text-center text-slate-400">Loading data...</td>
+              </tr>
+              
+              <!-- Empty State -->
+              <tr v-else-if="lowLimitRentals.length === 0">
+                <td colspan="4" class="px-6 py-12 text-center text-slate-500">
+                  <CheckCircle2 class="w-12 h-12 text-green-400 mx-auto mb-3" />
+                  <p class="font-medium text-slate-600">Aman! Tidak ada akun yang sisa limitnya kritis.</p>
+                </td>
+              </tr>
+
+              <!-- Data Rows -->
+              <tr v-else v-for="req in lowLimitRentals" :key="req.id" class="hover:bg-slate-50 transition-colors">
+                <td class="px-6 py-4">
+                  <p class="font-bold text-slate-800">{{ req.users?.full_name || 'Tanpa Nama' }}</p>
+                  <p class="text-xs text-slate-500 mt-0.5">{{ req.users?.email }}</p>
+                </td>
+                <td class="px-6 py-4">
+                  <div class="flex items-center gap-2 mb-1">
+                    <img v-if="req.platform === 'meta'" src="/icon-meta-ads.png" class="w-4 h-4" alt="Meta" />
+                    <img v-else-if="req.platform === 'tiktok'" src="/tiktok.svg" class="w-4 h-4 rounded-full" alt="TikTok" />
+                    <img v-else src="/icon-google-ads.png" class="w-4 h-4" alt="Google" />
+                    <span class="font-semibold text-slate-700">{{ req.account_name || 'Belum ada nama' }}</span>
+                  </div>
+                  <p class="text-[10px] text-slate-500 font-mono">{{ req.account_id }}</p>
+                </td>
+                <td class="px-6 py-4">
+                  <p class="font-bold text-yellow-600">
+                    {{ formatRupiah((req.limit_amount || 0) - (req.weekly_spend || 0)) }}
+                  </p>
+                  <p class="text-[10px] text-slate-500 mt-1">Total Limit: {{ formatRupiah(req.limit_amount || 0) }}</p>
+                </td>
+                <td class="px-6 py-4 text-center">
+                  <a v-if="req.users?.phone" :href="`https://wa.me/${req.users.phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent('Halo Bapak/Ibu ' + (req.users?.full_name || '') + ', sisa limit pada akun iklan ' + req.platform + ' (' + (req.account_name || '') + ') Anda saat ini tersisa ' + formatRupiah((req.limit_amount || 0) - (req.weekly_spend || 0)) + '. Silakan lakukan pembayaran agar iklan Anda tidak terhenti.')}`" target="_blank" class="inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-green-500 hover:bg-green-600 text-white text-xs font-bold rounded-lg transition-colors">
+                    <MessageCircle class="w-3.5 h-3.5" /> Follow Up WA
+                  </a>
+                  <span v-else class="text-xs text-slate-400 italic">No WA tidak tersedia</span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </template>
+
     <!-- Reject Modal -->
-    <div v-if="isRejectModalOpen" class="fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
+    <Teleport to="body">
+<div v-if="isRejectModalOpen" class="fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
       <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden flex flex-col max-h-[90vh]">
         <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
           <h3 class="font-bold text-lg text-slate-900 flex items-center gap-2">
@@ -470,6 +686,8 @@
         </div>
       </div>
     </div>
+    </Teleport>
+
   </div>
 
   <!-- Modal Hubungi Tim Iklan (hanya untuk Tim Audit) -->
@@ -547,7 +765,7 @@ const handleContacted = (id: string) => {
   isContactModalOpen.value = false
 }
 
-const viewMode = ref<'akun' | 'anggaran'>('akun')
+const viewMode = ref<'akun' | 'anggaran' | 'expiring' | 'low-balance' | 'low-limit'>('akun')
 const activeTab = ref('new')
 const budgetTab = ref('new')
 const isSubmitting = ref<string | null>(null)
@@ -607,10 +825,18 @@ const submitReject = () => {
 // Fetch Data dari Server Endpoint (Bypass RLS)
 const { data: requests, pending, refresh: refreshAkun } = useFetch<any[]>('/api/admin/ads-ops', { default: () => [] })
 const { data: budgetRequests, pending: pendingBudget, refresh: refreshBudget } = useFetch<any[]>('/api/admin/ads/budget-requests', { default: () => [] })
+const { data: expiringRentals, pending: pendingExpiring, refresh: refreshExpiring } = useFetch<any[]>('/api/admin/expiring-rentals', { default: () => [] })
+const { data: lowBalanceRentals, pending: pendingLowBalance, refresh: refreshLowBalance } = useFetch<any[]>('/api/admin/low-balance', { default: () => [] })
+const { data: lowLimitDataResponse, pending: pendingLowLimit, refresh: refreshLowLimit } = useFetch<any>('/api/admin/low-limit', { default: () => ({ data: [] }) })
+
+const lowLimitRentals = computed(() => lowLimitDataResponse.value?.data || [])
 
 const refreshAll = () => {
   refreshAkun()
   refreshBudget()
+  refreshExpiring()
+  refreshLowBalance()
+  refreshLowLimit()
 }
 
 // Inisialisasi Input Model jika data ditarik

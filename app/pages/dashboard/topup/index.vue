@@ -1,5 +1,5 @@
 <template>
-  <div class="max-w-7xl mx-auto space-y-6">
+  <div class="max-w-7xl mx-auto space-y-6 pb-12">
     <!-- Header -->
     <div class="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
       <h2 class="text-2xl font-display font-bold text-ink-900">{{ $t('topup.title') }}</h2>
@@ -250,7 +250,8 @@
     </div>
     
     <!-- Modal Top Up -->
-    <div v-if="isTopupModalOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-ink-900/50 backdrop-blur-sm p-4">
+    <Teleport to="body">
+<div v-if="isTopupModalOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-ink-900/50 backdrop-blur-sm p-4">
       <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg sm:max-w-2xl lg:max-w-3xl overflow-hidden relative border border-ink-100 flex flex-col max-h-[90vh]">
         <div class="p-6 border-b border-ink-100 flex justify-between items-center">
           <div>
@@ -364,9 +365,12 @@
         </div>
       </div>
     </div>
+    </Teleport>
+
 
     <!-- Allocate Budget Modal -->
-    <div v-if="isAllocateBudgetModalOpen" class="fixed inset-0 bg-ink-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4" @click.self="isAllocateBudgetModalOpen = false">
+    <Teleport to="body">
+<div v-if="isAllocateBudgetModalOpen" class="fixed inset-0 bg-ink-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4" @click.self="isAllocateBudgetModalOpen = false">
         <div class="bg-white rounded-2xl w-full max-w-md overflow-hidden shadow-xl animate-scale-up">
           <div class="p-6">
             <div class="flex items-center justify-between mb-6">
@@ -417,6 +421,8 @@
           </div>
       </div>
     </div>
+    </Teleport>
+
   </div>
 </template>
 

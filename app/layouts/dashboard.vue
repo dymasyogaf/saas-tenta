@@ -105,7 +105,7 @@
             <!-- Notification Popup -->
             <div
               v-if="isNotifOpen"
-              class="absolute right-0 md:-right-4 top-full mt-4 w-72 md:w-80 bg-white border border-ink-100 rounded-xl shadow-lg shadow-ink-900/5 z-50 flex flex-col"
+              class="fixed inset-x-4 top-[72px] sm:absolute sm:inset-x-auto sm:right-0 sm:top-full sm:mt-4 w-auto sm:w-80 bg-white border border-ink-100 rounded-xl shadow-lg shadow-ink-900/5 z-50 flex flex-col"
             >
               <div class="flex items-center justify-between p-4 border-b border-ink-100">
                 <h3 class="font-semibold text-ink-900">{{ $t('header.notifications') }}</h3>
@@ -250,7 +250,7 @@
             <Plus class="w-5 h-5 rotate-45" />
           </button>
         </div>
-        <div class="p-6 overflow-y-auto flex-1 text-sm text-ink-700 prose prose-sm prose-orange max-w-none">
+        <div class="p-6 overflow-y-auto flex-1 text-sm text-ink-700 prose prose-sm prose-orange max-w-none leading-relaxed prose-p:my-1.5 prose-ol:my-1.5 prose-ul:my-1.5 prose-li:my-0.5">
           <div v-html="selectedNotif.message"></div>
         </div>
         <div class="p-4 border-t border-ink-100 bg-ink-50 rounded-b-2xl shrink-0 flex justify-end">
@@ -265,6 +265,7 @@
 
 <script setup lang="ts">
 import { onMounted } from 'vue'
+import { stripHtml } from '../../utils/formatters'
 import { useSaldoStore } from '~/stores/saldo'
 import {
   LayoutDashboard,
@@ -302,10 +303,7 @@ const supabase = useSupabaseClient<any>()
 const notifications = ref<any[]>([])
 const unreadCount = computed(() => notifications.value.filter(n => !n.is_read).length)
 
-const stripHtml = (html: string) => {
-  if (!html) return ''
-  return html.replace(/<[^>]*>?/gm, ' ').trim()
-}
+
 
 const toggleNotif = async () => {
   isNotifOpen.value = !isNotifOpen.value

@@ -99,7 +99,8 @@
     />
 
     <!-- Delete Confirmation Modal -->
-    <div v-if="isDeleteModalOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <Teleport to="body">
+<div v-if="isDeleteModalOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" @click="isDeleteModalOpen = false"></div>
       <div class="relative bg-white rounded-2xl p-6 w-full max-w-sm shadow-xl animate-in fade-in zoom-in duration-200">
         <div class="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-4 text-red-600">
@@ -119,6 +120,8 @@
         </div>
       </div>
     </div>
+    </Teleport>
+
 
   </div>
 </template>

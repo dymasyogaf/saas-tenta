@@ -1,5 +1,5 @@
 <template>
-  <div class="space-y-6">
+  <div class="max-w-7xl mx-auto space-y-6 pb-12">
     
     <!-- LIST VIEW -->
     <template v-if="!isCreating">

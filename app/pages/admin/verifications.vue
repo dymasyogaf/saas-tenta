@@ -1,5 +1,5 @@
 <template>
-  <div class="space-y-6 max-w-6xl mx-auto">
+  <div class="max-w-7xl mx-auto space-y-6 pb-12">
     <div class="flex justify-between items-center mb-6">
       <div>
         <h1 class="text-2xl font-display font-bold text-ink-900">Review Verifikasi KYC</h1>
@@ -69,7 +69,8 @@
     </div>
 
     <!-- Review Modal -->
-    <div v-if="isReviewModalOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-ink-900/50 backdrop-blur-sm p-4">
+    <Teleport to="body">
+<div v-if="isReviewModalOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-ink-900/50 backdrop-blur-sm p-4">
       <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden flex flex-col max-h-[90vh]">
         
         <div class="px-6 py-4 border-b border-ink-100 flex justify-between items-center bg-ink-50">
@@ -185,6 +186,8 @@
 
       </div>
     </div>
+    </Teleport>
+
   </div>
 </template>
 

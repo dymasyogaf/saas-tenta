@@ -1,5 +1,5 @@
 <template>
-  <div class="max-w-5xl mx-auto space-y-6">
+  <div class="max-w-7xl mx-auto space-y-6 pb-12">
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
       <div>
         <h1 class="text-2xl font-bold text-ink-900">{{ $t('referral.title') }}</h1>
@@ -210,7 +210,8 @@
     </div>
     
     <!-- Registration & Terms Modal -->
-    <div v-if="showTermsModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-ink-900/60 backdrop-blur-sm">
+    <Teleport to="body">
+<div v-if="showTermsModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-ink-900/60 backdrop-blur-sm">
       <div class="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] flex flex-col shadow-xl overflow-hidden">
         <!-- Header -->
         <div class="px-6 py-4 border-b border-ink-100 flex justify-between items-center bg-orange-50/50">
@@ -317,6 +318,8 @@
         </div>
       </div>
     </div>
+    </Teleport>
+
 
   </div>
 </template>

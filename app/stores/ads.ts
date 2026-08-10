@@ -216,6 +216,10 @@ export const useAdsStore = defineStore('ads', {
                 const weeklyRes = await $fetch<any>(endpoint, { params: weeklyParams })
                 if (weeklyRes && weeklyRes.success && weeklyRes.data) {
                   this.adAccounts[index].weeklySpend = weeklyRes.data.totalSpend || 0
+                  
+                  // Simpan weeklySpend ke DB untuk dibaca Admin
+                  const supabase = useSupabaseClient<any>()
+                  supabase.from('ad_accounts').update({ weekly_spend: this.adAccounts[index].weeklySpend, updated_at: new Date().toISOString() }).eq('account_id', acc.account_id).then()
                 }
              } catch (e) {
                 // Ignore if fetch fails for one account

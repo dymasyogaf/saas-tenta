@@ -1,5 +1,5 @@
 <template>
-  <div class="space-y-8 max-w-6xl mx-auto">
+  <div class="max-w-7xl mx-auto space-y-8 pb-12">
     <!-- Hero Section -->
     <div class="bg-gradient-to-br from-orange-50/80 to-white border border-orange-100 rounded-3xl p-6 md:p-10 shadow-sm relative overflow-hidden">
       <div class="absolute -top-32 -right-32 w-80 h-80 bg-orange-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 pointer-events-none" />

@@ -55,6 +55,15 @@ export default defineNuxtConfig({
     }
   },
 
+  routeRules: {
+    '/api/admin/broadcast': {
+      security: { xssValidator: false }
+    },
+    '/api/admin/broadcasts/**': {
+      security: { xssValidator: false }
+    }
+  },
+
   // Supabase config
   supabase: {
     redirect: false, // We'll handle auth redirects manually

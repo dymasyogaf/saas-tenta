@@ -1,5 +1,5 @@
 <template>
-  <div class="max-w-4xl mx-auto">
+  <div class="max-w-7xl mx-auto space-y-6 pb-12">
     <!-- Header -->
     <div class="mb-8">
       <h2 class="text-2xl font-display font-bold text-ink-900 mb-2">{{ $t('dashboard.notifications.title') }}</h2>
@@ -52,7 +52,8 @@
     </div>
 
     <!-- Notification Detail Modal -->
-    <div v-if="selectedNotif" class="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
+    <Teleport to="body">
+<div v-if="selectedNotif" class="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
       <div class="absolute inset-0 bg-ink-900/40 backdrop-blur-sm" @click="selectedNotif = null"></div>
       <div class="relative bg-white rounded-2xl shadow-xl w-full max-w-lg flex flex-col max-h-[90vh] animate-in fade-in zoom-in-95 duration-200">
         <div class="p-5 sm:p-6 border-b border-ink-100 flex items-center justify-between shrink-0">
@@ -69,7 +70,7 @@
             <Plus class="w-6 h-6 rotate-45" />
           </button>
         </div>
-        <div class="p-6 overflow-y-auto flex-1 text-sm sm:text-base text-ink-700 prose prose-sm sm:prose-base prose-orange max-w-none">
+        <div class="p-6 overflow-y-auto flex-1 text-sm sm:text-base text-ink-700 prose prose-sm sm:prose-base prose-orange max-w-none leading-relaxed prose-p:my-1.5 prose-ol:my-1.5 prose-ul:my-1.5 prose-li:my-0.5">
           <div v-html="selectedNotif.message"></div>
         </div>
         <div class="p-4 sm:p-5 border-t border-ink-100 bg-ink-50 rounded-b-2xl shrink-0 flex justify-end">
@@ -79,12 +80,15 @@
         </div>
       </div>
     </div>
+    </Teleport>
+
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { Bell, Plus } from 'lucide-vue-next'
+import { stripHtml } from '../../../utils/formatters'
 import { useAuth } from '~/composables/useAuth'
 
 definePageMeta({
@@ -97,10 +101,7 @@ const notifications = ref<any[]>([])
 const loading = ref(true)
 const selectedNotif = ref<any>(null)
 
-const stripHtml = (html: string) => {
-  if (!html) return ''
-  return html.replace(/<[^>]*>?/gm, ' ').trim()
-}
+
 
 const formatDate = (dateStr: string) => {
   const date = new Date(dateStr)

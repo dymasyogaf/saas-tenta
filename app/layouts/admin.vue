@@ -160,7 +160,8 @@ import {
   Menu,
   LogOut,
   Headset,
-  Globe
+  Globe,
+  Send
 } from 'lucide-vue-next'
 
 // Auth state
@@ -235,6 +236,7 @@ const navItems = computed(() => {
       allowed: ['super_admin', 'admin_finance', 'admin_compliance']
     },
     { to: '/admin/support', label: t('admin.supportTickets'), icon: Headset, allowed: ['super_admin', 'admin_compliance'] },
+    { to: '/admin/broadcast', label: 'Kirim Pengumuman', icon: Send, allowed: ['super_admin'] },
     { to: '/admin/clients', label: t('admin.clientList'), icon: Users, allowed: ['super_admin', 'admin_finance', 'admin_ads_ops', 'admin_compliance'] },
     { to: '/admin/users', label: t('admin.accessManagement'), icon: UserCog, allowed: ['super_admin'] },
   ]

@@ -1,5 +1,5 @@
 <template>
-  <div class="max-w-6xl mx-auto">
+  <div class="max-w-7xl mx-auto space-y-6 pb-12">
     <!-- Header -->
     <div class="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
       <h2 class="text-2xl font-display font-bold text-ink-900">{{ $t('dashboard.issues.title') }}</h2>

@@ -56,7 +56,10 @@
         </div>
         
         <!-- Overlay for closing popover when clicking outside -->
-        <div v-if="showDatePopover" @click="showDatePopover = false" class="fixed inset-0 z-40"></div>
+        <Teleport to="body">
+<div v-if="showDatePopover" @click="showDatePopover = false" class="fixed inset-0 z-40"></div>
+        </Teleport>
+
       </div>
     </div>
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
@@ -112,6 +115,48 @@
         <p class="text-xs font-medium text-slate-500 mt-2">
           Total masuk pada rentang waktu terpilih
         </p>
+      </div>
+    </div>
+
+    <!-- Alert / Perhatian -->
+    <div v-if="(stats?.expiringRentals || 0) > 0 || (stats?.lowBalanceRentals || 0) > 0 || (stats?.lowLimitRentals || 0) > 0" class="mb-8 space-y-4">
+      <div v-if="(stats?.expiringRentals || 0) > 0" class="bg-red-50 border border-red-200 rounded-xl p-5 shadow-sm flex items-start gap-4">
+        <div class="w-10 h-10 bg-red-100 text-red-600 rounded-xl flex items-center justify-center shrink-0">
+          <Megaphone class="w-5 h-5" />
+        </div>
+        <div class="flex-1">
+          <h3 class="text-base font-bold text-red-900">Perhatian: Ada {{ stats?.expiringRentals }} Akun Iklan Segera Kedaluwarsa</h3>
+          <p class="text-sm text-red-700 mt-1">Masa sewa akun iklan klien ini akan habis dalam waktu kurang dari 7 hari. Segera lakukan follow up ke klien agar layanan tidak terputus.</p>
+        </div>
+        <NuxtLink to="/admin/ads-ops" class="shrink-0 px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-bold rounded-lg transition-colors">
+          Lihat & Follow Up
+        </NuxtLink>
+      </div>
+
+      <div v-if="(stats?.lowBalanceRentals || 0) > 0" class="bg-orange-50 border border-orange-200 rounded-xl p-5 shadow-sm flex items-start gap-4">
+        <div class="w-10 h-10 bg-orange-100 text-orange-600 rounded-xl flex items-center justify-center shrink-0">
+          <WalletCards class="w-5 h-5" />
+        </div>
+        <div class="flex-1">
+          <h3 class="text-base font-bold text-orange-900">Perhatian: Ada {{ stats?.lowBalanceRentals }} Akun Iklan Sisa Anggaran Menipis</h3>
+          <p class="text-sm text-orange-700 mt-1">Sisa anggaran pada akun iklan klien ini di bawah Rp 300.000. Segera hubungi klien untuk melakukan Top Up anggaran.</p>
+        </div>
+        <NuxtLink to="/admin/ads-ops" class="shrink-0 px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white text-sm font-bold rounded-lg transition-colors">
+          Lihat & Follow Up
+        </NuxtLink>
+      </div>
+
+      <div v-if="(stats?.lowLimitRentals || 0) > 0" class="bg-yellow-50 border border-yellow-200 rounded-xl p-5 shadow-sm flex items-start gap-4">
+        <div class="w-10 h-10 bg-yellow-100 text-yellow-600 rounded-xl flex items-center justify-center shrink-0">
+          <Activity class="w-5 h-5" />
+        </div>
+        <div class="flex-1">
+          <h3 class="text-base font-bold text-yellow-900">Perhatian: Ada {{ stats?.lowLimitRentals }} Akun Iklan Sisa Limit Menipis</h3>
+          <p class="text-sm text-yellow-700 mt-1">Sisa limit harian/siklus pada akun iklan klien ini di bawah Rp 300.000. Segera hubungi klien untuk melakukan pembayaran agar iklan tidak terhenti.</p>
+        </div>
+        <NuxtLink to="/admin/ads-ops" class="shrink-0 px-4 py-2 bg-yellow-600 hover:bg-yellow-700 text-white text-sm font-bold rounded-lg transition-colors">
+          Lihat & Follow Up
+        </NuxtLink>
       </div>
     </div>
 
@@ -746,6 +791,9 @@ interface AdminStats {
   chartSeries: { name: string; data: number[] }[];
   userChartSeries: { name: string; data: number[] }[];
   chartLabels: string[];
+  expiringRentals: number;
+  lowBalanceRentals: number;
+  lowLimitRentals: number;
 }
 
 // Fetch real metrics from Backend API (Bypass RLS)

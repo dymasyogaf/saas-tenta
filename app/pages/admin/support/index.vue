@@ -1,5 +1,5 @@
 <template>
-  <div class="space-y-6">
+  <div class="max-w-7xl mx-auto space-y-6 pb-12">
     <div>
       <h1 class="text-2xl font-bold text-ink-900">Tiket Pusat Bantuan</h1>
       <p class="text-ink-500 mt-1">Pantau dan kelola keluhan klien (Support Tickets)</p>

@@ -1,5 +1,5 @@
 <template>
-  <div class="max-w-6xl mx-auto space-y-6">
+  <div class="max-w-7xl mx-auto space-y-6 pb-12">
     <h2 class="text-2xl font-display font-bold text-ink-900 mb-6">{{ $t('profile.title') }}</h2>
     
     <div class="grid grid-cols-1 md:grid-cols-12 gap-6">
