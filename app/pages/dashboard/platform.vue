@@ -151,6 +151,15 @@ const platformsRaw = ref<any[]>([
     descKey: 'platform.metaDesc',
   },
   {
+    dbName: 'Google Ads',
+    name: 'Google Ads Whitelisted Account',
+    logo: '/icon-google-ads.png',
+    logoClass: 'rounded-full',
+    statusKey: 'inactive',
+    rawStatus: null,
+    descKey: 'platform.googleDesc',
+  },
+  {
     dbName: 'TikTok Ads',
     name: 'TikTok Ads Whitelisted Account',
     logo: '/tiktok.svg',
@@ -159,15 +168,6 @@ const platformsRaw = ref<any[]>([
     rawStatus: null,
     isComingSoon: true,
     descKey: 'platform.tiktokDesc',
-  },
-  {
-    dbName: 'Google Ads',
-    name: 'Google Ads Whitelisted Account',
-    logo: '/icon-google-ads.png',
-    logoClass: 'rounded-full',
-    statusKey: 'inactive',
-    rawStatus: null,
-    descKey: 'platform.googleDesc',
   },
 ])
 
