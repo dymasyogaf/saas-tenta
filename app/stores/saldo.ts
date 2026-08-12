@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { useAdsStore } from './ads'
-import { useSupabaseUser, useSupabaseClient, useCsrf } from '#imports'
+import { useSupabaseUser, useSupabaseClient } from '#imports'
 import { useToast } from '~/composables/useToast'
 
 
@@ -91,16 +91,14 @@ export const useSaldoStore = defineStore('saldo', {
       }
     },
 
-    async topup(amount: number, userValue: any, method: string, packageType: string) {
+    async topup(amount: number, userValue: any, method: string, packageType: string, csrfToken?: string) {
       this.isLoading = true
       this.error = null
       
-      // Harus dipanggil di awal (sinkron) sebelum await, agar tidak kehilangan Vue Context
+      // Toast harus dipanggil di awal (sinkron) sebelum await, agar tidak kehilangan Vue Context
       let toast: any = null
-      let csrfToken: string | undefined = undefined
       try {
         toast = useToast()
-        csrfToken = unref(useCsrf().csrf)
       } catch (err) {}
       
       try {
@@ -171,15 +169,13 @@ export const useSaldoStore = defineStore('saldo', {
         this.isLoading = false
       }
     },
-    async allocate(amount: number, userValue: any, adAccountId: string, platform: string) {
+    async allocate(amount: number, userValue: any, adAccountId: string, platform: string, csrfToken?: string) {
       this.isLoading = true
       this.error = null
       
       let toast: any = null
-      let csrfToken: string | undefined = undefined
       try {
         toast = useToast()
-        csrfToken = unref(useCsrf().csrf)
       } catch (err) {}
       
       try {

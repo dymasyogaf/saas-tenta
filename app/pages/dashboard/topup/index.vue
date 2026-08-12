@@ -682,7 +682,8 @@ const handleTopup = () => {
 
 const submitTopup = async () => {
   if (!isValidTopup.value) return
-  await saldoStore.topup(topupAmount.value as number, user.value, selectedMethod.value, selectedPackage.value)
+  const csrfToken = unref(csrf)
+  await saldoStore.topup(topupAmount.value as number, user.value, selectedMethod.value, selectedPackage.value, csrfToken)
   if (!saldoStore.error) {
     isTopupModalOpen.value = false
   }
