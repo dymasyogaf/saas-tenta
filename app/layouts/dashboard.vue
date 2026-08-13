@@ -64,8 +64,8 @@
 
         <!-- Right side actions -->
         <div class="flex items-center gap-1.5 sm:gap-5">
-          <!-- Language Dropdown -->
-          <div class="relative">
+          <!-- Language Dropdown (Hidden on Global Mode) -->
+          <div class="relative" v-if="!isGlobal">
             <button class="border border-ink-200 text-ink-700 hover:bg-ink-50 transition-colors p-1.5 sm:px-4 sm:py-2 rounded-lg sm:rounded-xl flex items-center gap-2" @click="toggleLang">
               <img :src="`https://flagcdn.com/${locale === 'en' ? 'gb' : locale}.svg`" alt="Flag" class="w-4 h-4 sm:w-5 sm:h-5 object-cover rounded-[2px] shadow-sm shrink-0 border border-ink-100" />
               <span class="text-xs sm:text-sm font-semibold hidden sm:block">{{ locale === 'id' ? 'Indonesia' : 'English' }}</span>
@@ -264,9 +264,10 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, onUnmounted } from 'vue'
+import { onMounted, onUnmounted, watch } from 'vue'
 import { stripHtml } from '../../utils/formatters'
 import { useSaldoStore } from '~/stores/saldo'
+import { useAppMode } from '~/composables/useAppMode'
 import {
   LayoutDashboard,
   MonitorPlay,
@@ -298,6 +299,16 @@ const currentLocaleName = computed(() =>
 const { user, logout } = useAuth()
 const router = useRouter()
 const saldoStore = useSaldoStore()
+const { isGlobal } = useAppMode()
+
+// Force language to English for global mode
+if (isGlobal.value) {
+  setLocale('en')
+}
+
+watch(isGlobal, (val) => {
+  if (val) setLocale('en')
+})
 const supabase = useSupabaseClient<any>()
 
 const notifications = ref<any[]>([])

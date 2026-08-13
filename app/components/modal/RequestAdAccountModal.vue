@@ -162,29 +162,29 @@
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div @click="form.subscriptionMonths = 1; form.rentalFee = pricing.monthly" :class="['border-2 rounded-xl p-5 cursor-pointer transition-all text-center', form.subscriptionMonths === 1 ? 'border-orange-500 bg-orange-50' : 'border-ink-100 hover:border-ink-300']">
                 <h5 class="font-bold text-ink-900 mb-1">1 {{ $t('modals.extendRent.month') }}</h5>
-                <p class="text-2xl font-bold text-orange-600 mb-2">Rp {{ pricing.monthly.toLocaleString('id-ID') }}</p>
+                <p class="text-2xl font-bold text-orange-600 mb-2">{{ isGlobal ? '$' : 'Rp' }} {{ pricing.monthly.toLocaleString(isGlobal ? 'en-US' : 'id-ID') }}</p>
                 <p class="text-xs text-ink-500">{{ $t('modals.extendRent.normal') }}</p>
               </div>
 
               <div @click="form.subscriptionMonths = 3; form.rentalFee = pricing.quarterly" :class="['border-2 rounded-xl p-5 cursor-pointer transition-all relative text-center', form.subscriptionMonths === 3 ? 'border-orange-500 bg-orange-50' : 'border-ink-100 hover:border-ink-300']">
                 <div class="absolute -top-3 inset-x-0 flex justify-center"><span class="bg-orange-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">{{ $t('modals.extendRent.save') }} 22%</span></div>
                 <h5 class="font-bold text-ink-900 mb-1 mt-1">3 {{ $t('modals.extendRent.months') }}</h5>
-                <p class="text-2xl font-bold text-orange-600 mb-2">Rp {{ pricing.quarterly.toLocaleString('id-ID') }}</p>
-                <p class="text-xs text-ink-500 line-through">Rp {{ pricing.quarterlyOriginal.toLocaleString('id-ID') }}</p>
+                <p class="text-2xl font-bold text-orange-600 mb-2">{{ isGlobal ? '$' : 'Rp' }} {{ pricing.quarterly.toLocaleString(isGlobal ? 'en-US' : 'id-ID') }}</p>
+                <p class="text-xs text-ink-500 line-through" v-if="pricing.quarterlyOriginal">{{ isGlobal ? '$' : 'Rp' }} {{ pricing.quarterlyOriginal.toLocaleString(isGlobal ? 'en-US' : 'id-ID') }}</p>
               </div>
 
               <div @click="form.subscriptionMonths = 6; form.rentalFee = pricing.semiannual" :class="['border-2 rounded-xl p-5 cursor-pointer transition-all relative text-center', form.subscriptionMonths === 6 ? 'border-orange-500 bg-orange-50' : 'border-ink-100 hover:border-ink-300']">
                 <div class="absolute -top-3 inset-x-0 flex justify-center"><span class="bg-green-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">{{ $t('modals.extendRent.save') }} 12%</span></div>
                 <h5 class="font-bold text-ink-900 mb-1 mt-1">6 {{ $t('modals.extendRent.months') }}</h5>
-                <p class="text-2xl font-bold text-orange-600 mb-2">Rp {{ pricing.semiannual.toLocaleString('id-ID') }}</p>
-                <p class="text-xs text-ink-500 line-through">Rp {{ pricing.semiannualOriginal.toLocaleString('id-ID') }}</p>
+                <p class="text-2xl font-bold text-orange-600 mb-2">{{ isGlobal ? '$' : 'Rp' }} {{ pricing.semiannual.toLocaleString(isGlobal ? 'en-US' : 'id-ID') }}</p>
+                <p class="text-xs text-ink-500 line-through" v-if="pricing.semiannualOriginal">{{ isGlobal ? '$' : 'Rp' }} {{ pricing.semiannualOriginal.toLocaleString(isGlobal ? 'en-US' : 'id-ID') }}</p>
               </div>
             </div>
 
             <div class="mt-8 bg-ink-50 rounded-xl p-4 border border-ink-100 flex items-center justify-between">
               <div>
                 <p class="text-sm text-ink-500 mb-1">{{ $t('modals.extendRent.netBalance') }}</p>
-                <p class="font-bold text-xl text-ink-900" :class="{'text-red-500': netBalance < form.rentalFee}">Rp {{ netBalance.toLocaleString('id-ID') }}</p>
+                <p class="font-bold text-xl text-ink-900" :class="{'text-red-500': netBalance < form.rentalFee}">{{ isGlobal ? '$' : 'Rp' }} {{ netBalance.toLocaleString(isGlobal ? 'en-US' : 'id-ID') }}</p>
               </div>
               <button type="button" v-if="netBalance < form.rentalFee" @click="() => navigateTo('/dashboard/topup')" class="px-4 py-2 bg-white border border-orange-200 text-orange-600 font-bold rounded-lg text-xs hover:bg-orange-50 transition-colors shadow-sm">
                 {{ $t('modals.extendRent.topupNow') }}
@@ -256,15 +256,28 @@ const supabase = useSupabaseClient()
 const { user } = useAuth()
 const runtimeConfig = useRuntimeConfig()
 const { t } = useI18n()
+const { isGlobal } = useAppMode()
 
-const pricing = {
-  monthly: Number(runtimeConfig.public.pricingMonthly),
-  quarterly: Number(runtimeConfig.public.pricingQuarterly),
-  quarterlyOriginal: Number(runtimeConfig.public.pricingQuarterlyOriginal),
-  semiannual: Number(runtimeConfig.public.pricingSemiannual),
-  semiannualOriginal: Number(runtimeConfig.public.pricingSemiannualOriginal),
-  managementFeeInfo: String(runtimeConfig.public.managementFeeInfo),
-}
+const pricing = computed(() => {
+  if (isGlobal.value) {
+    return {
+      monthly: Number(runtimeConfig.public.pricingMonthlyUsd),
+      quarterly: Number(runtimeConfig.public.pricingQuarterlyUsd),
+      quarterlyOriginal: 0,
+      semiannual: Number(runtimeConfig.public.pricingSemiannualUsd),
+      semiannualOriginal: 0,
+      managementFeeInfo: '$31 per account per month'
+    }
+  }
+  return {
+    monthly: Number(runtimeConfig.public.pricingMonthly),
+    quarterly: Number(runtimeConfig.public.pricingQuarterly),
+    quarterlyOriginal: Number(runtimeConfig.public.pricingQuarterlyOriginal),
+    semiannual: Number(runtimeConfig.public.pricingSemiannual),
+    semiannualOriginal: Number(runtimeConfig.public.pricingSemiannualOriginal),
+    managementFeeInfo: String(runtimeConfig.public.managementFeeInfo),
+  }
+})
 
 const isTiktokEnabled = computed(() => String(runtimeConfig.public.tiktokAdsEnabled) === 'true')
 const activePlatformName = ref(props.platformName || '')
@@ -272,20 +285,27 @@ const step = ref(props.platformName ? 2 : 1)
 
 const saldo = ref(0)
 const pendingSaldo = ref(0)
-const netBalance = computed(() => saldo.value - pendingSaldo.value)
+const usdSaldo = ref(0)
+const pendingUsdSaldo = ref(0)
+const netBalance = computed(() => {
+  if (isGlobal.value) return usdSaldo.value - pendingUsdSaldo.value
+  return saldo.value - pendingSaldo.value
+})
 
 const fetchBalance = async () => {
   if (!user.value) return
   const uid = (user.value as any)?.id || (user.value as any)?.sub
   const { data } = await (supabase as any)
     .from('saldo')
-    .select('balance, pending_balance')
+    .select('balance, pending_balance, usd_balance, usd_pending_balance')
     .eq('user_id', uid)
     .single()
     
   if (data) {
     saldo.value = Number(data.balance)
     pendingSaldo.value = Number(data.pending_balance)
+    usdSaldo.value = Number(data.usd_balance || 0)
+    pendingUsdSaldo.value = Number(data.usd_pending_balance || 0)
   }
 }
 
@@ -346,9 +366,19 @@ const form = reactive({
   agreePolicy: false,
   agreeTc: false,
   subscriptionMonths: 1,
-  rentalFee: pricing.monthly,
+  rentalFee: 0,
   paymentMethod: 'OV'
 })
+
+watch(pricing, (newVal) => {
+  if (form.rentalFee === 0 || form.subscriptionMonths === 1) {
+    form.rentalFee = newVal.monthly
+  } else if (form.subscriptionMonths === 3) {
+    form.rentalFee = newVal.quarterly
+  } else if (form.subscriptionMonths === 6) {
+    form.rentalFee = newVal.semiannual
+  }
+}, { immediate: true })
 
 const platformLogo = computed(() => {
   if (activePlatformName.value.includes('Meta')) return '/icon-meta-ads.png'
@@ -442,6 +472,7 @@ const submitPayment = async () => {
       targetUrl: form.targetUrl,
       subscriptionMonths: form.subscriptionMonths,
       rentalFee: form.rentalFee,
+      isGlobal: isGlobal.value,
       details: {
         full_name: form.fullName,
         ...(activePlatformName.value.includes('Google') ? { shared_email: form.bmId } : { bm_id: form.bmId }),

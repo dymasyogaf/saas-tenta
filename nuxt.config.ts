@@ -43,7 +43,7 @@ export default defineNuxtConfig({
       }
     },
     corsHandler: {
-      origin: process.env.NODE_ENV === 'production' ? ['https://member.tentaklik.com'] : '*',
+      origin: process.env.NODE_ENV === 'production' ? ['https://member.tentaklik.com', 'https://area.tentaklik.com'] : '*',
       methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
       allowHeaders: ['*'],
       credentials: true
@@ -115,15 +115,19 @@ export default defineNuxtConfig({
     googleClientSecret: '',
     googleRefreshToken: '',
     resendApiKey: '',
+    binancePayApiKey: process.env.BINANCE_PAY_API_KEY || '',
+    binancePaySecretKey: process.env.BINANCE_PAY_SECRET_KEY || '',
     // Public keys (exposed to client)
     public: {
       appName: 'Tentaklik',
       supabaseUrl: '',
       supabaseKey: '',
       pricingMonthly: 150000,
+      pricingMonthlyUsd: 31,
       pricingQuarterly: 350000,
-      pricingQuarterlyOriginal: 450000,
+      pricingQuarterlyUsd: 85,
       pricingSemiannual: 792000,
+      pricingSemiannualUsd: 150,
       pricingSemiannualOriginal: 900000,
       managementFeeInfo: 'Rp 555.000,- per akun per bulan termasuk PPN',
       tiktokAdsEnabled: false,

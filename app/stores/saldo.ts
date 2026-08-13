@@ -8,6 +8,8 @@ export const useSaldoStore = defineStore('saldo', {
   state: () => ({
     balance: 0,
     pendingBalance: 0,
+    usdBalance: 0,
+    usdPendingBalance: 0,
     activePackage: null as string | null,
     weeklyLimit: 0 as number,
     transactions: [] as any[],
@@ -32,15 +34,17 @@ export const useSaldoStore = defineStore('saldo', {
         const uid = user.value.id || (user.value as any).sub
         const { data, error } = await supabase
           .from('saldo')
-          .select('balance, pending_balance, user_id')
+          .select('balance, pending_balance, usd_balance, usd_pending_balance, user_id')
           .eq('user_id', uid)
           .single()
           
         if (error) throw error
         
         if (data) {
-          this.balance = data.balance
-          this.pendingBalance = data.pending_balance
+          this.balance = data.balance || 0
+          this.pendingBalance = data.pending_balance || 0
+          this.usdBalance = data.usd_balance || 0
+          this.usdPendingBalance = data.usd_pending_balance || 0
 
           // Ambil info paket dari tabel users
           const { data: userData, error: userError } = await supabase

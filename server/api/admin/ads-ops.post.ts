@@ -25,15 +25,22 @@ export default defineEventHandler(async (event) => {
       // 1. Release hold (kembalikan pending_balance)
       const { data: request } = await supabase
         .from('ad_account_requests')
-        .select('user_id, rental_fee, status')
+        .select('user_id, rental_fee, status, details')
         .eq('id', request_id)
         .single()
         
       if (request && (request.status === 'pending_review' || request.status === 'processing')) {
-        const { data: saldoData } = await supabase.from('saldo').select('pending_balance').eq('user_id', request.user_id).single()
+        const isUsd = request.details?.currency === 'USD'
+        const selectFields = isUsd ? 'usd_pending_balance' : 'pending_balance'
+        const { data: saldoData } = await supabase.from('saldo').select(selectFields).eq('user_id', request.user_id).single() as { data: any }
         if (saldoData) {
-          const newPending = Number(saldoData.pending_balance) - Number(request.rental_fee || 0)
-          await supabase.from('saldo').update({ pending_balance: newPending }).eq('user_id', request.user_id)
+          if (isUsd) {
+            const newPending = Number(saldoData.usd_pending_balance || 0) - Number(request.rental_fee || 0)
+            await supabase.from('saldo').update({ usd_pending_balance: newPending }).eq('user_id', request.user_id)
+          } else {
+            const newPending = Number(saldoData.pending_balance || 0) - Number(request.rental_fee || 0)
+            await supabase.from('saldo').update({ pending_balance: newPending }).eq('user_id', request.user_id)
+          }
         }
       }
 
@@ -107,28 +114,40 @@ export default defineEventHandler(async (event) => {
 
       // Finalisasi Pemotongan Saldo (Hanya jika belum approved sebelumnya)
       if (request.status !== 'approved') {
+        const isUsd = request.details?.currency === 'USD'
+        const selectFields = isUsd ? 'usd_balance, usd_pending_balance' : 'balance, pending_balance'
+        
         const { data: saldoData } = await supabase
           .from('saldo')
-          .select('balance, pending_balance')
+          .select(selectFields)
           .eq('user_id', request.user_id)
-          .single()
+          .single() as { data: any }
           
         if (saldoData) {
           const fee = Number(request.rental_fee || 0)
-          const newBalance = Number(saldoData.balance) - fee
-          const newPending = Number(saldoData.pending_balance) - fee
           
-          await supabase
-            .from('saldo')
-            .update({ balance: newBalance, pending_balance: newPending })
-            .eq('user_id', request.user_id)
+          if (isUsd) {
+            const newBalance = Number(saldoData.usd_balance || 0) - fee
+            const newPending = Number(saldoData.usd_pending_balance || 0) - fee
+            await supabase
+              .from('saldo')
+              .update({ usd_balance: newBalance, usd_pending_balance: newPending })
+              .eq('user_id', request.user_id)
+          } else {
+            const newBalance = Number(saldoData.balance || 0) - fee
+            const newPending = Number(saldoData.pending_balance || 0) - fee
+            await supabase
+              .from('saldo')
+              .update({ balance: newBalance, pending_balance: newPending })
+              .eq('user_id', request.user_id)
+          }
             
           await supabase.from('transactions').insert({
             user_id: request.user_id,
             amount: fee,
             type: 'payment',
             status: 'success',
-            description: 'Pembayaran Sewa Akun Iklan',
+            description: isUsd ? 'Pembayaran Sewa Akun Iklan (USD)' : 'Pembayaran Sewa Akun Iklan',
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString()
           })

@@ -6,7 +6,7 @@
       <p><strong>1.2 Ads Account</strong><br/>Ads Account adalah akun iklan Meta Ads maupun Google Ads yang disediakan atau dikelola oleh Tentaklik dan diberikan kepada Pengguna melalui Dashboard Tentaklik sesuai dengan layanan yang dipilih.</p>
       <p><strong>1.3 Ad Credit</strong><br/>Ad Credit adalah saldo iklan yang tersedia pada Ads Account berdasarkan Dana Top Up yang telah dibayarkan oleh Pengguna dan digunakan untuk aktivitas periklanan.</p>
       <p><strong>1.4 Dana Top Up</strong><br/>Dana Top Up adalah sejumlah dana yang dibayarkan oleh Pengguna kepada Tentaklik untuk dikonversikan menjadi saldo iklan pada Ads Account.</p>
-      <p><strong>1.5 Dashboard</strong><br/>Dashboard adalah halaman akun milik Pengguna pada member.tentaklik.com yang digunakan untuk mengakses seluruh layanan Tentaklik, termasuk namun tidak terbatas pada:<br/>- Dashboard Statistik<br/>- Platform Iklan<br/>- Saldo Iklan<br/>- Riwayat Top Up<br/>- Akun Tambahan<br/>- Akun Pengganti<br/>- Bantuan Tiket</p>
+      <p><strong>1.5 Dashboard</strong><br/>Dashboard adalah halaman akun milik Pengguna pada sistem Tentaklik yang digunakan untuk mengakses seluruh layanan Tentaklik, termasuk namun tidak terbatas pada:<br/>- Dashboard Statistik<br/>- Platform Iklan<br/>- Saldo Iklan<br/>- Riwayat Top Up<br/>- Akun Tambahan<br/>- Akun Pengganti<br/>- Bantuan Tiket</p>
       <p><strong>1.6 Platform Iklan</strong><br/>Platform Iklan adalah halaman pada Dashboard Tentaklik yang digunakan Pengguna untuk mengajukan, mengaktifkan, maupun mengelola layanan Ads Account yang disediakan oleh Tentaklik.</p>
       <p><strong>1.7 Saldo Iklan</strong><br/>Saldo Iklan adalah halaman Dashboard yang menampilkan informasi saldo aktif, penggunaan saldo, limit akun, histori top up, histori akun tambahan, serta histori akun pengganti.</p>
       <p><strong>1.8 Platform Pengiklanan Digital</strong><br/>Platform Pengiklanan Digital adalah penyedia layanan iklan digital yang didukung oleh Tentaklik, termasuk:<br/>- Meta Ads<br/>- Google Ads<br/>serta platform lain yang dapat ditambahkan di kemudian hari.</p>
@@ -43,7 +43,7 @@
       </ul>
       
       <p class="font-semibold mt-4">2.3 Persetujuan Layanan</p>
-      <p>Dengan membuat akun pada member.tentaklik.com maupun menggunakan layanan Tentaklik, Pengguna dianggap telah membaca, memahami, dan menyetujui seluruh Syarat &amp; Ketentuan yang berlaku.</p>
+      <p>Dengan membuat akun pada sistem Tentaklik maupun menggunakan layanan Tentaklik, Pengguna dianggap telah membaca, memahami, dan menyetujui seluruh Syarat &amp; Ketentuan yang berlaku.</p>
 
       <hr class="border-ink-200 my-4" />
       
@@ -162,7 +162,15 @@
       <p><strong>1.2 Ads Account</strong><br/>Ads Account is a Meta Ads or Google Ads advertising account provided or managed by Tentaklik and given to the User through the Tentaklik Dashboard according to the selected service.</p>
       <p><strong>1.3 Ad Credit</strong><br/>Ad Credit is the advertising balance available in the Ads Account based on the Top Up Funds paid by the User and used for advertising activities.</p>
       <p><strong>1.4 Top Up Funds</strong><br/>Top Up Funds are the amount of funds paid by the User to Tentaklik to be converted into advertising balance in the Ads Account.</p>
-      <p><strong>1.5 Dashboard</strong><br/>Dashboard is the User's account page at member.tentaklik.com used to access all Tentaklik services, including but not limited to:<br/>- Statistics Dashboard<br/>- Advertising Platforms<br/>- Ad Balance<br/>- Top Up History<br/>- Additional Accounts<br/>- Replacement Accounts<br/>- Ticket Support</p>
+      <p><strong>1.5 Dashboard</strong><br/>
+Dashboard is the User's account page in the Tentaklik system used to access all Tentaklik services, including but not limited to:<br/>
+- Statistics Dashboard<br/>
+- Advertising Platforms<br/>
+- Ad Balance<br/>
+- Top Up History<br/>
+- Additional Accounts<br/>
+- Replacement Accounts<br/>
+- Ticket Support</p>
       <p><strong>1.6 Advertising Platform</strong><br/>Advertising Platform is the page on the Tentaklik Dashboard used by Users to request, activate, or manage the Ads Account services provided by Tentaklik.</p>
       <p><strong>1.7 Ad Balance</strong><br/>Ad Balance is the Dashboard page displaying information on active balance, balance usage, account limits, top-up history, additional account history, and replacement account history.</p>
       <p><strong>1.8 Digital Advertising Platform</strong><br/>Digital Advertising Platform is a digital advertising service provider supported by Tentaklik, including:<br/>- Meta Ads<br/>- Google Ads<br/>and other platforms that may be added in the future.</p>
@@ -199,7 +207,7 @@
       </ul>
       
       <p class="font-semibold mt-4">2.3 Service Agreement</p>
-      <p>By creating an account on member.tentaklik.com or using Tentaklik services, the User is deemed to have read, understood, and agreed to all applicable Terms &amp; Conditions.</p>
+      <p>By creating an account on the Tentaklik system or using Tentaklik services, the User is deemed to have read, understood, and agreed to all applicable Terms &amp; Conditions.</p>
 
       <hr class="border-ink-200 my-4" />
       

@@ -52,14 +52,15 @@
     <!-- Top Section: Summary Cards -->
     <div class="flex flex-col lg:flex-row gap-6 mb-8">
       <!-- Left Card: Saldo -->
-      <div class="bg-white border border-ink-100 rounded-xl p-6 lg:w-1/3 shadow-sm flex flex-col">
-        <p class="text-sm font-medium text-ink-500 mb-2">{{ $t('topup.mainBalance') }}</p>
-        <div class="flex items-center gap-3 mb-6">
-          <div class="w-10 h-8 bg-orange-500 rounded-md flex items-center justify-center text-white shrink-0">
-            <Wallet class="w-5 h-5" />
+      <div class="bg-white rounded-3xl border border-ink-200 shadow-sm overflow-hidden flex flex-col relative h-full lg:w-1/3">
+        <div class="absolute inset-0 bg-gradient-to-br from-orange-50/50 to-transparent pointer-events-none"></div>
+        <div class="p-6 relative z-10 flex-1 flex flex-col justify-center">
+          <div class="flex items-center justify-between mb-4">
+            <div>
+              <p class="text-sm font-medium text-ink-500 mb-2">{{ $t('topup.mainBalance') }}</p>
+              <h3 class="text-3xl font-display font-bold text-ink-900">{{ formatRupiah(isGlobal ? saldoStore.usdBalance : saldoStore.balance) }}</h3>
+            </div>
           </div>
-          <h3 class="text-3xl font-display font-bold text-ink-900">{{ formatRupiah(saldoStore.balance) }}</h3>
-        </div>
         
         <div class="flex items-center gap-3 mb-6">
           <button @click="handleTopup" :disabled="saldoStore.isLoading" class="w-full bg-orange-500 border-2 border-orange-500 text-white hover:bg-orange-600 font-bold py-2.5 rounded-lg text-sm transition-colors disabled:opacity-50">
@@ -83,11 +84,14 @@
           </div>
         </div>
         
-        <div class="flex items-center gap-1 mb-2">
-          <p class="text-sm font-medium text-ink-500">{{ $t('topup.pendingTopup') }}</p>
-          <Info class="w-3.5 h-3.5 text-ink-400" />
-        </div>
-        <p class="text-lg font-bold text-ink-900 mb-4">{{ formatRupiah(saldoStore.pendingBalance) }}</p>
+          <div class="flex-1 flex flex-col p-6 text-center border-l border-ink-100">
+            <p class="text-sm font-medium text-ink-500 mb-2">{{ $t('topup.heldBalance') }}</p>
+            <p class="text-lg font-bold text-ink-900 mb-4">{{ formatRupiah(isGlobal ? saldoStore.usdPendingBalance : saldoStore.pendingBalance) }}</p>
+            <p class="text-xs text-ink-400 mb-2">
+              <span class="inline-block w-1.5 h-1.5 rounded-full bg-blue-500 mr-1"></span>
+              {{ pendingTrx.length }} {{ $t('topup.activeRequests') }}
+            </p>
+          </div>
 
         <div class="bg-orange-50 border border-orange-200 rounded-xl p-4 mt-auto">
           <p class="text-xs font-medium text-orange-600 mb-1">{{ $t('topup.rentActivePeriod') }}</p>
@@ -109,6 +113,7 @@
           <div v-else>
             <p class="text-sm font-bold text-ink-900">{{ $t('topup.noSubscriptions') }}</p>
           </div>
+        </div>
         </div>
       </div>
       
@@ -137,10 +142,10 @@
                 <p class="text-xs font-medium text-ink-500">{{ $t('topup.totalInboundBalance') }}</p>
               </div>
               <template v-if="saldoStore.isFetchingSaldo">
-                <div class="inline-block w-20 h-6 bg-ink-200 rounded animate-pulse mt-1"></div>
+                <div class="h-6 w-24 bg-ink-200 animate-pulse rounded-md mt-1"></div>
               </template>
               <template v-else>
-                <p class="text-lg font-bold text-ink-900">{{ formatRupiah(saldoStore.balance) }}</p>
+                <p class="text-lg font-bold text-ink-900">{{ formatRupiah(isGlobal ? saldoStore.usdBalance : saldoStore.balance) }}</p>
               </template>
             </div>
             
@@ -149,14 +154,14 @@
                 <div class="flex items-center gap-1 mb-1">
                   <p class="text-xs font-medium text-ink-500">{{ $t('topup.managementFee') }}</p>
                 </div>
-                <p class="text-base font-bold text-ink-900">Rp 0</p>
+                <p class="text-base font-bold text-ink-900">{{ formatRupiah(0) }}</p>
               </div>
               
               <div class="bg-ink-50/50 rounded-lg p-4 flex-1 border border-ink-100/50">
                 <div class="flex items-center gap-1 mb-1">
                   <p class="text-xs font-medium text-ink-500">{{ $t('topup.totalRefund') }}</p>
                 </div>
-                <p class="text-base font-bold text-ink-900">Rp 0</p>
+                <p class="text-base font-bold text-ink-900">{{ formatRupiah(0) }}</p>
               </div>
             </div>
           </div>
@@ -317,7 +322,7 @@
               <label class="block text-sm font-medium text-ink-700 mb-2">{{ $t('topup.topupNominalLabel', { package: selectedPackage.charAt(0).toUpperCase() + selectedPackage.slice(1) }) }}</label>
               <p class="text-xs text-ink-500 mb-2">{{ $t('topup.rangeLabel', { min: formatRupiah(packageInfo.min), max: packageInfo.max === Infinity ? $t('topup.unlimited') : formatRupiah(packageInfo.max) }) }}</p>
               <div class="relative">
-                <span class="absolute left-4 top-1/2 -translate-y-1/2 text-ink-500 font-medium text-lg">Rp</span>
+                <span class="absolute left-4 top-1/2 -translate-y-1/2 text-ink-500 font-medium text-lg">{{ isGlobal ? '$' : 'Rp' }}</span>
                 <input type="text" v-model="formattedTopupAmount" class="w-full pl-12 pr-4 py-3 bg-white border-2 border-ink-200 rounded-xl focus:outline-none focus:border-orange-500 focus:ring-4 focus:ring-orange-500/20 font-bold text-ink-900 text-lg transition-all" />
               </div>
               <p v-if="!isValidTopup && topupAmount" class="text-xs font-medium text-red-500 mt-1">{{ $t('topup.invalidNominal') }}</p>
@@ -402,7 +407,7 @@
               <div>
                 <label class="block text-sm font-bold text-ink-900 mb-1.5">Nominal Tambah Anggaran</label>
                 <div class="relative">
-                  <span class="absolute left-4 top-1/2 -translate-y-1/2 text-ink-500 font-medium">Rp</span>
+                  <span class="absolute left-4 top-1/2 -translate-y-1/2 text-ink-500 font-medium">{{ isGlobal ? '$' : 'Rp' }}</span>
                   <input type="text" v-model="allocateAmountInput" @input="formatAllocateInput" placeholder="1.000.000" class="w-full pl-11 pr-4 py-3 bg-white border border-ink-200 rounded-xl text-ink-900 text-lg font-bold focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition-all placeholder:font-normal placeholder:text-ink-300" />
                 </div>
                 <p v-if="allocateAmount > availableBalance" class="text-xs text-red-500 font-medium mt-1.5 flex items-center gap-1">
@@ -433,27 +438,41 @@ import { useAdsStore } from '~/stores/ads'
 import { useI18n } from 'vue-i18n'
 import { useToast } from '#imports'
 import { useSupabaseUser, useCsrf } from '#imports'
+import { useAppMode } from '~/composables/useAppMode'
 
 const { t } = useI18n()
 const toast = useToast()
 const saldoStore = useSaldoStore()
 const adsStore = useAdsStore()
 const { csrf } = useCsrf()
+const { isGlobal, isLocal } = useAppMode()
 
-const paymentMethods = [
-  { value: 'M2', name: 'Mandiri VA', logo: '/logos/mandiri.png' },
-  { value: 'I1', name: 'BNI VA', logo: '/logos/bni.png' },
-  { value: 'B1', name: 'BSI VA', logo: '/logos/bsi.png' },
-  { value: 'A1', name: 'ATM Bersama', logo: '/logos/atmbersama.png' },
-  { value: 'FT', name: 'Alfamart', logo: '/logos/alfamart.svg' },
-  { value: 'IR', name: 'Indomaret', logo: '/logos/indomaret.png' },
-]
+const paymentMethods = computed(() => {
+  if (isGlobal.value) {
+    return [
+      { value: 'USDT_TRC20', name: 'USDT (TRC20)', logo: 'https://cryptologos.cc/logos/tether-usdt-logo.png' },
+      { value: 'USDT_ERC20', name: 'USDT (ERC20)', logo: 'https://cryptologos.cc/logos/tether-usdt-logo.png' },
+    ]
+  }
+  return [
+    { value: 'M2', name: 'Mandiri VA', logo: '/logos/mandiri.png' },
+    { value: 'I1', name: 'BNI VA', logo: '/logos/bni.png' },
+    { value: 'B1', name: 'BSI VA', logo: '/logos/bsi.png' },
+    { value: 'A1', name: 'ATM Bersama', logo: '/logos/atmbersama.png' },
+    { value: 'FT', name: 'Alfamart', logo: '/logos/alfamart.svg' },
+    { value: 'IR', name: 'Indomaret', logo: '/logos/indomaret.png' },
+  ]
+})
 
 definePageMeta({
   layout: 'dashboard',
 })
 
 const pendingAccountRequests = ref<any[]>([])
+
+const pendingTrx = computed(() => {
+  return saldoStore.transactions.filter(t => t.type === 'topup' && t.status === 'pending')
+})
 
 const pendingAllocations = computed(() => {
   return saldoStore.transactions.filter(t => t.type === 'payment' && t.status === 'pending' && t.description?.includes('Alokasi Anggaran'))
@@ -524,6 +543,14 @@ const tabs = [
 ]
 
 const formatRupiah = (angka: number) => {
+  if (isGlobal.value) {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    }).format(angka || 0)
+  }
   return new Intl.NumberFormat('id-ID', {
     style: 'currency',
     currency: 'IDR',
@@ -532,6 +559,9 @@ const formatRupiah = (angka: number) => {
 }
 
 const availableBalance = computed(() => {
+  if (isGlobal.value) {
+    return Number(saldoStore.usdBalance || 0) - Number(saldoStore.usdPendingBalance || 0)
+  }
   return Number(saldoStore.balance || 0) - Number(saldoStore.pendingBalance || 0)
 })
 
@@ -649,9 +679,15 @@ const formattedTopupAmount = computed({
 })
 
 const packageInfo = computed(() => {
-  if (selectedPackage.value === 'starter') return { fee: 0.05, min: 300000, max: 5000000 }
-  if (selectedPackage.value === 'growth') return { fee: 0.045, min: 5000000, max: 15000000 }
-  if (selectedPackage.value === 'scale') return { fee: 0.035, min: 15000000, max: Infinity }
+  if (isGlobal.value) {
+    if (selectedPackage.value === 'starter') return { fee: 0.05, min: 30, max: 10000 }
+    if (selectedPackage.value === 'growth') return { fee: 0.04, min: 11000, max: 50000 }
+    if (selectedPackage.value === 'scale') return { fee: 0.03, min: 51000, max: Infinity }
+  } else {
+    if (selectedPackage.value === 'starter') return { fee: 0.05, min: 300000, max: 5000000 }
+    if (selectedPackage.value === 'growth') return { fee: 0.045, min: 5000000, max: 15000000 }
+    if (selectedPackage.value === 'scale') return { fee: 0.035, min: 15000000, max: Infinity }
+  }
   return { fee: 0, min: 0, max: 0 }
 })
 
@@ -676,16 +712,40 @@ const handleTopup = () => {
   isTopupModalOpen.value = true
   topupStep.value = 1
   selectedPackage.value = 'starter'
-  topupAmount.value = 300000
-  selectedMethod.value = 'M2'
+  topupAmount.value = isGlobal.value ? 30 : 300000
+  selectedMethod.value = isGlobal.value ? 'USDT_TRC20' : 'M2'
 }
 
 const submitTopup = async () => {
   if (!isValidTopup.value) return
+  
+  if (isGlobal.value) {
+    saldoStore.isLoading = true
+    try {
+      const response = await $fetch<any>('/api/binance-pay/create-order', {
+        method: 'POST',
+        headers: unref(csrf) ? { 'csrf-token': unref(csrf) } : {},
+        body: {
+          amount: topupAmount.value,
+          packageType: selectedPackage.value
+        }
+      })
+      if (response && response.success && response.paymentUrl) {
+        window.location.href = response.paymentUrl
+      }
+    } catch (err: any) {
+      toast.addToast(err.statusMessage || 'Failed to create Binance Pay order', 'error')
+    } finally {
+      saldoStore.isLoading = false
+    }
+    return
+  }
+
   const csrfToken = unref(csrf)
   await saldoStore.topup(topupAmount.value as number, user.value, selectedMethod.value, selectedPackage.value, csrfToken)
   if (!saldoStore.error) {
     isTopupModalOpen.value = false
+    topupStep.value = 1
   }
 }
 
