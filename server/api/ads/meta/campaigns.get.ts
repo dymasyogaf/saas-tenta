@@ -145,6 +145,14 @@ export default defineCachedEventHandler(async (event): Promise<AdsResponse> => {
         if (cap > 0) {
           api_budget_total = cap / offset
           api_balance = api_budget_total - api_amount_spent
+          
+          // Securely update the database saldo in the background so Admin Dashboard is accurate
+          try {
+             const supabase = serverSupabaseServiceRole<any>(event)
+             await supabase.from('ad_accounts').update({ saldo: api_balance }).eq('account_id', adAccountId.replace('act_', ''))
+          } catch (dbErr) {
+             console.warn('Gagal sync saldo ke database:', dbErr)
+          }
         }
         // Jika cap == 0, berarti akun tersebut tidak dilimit dari FB (unlimited).
         // Biarkan api_budget_total dan api_balance undefined agar frontend fallback ke Saldo Lokal Tenta.

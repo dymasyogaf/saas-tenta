@@ -31,7 +31,7 @@
         <span v-if="expiringRentals.length > 0" class="bg-red-100 text-red-700 py-0.5 px-2 rounded-full text-[10px]">{{ expiringRentals.length }}</span>
       </button>
       <button @click="viewMode = 'low-balance'" :class="viewMode === 'low-balance' ? 'bg-white shadow-sm text-slate-800' : 'text-slate-500 hover:text-slate-700'" class="px-4 py-2 rounded-lg font-bold text-sm transition-all flex items-center gap-2">
-        Sisa Anggaran Menipis
+        Sisa Saldo Iklan Menipis
         <span v-if="lowBalanceRentals.length > 0" class="bg-orange-100 text-orange-700 py-0.5 px-2 rounded-full text-[10px]">{{ lowBalanceRentals.length }}</span>
       </button>
       <button @click="viewMode = 'low-limit'" :class="viewMode === 'low-limit' ? 'bg-white shadow-sm text-slate-800' : 'text-slate-500 hover:text-slate-700'" class="px-4 py-2 rounded-lg font-bold text-sm transition-all flex items-center gap-2">
@@ -502,8 +502,8 @@
       <div class="bg-orange-50 border border-orange-200 rounded-xl p-4 flex items-start gap-3">
         <WalletCards class="w-5 h-5 text-orange-600 shrink-0 mt-0.5" />
         <div>
-          <h3 class="text-sm font-bold text-orange-900">Perhatian: Sisa Anggaran Menipis (<= 15%)</h3>
-          <p class="text-xs text-orange-700 mt-1">Daftar klien di bawah ini sisa anggaran akun iklannya sudah mencapai 85% pemakaian (tersisa <= 15% dari total anggaran). Silakan klik tombol Follow Up untuk mengingatkan klien Top Up.</p>
+          <h3 class="text-sm font-bold text-orange-900">Perhatian: Sisa Saldo Iklan Menipis (<= 15%)</h3>
+          <p class="text-xs text-orange-700 mt-1">Daftar klien di bawah ini sisa saldo akun iklannya sudah mencapai 85% pemakaian (tersisa <= 15% dari total anggaran). Silakan klik tombol Follow Up untuk mengingatkan klien Top Up.</p>
         </div>
       </div>
 
@@ -514,7 +514,7 @@
               <tr>
                 <th class="px-6 py-4">Klien & Kontak</th>
                 <th class="px-6 py-4">Akun Iklan</th>
-                <th class="px-6 py-4">Sisa Anggaran</th>
+                <th class="px-6 py-4">Sisa Saldo Iklan</th>
                 <th class="px-6 py-4 text-center">Aksi</th>
               </tr>
             </thead>
@@ -552,7 +552,7 @@
                   <p class="text-[10px] text-slate-500 mt-1">Total Anggaran: {{ formatRupiah(req.limit_amount || 0) }}</p>
                 </td>
                 <td class="px-6 py-4 text-center">
-                  <a v-if="req.users?.phone" :href="`https://wa.me/${req.users.phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent('Halo Bapak/Ibu ' + (req.users?.full_name || '') + ', sisa anggaran pada akun iklan ' + req.platform + ' (' + (req.account_name || '') + ') Anda saat ini tersisa ' + formatRupiah(req.saldo || 0) + '. Silakan lakukan Top Up agar iklan Anda tetap berjalan lancar.')}`" target="_blank" class="inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-green-500 hover:bg-green-600 text-white text-xs font-bold rounded-lg transition-colors">
+                  <a v-if="req.users?.phone" :href="`https://wa.me/${req.users.phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent('Halo Bapak/Ibu ' + (req.users?.full_name || '') + ', sisa saldo iklan pada akun ' + req.platform + ' (' + (req.account_name || '') + ') Anda saat ini tersisa ' + formatRupiah(req.saldo || 0) + '. Silakan lakukan Top Up agar iklan Anda tetap berjalan lancar.')}`" target="_blank" class="inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-green-500 hover:bg-green-600 text-white text-xs font-bold rounded-lg transition-colors">
                     <MessageCircle class="w-3.5 h-3.5" /> Follow Up WA
                   </a>
                   <span v-else class="text-xs text-slate-400 italic">No WA tidak tersedia</span>

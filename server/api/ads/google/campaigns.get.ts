@@ -1,3 +1,5 @@
+import { serverSupabaseServiceRole } from '#supabase/server'
+
 interface GoogleCampaignData {
   id: string
   name: string
@@ -33,6 +35,7 @@ interface AdsResponse {
     api_amount_spent?: number
   }
 }
+
 
 // Login customer ID (MCC account) — satu tempat, tidak duplikat
 const GOOGLE_LOGIN_CUSTOMER_ID = '6445325844'
@@ -188,6 +191,14 @@ export default defineCachedEventHandler(async (event): Promise<AdsResponse> => {
           api_balance = totalBudget - totalServed
           api_budget_total = totalBudget
           api_amount_spent = totalServed
+          
+          // Securely update the database saldo in the background so Admin Dashboard is accurate
+          try {
+             const supabase = serverSupabaseServiceRole<any>(event)
+             await supabase.from('ad_accounts').update({ saldo: api_balance }).eq('account_id', customerId)
+          } catch (dbErr) {
+             console.warn('Gagal sync saldo ke database:', dbErr)
+          }
         }
       }
     } catch (e) {

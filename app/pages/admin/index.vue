@@ -138,7 +138,7 @@
           <WalletCards class="w-5 h-5" />
         </div>
         <div class="flex-1">
-          <h3 class="text-base font-bold text-orange-900">Perhatian: Ada {{ stats?.lowBalanceRentals }} Akun Iklan Sisa Anggaran Menipis</h3>
+          <h3 class="text-base font-bold text-orange-900">Perhatian: Ada {{ stats?.lowBalanceRentals }} Akun Iklan Sisa Saldo Iklan Menipis</h3>
           <p class="text-sm text-orange-700 mt-1">Sisa anggaran pada akun iklan klien ini di bawah Rp 300.000. Segera hubungi klien untuk melakukan Top Up anggaran.</p>
         </div>
         <NuxtLink to="/admin/ads-ops" class="shrink-0 px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white text-sm font-bold rounded-lg transition-colors">

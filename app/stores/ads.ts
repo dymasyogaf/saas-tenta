@@ -204,7 +204,6 @@ export const useAdsStore = defineStore('ads', {
                    this.adAccounts[index].alert_saldo = (saldo < limit * 0.1 && limit > 0) ? 'Segera Top Up' : null
                    this.adAccounts[index].updated_at = new Date().toISOString()
                    
-                   // AUTO-HEALING: Update nama akun jika ditarik dari API dan belum diset
                    if (api_account_name && this.adAccounts[index].name !== api_account_name) {
                      this.adAccounts[index].name = api_account_name
                    }
@@ -219,6 +218,7 @@ export const useAdsStore = defineStore('ads', {
                   
                   // Simpan weeklySpend ke DB untuk dibaca Admin
                   const supabase = useSupabaseClient<any>()
+                  // Note: DB update for weekly_spend and saldo could be combined here, but we do it separately for simplicity since they depend on different fetches
                   supabase.from('ad_accounts').update({ weekly_spend: this.adAccounts[index].weeklySpend, updated_at: new Date().toISOString() }).eq('account_id', acc.account_id).then()
                 }
              } catch (e) {
@@ -273,10 +273,14 @@ export const useAdsStore = defineStore('ads', {
                    this.adAccounts[index].updated_at = new Date().toISOString() // Real-time UX
                    
                    // AUTO-HEALING: Update nama akun jika ditarik dari API dan belum diset (berawalan "Ad Account") atau berbeda
+                   const supabase = useSupabaseClient<any>()
+                   const updates: any = {}
                    if (api_account_name && this.adAccounts[index].name !== api_account_name) {
                      this.adAccounts[index].name = api_account_name
-                     const supabase = useSupabaseClient<any>()
-                     supabase.from('ad_accounts').update({ account_name: api_account_name }).eq('account_id', acc.account_id).then()
+                     updates.account_name = api_account_name
+                   }
+                   if (Object.keys(updates).length > 0) {
+                     supabase.from('ad_accounts').update(updates).eq('account_id', acc.account_id).then()
                    }
                 }
              } catch (e) {
