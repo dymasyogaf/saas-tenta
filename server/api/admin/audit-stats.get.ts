@@ -112,12 +112,22 @@ export default defineEventHandler(async (event) => {
       .order('created_at', { ascending: false })
       .limit(5)
 
+    // ─── 8. SUPPORT TICKETS (Butuh Delegasi) ─────────────────────────────────
+    const { count: supportTickets } = await supabase
+      .from('support_tickets')
+      .select('*', { count: 'exact', head: true })
+      .is('assigned_to_role', null)
+      .neq('status', 'closed')
+
     return {
       // KYC Stats
       kycPending: kycPending || 0,
       kycApprovedToday: kycApprovedToday || 0,
       kycRejectedToday: kycRejectedToday || 0,
       kycNeverSubmitted: kycNeverSubmitted || 0,
+      
+      // Support Stats
+      supportTickets: supportTickets || 0,
 
       // Chart Trend
       chartLabels,

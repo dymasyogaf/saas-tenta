@@ -1,7 +1,7 @@
 import { serverSupabaseServiceRole } from '#supabase/server'
 
 export default defineEventHandler(async (event) => {
-  await requireAdmin(event, ['admin_compliance'])
+  await requireAdmin(event)
   const ticketId = getRouterParam(event, 'id')
   if (!ticketId) throw createError({ statusCode: 400, statusMessage: 'ID tiket diperlukan' })
 

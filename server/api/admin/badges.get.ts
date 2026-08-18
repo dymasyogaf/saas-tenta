@@ -57,15 +57,23 @@ export default defineEventHandler(async (event) => {
       return saldo <= (limit * 0.15)
     }).length
 
+    // 6. Hitung antrean Tiket Bantuan (Belum diassign)
+    const { count: supportCount } = await supabase
+      .from('support_tickets')
+      .select('*', { count: 'exact', head: true })
+      .is('assigned_to_role', null)
+      .neq('status', 'closed')
+
     return {
       kyc: kycCount || 0,
       ads: adsCount || 0,
       finance: financeCount || 0,
       expiringRentals: expiringRentalsCount || 0,
-      lowBalanceRentals: lowBalanceRentalsCount || 0
+      lowBalanceRentals: lowBalanceRentalsCount || 0,
+      support: supportCount || 0
     }
   } catch (error) {
     console.error('Error fetching admin badges:', error)
-    return { kyc: 0, ads: 0, finance: 0, expiringRentals: 0, lowBalanceRentals: 0 }
+    return { kyc: 0, ads: 0, finance: 0, expiringRentals: 0, lowBalanceRentals: 0, support: 0 }
   }
 })

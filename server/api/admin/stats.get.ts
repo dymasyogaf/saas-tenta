@@ -68,12 +68,13 @@ export default defineEventHandler(async (event) => {
     const { data: expiringData } = await expiringQuery
     const expiringRentals = expiringData?.length || 0
 
-    // 5.6 Low Balance Rentals (< 300.000)
-    let lowBalanceQuery = supabase.from('ad_accounts').select('saldo, limit_amount, weekly_spend').eq('status', 'active').gt('limit_amount', 0)
+    // 5.6 Low Balance Rentals (saldo <= Rp 350.000)
+    let lowBalanceQuery = supabase.from('ad_accounts').select('saldo, limit_amount, weekly_spend').eq('status', 'active')
     const { data: lbData } = await lowBalanceQuery
     const lowBalanceRentals = (lbData || []).filter((acc: any) => {
       const saldo = Number(acc.saldo) || 0
-      return saldo < 300000
+      if (saldo <= 350000) return true
+      return false
     }).length
 
     // 5.7 Low Limit Rentals (limit_amount - weekly_spend < 300.000)

@@ -228,11 +228,11 @@ const fetchRequests = async () => {
 }
 
 const resetDev = async () => {
-  if (!confirm(t('platform.resetDevConfirm'))) return
+  if (!(await useConfirm().show({ message: t('platform.resetDevConfirm') }))) return
   try {
     const csrfToken = unref(csrf)
     const res = await $fetch('/api/dev/reset-ads', { method: 'POST', headers: csrfToken ? { 'csrf-token': csrfToken } : {} })
-    alert((res as any).message)
+    useToast().addToast((res as any).message, 'success')
 
     platformsRaw.value.forEach(p => {
       p.rawStatus = null
@@ -242,7 +242,7 @@ const resetDev = async () => {
     refreshNuxtData()
     fetchRequests()
   } catch(e: any) {
-    alert(e.data?.statusMessage || t('platform.resetFailed'))
+    useToast().addToast(e.data?.statusMessage || t('platform.resetFailed'), 'error')
   }
 }
 

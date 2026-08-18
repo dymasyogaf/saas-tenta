@@ -192,7 +192,7 @@ const markAllRead = async () => {
 }
 
 const deleteAll = async () => {
-  if (!user.value || !confirm('Yakin ingin menghapus SEMUA notifikasi? Aksi ini tidak dapat dibatalkan.')) return
+  if (!user.value || !(await useConfirm().show({ message: 'Yakin ingin menghapus SEMUA notifikasi? Aksi ini tidak dapat dibatalkan.' }))) return
   const userId = user.value.id || (user.value as any).sub
   loading.value = true
   try {

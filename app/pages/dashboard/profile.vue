@@ -481,7 +481,7 @@ const handlePhoneRequested = (newPhone: string) => {
 }
 
 const resetVerification = async () => {
-  if (!confirm(t('profile.resetConfirm'))) return
+  if (!(await useConfirm().show({ message: t('profile.resetConfirm') }))) return
   try {
     const uid = (user.value as any)?.id || (user.value as any)?.sub
     const supabase = useSupabaseClient()

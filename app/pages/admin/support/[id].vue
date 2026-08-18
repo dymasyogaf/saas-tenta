@@ -167,7 +167,7 @@
     </div>
 
     <!-- Form Balasan Admin -->
-    <div class="bg-white border border-ink-100 rounded-2xl overflow-hidden shadow-sm shadow-ink-900/5 relative">
+    <div v-if="canReply" class="bg-white border border-ink-100 rounded-2xl overflow-hidden shadow-sm shadow-ink-900/5 relative">
       <div class="absolute left-0 top-0 bottom-0 w-1.5 bg-orange-500 z-10"></div>
       
       <div class="px-6 py-4 border-b border-ink-100 flex items-center justify-between pl-8">
@@ -188,7 +188,7 @@
             <option value="in_progress">In Progress</option>
             <option value="answered">Dijawab</option>
             <option value="pending">Ditunda</option>
-            <option value="closed">Ditutup</option>
+            <option value="closed">Selesai</option>
           </select>
         </div>
       </div>
@@ -282,6 +282,15 @@ const toast = useToast()
 
 const ticketId = route.params.id
 
+const userRole = computed(() => user.value?.user_metadata?.role as string)
+const isAuditRole = computed(() => userRole.value === 'super_admin' || userRole.value === 'admin_compliance')
+
+const canReply = computed(() => {
+  if (!ticket.value) return false
+  if (isAuditRole.value) return true
+  return ticket.value.assigned_to_role === userRole.value
+})
+
 // Fetch ticket data with user relation
 const { data: ticket, pending, refresh } = useFetch<any>(`/api/admin/tickets/${ticketId}`, {
   transform: (res) => res.data
@@ -324,7 +333,7 @@ const removeAttachment = (index: number) => {
 }
 
 const updateStatus = async (status: string) => {
-  if (!confirm(`Yakin ingin mengubah status tiket menjadi ${status.toUpperCase()}?`)) return
+  if (!(await useConfirm().show({ message: `Yakin ingin mengubah status tiket menjadi ${getStatusLabel(status).toUpperCase()}?` }))) return
   
   try {
     const { csrf } = useCsrf()

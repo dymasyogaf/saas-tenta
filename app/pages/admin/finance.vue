@@ -562,7 +562,7 @@ const finalRejectReason = computed(() => {
 })
 
 const approveReferralWithdraw = async (id: string) => {
-  if (!confirm('Anda yakin sudah mentransfer komisi ini ke rekening klien? Tindakan ini tidak dapat dibatalkan.')) return
+  if (!(await useConfirm().show({ message: 'Anda yakin sudah mentransfer komisi ini ke rekening klien? Tindakan ini tidak dapat dibatalkan.' }))) return
   
   isSubmittingWd.value = id
   try {

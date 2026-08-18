@@ -199,6 +199,7 @@ const { data: badges } = useFetch('/api/admin/badges', { key: 'admin-badges' })
 const pendingKycCount = computed(() => badges.value?.kyc || 0)
 const pendingAdsCount = computed(() => badges.value?.ads || 0)
 const pendingFinanceCount = computed(() => badges.value?.finance || 0)
+const pendingSupportCount = computed(() => badges.value?.support || 0)
 
 const userRole = computed(() => user.value?.user_metadata?.role || 'admin')
 
@@ -235,7 +236,12 @@ const navItems = computed(() => {
       badge: pendingFinanceCount.value > 0 ? pendingFinanceCount.value.toString() : undefined,
       allowed: ['super_admin', 'admin_finance', 'admin_compliance']
     },
-    { to: '/admin/support', label: t('admin.supportTickets'), icon: Headset, allowed: ['super_admin', 'admin_compliance'] },
+    { 
+      to: '/admin/support', 
+      label: t('admin.supportTickets'), 
+      icon: Headset,
+      badge: pendingSupportCount.value > 0 ? pendingSupportCount.value.toString() : undefined
+    },
     { to: '/admin/broadcast', label: 'Kirim Pengumuman', icon: Send, allowed: ['super_admin'] },
     { to: '/admin/clients', label: t('admin.clientList'), icon: Users, allowed: ['super_admin', 'admin_finance', 'admin_ads_ops', 'admin_compliance'] },
     { to: '/admin/users', label: t('admin.accessManagement'), icon: UserCog, allowed: ['super_admin'] },

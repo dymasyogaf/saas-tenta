@@ -382,27 +382,47 @@
         </NuxtLink>
       </div>
 
-      <!-- ── Section 1: Statistik KYC ─────────────────────────────── -->
-      <div class="flex items-center justify-between pt-2 border-b border-slate-200 pb-2 mb-4">
-        <h3 class="text-lg font-bold text-slate-900">Statistik KYC</h3>
-        <NuxtLink to="/admin/verifications" class="text-xs font-bold text-orange-600 hover:text-orange-700 flex items-center gap-1">
-          Buka Halaman Review <ArrowRight class="w-3.5 h-3.5" />
-        </NuxtLink>
+      <!-- ── Section 1: Antrean Operasional (To-Do) ─────────────────────────────── -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between pt-2 border-b border-slate-200 pb-2 mb-4 gap-3">
+        <h3 class="text-lg font-bold text-slate-900">Antrean Operasional (To-Do)</h3>
       </div>
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        
         <!-- KYC Pending -->
         <NuxtLink to="/admin/verifications" class="bg-white border-2 border-orange-300 rounded-xl p-5 shadow-sm hover:border-orange-400 hover:shadow-md transition-all group">
           <div class="flex items-center gap-3 mb-3">
             <div class="w-9 h-9 rounded-lg bg-orange-100 text-orange-600 flex items-center justify-center">
-              <Clock class="w-5 h-5" />
+              <ShieldCheck class="w-5 h-5" />
             </div>
-            <p class="text-sm font-bold text-slate-700">Menunggu Review</p>
+            <p class="text-sm font-bold text-slate-700">Antrean KYC</p>
           </div>
           <div v-if="pendingAudit" class="h-9 w-16 bg-slate-200 rounded animate-pulse my-1"></div>
           <p v-else class="text-4xl font-display font-bold text-orange-600">{{ auditStats?.kycPending || 0 }}</p>
-          <p class="text-xs font-medium text-slate-500 mt-2">Pengajuan KYC pending</p>
+          <p class="text-xs font-medium text-slate-500 mt-2">Menunggu review tim audit</p>
         </NuxtLink>
 
+        <!-- Unassigned Tickets -->
+        <NuxtLink to="/admin/support" class="bg-white border-2 border-red-300 rounded-xl p-5 shadow-sm hover:border-red-400 hover:shadow-md transition-all group">
+          <div class="flex items-center gap-3 mb-3">
+            <div class="w-9 h-9 rounded-lg bg-red-100 text-red-600 flex items-center justify-center">
+              <Headset class="w-5 h-5" />
+            </div>
+            <p class="text-sm font-bold text-slate-700">Butuh Delegasi Tiket</p>
+          </div>
+          <div v-if="pendingAudit" class="h-9 w-16 bg-slate-200 rounded animate-pulse my-1"></div>
+          <p v-else class="text-4xl font-display font-bold text-red-600">{{ auditStats?.supportTickets || 0 }}</p>
+          <p class="text-xs font-medium text-slate-500 mt-2">Tiket belum diarahkan ke tim</p>
+        </NuxtLink>
+      </div>
+
+      <!-- ── Section 2: Riwayat & Statistik KYC ─────────────────────────────── -->
+      <div class="flex items-center justify-between pt-6 border-b border-slate-200 pb-2 mb-4">
+        <h3 class="text-lg font-bold text-slate-900">Riwayat & Statistik KYC</h3>
+        <NuxtLink to="/admin/verifications" class="text-xs font-bold text-orange-600 hover:text-orange-700 flex items-center gap-1">
+          Buka Halaman Review <ArrowRight class="w-3.5 h-3.5" />
+        </NuxtLink>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
         <!-- Disetujui Hari Ini -->
         <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
           <div class="flex items-center gap-3 mb-3">
@@ -608,24 +628,24 @@
 
       <h3 class="text-lg font-bold text-slate-900 pt-2 border-b border-slate-200 pb-2 mb-4">Kesehatan Akun (Monitoring)</h3>
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-        <div class="bg-slate-900 border border-slate-800 rounded-xl p-6 shadow-md relative overflow-hidden">
-          <p class="text-sm font-medium text-slate-400 mb-1">Total Akun Aktif</p>
+        <NuxtLink to="/admin/ads-ops?tab=active-accounts" class="bg-slate-900 border border-slate-800 rounded-xl p-6 shadow-md relative overflow-hidden group hover:border-slate-600 transition-colors cursor-pointer block">
+          <p class="text-sm font-medium text-slate-400 mb-1 group-hover:text-slate-300 transition-colors">Total Akun Aktif</p>
           <div v-if="pendingAdsOps" class="h-10 w-20 bg-slate-800 rounded animate-pulse my-1"></div>
           <p v-else class="text-4xl font-display font-bold text-white">{{ adsOpsStats?.activeAccounts || 0 }}</p>
           <p class="text-xs text-slate-500 mt-2">Berjalan normal tanpa masalah</p>
-        </div>
-        <div class="bg-red-50 border border-red-200 rounded-xl p-6 shadow-sm">
-          <p class="text-sm font-medium text-red-600 mb-1">Akun Bermasalah / Banned</p>
+        </NuxtLink>
+        <NuxtLink to="/admin/ads-ops" class="bg-red-50 border border-red-200 rounded-xl p-6 shadow-sm group hover:border-red-300 hover:shadow-md transition-all cursor-pointer block">
+          <p class="text-sm font-medium text-red-600 mb-1 group-hover:text-red-700 transition-colors">Akun Bermasalah / Banned</p>
           <div v-if="pendingAdsOps" class="h-10 w-20 bg-red-200 rounded animate-pulse my-1"></div>
           <p v-else class="text-4xl font-display font-bold text-red-700">{{ adsOpsStats?.bannedAccounts || 0 }}</p>
           <p class="text-xs text-red-500 mt-2">Perlu tindakan perbaikan segera</p>
-        </div>
-        <div class="bg-amber-50 border border-amber-200 rounded-xl p-6 shadow-sm">
-          <p class="text-sm font-medium text-amber-600 mb-1">Akun Saldo Menipis</p>
+        </NuxtLink>
+        <NuxtLink to="/admin/ads-ops?tab=low-balance" class="bg-amber-50 border border-amber-200 rounded-xl p-6 shadow-sm group hover:border-amber-300 hover:shadow-md transition-all cursor-pointer block">
+          <p class="text-sm font-medium text-amber-600 mb-1 group-hover:text-amber-700 transition-colors">Akun Saldo Menipis</p>
           <div v-if="pendingAdsOps" class="h-10 w-20 bg-amber-200 rounded animate-pulse my-1"></div>
           <p v-else class="text-4xl font-display font-bold text-amber-700">{{ adsOpsStats?.lowBalanceAccounts || 0 }}</p>
-          <p class="text-xs text-amber-500 mt-2">Saldo &lt; 20% dari limit</p>
-        </div>
+          <p class="text-xs text-amber-500 mt-2">Saldo &lt;= Rp 350.000</p>
+        </NuxtLink>
       </div>
 
       <div class="bg-white border border-slate-200 rounded-xl shadow-sm flex flex-col">
@@ -693,7 +713,7 @@
 
 <script setup lang="ts">
 import VueApexCharts from 'vue3-apexcharts'
-import { ShieldCheck, Megaphone, TrendingUp, WalletCards, Info, RefreshCw, Calendar, Users, AlertTriangle, CheckCircle2, XCircle, UserX, Clock, ArrowRight } from 'lucide-vue-next'
+import { ShieldCheck, Megaphone, TrendingUp, WalletCards, Info, RefreshCw, Calendar, Users, AlertTriangle, CheckCircle2, XCircle, UserX, Clock, ArrowRight, Headset } from 'lucide-vue-next'
 
 definePageMeta({
   layout: 'admin',

@@ -21,5 +21,6 @@ useSupabaseKeepalive()
       <NuxtPage />
     </NuxtLayout>
     <SharedToast />
+    <ConfirmModal />
   </div>
 </template>

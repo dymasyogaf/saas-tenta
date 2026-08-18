@@ -9,17 +9,14 @@ export default defineEventHandler(async (event) => {
       .from('ad_accounts')
       .select('*, users!inner(full_name, phone)')
       .eq('status', 'active')
-      .gt('limit_amount', 0)
 
     if (error) throw error
 
-    // Filter secara in-memory untuk kondisi saldo < 300.000
+    // Filter secara in-memory untuk kondisi saldo <= Rp 350.000
     const lowBalanceData = (data || []).filter((acc: any) => {
       const saldo = Number(acc.saldo) || 0
+      if (saldo <= 350000) return true
       
-      // Kriteria Sisa Anggaran Menipis: Saldo di bawah Rp 300.000
-      if (saldo < 300000) return true
-        
       return false
     })
 

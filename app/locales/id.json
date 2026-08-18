@@ -118,9 +118,9 @@
     "termsText": "Dengan mendaftar, Anda menyetujui {terms} serta {privacy} kami.",
     "termsLink": "Syarat & Ketentuan",
     "privacyLink": "Kebijakan Privasi",
-    "emailPlaceholder": "nama{'@'}perusahaan.com",
-    "registerEmailPlaceholder": "budi{'@'}perusahaan.com",
-    "namePlaceholder": "Budi Santoso"
+    "emailPlaceholder": "masukkan email anda",
+    "registerEmailPlaceholder": "Masukkan email aktif",
+    "namePlaceholder": "Masukkan nama lengkap"
   },
   "admin": {
     "menuTitle": "Menu Operasional",
@@ -277,7 +277,7 @@
       "inProgress": "In Progress",
       "answered": "Dijawab",
       "pending": "Ditunda",
-      "closed": "Ditutup"
+      "closed": "Selesai"
     },
     "tableHeaders": {
       "subject": "SUBJEK",
@@ -314,7 +314,7 @@
       "in_progress": "In Progress",
       "answered": "Dijawab",
       "pending": "Ditunda",
-      "closed": "Ditutup",
+      "closed": "Selesai",
       "resolved": "Selesai"
     },
     "priorityLabel": {
@@ -328,7 +328,7 @@
       "uploading": "Mengunggah lampiran...",
       "ticketSent": "Tiket bantuan berhasil dikirim.",
       "ticketFailed": "Gagal mengirim tiket",
-      "ticketClosed": "Tiket ditutup",
+      "ticketClosed": "Tiket selesai",
       "closeFailed": "Gagal menutup tiket",
       "replySent": "Balasan terkirim",
       "replyFailed": "Gagal mengirim balasan"

@@ -180,7 +180,7 @@ const formatCurrency = (val: number) => {
 
 // Hapus Klien
 const deleteClient = async (id: string, name: string) => {
-  if (!confirm(`Apakah Anda yakin ingin menghapus klien ${name || 'ini'} secara permanen? Semua data terkait juga akan terhapus.`)) return
+  if (!(await useConfirm().show({ message: `Apakah Anda yakin ingin menghapus klien ${name || 'ini'} secara permanen? Semua data terkait juga akan terhapus.` }))) return
   
   try {
     const csrfToken = unref(csrf)
@@ -189,20 +189,20 @@ const deleteClient = async (id: string, name: string) => {
       headers: csrfToken ? { 'csrf-token': csrfToken } : {}
     })
     
-    alert('Klien berhasil dihapus.')
+    useToast().addToast('Klien berhasil dihapus.', 'success')
     
     // Update local state by refetching or filtering
     if (clients.value) {
       clients.value = clients.value.filter((c: any) => c.id !== id)
     }
   } catch (err: any) {
-    alert(err.data?.statusMessage || 'Terjadi kesalahan saat menghapus klien')
+    useToast().addToast(err.data?.statusMessage || 'Terjadi kesalahan saat menghapus klien', 'error')
   }
 }
 
 // Reset Klien
 const resetClient = async (id: string, name: string) => {
-  if (!confirm(`Apakah Anda yakin ingin MERESET data klien ${name || 'ini'}? Semua data akun iklan, transaksi, dan saldo akan dihapus. Tindakan ini tidak dapat dibatalkan.`)) return
+  if (!(await useConfirm().show({ message: `Apakah Anda yakin ingin MERESET data klien ${name || 'ini'}? Semua data akun iklan, transaksi, dan saldo akan dihapus. Tindakan ini tidak dapat dibatalkan.` }))) return
   
   try {
     const csrfToken = unref(csrf)
@@ -211,16 +211,16 @@ const resetClient = async (id: string, name: string) => {
       headers: csrfToken ? { 'csrf-token': csrfToken } : {}
     })
     
-    alert('Data Klien berhasil direset.')
+    useToast().addToast('Data Klien berhasil direset.', 'success')
     await refresh()
   } catch (err: any) {
-    alert(err.data?.statusMessage || 'Terjadi kesalahan saat mereset data klien. Pastikan endpoint sudah dibuat di backend.')
+    useToast().addToast(err.data?.statusMessage || 'Terjadi kesalahan saat mereset data klien. Pastikan endpoint sudah dibuat di backend.', 'error')
   }
 }
 
 // Impersonate Klien
 const impersonateClient = async (id: string, name: string) => {
-  if (!confirm(`Anda akan dialihkan ke dashboard sebagai ${name || 'klien ini'}. Sesi admin Anda saat ini akan diakhiri. Lanjutkan?`)) return
+  if (!(await useConfirm().show({ message: `Anda akan dialihkan ke dashboard sebagai ${name || 'klien ini'}. Sesi admin Anda saat ini akan diakhiri. Lanjutkan?` }))) return
   
   try {
     const csrfToken = unref(csrf)
@@ -244,13 +244,13 @@ const impersonateClient = async (id: string, name: string) => {
       // sebelum kita berpindah halaman
       await new Promise(resolve => setTimeout(resolve, 1500))
 
-      alert(`Berhasil login sebagai ${name}.`)
+      useToast().addToast(`Berhasil login sebagai ${name}.`, 'success')
       window.location.href = '/dashboard'
     } else {
       throw new Error('Gagal mendapatkan sesi dari server')
     }
   } catch (err: any) {
-    alert(err.data?.statusMessage || err.message || 'Terjadi kesalahan saat memproses login.')
+    useToast().addToast(err.data?.statusMessage || err.message || 'Terjadi kesalahan saat memproses login.', 'error')
   }
 }
 </script>

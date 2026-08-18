@@ -495,7 +495,7 @@ const copyReferralCode = async () => {
 }
 
 const resetDevData = async () => {
-  if (!confirm(t('referral.resetConfirm'))) return
+  if (!(await useConfirm().show({ message: t('referral.resetConfirm') }))) return
   
   isResetting.value = true
   try {
@@ -521,7 +521,7 @@ const claimCommission = async () => {
     return
   }
 
-  if (!confirm('Apakah Anda yakin ingin mencairkan komisi ini ke Rekening Bank Anda? Tim Finance akan memproses pengajuan Anda.')) return
+  if (!(await useConfirm().show({ message: 'Apakah Anda yakin ingin mencairkan komisi ini ke Rekening Bank Anda? Tim Finance akan memproses pengajuan Anda.' }))) return
   
   isClaiming.value = true
   try {

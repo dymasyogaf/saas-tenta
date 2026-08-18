@@ -44,9 +44,7 @@ export default defineEventHandler(async (event) => {
     if (accountsData) {
       lowBalanceAccounts = accountsData.filter((acc: any) => {
         const saldo = Number(acc.saldo) || 0
-        const limit = Number(acc.limit_amount) || 0
-        if (limit > 0 && saldo <= (limit * 0.2)) return true
-        if (limit === 0 && saldo <= 0) return true
+        if (saldo <= 350000) return true
         return false
       }).length
     }

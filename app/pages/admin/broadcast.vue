@@ -335,7 +335,7 @@ const showSuccess = ref(false)
 
 const submitBroadcast = async () => {
   if (!form.title || !form.message || form.message.trim() === '' || form.message === '<p><br></p>') {
-    alert("Isi pesan tidak boleh kosong")
+    useToast().addToast("Isi pesan tidak boleh kosong", "error")
     return
   }
 
@@ -359,7 +359,7 @@ const submitBroadcast = async () => {
     showSuccess.value = true
     loadHistory() // reload history in background
   } catch (err: any) {
-    alert('Gagal mengirim broadcast: ' + (err.data?.statusMessage || err.message))
+    useToast().addToast('Gagal mengirim broadcast: ' + (err.data?.statusMessage || err.message), 'error')
   } finally {
     isSubmitting.value = false
   }
@@ -424,7 +424,7 @@ const loadHistory = async () => {
     broadcasts.value = data as any[]
   } catch (err: any) {
     console.error('Load history error:', err)
-    alert('Gagal memuat riwayat: ' + (err.data?.statusMessage || err.message || 'Unknown error'))
+    useToast().addToast('Gagal memuat riwayat: ' + (err.data?.statusMessage || err.message || 'Unknown error'), 'error')
   } finally {
     isLoadingHistory.value = false
   }
@@ -465,7 +465,7 @@ const submitEdit = async () => {
     editingBroadcast.value = null
     loadHistory()
   } catch (err: any) {
-    alert('Gagal mengedit: ' + (err.data?.statusMessage || err.message))
+    useToast().addToast('Gagal mengedit: ' + (err.data?.statusMessage || err.message), 'error')
   } finally {
     isSubmitting.value = false
   }
@@ -473,7 +473,7 @@ const submitEdit = async () => {
 
 // --- Delete Broadcast ---
 const deleteBroadcast = async (id: string) => {
-  if (!confirm('Yakin ingin menghapus pengumuman ini? Semua notifikasi di klien juga akan ditarik mundur.')) return
+  if (!(await useConfirm().show({ message: 'Yakin ingin menghapus pengumuman ini? Semua notifikasi di klien juga akan ditarik mundur.' }))) return
   try {
     await $fetch(`/api/admin/broadcasts/${id}`, {
       method: 'DELETE',
@@ -481,7 +481,7 @@ const deleteBroadcast = async (id: string) => {
     })
     loadHistory()
   } catch (err: any) {
-    alert('Gagal menghapus: ' + (err.data?.statusMessage || err.message))
+    useToast().addToast('Gagal menghapus: ' + (err.data?.statusMessage || err.message), 'error')
   }
 }
 
@@ -506,7 +506,7 @@ const openDetails = async (b: any) => {
 
 const removeUserNotif = async (userId: string) => {
   if (!viewingDetails.value) return
-  if (!confirm('Tarik notifikasi untuk pengguna ini?')) return
+  if (!(await useConfirm().show({ message: 'Tarik notifikasi untuk pengguna ini?' }))) return
   
   try {
     await $fetch(`/api/admin/broadcasts/${viewingDetails.value.id}/users/${userId}`, {
@@ -516,7 +516,7 @@ const removeUserNotif = async (userId: string) => {
     // Remove locally from UI
     recipients.value = recipients.value.filter(r => r.user_id !== userId)
   } catch (err: any) {
-    alert('Gagal menghapus: ' + (err.data?.statusMessage || err.message))
+    useToast().addToast('Gagal menghapus: ' + (err.data?.statusMessage || err.message), 'error')
   }
 }
 

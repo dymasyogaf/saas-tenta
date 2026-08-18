@@ -274,7 +274,7 @@
                     Anggaran Habis — Tambah
                   </NuxtLink>
                 </div>
-                <div v-else-if="getBudgetRemaining(account) <= (0.2 * getBudgetTotal(account))" class="mt-2.5">
+                <div v-else-if="getBudgetRemaining(account) <= 350000" class="mt-2.5">
                   <NuxtLink to="/dashboard/topup" class="w-full flex justify-center items-center gap-1.5 bg-amber-50 border border-amber-200 text-amber-700 text-[10px] font-bold px-3 py-1.5 rounded-lg hover:bg-amber-100 hover:text-amber-800 transition-colors">
                     <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
                     Anggaran Menipis — Tambah

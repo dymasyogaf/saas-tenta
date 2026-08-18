@@ -167,7 +167,7 @@ export const useSaldoStore = defineStore('saldo', {
         if (toast) {
           toast.addToast('Gagal Top Up: ' + this.error, 'error')
         } else {
-          alert('Gagal Top Up: ' + this.error)
+          useToast().addToast('Gagal Top Up: ' + this.error, 'error')
         }
       } finally {
         this.isLoading = false
@@ -212,7 +212,7 @@ export const useSaldoStore = defineStore('saldo', {
         if (toast) {
           toast.addToast('Gagal Alokasi: ' + this.error, 'error')
         } else {
-          alert('Gagal Alokasi: ' + this.error)
+          useToast().addToast('Gagal Alokasi: ' + this.error, 'error')
         }
         return false
       } finally {

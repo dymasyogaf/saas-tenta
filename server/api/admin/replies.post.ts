@@ -2,7 +2,7 @@ import { serverSupabaseServiceRole } from '#supabase/server'
 import sanitizeHtml from 'sanitize-html'
 
 export default defineEventHandler(async (event) => {
-  const user = await requireAdmin(event, ['admin_compliance'])
+  const user = await requireAdmin(event)
   const body = await readBody(event)
   const { ticket_id, content, status, attachments } = body
 
@@ -24,6 +24,22 @@ export default defineEventHandler(async (event) => {
   try {
     const adminName = user.user_metadata?.full_name || 'Admin Support'
     const userId = user.id || (user as any).sub
+    const userRole = user.user_metadata?.role as string || 'admin'
+
+    // Ambil info tiket
+    const { data: ticket, error: fetchErr } = await supabase
+      .from('support_tickets')
+      .select('assigned_to_role')
+      .eq('id', ticket_id)
+      .single()
+      
+    if (fetchErr) throw fetchErr
+
+    if (userRole !== 'super_admin' && userRole !== 'admin_compliance') {
+      if (ticket.assigned_to_role !== userRole) {
+        throw createError({ statusCode: 403, statusMessage: 'Tiket ini belum didelegasikan ke tim Anda. Harap tunggu arahan Tim Audit.' })
+      }
+    }
 
     // 1. Simpan balasan
     const { error: replyError } = await supabase
@@ -58,3 +74,4 @@ export default defineEventHandler(async (event) => {
     })
   }
 })
+

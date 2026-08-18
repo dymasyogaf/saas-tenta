@@ -34,7 +34,7 @@ export const getStatusLabel = (status: string) => {
     in_progress: 'In Progress',
     answered: 'Dijawab',
     pending: 'Ditunda',
-    closed: 'Ditutup',
+    closed: 'Selesai',
     resolved: 'Selesai'
   }
   return map[status] || status

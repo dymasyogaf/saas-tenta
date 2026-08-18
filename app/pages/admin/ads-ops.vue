@@ -38,6 +38,10 @@
         Sisa Limit Menipis
         <span v-if="lowLimitRentals.length > 0" class="bg-yellow-100 text-yellow-700 py-0.5 px-2 rounded-full text-[10px]">{{ lowLimitRentals.length }}</span>
       </button>
+      <button @click="viewMode = 'active-accounts'" :class="viewMode === 'active-accounts' ? 'bg-white shadow-sm text-slate-800' : 'text-slate-500 hover:text-slate-700'" class="px-4 py-2 rounded-lg font-bold text-sm transition-all flex items-center gap-2">
+        Daftar Akun Aktif
+        <span v-if="activeAccounts.length > 0" class="bg-blue-100 text-blue-700 py-0.5 px-2 rounded-full text-[10px]">{{ activeAccounts.length }}</span>
+      </button>
     </div>
 
     <template v-if="viewMode === 'akun'">
@@ -502,8 +506,8 @@
       <div class="bg-orange-50 border border-orange-200 rounded-xl p-4 flex items-start gap-3">
         <WalletCards class="w-5 h-5 text-orange-600 shrink-0 mt-0.5" />
         <div>
-          <h3 class="text-sm font-bold text-orange-900">Perhatian: Sisa Saldo Iklan Menipis (<= 15%)</h3>
-          <p class="text-xs text-orange-700 mt-1">Daftar klien di bawah ini sisa saldo akun iklannya sudah mencapai 85% pemakaian (tersisa <= 15% dari total anggaran). Silakan klik tombol Follow Up untuk mengingatkan klien Top Up.</p>
+          <h3 class="text-sm font-bold text-orange-900">Perhatian: Sisa Saldo Iklan Menipis (<= Rp 350.000)</h3>
+          <p class="text-xs text-orange-700 mt-1">Daftar klien di bawah ini sisa saldo akun iklannya sudah menipis (tersisa <= Rp 350.000). Silakan klik tombol Follow Up untuk mengingatkan klien Top Up.</p>
         </div>
       </div>
 
@@ -633,6 +637,67 @@
       </div>
     </template>
 
+    <!-- Mode Daftar Akun Aktif -->
+    <template v-else-if="viewMode === 'active-accounts'">
+      <div class="bg-blue-50 border border-blue-200 rounded-xl p-4 flex items-start gap-3">
+        <Activity class="w-5 h-5 text-blue-600 shrink-0 mt-0.5" />
+        <div>
+          <h3 class="text-sm font-bold text-blue-900">Daftar Akun Iklan Aktif</h3>
+          <p class="text-xs text-blue-700 mt-1">Daftar di bawah ini adalah seluruh akun iklan yang saat ini berstatus aktif dan sedang digunakan oleh klien.</p>
+        </div>
+      </div>
+
+      <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden mt-6">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-sm">
+            <thead class="bg-slate-50 border-b border-slate-200 text-slate-600 font-semibold">
+              <tr>
+                <th class="px-6 py-4">Klien & Kontak</th>
+                <th class="px-6 py-4">Akun Iklan</th>
+                <th class="px-6 py-4">Status & Waktu</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+              <!-- Skeleton Loading -->
+              <tr v-if="pendingActiveAccounts">
+                <td colspan="3" class="px-6 py-8 text-center text-slate-400">Loading data...</td>
+              </tr>
+              
+              <!-- Empty State -->
+              <tr v-else-if="activeAccounts.length === 0">
+                <td colspan="3" class="px-6 py-12 text-center text-slate-500">
+                  <p class="font-medium text-slate-600">Belum ada akun iklan yang aktif saat ini.</p>
+                </td>
+              </tr>
+
+              <!-- Data Rows -->
+              <tr v-else v-for="account in activeAccounts" :key="account.id" class="hover:bg-slate-50 transition-colors">
+                <td class="px-6 py-4">
+                  <p class="font-bold text-slate-800">{{ account.users?.full_name || 'Tanpa Nama' }}</p>
+                  <p class="text-xs text-slate-500 mt-0.5">{{ account.users?.email }}</p>
+                  <p class="text-xs text-slate-500 font-mono">{{ account.users?.phone || '-' }}</p>
+                </td>
+                <td class="px-6 py-4">
+                  <div class="flex items-center gap-2 mb-1">
+                    <img v-if="account.platform === 'meta'" src="/icon-meta-ads.png" class="w-4 h-4" alt="Meta" />
+                    <img v-else-if="account.platform === 'tiktok'" src="/tiktok.svg" class="w-4 h-4 rounded-full" alt="TikTok" />
+                    <img v-else src="/icon-google-ads.png" class="w-4 h-4" alt="Google" />
+                    <span class="font-semibold text-slate-700">{{ account.account_name || 'Belum ada nama' }}</span>
+                  </div>
+                  <p class="text-[10px] text-slate-500 font-mono">{{ account.account_id }}</p>
+                </td>
+                <td class="px-6 py-4">
+                  <span class="px-2 py-1 bg-green-100 text-green-700 rounded text-[10px] font-bold uppercase">{{ account.status }}</span>
+                  <p class="text-[10px] text-slate-500 mt-2">Dibuat: {{ new Date(account.created_at).toLocaleDateString('id-ID') }}</p>
+                  <p v-if="account.subscription_expires_at" class="text-[10px] text-slate-500 mt-0.5">Exp: {{ new Date(account.subscription_expires_at).toLocaleDateString('id-ID') }}</p>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </template>
+
     <!-- Reject Modal -->
     <Teleport to="body">
 <div v-if="isRejectModalOpen" class="fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
@@ -701,7 +766,7 @@
 </template>
 
 <script setup lang="ts">
-import { RefreshCw, Megaphone, Link, Hash, CheckCircle2, Edit2, Trash2, MessageSquareX, X, MessageCircle } from 'lucide-vue-next'
+import { RefreshCw, Megaphone, Link, Hash, CheckCircle2, Edit2, Trash2, MessageSquareX, X, MessageCircle, Activity, WalletCards } from 'lucide-vue-next'
 import { ref, computed, watch } from 'vue'
 
 definePageMeta({
@@ -765,7 +830,14 @@ const handleContacted = (id: string) => {
   isContactModalOpen.value = false
 }
 
-const viewMode = ref<'akun' | 'anggaran' | 'expiring' | 'low-balance' | 'low-limit'>('akun')
+const route = useRoute()
+const viewMode = ref<'akun' | 'anggaran' | 'expiring' | 'low-balance' | 'low-limit' | 'active-accounts'>((route.query.tab as any) || 'akun')
+
+watch(() => route.query.tab, (newTab) => {
+  if (newTab) {
+    viewMode.value = newTab as any
+  }
+})
 const activeTab = ref('new')
 const budgetTab = ref('new')
 const isSubmitting = ref<string | null>(null)
@@ -828,6 +900,7 @@ const { data: budgetRequests, pending: pendingBudget, refresh: refreshBudget } =
 const { data: expiringRentals, pending: pendingExpiring, refresh: refreshExpiring } = useFetch<any[]>('/api/admin/expiring-rentals', { default: () => [] })
 const { data: lowBalanceRentals, pending: pendingLowBalance, refresh: refreshLowBalance } = useFetch<any[]>('/api/admin/low-balance', { default: () => [] })
 const { data: lowLimitDataResponse, pending: pendingLowLimit, refresh: refreshLowLimit } = useFetch<any>('/api/admin/low-limit', { default: () => ({ data: [] }) })
+const { data: activeAccounts, pending: pendingActiveAccounts, refresh: refreshActiveAccounts } = useFetch<any[]>('/api/admin/active-accounts', { default: () => [] })
 
 const lowLimitRentals = computed(() => lowLimitDataResponse.value?.data || [])
 
@@ -837,6 +910,7 @@ const refreshAll = () => {
   refreshExpiring()
   refreshLowBalance()
   refreshLowLimit()
+  refreshActiveAccounts()
 }
 
 // Inisialisasi Input Model jika data ditarik
@@ -925,7 +999,7 @@ const cancelEdit = (id: string, originalValue: string, originalNameValue: string
 }
 
 const resetDev = async () => {
-  if (!confirm('🔥 PERINGATAN DEV: Aksi ini akan menghapus SEMUA data Pengajuan (ad_account_requests) dan Akun Iklan (ad_accounts) di database. Lanjutkan?')) return
+  if (!(await useConfirm().show({ message: '🔥 PERINGATAN DEV: Aksi ini akan menghapus SEMUA data Pengajuan (ad_account_requests) dan Akun Iklan (ad_accounts) di database. Lanjutkan?' }))) return
   const toast = useToast()
   try {
     const csrfToken = unref(csrf)
@@ -949,7 +1023,7 @@ const processAction = async (id: string, action: 'approve' | 'reject' | 'save_id
   let rejectReasonToSubmit = undefined
 
   if (action === 'delete') {
-    if (!confirm('Apakah Anda yakin ingin menghapus pengajuan ini dari database secara permanen?')) return
+    if (!(await useConfirm().show({ message: 'Apakah Anda yakin ingin menghapus pengajuan ini dari database secara permanen?' }))) return
   } else if (action === 'save_id' && context === 'akun') {
     const req = requests.value.find((r: any) => r.id === id)
     adAccountId = inputModels.value[id]?.trim()
