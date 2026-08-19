@@ -254,7 +254,7 @@
             <!-- Status Indicator -->
             <div class="payment-status-bar">
               <div :class="['payment-status-dot', isChecking ? 'payment-status-dot--checking' : 'payment-status-dot--idle']"></div>
-              <span>{{ isChecking ? 'Mengecek pembayaran...' : `Cek otomatis dalam ${nextCheckIn} detik` }}</span>
+              <span>{{ isChecking ? 'Mengecek pembayaran...' : 'Menunggu pembayaran' }}</span>
             </div>
 
             <!-- Instructions Accordion -->
@@ -349,12 +349,16 @@ const isExpired = ref(false)
 const copied = ref(false)
 const isInstructionOpen = ref(false)
 const activeInstructionTab = ref('mobile')
-const nextCheckIn = ref(15)
 
 // ─── Timer ───────────────────────────────────────────────────────────────────
 const EXPIRY_MINUTES = 60
-const timeLeft = ref(EXPIRY_MINUTES * 60)
 const TOTAL_SECONDS = EXPIRY_MINUTES * 60
+
+const initialTimeLeft = route.query.createdAt 
+  ? Math.max(0, Math.floor(TOTAL_SECONDS - (Date.now() - new Date(route.query.createdAt as string).getTime()) / 1000))
+  : TOTAL_SECONDS
+
+const timeLeft = ref(initialTimeLeft)
 const CIRCUMFERENCE = 2 * Math.PI * 44
 
 const formattedTime = computed(() => {
@@ -577,27 +581,26 @@ const checkStatus = async () => {
       paymentStatus.value = 'failed'
       stopPolling()
     }
-  } catch (e) {
-    // Tetap polling
+  } catch (e: any) {
+    if (e.response && e.response.status === 400) {
+      console.error('Invalid request to check status, stopping poll:', e)
+      stopPolling()
+    }
+    // Tetap polling jika error jaringan/500
   } finally {
     isChecking.value = false
   }
 }
 
 const checkStatusManual = () => {
-  nextCheckIn.value = 15
   checkStatus()
 }
 
-// ─── Polling & Timer ──────────────────────────────────────────────────────────
+// ─── Timer ──────────────────────────────────────────────────────────
 let timerInterval: ReturnType<typeof setInterval>
-let pollInterval: ReturnType<typeof setInterval>
-let countdownInterval: ReturnType<typeof setInterval>
 
 const stopPolling = () => {
   clearInterval(timerInterval)
-  clearInterval(pollInterval)
-  clearInterval(countdownInterval)
 }
 
 onMounted(() => {
@@ -614,14 +617,7 @@ onMounted(() => {
     }
   }, 1000)
 
-  pollInterval = setInterval(async () => {
-    await checkStatus()
-    nextCheckIn.value = 15
-  }, 15000)
 
-  countdownInterval = setInterval(() => {
-    if (nextCheckIn.value > 0) nextCheckIn.value--
-  }, 1000)
 
   checkStatus()
 })

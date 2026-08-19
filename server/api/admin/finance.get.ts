@@ -14,6 +14,7 @@ export default defineEventHandler(async (event) => {
         type, 
         amount, 
         fee_amount,
+        is_sandbox,
         status, 
         payment_gateway_ref,
         description,
@@ -37,9 +38,36 @@ export default defineEventHandler(async (event) => {
       })
     }
 
-    return transactions
+    // Hapus transaksi pending yang kadaluwarsa (lebih dari 60 menit)
+    const now = new Date().getTime()
+    const validData = []
+    const toDelete = []
+    
+    for (const tx of transactions) {
+      if (tx.status === 'pending' && (tx.type === 'topup' || tx.type === 'subscription')) {
+        const txTime = new Date(tx.created_at).getTime()
+        if (now - txTime > 60 * 60 * 1000) {
+          toDelete.push(tx.id)
+          continue
+        }
+      }
+      validData.push(tx)
+    }
+
+    if (toDelete.length > 0) {
+      // Hapus di background (non-blocking)
+      supabase.from('transactions').delete().in('id', toDelete).then()
+    }
+
+    return validData
   } catch (error: any) {
     console.error('Error fetching finance transactions:', error)
+
+    if (error?.code === 'PGRST303') {
+      console.warn('Mengabaikan error JWT masa depan sementara, mengembalikan data kosong.')
+      return []
+    }
+
     throw createError({
       statusCode: 500,
       statusMessage: error.message || 'Gagal mengambil data transaksi keuangan'

@@ -747,6 +747,8 @@
     "addBalance": "Tambah Saldo",
     "activePackage": "Paket Aktif Saat Ini",
     "noneYet": "Belum Ada",
+    "heldBalance": "Saldo Tertahan",
+    "activeRequests": "Permintaan Aktif",
     "weeklyLimit": "Limit Mingguan",
     "pendingTopup": "Top-Up Tertunda / Pending",
     "rentActivePeriod": "Masa Aktif Sewa",

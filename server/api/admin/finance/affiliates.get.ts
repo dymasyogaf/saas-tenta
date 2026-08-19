@@ -23,6 +23,13 @@ export default defineEventHandler(async (event) => {
     return data
   } catch (error: any) {
     console.error('Error fetching affiliate profiles:', error)
+    
+    // Jika error karena masalah sinkronisasi waktu JWT di Supabase (PGRST303)
+    if (error?.code === 'PGRST303') {
+      console.warn('Mengabaikan error JWT masa depan sementara, mengembalikan data kosong.')
+      return []
+    }
+
     throw createError({
       statusCode: 500,
       statusMessage: error.message || 'Gagal mengambil data rekening afiliasi'

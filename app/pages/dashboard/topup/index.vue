@@ -27,6 +27,8 @@
       </div>
     </div>
 
+
+
     <!-- Pending Ad Account Alert -->
     <div v-for="req in pendingAccountRequests" :key="req.id" class="bg-blue-50 border border-blue-200 p-4 rounded-xl mb-6 flex gap-3 items-start shadow-sm animate-fade-in">
       <div class="mt-0.5 text-blue-600 bg-blue-100 p-1.5 rounded-full shrink-0">
@@ -136,33 +138,17 @@
             </div>
           </div>
           
-          <div class="grid grid-cols-1 gap-4">
-            <div class="bg-ink-50/50 rounded-lg p-4 flex flex-col justify-center border border-ink-100/50">
-              <div class="flex items-center gap-1 mb-1">
-                <p class="text-xs font-medium text-ink-500">{{ $t('topup.totalInboundBalance') }}</p>
-              </div>
-              <template v-if="saldoStore.isFetchingSaldo">
-                <div class="h-6 w-24 bg-ink-200 animate-pulse rounded-md mt-1"></div>
+          <div class="bg-ink-50/50 rounded-lg p-5 flex flex-col justify-center border border-ink-100/50">
+            <div class="flex items-center gap-1 mb-2">
+              <p class="text-sm font-medium text-ink-500">{{ $t('topup.totalInboundBalance') }}</p>
+            </div>
+            <div class="flex items-center gap-2 text-blue-600">
+              <template v-if="saldoStore.isLoading">
+                <h3 class="text-3xl font-display font-bold"><span class="inline-block w-24 h-8 bg-ink-200 rounded animate-pulse"></span></h3>
               </template>
               <template v-else>
-                <p class="text-lg font-bold text-ink-900">{{ formatRupiah(isGlobal ? saldoStore.usdBalance : saldoStore.balance) }}</p>
+                <h3 class="text-3xl font-display font-bold">{{ formatRupiah(filteredTotalTopup) }}</h3>
               </template>
-            </div>
-            
-            <div class="flex gap-4">
-              <div class="bg-ink-50/50 rounded-lg p-4 flex-1 border border-ink-100/50">
-                <div class="flex items-center gap-1 mb-1">
-                  <p class="text-xs font-medium text-ink-500">{{ $t('topup.managementFee') }}</p>
-                </div>
-                <p class="text-base font-bold text-ink-900">{{ formatRupiah(0) }}</p>
-              </div>
-              
-              <div class="bg-ink-50/50 rounded-lg p-4 flex-1 border border-ink-100/50">
-                <div class="flex items-center gap-1 mb-1">
-                  <p class="text-xs font-medium text-ink-500">{{ $t('topup.totalRefund') }}</p>
-                </div>
-                <p class="text-base font-bold text-ink-900">{{ formatRupiah(0) }}</p>
-              </div>
             </div>
           </div>
         </div>
@@ -239,14 +225,16 @@
               <td class="px-6 py-4 text-sm font-bold text-ink-900">{{ formatRupiah(trx.amount) }}</td>
               <td class="px-6 py-4 text-sm text-ink-500">{{ trx.description || '-' }}</td>
               <td class="px-6 py-4 text-right">
-                <span class="px-2.5 py-1 text-xs font-bold rounded-full" 
-                  :class="{
-                    'bg-green-100 text-green-700': trx.status === 'success' || trx.status === 'settled',
-                    'bg-orange-100 text-orange-700': trx.status === 'pending',
-                    'bg-red-100 text-red-700': trx.status === 'failed' || trx.status === 'expired'
-                  }">
-                  {{ trx.status.toUpperCase() }}
-                </span>
+                <div class="flex flex-col items-end gap-2">
+                  <span class="px-2.5 py-1 text-xs font-bold rounded-full" 
+                    :class="{
+                      'bg-green-100 text-green-700': trx.status === 'success' || trx.status === 'settled',
+                      'bg-orange-100 text-orange-700': trx.status === 'pending',
+                      'bg-red-100 text-red-700': trx.status === 'failed' || trx.status === 'expired'
+                    }">
+                    {{ trx.status.toUpperCase() }}
+                  </span>
+                </div>
               </td>
             </tr>
           </tbody>
@@ -424,9 +412,11 @@
               </button>
             </div>
           </div>
+        </div>
       </div>
-    </div>
     </Teleport>
+
+
 
   </div>
 </template>
@@ -467,6 +457,40 @@ const paymentMethods = computed(() => {
 definePageMeta({
   layout: 'dashboard',
 })
+
+const resumePayment = (trx: any) => {
+  let pd = trx.payment_data
+  if (!pd) return
+  if (typeof pd === 'string') {
+    try { pd = JSON.parse(pd) } catch (e) { return }
+  }
+  
+  const query: Record<string, string> = {
+    orderId: String(pd.merchantOrderId || trx.payment_gateway_ref || ''),
+    ref: String(trx.payment_gateway_ref || ''),
+    va: String(pd.vaNumber || pd.paymentCode || ''),
+    bank: String(pd.method || 'M2'),
+    bankCode: String(pd.bankCode || ''),
+    method: String(pd.paymentName || 'Transfer Bank'),
+    amount: String(pd.paymentAmount || trx.amount || 0),
+    net: String(pd.netAmount || trx.amount || 0),
+    fee: String(pd.feeAmount || 0),
+    pkg: String(pd.packageType || trx.package_selected || 'starter'),
+    createdAt: String(trx.created_at || new Date().toISOString())
+  }
+
+  // Hapus query yang kosong atau "undefined"
+  Object.keys(query).forEach(k => {
+    if (query[k] === 'undefined' || query[k] === 'null' || !query[k]) {
+      delete query[k]
+    }
+  })
+  
+  useRouter().push({
+    path: '/dashboard/topup/payment',
+    query
+  })
+}
 
 const pendingAccountRequests = ref<any[]>([])
 
@@ -557,6 +581,23 @@ const formatRupiah = (angka: number) => {
     minimumFractionDigits: 0
   }).format(angka || 0)
 }
+
+const filteredTotalTopup = computed(() => {
+  const start = new Date(startDate.value)
+  start.setHours(0, 0, 0, 0)
+  const end = new Date(endDate.value)
+  end.setHours(23, 59, 59, 999)
+  
+  return saldoStore.transactions.reduce((sum, trx) => {
+    if (trx.type === 'topup' && (trx.status === 'success' || trx.status === 'settled')) {
+      const trxDate = new Date(trx.created_at)
+      if (trxDate >= start && trxDate <= end) {
+        return sum + Number(trx.amount || 0)
+      }
+    }
+    return sum
+  }, 0)
+})
 
 const availableBalance = computed(() => {
   if (isGlobal.value) {

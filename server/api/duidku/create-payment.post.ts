@@ -139,6 +139,30 @@ export default defineEventHandler(async (event) => {
       }
       const paymentName = methodNames[method] || 'Payment Gateway'
 
+      // Kode Bank berdasarkan metode pembayaran
+      const bankCodes: Record<string, string> = {
+        'M2': '008', 'BM': '008',
+        'I1': '009',
+        'B1': '427',
+        'BC': '014',
+        'BR': '002',
+        'A1': '166',
+        'FT': '', 'IR': '',
+      }
+
+      const paymentData = {
+        method,
+        paymentName,
+        paymentAmount,
+        netAmount,
+        feeAmount,
+        packageType,
+        bankCode: bankCodes[method] || null,
+        vaNumber: result.vaNumber || result.paymentCode || null,
+        paymentCode: result.paymentCode || result.vaNumber || null,
+        merchantOrderId
+      }
+
       const { error: dbError } = await supabase
         .from('transactions')
         .insert({
@@ -149,23 +173,15 @@ export default defineEventHandler(async (event) => {
           package_selected: packageType,
           status: 'pending',
           payment_gateway_ref: result.reference,
-          description: `Top Up Saldo via ${paymentName} (Paket ${packageType})`
+          description: `Top Up Saldo via ${paymentName} (Paket ${packageType})`,
+          is_sandbox: !isProduction,
+          payment_url: result.paymentUrl || null,
+          payment_data: paymentData
         })
 
       if (dbError) {
         console.error('Error insert transaction:', dbError)
         throw createError({ statusCode: 500, statusMessage: `Gagal mencatat transaksi di database internal: ${dbError.message}` })
-      }
-
-      // Kode Bank berdasarkan metode pembayaran
-      const bankCodes: Record<string, string> = {
-        'M2': '008', 'BM': '008',
-        'I1': '009',
-        'B1': '427',
-        'BC': '014',
-        'BR': '002',
-        'A1': '166',
-        'FT': '', 'IR': '',
       }
 
       // Kirim email notifikasi VA ke customer (brand Tentaklik, bukan Duitku)

@@ -85,7 +85,7 @@ export default defineEventHandler(async (event) => {
     }).length
 
     // 6. Top Up Berdasarkan Filter Custom Date
-    let topupQuery = supabase.from('transactions').select('amount, fee_amount, created_at').eq('type', 'topup').eq('status', 'success')
+    let topupQuery = supabase.from('transactions').select('amount, fee_amount, created_at').eq('type', 'topup').eq('status', 'success').eq('is_sandbox', false)
     topupQuery = applyDateFilter(topupQuery)
     
     const { data: topupData } = await topupQuery

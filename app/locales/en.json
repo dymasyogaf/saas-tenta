@@ -747,6 +747,8 @@
     "addBalance": "Add Balance",
     "activePackage": "Active Package",
     "noneYet": "None Yet",
+    "heldBalance": "Held Balance",
+    "activeRequests": "Active Requests",
     "weeklyLimit": "Weekly Limit",
     "pendingTopup": "Pending Top-Up",
     "rentActivePeriod": "Rental Active Period",

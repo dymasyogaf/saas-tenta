@@ -82,7 +82,8 @@ export default defineEventHandler(async (event) => {
       type: 'subscription',
       status: 'pending',
       reference_id: merchantOrderId,
-      payment_url: result.paymentUrl
+      payment_url: result.paymentUrl,
+      is_sandbox: !isProduction
     })
 
     // Kirim email notifikasi VA ke customer (brand Tentaklik)

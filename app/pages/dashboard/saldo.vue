@@ -409,14 +409,16 @@
                 :class="(trx.type === 'topup' || trx.type === 'refund') ? 'text-green-600' : 'text-ink-900'">
                 {{ (trx.type === 'topup' || trx.type === 'refund') ? '+' : '-' }}{{ formatCurrency(trx.amount) }}
               </p>
-              <span class="inline-block px-2 py-0.5 mt-1 rounded text-[10px] font-bold"
-                :class="{
-                  'bg-green-100 text-green-700': trx.status === 'success',
-                  'bg-orange-100 text-orange-700': trx.status === 'pending',
-                  'bg-red-100 text-red-700': trx.status === 'failed' || trx.status === 'cancelled'
-                }">
-                {{ trx.status.toUpperCase() }}
-              </span>
+              <div class="flex flex-col items-end gap-2 mt-1">
+                <span class="inline-block px-2 py-0.5 rounded text-[10px] font-bold"
+                  :class="{
+                    'bg-green-100 text-green-700': trx.status === 'success',
+                    'bg-orange-100 text-orange-700': trx.status === 'pending',
+                    'bg-red-100 text-red-700': trx.status === 'failed' || trx.status === 'cancelled'
+                  }">
+                  {{ trx.status.toUpperCase() }}
+                </span>
+              </div>
             </div>
           </div>
         </div>
@@ -623,6 +625,40 @@ import { useToast } from '~/composables/useToast'
 definePageMeta({
   layout: 'dashboard',
 })
+
+const resumePayment = (trx: any) => {
+  let pd = trx.payment_data
+  if (!pd) return
+  if (typeof pd === 'string') {
+    try { pd = JSON.parse(pd) } catch (e) { return }
+  }
+  
+  const query: Record<string, string> = {
+    orderId: String(pd.merchantOrderId || trx.payment_gateway_ref || ''),
+    ref: String(trx.payment_gateway_ref || ''),
+    va: String(pd.vaNumber || pd.paymentCode || ''),
+    bank: String(pd.method || 'M2'),
+    bankCode: String(pd.bankCode || ''),
+    method: String(pd.paymentName || 'Transfer Bank'),
+    amount: String(pd.paymentAmount || trx.amount || 0),
+    net: String(pd.netAmount || trx.amount || 0),
+    fee: String(pd.feeAmount || 0),
+    pkg: String(pd.packageType || trx.package_selected || 'starter'),
+    createdAt: String(trx.created_at || new Date().toISOString())
+  }
+
+  // Hapus query yang kosong atau "undefined"
+  Object.keys(query).forEach(k => {
+    if (query[k] === 'undefined' || query[k] === 'null' || !query[k]) {
+      delete query[k]
+    }
+  })
+  
+  useRouter().push({
+    path: '/dashboard/topup/payment',
+    query
+  })
+}
 
 const { t, locale } = useI18n()
 const isRequestModalOpen = ref(false)

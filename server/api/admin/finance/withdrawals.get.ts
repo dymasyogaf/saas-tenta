@@ -41,6 +41,12 @@ export default defineEventHandler(async (event) => {
     return mappedData
   } catch (error: any) {
     console.error('Error fetching affiliate withdrawals:', error)
+
+    if (error?.code === 'PGRST303') {
+      console.warn('Mengabaikan error JWT masa depan sementara, mengembalikan data kosong.')
+      return []
+    }
+
     throw createError({
       statusCode: 500,
       statusMessage: error.message || 'Gagal mengambil data pengajuan pencairan'

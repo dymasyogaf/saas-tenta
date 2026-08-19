@@ -86,7 +86,28 @@ export const useSaldoStore = defineStore('saldo', {
         if (error) throw error
         
         if (data) {
-          this.transactions = data as any[]
+          const now = new Date().getTime()
+          const validData = []
+          const toDelete = []
+          
+          for (const tx of data as any[]) {
+            if (tx.status === 'pending' && (tx.type === 'topup' || tx.type === 'subscription')) {
+              const txTime = new Date(tx.created_at).getTime()
+              // Jika lebih dari 60 menit (60 * 60 * 1000 ms)
+              if (now - txTime > 60 * 60 * 1000) {
+                toDelete.push(tx.id)
+                continue // Jangan masukkan ke data yang ditampilkan
+              }
+            }
+            validData.push(tx)
+          }
+          
+          this.transactions = validData
+          
+          // Hapus diam-diam di background agar database bersih
+          if (toDelete.length > 0) {
+            supabase.from('transactions').delete().in('id', toDelete).then()
+          }
         }
       } catch (e: any) {
         console.error('Failed to fetch transactions:', e.message)
@@ -151,6 +172,7 @@ export const useSaldoStore = defineStore('saldo', {
                 net: String(response.netAmount),
                 fee: String(response.feeAmount),
                 pkg: response.packageType,
+                createdAt: new Date().toISOString()
               }
             })
           } else if (response.paymentUrl) {

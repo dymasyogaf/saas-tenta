@@ -21,33 +21,53 @@
     </div>
 
     <!-- Revenue Card -->
-    <div class="bg-gradient-to-br from-slate-900 to-slate-800 border border-slate-700 rounded-xl p-6 shadow-md mt-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
-      <div>
-        <p class="text-sm font-medium text-slate-400 mb-1">Total Pendapatan Fee (Gross)</p>
-        <p class="text-3xl font-display font-bold text-white">{{ formatCurrency(totalFeeRevenue) }}</p>
-        <p class="text-xs text-slate-500 mt-1">Akumulasi dari seluruh potongan fee sesuai paket klien (Starter/Growth/Scale) untuk transaksi Top Up yang sukses.</p>
-      </div>
-      <div class="w-12 h-12 bg-white/10 rounded-full flex items-center justify-center shrink-0">
-        <Receipt class="w-6 h-6 text-white" />
+    <div class="bg-gradient-to-br from-slate-900 to-slate-800 border border-slate-700 rounded-xl p-6 shadow-md mt-6">
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <div class="flex items-center gap-2 mb-1">
+            <p class="text-sm font-medium text-slate-400">Total Pendapatan Fee (Gross)</p>
+            <span v-if="envFilter === 'sandbox'" class="px-2 py-0.5 text-[9px] font-bold rounded bg-yellow-500/20 text-yellow-400 border border-yellow-500/30">SANDBOX</span>
+            <span v-else-if="envFilter === 'production'" class="px-2 py-0.5 text-[9px] font-bold rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">PRODUKSI</span>
+          </div>
+          <p class="text-3xl font-display font-bold text-white">{{ formatCurrency(totalFeeRevenue) }}</p>
+          <p class="text-xs text-slate-500 mt-1">Akumulasi dari seluruh potongan fee sesuai paket klien (Starter/Growth/Scale) untuk transaksi Top Up yang sukses.</p>
+        </div>
+        <div class="flex items-center gap-0 bg-slate-800 border border-slate-600 rounded-lg p-1 shrink-0">
+          <button @click="envFilter = 'production'" 
+            class="px-3 py-1.5 text-xs font-bold rounded-md transition-all"
+            :class="envFilter === 'production' ? 'bg-emerald-500 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'">
+            🟢 Produksi
+          </button>
+          <button @click="envFilter = 'sandbox'" 
+            class="px-3 py-1.5 text-xs font-bold rounded-md transition-all"
+            :class="envFilter === 'sandbox' ? 'bg-yellow-500 text-slate-900 shadow-sm' : 'text-slate-400 hover:text-slate-200'">
+            🟡 Sandbox
+          </button>
+          <button @click="envFilter = 'all'" 
+            class="px-3 py-1.5 text-xs font-bold rounded-md transition-all"
+            :class="envFilter === 'all' ? 'bg-slate-500 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'">
+            Semua
+          </button>
+        </div>
       </div>
     </div>
 
     <!-- Tabs/Filter -->
     <div class="flex border-b border-slate-200 mt-6 gap-6 overflow-x-auto whitespace-nowrap pb-1 scrollbar-hide">
-      <button 
-        @click="activeTab = 'withdraw'"
-        class="pb-3 text-sm font-semibold transition-colors border-b-2 flex items-center gap-2"
-        :class="activeTab === 'withdraw' ? 'border-emerald-500 text-emerald-600' : 'border-transparent text-slate-500 hover:text-slate-700'"
-      >
-        Tugas Eksekusi (Top Up) 
-        <span v-if="pendingWithdraws.length > 0" class="bg-red-500 text-white py-0.5 px-2 rounded-full text-[10px] animate-pulse">{{ pendingWithdraws.length }}</span>
-      </button>
+
       <button 
         @click="activeTab = 'history'"
         class="pb-3 text-sm font-semibold transition-colors border-b-2"
         :class="activeTab === 'history' ? 'border-emerald-500 text-emerald-600' : 'border-transparent text-slate-500 hover:text-slate-700'"
       >
         Riwayat Mutasi Global
+      </button>
+      <button 
+        @click="activeTab = 'fee-summary'"
+        class="pb-3 text-sm font-semibold transition-colors border-b-2"
+        :class="activeTab === 'fee-summary' ? 'border-emerald-500 text-emerald-600' : 'border-transparent text-slate-500 hover:text-slate-700'"
+      >
+        Rekap Fee Klien
       </button>
       <button 
         @click="activeTab = 'referral'"
@@ -66,108 +86,131 @@
       </button>
     </div>
 
-    <!-- Tab 1: Pencairan (Withdraw) Top Up -->
-    <div v-if="activeTab === 'withdraw'" class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden mt-4">
-      <div class="overflow-x-auto">
+
+    <!-- Tab 4: Rekap Fee Klien -->
+    <div v-if="activeTab === 'fee-summary'" class="bg-white border border-slate-200 rounded-xl shadow-sm mt-4">
+      <!-- Search & Filter -->
+      <div class="p-4 border-b border-slate-100 flex flex-wrap items-center justify-between gap-3 bg-slate-50 rounded-t-xl">
+        <div class="relative w-64">
+          <input v-model="feeSearchQuery" type="text" placeholder="Cari nama klien..." class="w-full pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500" />
+          <Search class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+        </div>
+        <div class="flex items-center gap-3">
+          <div class="relative">
+            <button @click="isFeeExportMenuOpen = !isFeeExportMenuOpen" @blur="closeFeeExportMenu" class="flex items-center gap-2 px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm font-bold text-slate-700 hover:bg-slate-50 transition-colors shadow-sm">
+              <Download class="w-4 h-4" /> Export
+              <ChevronDown class="w-4 h-4 text-slate-400" />
+            </button>
+            <div v-if="isFeeExportMenuOpen" class="absolute right-0 top-full mt-2 w-48 bg-white border border-slate-200 shadow-xl rounded-xl overflow-hidden z-50 origin-top-right transition-all" @mousedown.prevent>
+              <button @click="openFeeReportModal" class="w-full flex items-center gap-3 px-4 py-3 text-left text-sm font-medium text-slate-700 hover:bg-slate-50 border-b border-slate-100 transition-colors">
+                <PieChart class="w-4 h-4 text-emerald-600" /> Laporan Visual
+              </button>
+              <button @click="exportFeeToCSV" class="w-full flex items-center gap-3 px-4 py-3 text-left text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors">
+                <FileSpreadsheet class="w-4 h-4 text-blue-600" /> Export Excel
+              </button>
+            </div>
+          </div>
+          <SharedDateRangePicker v-model="feeDateRange" />
+        </div>
+      </div>
+
+      <div class="overflow-x-auto rounded-b-xl">
         <table class="w-full text-left text-sm">
-          <thead class="bg-slate-50 border-b border-slate-200 text-slate-600 font-semibold">
+          <thead class="bg-white border-b border-slate-200 text-slate-600 font-semibold">
             <tr>
-              <th class="px-6 py-4">Klien & Tanggal</th>
-              <th class="px-6 py-4">Tujuan Rekening</th>
-              <th class="px-6 py-4 text-right">Nominal Pencairan</th>
-              <th class="px-6 py-4 text-center">Aksi (Eksekusi)</th>
+              <th class="px-4 py-4 w-12 text-center">No</th>
+              <th class="px-6 py-4">Klien</th>
+              <th class="px-6 py-4 text-center">Frekuensi Top Up</th>
+              <th class="px-6 py-4 text-right">Total Fee Dihasilkan</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-slate-100">
-            <tr v-if="pending" v-for="i in 2" :key="'skel'+i" class="animate-pulse bg-white">
-              <td class="px-6 py-4"><div class="h-4 w-32 bg-ink-200 rounded mb-2"></div><div class="h-3 w-24 bg-ink-200 rounded"></div></td>
-              <td class="px-6 py-4"><div class="h-4 w-48 bg-ink-200 rounded"></div></td>
-              <td class="px-6 py-4"><div class="h-5 w-24 bg-ink-200 rounded ml-auto"></div></td>
-              <td class="px-6 py-4"><div class="h-8 w-32 bg-ink-200 rounded-lg mx-auto"></div></td>
-            </tr>
-            <tr v-else-if="pendingWithdraws.length === 0">
+            <tr v-if="filteredFeeSummary.length === 0">
               <td colspan="4" class="px-6 py-12 text-center text-slate-500">
-                <CheckCircle2 class="w-12 h-12 text-emerald-400 mx-auto mb-3" />
-                <p class="font-medium text-slate-600">Semua pencairan top up sudah diselesaikan.</p>
+                <Receipt class="w-12 h-12 text-slate-300 mx-auto mb-3" />
+                <p>Tidak ada data fee untuk rentang tanggal ini.</p>
               </td>
             </tr>
-            <tr v-else v-for="tx in pendingWithdraws" :key="tx.id" class="hover:bg-slate-50 transition-colors">
-              <td class="px-6 py-4">
-                <p class="font-bold text-slate-900">{{ tx.users?.full_name || 'Tanpa Nama' }}</p>
-                <p class="text-[10px] text-slate-400 mt-1">{{ new Date(tx.created_at).toLocaleString('id-ID') }}</p>
+            <tr v-else v-for="(item, index) in filteredFeeSummary" :key="item.user_id" class="hover:bg-slate-50 transition-colors">
+              <td class="px-4 py-4 text-center text-xs text-slate-400 font-mono">{{ index + 1 }}</td>
+              <td class="px-6 py-4 font-bold text-slate-900">
+                {{ item.full_name }}
               </td>
-              <td class="px-6 py-4">
-                <div class="flex items-center gap-1.5 mb-1">
-                  <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-orange-100 text-orange-700">
-                    PENCAIRAN
-                  </span>
-                </div>
-                <p class="text-xs font-semibold text-slate-800 uppercase">{{ tx.payment_gateway_ref || 'BANK TRANSFER' }}</p>
-                <p class="text-[11px] text-slate-500 mt-0.5">Silakan cek data rekening klien.</p>
+              <td class="px-6 py-4 text-center text-slate-600 font-medium">
+                {{ item.count }}x
               </td>
-              <td class="px-6 py-4 text-right">
-                <p class="font-display font-bold text-slate-900 text-lg">{{ formatCurrency(tx.amount || 0) }}</p>
-              </td>
-              <td class="px-6 py-4 text-center">
-                <div class="flex items-center justify-center gap-2">
-                  <button 
-                    @click="processWithdraw(tx.id, 'reject')"
-                    :disabled="isSubmitting === tx.id"
-                    class="px-3 py-2 bg-white border border-red-200 text-red-600 hover:bg-red-50 text-xs font-bold rounded-lg transition-colors"
-                  >
-                    Tolak
-                  </button>
-                  <button 
-                    @click="processWithdraw(tx.id, 'approve')"
-                    :disabled="isSubmitting === tx.id"
-                    class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-300 text-white text-xs font-bold rounded-lg transition-colors flex items-center gap-2"
-                  >
-                    <span v-if="isSubmitting === tx.id" class="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
-                    Transfer & Setujui
-                  </button>
-                </div>
+              <td class="px-6 py-4 text-right font-display font-bold text-emerald-600">
+                {{ formatCurrency(item.totalFee) }}
               </td>
             </tr>
           </tbody>
+          <tfoot v-if="filteredFeeSummary.length > 0" class="bg-slate-50 border-t border-slate-200">
+            <tr>
+              <td colspan="2" class="px-6 py-4 font-bold text-slate-900 text-right">TOTAL:</td>
+              <td class="px-6 py-4 text-center font-bold text-slate-900">{{ filteredFeeSummary.reduce((sum, item) => sum + item.count, 0) }}x</td>
+              <td class="px-6 py-4 text-right font-display font-bold text-emerald-600 text-lg">{{ formatCurrency(filteredFeeSummary.reduce((sum, item) => sum + item.totalFee, 0)) }}</td>
+            </tr>
+          </tfoot>
         </table>
       </div>
     </div>
 
+
     <!-- Tab 2: Riwayat Mutasi -->
-    <div v-if="activeTab === 'history'" class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden mt-4">
+    <div v-if="activeTab === 'history'" class="bg-white border border-slate-200 rounded-xl shadow-sm mt-4">
       <!-- Search & Filter -->
-      <div class="p-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+      <div class="p-4 border-b border-slate-100 flex flex-wrap items-center justify-between gap-3 bg-slate-50 rounded-t-xl">
         <div class="relative w-64">
           <input v-model="searchQuery" type="text" placeholder="Cari nama klien..." class="w-full pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500" />
           <Search class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
         </div>
-        <select v-model="typeFilter" class="bg-white border border-slate-200 rounded-lg text-sm px-3 py-2 focus:outline-none focus:border-emerald-500">
-          <option value="all">Semua Jenis Transaksi</option>
-          <option value="topup">Top Up Masuk</option>
-          <option value="withdraw">Pencairan Keluar</option>
-          <option value="affiliate_commission">Pencairan Komisi</option>
-        </select>
+        <div class="flex items-center gap-3">
+          <div class="relative">
+            <button @click="isExportMenuOpen = !isExportMenuOpen" @blur="closeExportMenu" class="flex items-center gap-2 px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm font-bold text-slate-700 hover:bg-slate-50 transition-colors shadow-sm">
+              <Download class="w-4 h-4" /> Export
+              <ChevronDown class="w-4 h-4 text-slate-400" />
+            </button>
+            <div v-if="isExportMenuOpen" class="absolute right-0 top-full mt-2 w-48 bg-white border border-slate-200 shadow-xl rounded-xl overflow-hidden z-50 origin-top-right transition-all" @mousedown.prevent>
+              <button @click="openReportModal" class="w-full flex items-center gap-3 px-4 py-3 text-left text-sm font-medium text-slate-700 hover:bg-slate-50 border-b border-slate-100 transition-colors">
+                <PieChart class="w-4 h-4 text-emerald-600" /> Laporan Visual
+              </button>
+              <button @click="exportToCSV" class="w-full flex items-center gap-3 px-4 py-3 text-left text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors">
+                <FileSpreadsheet class="w-4 h-4 text-blue-600" /> Export Excel
+              </button>
+            </div>
+          </div>
+          <SharedDateRangePicker v-model="historyDateRange" />
+          <select v-model="typeFilter" class="bg-white border border-slate-200 rounded-lg text-sm px-3 py-2 focus:outline-none focus:border-emerald-500">
+            <option value="all">Semua Jenis Transaksi</option>
+            <option value="topup">Top Up Masuk</option>
+            <option value="withdraw">Pencairan Keluar</option>
+            <option value="affiliate_commission">Pencairan Komisi</option>
+          </select>
+        </div>
       </div>
 
-      <div class="overflow-x-auto">
+      <div class="overflow-x-auto rounded-b-xl">
         <table class="w-full text-left text-sm">
           <thead class="bg-white border-b border-slate-200 text-slate-600 font-semibold">
             <tr>
+              <th class="px-4 py-4 w-12 text-center">No</th>
               <th class="px-6 py-4">Tgl & Waktu</th>
               <th class="px-6 py-4">Klien</th>
               <th class="px-6 py-4">Jenis Transaksi</th>
               <th class="px-6 py-4 text-right">Nominal</th>
               <th class="px-6 py-4 text-center">Status</th>
+              <th v-if="isSuperAdmin" class="px-6 py-4 text-center">Aksi</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-slate-100">
             <tr v-if="filteredHistory.length === 0">
-              <td colspan="5" class="px-6 py-12 text-center text-slate-500">
+              <td :colspan="isSuperAdmin ? 7 : 6" class="px-6 py-12 text-center text-slate-500">
                 <Receipt class="w-12 h-12 text-slate-300 mx-auto mb-3" />
                 <p>Tidak ada riwayat mutasi yang sesuai.</p>
               </td>
             </tr>
-            <tr v-else v-for="tx in filteredHistory" :key="tx.id" class="hover:bg-slate-50 transition-colors">
+            <tr v-else v-for="(tx, index) in filteredHistory" :key="tx.id" class="hover:bg-slate-50 transition-colors">
+              <td class="px-4 py-4 text-center text-xs text-slate-400 font-mono">{{ index + 1 }}</td>
               <td class="px-6 py-4 text-slate-600 text-xs">
                 {{ new Date(tx.created_at).toLocaleString('id-ID', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute:'2-digit' }) }}
               </td>
@@ -184,6 +227,7 @@
                   {{ tx.type }}
                 </span>
                 <p class="text-[10px] text-slate-400 mt-0.5 line-clamp-1 max-w-[150px]" :title="tx.payment_gateway_ref">{{ tx.payment_gateway_ref || 'Internal' }}</p>
+                <span v-if="tx.is_sandbox" class="inline-block mt-1 px-1.5 py-0.5 text-[9px] font-bold rounded bg-yellow-100 text-yellow-700 border border-yellow-300">SANDBOX</span>
               </td>
               <td class="px-6 py-4 text-right font-bold"
                   :class="{
@@ -201,6 +245,27 @@
                   }">
                   {{ (tx.status || 'unknown').toUpperCase() }}
                 </span>
+              </td>
+              <td v-if="isSuperAdmin" class="px-4 py-4 text-center">
+                <div class="flex items-center justify-center gap-1">
+                  <button 
+                    @click="manageTransaction(tx.id, tx.is_sandbox ? 'to_production' : 'to_sandbox')"
+                    :disabled="managingTxId === tx.id"
+                    class="p-1.5 rounded-lg text-xs font-bold transition-colors"
+                    :class="tx.is_sandbox 
+                      ? 'text-emerald-600 hover:bg-emerald-50 border border-emerald-200' 
+                      : 'text-yellow-600 hover:bg-yellow-50 border border-yellow-200'"
+                    :title="tx.is_sandbox ? 'Pindah ke Produksi' : 'Pindah ke Sandbox'">
+                    <ArrowLeftRight class="w-3.5 h-3.5" />
+                  </button>
+                  <button 
+                    @click="manageTransaction(tx.id, 'delete')"
+                    :disabled="managingTxId === tx.id"
+                    class="p-1.5 rounded-lg text-red-500 hover:bg-red-50 border border-red-200 transition-colors"
+                    title="Hapus Transaksi">
+                    <Trash2 class="w-3.5 h-3.5" />
+                  </button>
+                </div>
               </td>
             </tr>
           </tbody>
@@ -433,12 +498,186 @@
     </div>
     </Teleport>
 
+    <!-- Visual Report Modal -->
+    <Teleport to="body">
+    <div v-if="isReportModalOpen" class="fixed inset-0 z-[100] flex items-center justify-center bg-ink-900/50 backdrop-blur-sm p-4 print:p-0 print:bg-white print:relative print:z-auto print:inset-auto print:block">
+      <div class="bg-white rounded-2xl shadow-xl w-full max-w-4xl overflow-hidden relative border border-ink-100 flex flex-col max-h-[90vh] print:max-h-none print:shadow-none print:border-none print:rounded-none">
+        
+        <!-- Header -->
+        <div class="px-6 py-4 border-b border-ink-100 flex justify-between items-center bg-slate-50 print:bg-white print:border-b-2 print:border-slate-800 shrink-0">
+          <div>
+            <h3 class="font-bold text-slate-900 text-lg flex items-center gap-2">
+              <Receipt class="w-5 h-5 text-emerald-600 print:hidden" />
+              Riwayat Mutasi Global
+            </h3>
+            <p class="text-xs text-slate-500 mt-1">
+              Periode: {{ formatDateOnly(historyDateRange.start) }} s/d {{ formatDateOnly(historyDateRange.end) }}
+              <span class="ml-2 font-bold" :class="envFilter === 'sandbox' ? 'text-yellow-600' : 'text-emerald-600'">• {{ envFilter === 'sandbox' ? 'Sandbox' : envFilter === 'all' ? 'Semua' : 'Produksi' }}</span>
+            </p>
+          </div>
+          <div class="flex gap-2 print:hidden">
+            <button @click="printPDF" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold rounded-lg transition-colors flex items-center gap-2">
+              <FileText class="w-4 h-4" /> Cetak / PDF
+            </button>
+            <button @click="isReportModalOpen = false" class="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg">
+              <X class="w-5 h-5" />
+            </button>
+          </div>
+        </div>
+
+        <!-- Scrollable Content -->
+        <div class="overflow-y-auto flex-1">
+
+          <!-- Tabel Ringkasan per Klien -->
+          <table class="w-full text-left text-sm">
+            <thead class="bg-slate-50 border-b border-slate-200 text-slate-600 font-semibold sticky top-0 z-10">
+              <tr>
+                <th class="px-4 py-3 w-10 text-center text-xs">No</th>
+                <th class="px-4 py-3 text-xs">Klien</th>
+                <th class="px-4 py-3 text-center text-xs">Frekuensi</th>
+                <th class="px-4 py-3 text-right text-xs">Total Top Up</th>
+                <th class="px-4 py-3 text-right text-xs">Dialokasikan</th>
+                <th class="px-4 py-3 text-right text-xs">Sisa Saldo</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+              <tr v-for="(client, index) in reportClientSummary" :key="client.user_id" class="hover:bg-slate-50/50">
+                <td class="px-4 py-3 text-center text-xs text-slate-400 font-mono">{{ index + 1 }}</td>
+                <td class="px-4 py-3 font-bold text-slate-800 text-sm">{{ client.full_name }}</td>
+                <td class="px-4 py-3 text-center">
+                  <span class="px-2.5 py-1 text-xs font-bold rounded-full bg-slate-100 text-slate-700">{{ client.count }}x</span>
+                </td>
+                <td class="px-4 py-3 text-right font-bold text-sm text-emerald-600">
+                  {{ formatCurrency(client.totalTopup) }}
+                </td>
+                <td class="px-4 py-3 text-right font-bold text-sm text-red-600">
+                  {{ formatCurrency(client.totalInternal) }}
+                </td>
+                <td class="px-4 py-3 text-right font-bold text-sm" :class="client.totalTopup - client.totalInternal >= 0 ? 'text-blue-700' : 'text-red-700'">
+                  {{ formatCurrency(client.totalTopup - client.totalInternal) }}
+                </td>
+              </tr>
+            </tbody>
+            <tfoot class="bg-slate-50 border-t-2 border-slate-200">
+              <tr>
+                <td class="px-4 py-3 font-bold text-slate-900 text-right text-sm" colspan="2">TOTAL</td>
+                <td class="px-4 py-3 text-center">
+                  <span class="px-2.5 py-1 text-xs font-bold rounded-full bg-emerald-100 text-emerald-700">{{ filteredHistory.length }}x</span>
+                </td>
+                <td class="px-4 py-3 text-right font-bold text-sm text-emerald-600">
+                  {{ formatCurrency(reportClientSummary.reduce((sum, c) => sum + c.totalTopup, 0)) }}
+                </td>
+                <td class="px-4 py-3 text-right font-bold text-sm text-red-600">
+                  {{ formatCurrency(reportClientSummary.reduce((sum, c) => sum + c.totalInternal, 0)) }}
+                </td>
+                <td class="px-4 py-3 text-right font-bold text-sm text-blue-700">
+                  {{ formatCurrency(reportClientSummary.reduce((sum, c) => sum + c.totalTopup - c.totalInternal, 0)) }}
+                </td>
+              </tr>
+            </tfoot>
+          </table>
+
+          <!-- Diagram Visual -->
+          <div class="px-6 py-6 border-t border-slate-100 bg-white">
+            <h4 class="text-sm font-bold text-slate-700 mb-4 text-center">Perbandingan Top Up vs Dialokasikan per Klien</h4>
+            <ClientOnly>
+              <apexchart type="bar" :height="Math.max(220, reportClientSummary.length * 55)" :options="reportGroupedBarOptions" :series="reportGroupedBarOptions.series"></apexchart>
+            </ClientOnly>
+          </div>
+
+        </div>
+      </div>
+    </div>
+    </Teleport>
+
+    <!-- Fee Report Modal -->
+    <Teleport to="body">
+    <div v-if="isFeeReportModalOpen" class="fixed inset-0 z-[100] flex items-center justify-center bg-ink-900/50 backdrop-blur-sm p-4 print:p-0 print:bg-white print:relative print:z-auto print:inset-auto print:block">
+      <div class="bg-white rounded-2xl shadow-xl w-full max-w-4xl overflow-hidden relative border border-ink-100 flex flex-col max-h-[90vh] print:max-h-none print:shadow-none print:border-none print:rounded-none">
+        
+        <!-- Header Modal -->
+        <div class="px-6 py-4 border-b border-ink-100 flex justify-between items-center bg-slate-50 print:bg-white print:border-b-2 print:border-slate-800">
+          <div>
+            <h3 class="font-bold text-slate-900 text-lg flex items-center gap-2">
+              <PieChart class="w-5 h-5 text-emerald-600 print:hidden" />
+              Rekap Fee Klien
+            </h3>
+            <p class="text-xs text-slate-500 mt-1">
+              Periode: {{ formatDateOnly(feeDateRange.start) }} s/d {{ formatDateOnly(feeDateRange.end) }}
+            </p>
+          </div>
+          <div class="flex gap-2 print:hidden">
+            <button @click="printPDF" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold rounded-lg transition-colors flex items-center gap-2">
+              <FileText class="w-4 h-4" /> Cetak / PDF
+            </button>
+            <button @click="isFeeReportModalOpen = false" class="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg">
+              <X class="w-5 h-5" />
+            </button>
+          </div>
+        </div>
+        
+        <div class="p-6 overflow-y-auto flex-1 bg-slate-50/50 print:bg-white">
+          
+          <!-- Bar Chart Fee per Klien -->
+          <div class="bg-white p-5 rounded-xl border border-slate-100 shadow-sm print:shadow-none print:border-slate-300 mb-6">
+            <h4 class="text-sm font-bold text-slate-700 mb-4 text-center">Pendapatan Fee per Klien</h4>
+            <ClientOnly>
+              <apexchart type="bar" :height="Math.max(200, filteredFeeSummary.length * 45)" :options="feeBarChartOptions" :series="feeBarChartOptions.series"></apexchart>
+            </ClientOnly>
+          </div>
+
+          <!-- Statistik -->
+          <div class="bg-white p-5 rounded-xl border border-slate-100 shadow-sm print:shadow-none print:border-slate-300">
+            <h4 class="text-sm font-bold text-slate-700 mb-4">Statistik Total</h4>
+            <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+              <div class="p-4 bg-slate-50 rounded-lg border border-slate-100 print:border-slate-300">
+                <p class="text-xs text-slate-500 mb-1">Jumlah Klien</p>
+                <p class="text-lg font-bold text-slate-900">{{ filteredFeeSummary.length }} Klien</p>
+              </div>
+              <div class="p-4 bg-emerald-50 rounded-lg border border-emerald-100 print:border-slate-300">
+                <p class="text-xs text-emerald-600 mb-1">Total Frekuensi Top Up</p>
+                <p class="text-lg font-bold text-emerald-700">{{ filteredFeeSummary.reduce((sum, item) => sum + item.count, 0) }}x</p>
+              </div>
+              <div class="p-4 bg-purple-50 rounded-lg border border-purple-100 print:border-slate-300">
+                <p class="text-xs text-purple-600 mb-1">Total Pendapatan Fee</p>
+                <p class="text-lg font-bold text-purple-700">{{ formatCurrency(filteredFeeSummary.reduce((sum, item) => sum + item.totalFee, 0)) }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    </Teleport>
+
   </div>
 </template>
 
+<style>
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  /* Hide nuxt devtools when printing */
+  #nuxt-devtools-container { display: none !important; }
+  
+  .print\:relative, .print\:relative * {
+    visibility: visible;
+  }
+  .print\:relative {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+  }
+}
+</style>
+
 <script setup lang="ts">
-import { RefreshCw, WalletCards, CheckCircle2, Search, Receipt, Users, Copy } from 'lucide-vue-next'
+import { RefreshCw, WalletCards, Search, Receipt, ChevronDown, Download, PieChart, FileSpreadsheet, FileText, X } from 'lucide-vue-next'
 import { ref, computed } from 'vue'
+import { useSupabaseUser, useCsrf, useToast, useConfirm } from '#imports'
 
 definePageMeta({
   layout: 'admin',
@@ -447,12 +686,179 @@ definePageMeta({
 
 const { csrf } = useCsrf()
 const toast = useToast()
+const user = useSupabaseUser()
+const isSuperAdmin = computed(() => user.value?.user_metadata?.role === 'super_admin')
+const managingTxId = ref<string | null>(null)
 
-const activeTab = ref('withdraw')
+const activeTab = ref('history')
 const searchQuery = ref('')
 const typeFilter = ref('all')
+const envFilter = ref('production')
 const isSubmitting = ref<string | null>(null)
 const isSubmittingWd = ref<string | null>(null)
+
+
+
+// --- Export & Report Logic ---
+const isExportMenuOpen = ref(false)
+const closeExportMenu = () => { isExportMenuOpen.value = false }
+const isFeeExportMenuOpen = ref(false)
+const closeFeeExportMenu = () => { isFeeExportMenuOpen.value = false }
+const isReportModalOpen = ref(false)
+const isFeeReportModalOpen = ref(false)
+
+const openReportModal = () => {
+  isExportMenuOpen.value = false
+  isFeeExportMenuOpen.value = false
+  isReportModalOpen.value = true
+}
+
+const openFeeReportModal = () => {
+  isFeeExportMenuOpen.value = false
+  isFeeReportModalOpen.value = true
+}
+
+const formatDateOnly = (dateStr: string | Date | null) => {
+  if (!dateStr) return '-'
+  const date = new Date(dateStr)
+  return `${date.getDate().toString().padStart(2,'0')}/${(date.getMonth()+1).toString().padStart(2,'0')}/${date.getFullYear()}`
+}
+
+const exportToCSV = () => {
+  isExportMenuOpen.value = false
+  if (filteredHistory.value.length === 0) {
+    alert('Tidak ada data untuk diexport pada rentang tanggal ini.')
+    return
+  }
+  
+  const headers = ['Tgl & Waktu', 'Klien', 'Jenis Transaksi', 'Nominal (Rp)', 'Status']
+  const rows = filteredHistory.value.map(tx => {
+    const isMinus = (tx.type === 'withdraw' || tx.type === 'affiliate_commission' || tx.type === 'payment')
+    return [
+      `"${new Date(tx.created_at).toLocaleString('id-ID')}"`,
+      `"${tx.users?.email || 'N/A'}"`,
+      `"${tx.type}"`,
+      `"${isMinus ? '-' : ''}${tx.amount}"`,
+      `"${tx.status}"`
+    ]
+  })
+  
+  const csvContent = "data:text/csv;charset=utf-8," + [headers.join(','), ...rows.map(r => r.join(','))].join('\n')
+  const encodedUri = encodeURI(csvContent)
+  const link = document.createElement("a")
+  link.setAttribute("href", encodedUri)
+  link.setAttribute("download", `Mutasi_${formatDateOnly(historyDateRange.value.start)}_to_${formatDateOnly(historyDateRange.value.end)}.csv`)
+  document.body.appendChild(link)
+  link.click()
+  link.remove()
+}
+
+const printPDF = () => {
+  window.print()
+}
+
+const reportClientSummary = computed(() => {
+  const map = new Map()
+  filteredHistory.value.forEach(tx => {
+    const uid = tx.user_id
+    if (!map.has(uid)) {
+      map.set(uid, {
+        user_id: uid,
+        full_name: tx.users?.full_name || 'Tanpa Nama',
+        count: 0,
+        totalTopup: 0,
+        totalInternal: 0,
+      })
+    }
+    const data = map.get(uid)
+    data.count += 1
+    if (tx.type === 'topup') {
+      data.totalTopup += tx.amount || 0
+    } else {
+      data.totalInternal += tx.amount || 0
+    }
+  })
+  return Array.from(map.values())
+    .sort((a, b) => b.totalTopup - a.totalTopup)
+})
+
+const reportGroupedBarOptions = computed(() => {
+  const clients = reportClientSummary.value
+  const categories = clients.map(c => c.full_name)
+  
+  return {
+    chart: { type: 'bar', toolbar: { show: false }, stacked: false },
+    plotOptions: { bar: { borderRadius: 4, horizontal: true, barHeight: '65%' } },
+    colors: ['#10b981', '#ef4444'],
+    dataLabels: { enabled: false },
+    xaxis: {
+      categories,
+      labels: { formatter: (val: number) => val >= 1000000 ? (val / 1000000).toFixed(1) + ' Jt' : val >= 1000 ? (val / 1000).toFixed(0) + ' Rb' : val.toString() }
+    },
+    yaxis: { labels: { style: { fontSize: '12px', fontWeight: 600 } } },
+    tooltip: { y: { formatter: (val: number) => 'Rp ' + val.toLocaleString('id-ID') } },
+    legend: { position: 'top', fontSize: '12px', fontWeight: 600 },
+    grid: { borderColor: '#f1f5f9', xaxis: { lines: { show: true } }, yaxis: { lines: { show: false } } },
+    series: [
+      { name: 'Top Up', data: clients.map(c => c.totalTopup) },
+      { name: 'Dialokasikan', data: clients.map(c => c.totalInternal) },
+    ]
+  }
+})
+
+const feeBarChartOptions = computed(() => {
+  const labels = filteredFeeSummary.value.map(item => item.full_name)
+  const data = filteredFeeSummary.value.map(item => item.totalFee)
+  
+  return {
+    chart: { type: 'bar', toolbar: { show: false } },
+    plotOptions: { bar: { borderRadius: 4, horizontal: true } },
+    colors: ['#a855f7'],
+    dataLabels: { enabled: false },
+    xaxis: { categories: labels, labels: { formatter: (val: number) => 'Rp ' + val.toLocaleString('id-ID') } },
+    yaxis: { labels: { style: { fontSize: '12px', fontWeight: 600 } } },
+    tooltip: { y: { formatter: (val: number) => 'Rp ' + val.toLocaleString('id-ID') } },
+    series: [{ name: 'Fee (Rp)', data }]
+  }
+})
+
+const exportFeeToCSV = () => {
+  isFeeExportMenuOpen.value = false
+  if (filteredFeeSummary.value.length === 0) {
+    alert('Tidak ada data fee untuk diexport.')
+    return
+  }
+  
+  const headers = ['Klien', 'Frekuensi Top Up', 'Total Fee Dihasilkan (Rp)']
+  const rows = filteredFeeSummary.value.map(item => [
+    `"${item.full_name}"`,
+    `"${item.count}"`,
+    `"${item.totalFee}"`
+  ])
+  
+  const csvContent = "data:text/csv;charset=utf-8," + [headers.join(','), ...rows.map(r => r.join(','))].join('\n')
+  const encodedUri = encodeURI(csvContent)
+  const link = document.createElement("a")
+  link.setAttribute("href", encodedUri)
+  link.setAttribute("download", `Rekap_Fee_${formatDateOnly(feeDateRange.value.start)}_to_${formatDateOnly(feeDateRange.value.end)}.csv`)
+  document.body.appendChild(link)
+  link.click()
+  link.remove()
+}
+
+const feeSearchQuery = ref('')
+const today = new Date()
+const thirtyDaysAgo = new Date()
+thirtyDaysAgo.setDate(today.getDate() - 30)
+
+const getLocalYYYYMMDD = (d: Date) => {
+  const y = d.getFullYear()
+  const m = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${y}-${m}-${day}`
+}
+const feeDateRange = ref({ start: getLocalYYYYMMDD(thirtyDaysAgo), end: getLocalYYYYMMDD(today) })
+const historyDateRange = ref({ start: getLocalYYYYMMDD(thirtyDaysAgo), end: getLocalYYYYMMDD(today) })
 
 const copyToClipboard = async (text: string) => {
   if (!text) return
@@ -461,6 +867,33 @@ const copyToClipboard = async (text: string) => {
     toast.addToast('Nomor rekening disalin', 'success')
   } catch (err) {
     toast.addToast('Gagal menyalin', 'error')
+  }
+}
+
+// Manage Transaction (Super Admin only)
+const manageTransaction = async (txId: string, action: 'delete' | 'to_sandbox' | 'to_production') => {
+  const actionLabels: Record<string, string> = {
+    delete: 'menghapus transaksi ini',
+    to_sandbox: 'memindahkan transaksi ini ke Sandbox',
+    to_production: 'memindahkan transaksi ini ke Produksi',
+  }
+  
+  if (!confirm(`Yakin ingin ${actionLabels[action]}?`)) return
+  
+  managingTxId.value = txId
+  try {
+    const csrfToken = unref(csrf)
+    const res = await $fetch('/api/admin/finance/manage-transaction', {
+      method: 'POST',
+      headers: csrfToken ? { 'csrf-token': csrfToken } : {},
+      body: { transaction_id: txId, action }
+    }) as any
+    toast.addToast(res.message, 'success')
+    await refreshTransactions()
+  } catch (error: any) {
+    toast.addToast(error.data?.statusMessage || 'Gagal memproses', 'error')
+  } finally {
+    managingTxId.value = null
   }
 }
 
@@ -496,6 +929,23 @@ const pendingReferralWithdraws = computed(() => {
 
 const filteredHistory = computed(() => {
   let history = transactions.value.filter(tx => !(tx.type === 'withdraw' && tx.status === 'pending'))
+  
+  const start = new Date(historyDateRange.value.start)
+  start.setHours(0, 0, 0, 0)
+  const end = new Date(historyDateRange.value.end)
+  end.setHours(23, 59, 59, 999)
+
+  history = history.filter(tx => {
+    const txDate = new Date(tx.created_at)
+    return txDate >= start && txDate <= end
+  })
+
+  // Filter by environment
+  if (envFilter.value === 'production') {
+    history = history.filter(tx => !tx.is_sandbox)
+  } else if (envFilter.value === 'sandbox') {
+    history = history.filter(tx => tx.is_sandbox)
+  }
   if (searchQuery.value) {
     const q = searchQuery.value.toLowerCase()
     history = history.filter(tx => tx.users?.full_name?.toLowerCase().includes(q))
@@ -507,9 +957,59 @@ const filteredHistory = computed(() => {
 })
 
 const totalFeeRevenue = computed(() => {
-  return transactions.value
-    .filter(tx => tx.type === 'topup' && tx.status === 'success')
-    .reduce((sum, tx) => sum + (Number(tx.fee_amount) || 0), 0)
+  let txs = transactions.value.filter(tx => tx.type === 'topup' && tx.status === 'success')
+  // Filter by environment
+  if (envFilter.value === 'production') {
+    txs = txs.filter(tx => !tx.is_sandbox)
+  } else if (envFilter.value === 'sandbox') {
+    txs = txs.filter(tx => tx.is_sandbox)
+  }
+  return txs.reduce((sum, tx) => sum + (Number(tx.fee_amount) || 0), 0)
+})
+
+const filteredFeeSummary = computed(() => {
+  let txs = transactions.value.filter(tx => tx.type === 'topup' && tx.status === 'success')
+  
+  if (envFilter.value === 'production') {
+    txs = txs.filter(tx => !tx.is_sandbox)
+  } else if (envFilter.value === 'sandbox') {
+    txs = txs.filter(tx => tx.is_sandbox)
+  }
+
+  const start = new Date(feeDateRange.value.start)
+  start.setHours(0, 0, 0, 0)
+  const end = new Date(feeDateRange.value.end)
+  end.setHours(23, 59, 59, 999)
+
+  txs = txs.filter(tx => {
+    const txDate = new Date(tx.created_at)
+    return txDate >= start && txDate <= end
+  })
+  
+  const map = new Map()
+  txs.forEach(tx => {
+    const uid = tx.user_id
+    if (!map.has(uid)) {
+      map.set(uid, {
+        user_id: uid,
+        full_name: tx.users?.full_name || 'Tanpa Nama',
+        count: 0,
+        totalFee: 0
+      })
+    }
+    const data = map.get(uid)
+    data.count += 1
+    data.totalFee += Number(tx.fee_amount) || 0
+  })
+
+  let result = Array.from(map.values())
+  if (feeSearchQuery.value) {
+    const q = feeSearchQuery.value.toLowerCase()
+    result = result.filter(item => item.full_name.toLowerCase().includes(q))
+  }
+  
+  result.sort((a, b) => b.totalFee - a.totalFee)
+  return result
 })
 
 // Modal Confirmation State (Top Up Withdraw)

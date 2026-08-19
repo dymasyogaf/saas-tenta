@@ -48,7 +48,11 @@ export default defineEventHandler(async (event) => {
     const result = await response.json()
 
     if (!result.reference) {
-       throw createError({ statusCode: 400, statusMessage: 'Respons tidak valid dari Duitku' })
+       console.error('Duitku Check Status Error:', result)
+       throw createError({ 
+         statusCode: 400, 
+         statusMessage: `Respons tidak valid dari Duitku: ${result.statusMessage || JSON.stringify(result)}` 
+       })
     }
 
     const reference = result.reference
