@@ -171,7 +171,7 @@
             <div>
               <label class="block text-sm font-bold text-ink-900 mb-1">{{ $t('verification.uploadKtpLabel') }}</label>
               <p class="text-xs text-ink-500 mb-3">Format: PNG/JPG (Maks 5 MB)</p>
-              <div v-if="!selectedKTP">
+              <div v-if="!selectedKTP && !isCompressingKTP">
                 <label class="bg-orange-500 hover:bg-orange-600 text-white font-bold py-2.5 px-6 rounded-md text-sm transition-colors shadow-sm inline-flex items-center gap-2 cursor-pointer w-full justify-center">
                   <Upload class="w-4 h-4" /> {{ $t('verification.uploadKtpBtn') }}
                   <input type="file" accept="image/png, image/jpeg, image/jpg" class="hidden" @change="handleFileUpload($event, 'ktp')" />
@@ -179,12 +179,12 @@
               </div>
               <div v-else class="flex flex-col items-start gap-3">
                 <div class="flex items-center gap-3 px-4 py-3 rounded-lg border w-full transition-colors" 
-                     :class="isScanning ? 'bg-orange-50 text-orange-700 border-orange-200' : 'bg-green-50 text-green-700 border-green-200'">
-                  <Loader2 v-if="isScanning" class="w-5 h-5 text-orange-500 shrink-0 animate-spin" />
+                     :class="isCompressingKTP ? 'bg-orange-50 text-orange-700 border-orange-200' : 'bg-green-50 text-green-700 border-green-200'">
+                  <Loader2 v-if="isCompressingKTP" class="w-5 h-5 text-orange-500 shrink-0 animate-spin" />
                   <CheckCircle2 v-else class="w-5 h-5 text-green-500 shrink-0" />
-                  <span class="text-sm font-medium truncate">{{ isScanning ? $t('verification.scanningOcr') : selectedKTP.name }}</span>
+                  <span class="text-sm font-medium truncate">{{ isCompressingKTP ? 'Memproses gambar...' : selectedKTP?.name }}</span>
                 </div>
-                <label v-if="!isScanning" class="text-orange-500 hover:text-orange-600 font-bold text-sm cursor-pointer inline-flex items-center gap-1.5 transition-colors">
+                <label v-if="!isCompressingKTP" class="text-orange-500 hover:text-orange-600 font-bold text-sm cursor-pointer inline-flex items-center gap-1.5 transition-colors">
                   <Upload class="w-4 h-4" /> {{ $t('verification.changeBtn') }}
                   <input type="file" accept="image/png, image/jpeg, image/jpg" class="hidden" @change="handleFileUpload($event, 'ktp')" />
                 </label>
@@ -195,18 +195,20 @@
             <div>
               <label class="block text-sm font-bold text-ink-900 mb-1">{{ $t('verification.uploadPasPhotoLabel') }}</label>
               <p class="text-xs text-ink-500 mb-3">Format: PNG/JPG (Maks 5 MB)</p>
-              <div v-if="!selectedPasPhoto">
+              <div v-if="!selectedPasPhoto && !isCompressingPasPhoto">
                 <label class="bg-orange-500 hover:bg-orange-600 text-white font-bold py-2.5 px-6 rounded-md text-sm transition-colors shadow-sm inline-flex items-center gap-2 cursor-pointer w-full justify-center">
                   <Upload class="w-4 h-4" /> {{ $t('verification.uploadPasPhotoBtn') }}
                   <input type="file" accept="image/png, image/jpeg, image/jpg" class="hidden" @change="handleFileUpload($event, 'pasphoto')" />
                 </label>
               </div>
               <div v-else class="flex flex-col items-start gap-3">
-                <div class="flex items-center gap-3 px-4 py-3 rounded-lg border w-full bg-green-50 text-green-700 border-green-200">
-                  <CheckCircle2 class="w-5 h-5 text-green-500 shrink-0" />
-                  <span class="text-sm font-medium truncate">{{ selectedPasPhoto.name }}</span>
+                <div class="flex items-center gap-3 px-4 py-3 rounded-lg border w-full transition-colors" 
+                     :class="isCompressingPasPhoto ? 'bg-orange-50 text-orange-700 border-orange-200' : 'bg-green-50 text-green-700 border-green-200'">
+                  <Loader2 v-if="isCompressingPasPhoto" class="w-5 h-5 text-orange-500 shrink-0 animate-spin" />
+                  <CheckCircle2 v-else class="w-5 h-5 text-green-500 shrink-0" />
+                  <span class="text-sm font-medium truncate">{{ isCompressingPasPhoto ? 'Memproses gambar...' : selectedPasPhoto?.name }}</span>
                 </div>
-                <label class="text-orange-500 hover:text-orange-600 font-bold text-sm cursor-pointer inline-flex items-center gap-1.5 transition-colors">
+                <label v-if="!isCompressingPasPhoto" class="text-orange-500 hover:text-orange-600 font-bold text-sm cursor-pointer inline-flex items-center gap-1.5 transition-colors">
                   <Upload class="w-4 h-4" /> {{ $t('verification.changeBtn') }}
                   <input type="file" accept="image/png, image/jpeg, image/jpg" class="hidden" @change="handleFileUpload($event, 'pasphoto')" />
                 </label>
@@ -348,6 +350,7 @@ import {
   User,
   MessageSquare
 } from 'lucide-vue-next'
+import imageCompression from 'browser-image-compression'
 
 definePageMeta({
   layout: 'dashboard'
@@ -392,6 +395,8 @@ const userPhone = computed(() => {
 
 const selectedKTP = ref<File | null>(null)
 const selectedPasPhoto = ref<File | null>(null)
+const isCompressingKTP = ref(false)
+const isCompressingPasPhoto = ref(false)
 const isScanning = ref(false)
 
 const isNikValid = computed(() => formData.value.nik.length === 0 || /^\d{8,20}$/.test(formData.value.nik))
@@ -405,32 +410,64 @@ const isFormValid = computed(() => {
          selectedPasPhoto.value !== null
 })
 
-const handleFileUpload = (event: Event, type: 'ktp' | 'pasphoto') => {
+const handleFileUpload = async (event: Event, type: 'ktp' | 'pasphoto') => {
   const target = event.target as HTMLInputElement
   if (target.files && target.files.length > 0) {
-    const file = target.files[0]
-    if (!file) return
+    const originalFile = target.files[0]
+    if (!originalFile) return
     
     // Validasi Format
-    if (!['image/jpeg', 'image/png', 'image/jpg'].includes(file.type)) {
+    if (!['image/jpeg', 'image/png', 'image/jpg'].includes(originalFile.type)) {
       addToast(t('verification.invalidFormat'), 'error')
       target.value = ''
       return
     }
 
-    // Validasi Ukuran (5MB)
+    if (type === 'ktp') {
+      isCompressingKTP.value = true
+    } else {
+      isCompressingPasPhoto.value = true
+    }
+    
+    // Beri waktu Vue untuk me-render loading spinner sebelum thread sibuk kompresi
+    await nextTick()
+
+    let file = originalFile
+    try {
+      const options = {
+        maxSizeMB: 0.3, // Dinaikkan ke 300 KB agar iterasi kompresi tidak terlalu lama
+        maxWidthOrHeight: 1200,
+        useWebWorker: true,
+        initialQuality: 0.7, // Mulai dari kualitas 70% agar tidak perlu banyak looping
+        alwaysKeepResolution: false
+      }
+      file = await imageCompression(originalFile, options)
+    } catch (error) {
+      console.error('Error compressing image:', error)
+      addToast('Gagal memproses gambar.', 'error')
+      if (type === 'ktp') isCompressingKTP.value = false
+      else isCompressingPasPhoto.value = false
+      target.value = ''
+      return
+    }
+
+    // Validasi Ukuran (5MB max as safety net)
     const maxSize = 5 * 1024 * 1024
     if (file.size > maxSize) {
       addToast(t('verification.invalidSize'), 'error')
+      if (type === 'ktp') isCompressingKTP.value = false
+      else isCompressingPasPhoto.value = false
       target.value = ''
       return
     }
 
     if (type === 'ktp') {
       selectedKTP.value = file
+      isCompressingKTP.value = false
       addToast(t('verification.ktpSuccess'), 'success')
     } else {
       selectedPasPhoto.value = file
+      isCompressingPasPhoto.value = false
       addToast(t('verification.pasPhotoSuccess'), 'success')
     }
   }
@@ -502,29 +539,7 @@ const submitVerification = async () => {
       }
     })
 
-    const ktpUrl = (uploadResponse as any).ktp_url
-    const pasPhotoUrl = (uploadResponse as any).pasphoto_url
-
-    // 3. Tembak data ke Webhook Google Sheet (Hanya URL, bukan Base64 raksasa)
-    try {
-      await $fetch('/api/webhook/ekyc', {
-        method: 'POST',
-        headers: { 'csrf-token': csrf },
-        body: {
-          nama: formData.value.name,
-          nik: formData.value.nik,
-          tanggal_lahir: formData.value.dob,
-          email: user.value?.email,
-          no_hp: userPhone.value,
-          ktp_url: ktpUrl,
-          pasphoto_url: pasPhotoUrl
-        }
-      })
-    } catch (webhookErr) {
-      console.warn('Webhook gagal, tapi data aman di Supabase:', webhookErr)
-    }
-    
-    
+    // 3. Data sudah aman tersimpan di Supabase melalui endpoint /api/upload-kyc di atas.
     addToast(t('verification.submitSuccess'), 'success')
     
     // 4. Redirect ke Dashboard dengan Hard Reload agar Layout (Banner) ter-refresh

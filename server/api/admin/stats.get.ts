@@ -80,6 +80,7 @@ export default defineEventHandler(async (event) => {
     // 5.7 Low Limit Rentals (limit_amount - weekly_spend < 300.000)
     const lowLimitRentals = (lbData || []).filter((acc: any) => {
       const limit = Number(acc.limit_amount) || 0
+      if (limit <= 0) return false
       const weeklySpend = Number(acc.weekly_spend) || 0
       return (limit - weeklySpend) < 300000
     }).length

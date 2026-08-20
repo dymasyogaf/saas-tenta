@@ -104,7 +104,7 @@
                   <button v-if="isSuperAdmin" @click="resetClient(client.id, client.full_name)" class="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="Reset Data Klien">
                     <RotateCcw class="w-4 h-4" />
                   </button>
-                  <button class="p-2 text-slate-400 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-colors" title="Lihat Detail Klien">
+                  <button v-if="isAuditOrSuperAdmin" @click="selectedClientId = client.id" class="p-2 text-slate-400 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-colors" title="Lihat Detail Klien (KYC)">
                     <ExternalLink class="w-4 h-4" />
                   </button>
                   <button v-if="isSuperAdmin" @click="deleteClient(client.id, client.full_name)" class="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Hapus Klien">
@@ -117,6 +117,13 @@
         </table>
       </div>
     </div>
+
+    <!-- Client Details Modal -->
+    <ModalClientDetailsModal
+      v-if="selectedClientId"
+      :client-id="selectedClientId"
+      @close="selectedClientId = null"
+    />
   </div>
 </template>
 
@@ -135,6 +142,12 @@ const searchQuery = ref('')
 const statusFilter = ref('all')
 
 const isSuperAdmin = ref(false)
+const selectedClientId = ref<string | null>(null)
+
+const isAuditOrSuperAdmin = computed(() => {
+  const role = user.value?.user_metadata?.role || user.value?.app_metadata?.role || ''
+  return role === 'super_admin' || role === 'admin_compliance' || isSuperAdmin.value
+})
 
 onMounted(async () => {
   if (user.value?.user_metadata?.role === 'super_admin' || user.value?.app_metadata?.role === 'super_admin') {

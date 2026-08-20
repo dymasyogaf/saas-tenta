@@ -62,14 +62,9 @@ export default defineEventHandler(async (event) => {
 
     if (dbErr) throw dbErr
 
-    // Generate signed URLs untuk preview instan di frontend
-    const { data: ktpSigned } = await supabase.storage.from('kyc_documents').createSignedUrl(ktpFileName, 3600)
-    const { data: pasSigned } = await supabase.storage.from('kyc_documents').createSignedUrl(pasPhotoFileName, 3600)
-
     return {
       success: true,
-      ktp_url: ktpSigned?.signedUrl || '',
-      pasphoto_url: pasSigned?.signedUrl || ''
+      message: 'KYC data successfully saved to Supabase'
     }
   } catch (error: any) {
     console.error('Error uploading to storage:', error)

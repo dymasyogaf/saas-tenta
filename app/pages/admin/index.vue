@@ -128,7 +128,7 @@
           <h3 class="text-base font-bold text-red-900">Perhatian: Ada {{ stats?.expiringRentals }} Akun Iklan Segera Kedaluwarsa</h3>
           <p class="text-sm text-red-700 mt-1">Masa sewa akun iklan klien ini akan habis dalam waktu kurang dari 7 hari. Segera lakukan follow up ke klien agar layanan tidak terputus.</p>
         </div>
-        <NuxtLink to="/admin/ads-ops" class="shrink-0 px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-bold rounded-lg transition-colors">
+        <NuxtLink to="/admin/ads-ops?tab=expiring" class="shrink-0 px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-bold rounded-lg transition-colors">
           Lihat & Follow Up
         </NuxtLink>
       </div>
@@ -141,7 +141,7 @@
           <h3 class="text-base font-bold text-orange-900">Perhatian: Ada {{ stats?.lowBalanceRentals }} Akun Iklan Sisa Saldo Iklan Menipis</h3>
           <p class="text-sm text-orange-700 mt-1">Sisa anggaran pada akun iklan klien ini di bawah Rp 300.000. Segera hubungi klien untuk melakukan Top Up anggaran.</p>
         </div>
-        <NuxtLink to="/admin/ads-ops" class="shrink-0 px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white text-sm font-bold rounded-lg transition-colors">
+        <NuxtLink to="/admin/ads-ops?tab=low-balance" class="shrink-0 px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white text-sm font-bold rounded-lg transition-colors">
           Lihat & Follow Up
         </NuxtLink>
       </div>
@@ -154,7 +154,7 @@
           <h3 class="text-base font-bold text-yellow-900">Perhatian: Ada {{ stats?.lowLimitRentals }} Akun Iklan Sisa Limit Menipis</h3>
           <p class="text-sm text-yellow-700 mt-1">Sisa limit harian/siklus pada akun iklan klien ini di bawah Rp 300.000. Segera hubungi klien untuk melakukan pembayaran agar iklan tidak terhenti.</p>
         </div>
-        <NuxtLink to="/admin/ads-ops" class="shrink-0 px-4 py-2 bg-yellow-600 hover:bg-yellow-700 text-white text-sm font-bold rounded-lg transition-colors">
+        <NuxtLink to="/admin/ads-ops?tab=low-limit" class="shrink-0 px-4 py-2 bg-yellow-600 hover:bg-yellow-700 text-white text-sm font-bold rounded-lg transition-colors">
           Lihat & Follow Up
         </NuxtLink>
       </div>
@@ -712,6 +712,8 @@
 </template>
 
 <script setup lang="ts">
+import { computed, ref, watch } from 'vue'
+import { useSupabaseClient, useAuth } from '#imports'
 import VueApexCharts from 'vue3-apexcharts'
 import { ShieldCheck, Megaphone, TrendingUp, WalletCards, Info, RefreshCw, Calendar, Users, AlertTriangle, CheckCircle2, XCircle, UserX, Clock, ArrowRight, Headset } from 'lucide-vue-next'
 
