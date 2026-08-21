@@ -8,7 +8,7 @@ export default defineEventHandler(async (event) => {
   const { amount, method, packageType } = body
 
   if (!amount || amount < 10000) {
-    throw createError({ statusCode: 400, statusMessage: 'Minimal top-up Rp 10.000' })
+    throw createError({ statusCode: 400, statusMessage: 'Minimal deposit layanan Rp 10.000' })
   }
 
   // Validasi Paket dan Hitung Fee
@@ -80,7 +80,7 @@ export default defineEventHandler(async (event) => {
     merchantCode,
     paymentAmount,
     merchantOrderId,
-    productDetails: 'Top Up Saldo Iklan Tentaklik',
+    productDetails: 'Layanan Manajemen Iklan Digital Tentaklik',
     additionalParam: '',
     merchantUserInfo: userId,
     customerVaName: userName || 'Member Tentaklik',
@@ -88,7 +88,7 @@ export default defineEventHandler(async (event) => {
     phoneNumber: userPhone || '',
     itemDetails: [
       {
-        name: 'Top Up Saldo Iklan',
+        name: 'Layanan Manajemen Iklan Digital',
         price: paymentAmount,
         quantity: 1
       }
@@ -173,7 +173,7 @@ export default defineEventHandler(async (event) => {
           package_selected: packageType,
           status: 'pending',
           payment_gateway_ref: result.reference,
-          description: `Top Up Saldo via ${paymentName} (Paket ${packageType})`,
+          description: `Pembayaran Layanan Iklan via ${paymentName} (Paket ${packageType})`,
           is_sandbox: !isProduction,
           payment_url: result.paymentUrl || null,
           payment_data: paymentData
@@ -198,7 +198,7 @@ export default defineEventHandler(async (event) => {
         packageType,
         merchantOrderId,
         expiryMinutes: 60,
-        productDetails: 'Top Up Saldo Iklan',
+        productDetails: 'Layanan Manajemen Iklan Digital',
       }).catch((err: Error) => console.error('[Email] Error kirim VA email:', err))
 
       // Berhasil — kembalikan data VA agar frontend bisa tampil halaman custom

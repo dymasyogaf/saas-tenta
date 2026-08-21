@@ -42,7 +42,7 @@ const BRAND_ORANGE_DARK = '#ea580c'  // orange-600
 const BRAND_ORANGE_LIGHT = '#fff7ed' // orange-50
 const BRAND_ORANGE_BORDER = '#fed7aa' // orange-200
 
-// ─── EMAIL: Notifikasi VA / Pembayaran Top Up ────────────────────────────────
+// ─── EMAIL: Notifikasi VA / Pembayaran Layanan Iklan ─────────────────────────
 export interface VaEmailPayload {
   to: string
   customerName: string
@@ -55,7 +55,7 @@ export interface VaEmailPayload {
   packageType: string
   merchantOrderId: string
   expiryMinutes: number
-  productDetails: string // e.g. "Top Up Saldo Iklan" | "Sewa Akun Iklan"
+  productDetails: string // e.g. "Layanan Manajemen Iklan Digital" | "Sewa Akun Iklan"
 }
 
 export async function sendVaEmail(payload: VaEmailPayload): Promise<void> {
@@ -140,7 +140,7 @@ export async function sendVaEmail(payload: VaEmailPayload): Promise<void> {
                   <td style="padding:12px 16px;font-size:14px;color:#1c1917;font-weight:500;text-align:right;border-top:1px solid #f5f5f4;">${productDetails}${packageType && packageType !== 'subscription' ? ` (Paket ${packageLabel[packageType] || packageType})` : ''}</td>
                 </tr>
                 <tr style="background:#fafaf9;">
-                  <td style="padding:12px 16px;font-size:14px;color:#78716c;border-top:1px solid #f5f5f4;">Jumlah Saldo</td>
+                  <td style="padding:12px 16px;font-size:14px;color:#78716c;border-top:1px solid #f5f5f4;">Nilai Layanan</td>
                   <td style="padding:12px 16px;font-size:14px;color:#1c1917;font-weight:500;text-align:right;border-top:1px solid #f5f5f4;">${formatRupiah(netAmount)}</td>
                 </tr>
                 ${feeAmount > 0 ? `
@@ -243,7 +243,7 @@ export async function sendPaymentSuccessEmail(payload: {
           <!-- Body -->
           <tr>
             <td style="background:#ffffff;padding:40px;">
-              <p style="margin:0 0 20px;font-size:15px;color:#44403c;line-height:1.6;">Halo <strong>${customerName}</strong>, pembayaran Anda untuk <strong>${productDetails}</strong> telah kami terima. Saldo akan segera dikreditkan ke akun Anda.</p>
+              <p style="margin:0 0 20px;font-size:15px;color:#44403c;line-height:1.6;">Halo <strong>${customerName}</strong>, pembayaran Anda untuk <strong>${productDetails}</strong> telah kami terima. Anggaran iklan akan segera dialokasikan ke akun Anda.</p>
 
               <table width="100%" cellpadding="0" cellspacing="0" style="border-radius:10px;overflow:hidden;border:1px solid #e7e5e4;margin-bottom:28px;">
                 <tr style="background:#fafaf9;">

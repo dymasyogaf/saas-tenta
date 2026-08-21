@@ -234,6 +234,12 @@
                     }">
                     {{ trx.status.toUpperCase() }}
                   </span>
+                  <button v-if="(trx.status === 'success' || trx.status === 'settled') && trx.type === 'topup'" @click="openInvoice(trx)" class="text-xs text-orange-500 hover:text-orange-600 font-bold flex items-center gap-1 mt-1 transition-colors">
+                    <FileText class="w-3.5 h-3.5" /> Lihat Invoice
+                  </button>
+                  <button v-else-if="trx.status === 'pending' && trx.type === 'topup'" @click="resumePayment(trx)" class="text-xs text-orange-500 hover:text-orange-600 font-bold underline mt-1">
+                    Lanjutkan
+                  </button>
                 </div>
               </td>
             </tr>
@@ -416,13 +422,14 @@
       </div>
     </Teleport>
 
-
+    <InvoiceModal :is-open="isInvoiceModalOpen" :transaction="selectedInvoiceTransaction" @close="isInvoiceModalOpen = false" />
 
   </div>
 </template>
 
 <script setup lang="ts">
-import { Calendar, Wallet, Info, Download, Search, ChevronDown, X, Loader2 } from 'lucide-vue-next'
+import { Calendar, Wallet, Info, Download, Search, ChevronDown, X, Loader2, FileText } from 'lucide-vue-next'
+import InvoiceModal from '~/components/dashboard/InvoiceModal.vue'
 import { useSaldoStore } from '~/stores/saldo'
 import { useAdsStore } from '~/stores/ads'
 import { useI18n } from 'vue-i18n'
@@ -457,6 +464,14 @@ const paymentMethods = computed(() => {
 definePageMeta({
   layout: 'dashboard',
 })
+
+const isInvoiceModalOpen = ref(false)
+const selectedInvoiceTransaction = ref<any>(null)
+
+const openInvoice = (trx: any) => {
+  selectedInvoiceTransaction.value = trx
+  isInvoiceModalOpen.value = true
+}
 
 const resumePayment = (trx: any) => {
   let pd = trx.payment_data
@@ -860,8 +875,16 @@ onMounted(async () => {
       })
       toast.addToast(t('topup.syncSuccess'), 'success')
       
+      const orderId = route.query.merchantOrderId as string
       // Bersihkan URL agar tidak ter-trigger ulang saat refresh
       router.replace({ query: {} })
+
+      // Ambil transaksi terbaru untuk menampilkan modal invoice
+      await saldoStore.fetchTransactions()
+      const foundTx = saldoStore.transactions.find(t => t.payment_gateway_ref === orderId || t.payment_data?.merchantOrderId === orderId)
+      if (foundTx && (foundTx.status === 'success' || foundTx.status === 'settled')) {
+        openInvoice(foundTx)
+      }
     } catch (error) {
       console.error(t('topup.syncFailed'), error)
     }

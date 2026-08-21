@@ -1,5 +1,5 @@
 <template>
-  <div class="payment-page">
+  <div class="payment-page print:block print:h-auto print:min-h-0 print:p-0">
     <!-- Animated Background -->
     <div class="payment-bg">
       <div class="payment-bg-orb payment-bg-orb--1"></div>
@@ -7,7 +7,7 @@
       <div class="payment-bg-orb payment-bg-orb--3"></div>
     </div>
 
-    <div class="payment-container">
+    <div class="payment-container print:max-w-none print:w-full print:m-0 print:p-0">
 
       <!-- ═══════════════ SUCCESS STATE ═══════════════ -->
       <Transition name="state-fade" mode="out-in">
@@ -34,12 +34,12 @@
             </div>
 
             <h2 class="payment-result__title">Pembayaran Berhasil!</h2>
-            <p class="payment-result__subtitle">Saldo iklan kamu berhasil ditambahkan sebesar</p>
+            <p class="payment-result__subtitle">Pembayaran layanan manajemen iklan digital berhasil.</p>
 
             <div class="result-amount-box result-amount-box--success">
-              <p class="result-amount-box__label">Saldo Ditambahkan</p>
+              <p class="result-amount-box__label">Nilai Layanan</p>
               <p class="result-amount-box__value result-amount-box__value--success">
-                +{{ formatRupiah(Number(route.query.net)) }}
+                {{ formatRupiah(Number(route.query.net)) }}
               </p>
             </div>
 
@@ -68,8 +68,8 @@
                 </div>
                 <div class="result-receipt__divider"></div>
                 <div class="result-receipt__row">
-                  <span>Saldo Masuk</span>
-                  <span class="text-green-600 font-bold">+{{ formatRupiah(Number(route.query.net)) }}</span>
+                  <span>Nilai Layanan</span>
+                  <span class="text-green-600 font-bold">{{ formatRupiah(Number(route.query.net)) }}</span>
                 </div>
                 <div class="result-receipt__row">
                   <span>Biaya Layanan</span>
@@ -86,13 +86,13 @@
               </div>
             </div>
 
-            <div class="result-actions">
-              <NuxtLink to="/dashboard/topup" class="payment-btn payment-btn--primary">
-                <Wallet class="w-4 h-4" />
-                Lihat Saldo Terbaru
-              </NuxtLink>
+            <div class="result-actions print:hidden">
+              <button @click="isInvoiceModalOpen = true" class="payment-btn payment-btn--primary bg-white text-ink-900 border border-ink-200 hover:bg-ink-50">
+                <FileText class="w-4 h-4" />
+                Lihat Invoice
+              </button>
               <NuxtLink to="/dashboard" class="payment-btn payment-btn--ghost">
-                Kembali ke Dashboard
+                Kembali
               </NuxtLink>
             </div>
           </div>
@@ -327,26 +327,49 @@
         </div>
       </Transition>
     </div>
+
+    <InvoiceModal :is-open="isInvoiceModalOpen" :transaction="invoiceTransaction" @close="isInvoiceModalOpen = false" />
   </div>
 </template>
 
 <script setup lang="ts">
-import {
-  Wallet, Clock, Copy, CheckCircle, XCircle, ChevronDown,
-  RefreshCw, ShieldCheck, Building2, BookOpen, AlertTriangle,
-  Sparkles, Lock, Zap, Receipt
+import { 
+  CheckCircle, Clock, Sparkles, XCircle, RefreshCw, 
+  Wallet, Receipt, ArrowLeft, ExternalLink, ChevronRight, Copy, FileText, Share2,
+  ShieldCheck, Building2, BookOpen, AlertTriangle, Lock, Zap
 } from 'lucide-vue-next'
+import { useRoute, useRouter } from 'vue-router'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { useToast } from '#imports'
+import InvoiceModal from '~/components/dashboard/InvoiceModal.vue'
 
 definePageMeta({ layout: 'dashboard' })
 
 const route = useRoute()
 const router = useRouter()
+const toast = useToast()
 
 // ─── State ───────────────────────────────────────────────────────────────────
 const paymentStatus = ref<'pending' | 'success' | 'failed'>('pending')
 const isChecking = ref(false)
 const isExpired = ref(false)
 const copied = ref(false)
+
+const isInvoiceModalOpen = ref(false)
+const invoiceTransaction = computed(() => {
+  return {
+    id: route.query.orderId || route.query.ref,
+    created_at: route.query.createdAt || new Date().toISOString(),
+    amount: route.query.net,
+    fee_amount: route.query.fee,
+    description: `Layanan Manajemen Iklan Digital - Paket ${route.query.pkg}`,
+    payment_data: {
+      merchantOrderId: route.query.orderId,
+      paymentName: route.query.method,
+      method: route.query.bank
+    }
+  }
+})
 const isInstructionOpen = ref(false)
 const activeInstructionTab = ref('mobile')
 

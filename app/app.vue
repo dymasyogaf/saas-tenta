@@ -15,12 +15,9 @@ useSupabaseKeepalive()
 </script>
 
 <template>
-  <div>
-    <NuxtRouteAnnouncer />
-    <NuxtLayout>
-      <NuxtPage />
-    </NuxtLayout>
-    <SharedToast />
-    <ConfirmModal />
-  </div>
+  <NuxtLayout>
+    <NuxtPage />
+  </NuxtLayout>
+  <SharedToast />
+  <ConfirmModal />
 </template>

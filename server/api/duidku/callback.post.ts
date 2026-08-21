@@ -86,7 +86,7 @@ export default defineEventHandler(async (event) => {
           sendPaymentSuccessEmail({
             to: userData.user.email,
             customerName: userData.user.user_metadata?.full_name || 'Member Tentaklik',
-            productDetails: transaction.description || 'Top Up Saldo Iklan',
+            productDetails: transaction.description || 'Layanan Manajemen Iklan Digital',
             paymentAmount: parseInt(amount),
             merchantOrderId,
           }).catch((err: Error) => console.error('[Email] Error kirim email sukses:', err))

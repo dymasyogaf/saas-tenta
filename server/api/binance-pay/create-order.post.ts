@@ -6,7 +6,7 @@ export default defineEventHandler(async (event) => {
   const { amount, packageType } = body
 
   if (!amount || amount < 30) {
-    throw createError({ statusCode: 400, statusMessage: 'Minimal top-up $30' })
+    throw createError({ statusCode: 400, statusMessage: 'Minimal deposit layanan $30' })
   }
 
   // Validasi Paket dan Hitung Fee
@@ -70,8 +70,8 @@ export default defineEventHandler(async (event) => {
       goodsType: '02',
       goodsCategory: 'Z000',
       referenceGoodsId: packageType,
-      goodsName: `Top Up Saldo ${packageType.toUpperCase()}`,
-      goodsDetail: `Top Up USD Balance`
+      goodsName: `Layanan Iklan Digital ${packageType.toUpperCase()}`,
+      goodsDetail: `Deposit Layanan Iklan (USD)`
     },
     returnUrl: `${appBaseUrl}/dashboard/topup`,
     cancelUrl: `${appBaseUrl}/dashboard/topup`
@@ -111,7 +111,7 @@ export default defineEventHandler(async (event) => {
           package_selected: packageType,
           status: 'pending',
           payment_gateway_ref: merchantOrderId,
-          description: `Top Up USD Balance via Binance Pay (Paket ${packageType})`
+          description: `Deposit Layanan Iklan (USD) via Binance Pay (Paket ${packageType})`
         })
 
       if (dbError) {
