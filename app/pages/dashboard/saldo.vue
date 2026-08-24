@@ -305,7 +305,7 @@
                 
                 <!-- Update Paket Button -->
                 <div v-if="getLimitUsagePercent(account) >= 100" class="mt-2.5">
-                  <NuxtLink to="/dashboard/settings?tab=subscription" class="inline-flex w-full justify-center items-center gap-1 bg-red-500 text-white text-[10px] font-bold px-2 py-1 rounded hover:bg-red-600 transition-colors shadow-sm">
+                  <NuxtLink to="/dashboard/topup?action=topup" class="inline-flex w-full justify-center items-center gap-1 bg-red-500 text-white text-[10px] font-bold px-2 py-1 rounded hover:bg-red-600 transition-colors shadow-sm">
                     <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
                     Update Paket
                   </NuxtLink>

@@ -897,6 +897,10 @@ onMounted(async () => {
     }
   }
 
+  if (route.query.action === 'topup') {
+    handleTopup()
+  }
+
   saldoStore.fetchSaldo()
   saldoStore.fetchTransactions()
   adsStore.fetchAdAccounts()
