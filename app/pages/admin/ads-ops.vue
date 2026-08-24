@@ -17,28 +17,28 @@
     </div>
 
     <!-- Mode Switcher -->
-    <div class="flex flex-wrap gap-2 mb-4 bg-slate-100 p-1 rounded-xl w-max max-w-full">
-      <button @click="viewMode = 'akun'" :class="viewMode === 'akun' ? 'bg-white shadow-sm text-slate-800' : 'text-slate-500 hover:text-slate-700'" class="px-4 py-2 rounded-lg font-bold text-sm transition-all flex items-center gap-2">
+    <div class="flex overflow-x-auto gap-2 mb-4 bg-slate-100 p-1 rounded-xl w-full sm:w-max max-w-full scrollbar-hide">
+      <button @click="viewMode = 'akun'" :class="viewMode === 'akun' ? 'bg-white shadow-sm text-slate-800' : 'text-slate-500 hover:text-slate-700'" class="shrink-0 px-4 py-2 rounded-lg font-bold text-sm transition-all flex items-center gap-2">
         Pembuatan Akun Iklan
         <span v-if="newList.length > 0" class="bg-red-100 text-red-700 py-0.5 px-2 rounded-full text-[10px]">{{ newList.length }}</span>
       </button>
-      <button @click="viewMode = 'anggaran'" :class="viewMode === 'anggaran' ? 'bg-white shadow-sm text-slate-800' : 'text-slate-500 hover:text-slate-700'" class="px-4 py-2 rounded-lg font-bold text-sm transition-all flex items-center gap-2">
+      <button @click="viewMode = 'anggaran'" :class="viewMode === 'anggaran' ? 'bg-white shadow-sm text-slate-800' : 'text-slate-500 hover:text-slate-700'" class="shrink-0 px-4 py-2 rounded-lg font-bold text-sm transition-all flex items-center gap-2">
         Top Up Anggaran
         <span v-if="pendingBudgetList.length > 0" class="bg-orange-100 text-orange-700 py-0.5 px-2 rounded-full text-[10px]">{{ pendingBudgetList.length }}</span>
       </button>
-      <button @click="viewMode = 'expiring'" :class="viewMode === 'expiring' ? 'bg-white shadow-sm text-slate-800' : 'text-slate-500 hover:text-slate-700'" class="px-4 py-2 rounded-lg font-bold text-sm transition-all flex items-center gap-2">
+      <button @click="viewMode = 'expiring'" :class="viewMode === 'expiring' ? 'bg-white shadow-sm text-slate-800' : 'text-slate-500 hover:text-slate-700'" class="shrink-0 px-4 py-2 rounded-lg font-bold text-sm transition-all flex items-center gap-2">
         Sewa Mau Habis
         <span v-if="expiringRentals.length > 0" class="bg-red-100 text-red-700 py-0.5 px-2 rounded-full text-[10px]">{{ expiringRentals.length }}</span>
       </button>
-      <button @click="viewMode = 'low-balance'" :class="viewMode === 'low-balance' ? 'bg-white shadow-sm text-slate-800' : 'text-slate-500 hover:text-slate-700'" class="px-4 py-2 rounded-lg font-bold text-sm transition-all flex items-center gap-2">
+      <button @click="viewMode = 'low-balance'" :class="viewMode === 'low-balance' ? 'bg-white shadow-sm text-slate-800' : 'text-slate-500 hover:text-slate-700'" class="shrink-0 px-4 py-2 rounded-lg font-bold text-sm transition-all flex items-center gap-2">
         Sisa Saldo Iklan Menipis
         <span v-if="lowBalanceRentals.length > 0" class="bg-orange-100 text-orange-700 py-0.5 px-2 rounded-full text-[10px]">{{ lowBalanceRentals.length }}</span>
       </button>
-      <button @click="viewMode = 'low-limit'" :class="viewMode === 'low-limit' ? 'bg-white shadow-sm text-slate-800' : 'text-slate-500 hover:text-slate-700'" class="px-4 py-2 rounded-lg font-bold text-sm transition-all flex items-center gap-2">
+      <button @click="viewMode = 'low-limit'" :class="viewMode === 'low-limit' ? 'bg-white shadow-sm text-slate-800' : 'text-slate-500 hover:text-slate-700'" class="shrink-0 px-4 py-2 rounded-lg font-bold text-sm transition-all flex items-center gap-2">
         Sisa Limit Menipis
         <span v-if="lowLimitRentals.length > 0" class="bg-yellow-100 text-yellow-700 py-0.5 px-2 rounded-full text-[10px]">{{ lowLimitRentals.length }}</span>
       </button>
-      <button @click="viewMode = 'active-accounts'" :class="viewMode === 'active-accounts' ? 'bg-white shadow-sm text-slate-800' : 'text-slate-500 hover:text-slate-700'" class="px-4 py-2 rounded-lg font-bold text-sm transition-all flex items-center gap-2">
+      <button @click="viewMode = 'active-accounts'" :class="viewMode === 'active-accounts' ? 'bg-white shadow-sm text-slate-800' : 'text-slate-500 hover:text-slate-700'" class="shrink-0 px-4 py-2 rounded-lg font-bold text-sm transition-all flex items-center gap-2">
         Daftar Akun Aktif
         <span v-if="activeAccounts.length > 0" class="bg-blue-100 text-blue-700 py-0.5 px-2 rounded-full text-[10px]">{{ activeAccounts.length }}</span>
       </button>
@@ -84,7 +84,7 @@
       <!-- Table Container -->
       <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden mt-4">
         <div class="overflow-x-auto">
-          <table class="w-full text-left text-sm">
+          <table class="w-full text-left text-sm min-w-[800px]">
             <thead class="bg-slate-50 border-b border-slate-200 text-slate-600 font-semibold">
               <tr>
                 <th class="px-6 py-4">Klien & Target URL</th>
@@ -322,7 +322,7 @@
       <!-- Table Container -->
       <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden mt-4">
         <div class="overflow-x-auto">
-          <table class="w-full text-left text-sm">
+          <table class="w-full text-left text-sm min-w-[800px]">
             <thead class="bg-slate-50 border-b border-slate-200 text-slate-600 font-semibold">
               <tr>
                 <th class="px-6 py-4">Klien</th>
@@ -446,7 +446,7 @@
 
       <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden mt-6">
         <div class="overflow-x-auto">
-          <table class="w-full text-left text-sm">
+          <table class="w-full text-left text-sm min-w-[800px]">
             <thead class="bg-slate-50 border-b border-slate-200 text-slate-600 font-semibold">
               <tr>
                 <th class="px-6 py-4">Klien & Kontak</th>
@@ -513,7 +513,7 @@
 
       <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden mt-6">
         <div class="overflow-x-auto">
-          <table class="w-full text-left text-sm">
+          <table class="w-full text-left text-sm min-w-[800px]">
             <thead class="bg-slate-50 border-b border-slate-200 text-slate-600 font-semibold">
               <tr>
                 <th class="px-6 py-4">Klien & Kontak</th>
@@ -580,7 +580,7 @@
 
       <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden mt-6">
         <div class="overflow-x-auto">
-          <table class="w-full text-left text-sm">
+          <table class="w-full text-left text-sm min-w-[800px]">
             <thead class="bg-slate-50 border-b border-slate-200 text-slate-600 font-semibold">
               <tr>
                 <th class="px-6 py-4">Klien & Kontak</th>
@@ -649,7 +649,7 @@
 
       <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden mt-6">
         <div class="overflow-x-auto">
-          <table class="w-full text-left text-sm">
+          <table class="w-full text-left text-sm min-w-[800px]">
             <thead class="bg-slate-50 border-b border-slate-200 text-slate-600 font-semibold">
               <tr>
                 <th class="px-6 py-4">Klien & Kontak</th>

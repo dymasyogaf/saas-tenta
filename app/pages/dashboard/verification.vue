@@ -274,25 +274,25 @@
             <h3 class="font-bold text-ink-900 flex items-center gap-2"><User class="w-5 h-5 text-orange-500" /> {{ $t('verification.personalInfo') }}</h3>
           </div>
           <div class="p-6 space-y-4">
-            <div class="grid grid-cols-3 border-b border-ink-50 pb-4">
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-1 sm:gap-0 border-b border-ink-50 pb-4">
               <span class="col-span-1 text-ink-500 text-sm font-medium">{{ $t('verification.fullName') }}</span>
-              <span class="col-span-2 text-ink-900 text-sm font-bold">{{ formData.name }}</span>
+              <span class="sm:col-span-2 text-ink-900 text-sm font-bold">{{ formData.name }}</span>
             </div>
-            <div class="grid grid-cols-3 border-b border-ink-50 pb-4">
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-1 sm:gap-0 border-b border-ink-50 pb-4">
               <span class="col-span-1 text-ink-500 text-sm font-medium">{{ $t('verification.nikLabel') }}</span>
-              <span class="col-span-2 text-ink-900 text-sm font-bold">{{ formData.nik }}</span>
+              <span class="sm:col-span-2 text-ink-900 text-sm font-bold">{{ formData.nik }}</span>
             </div>
-            <div class="grid grid-cols-3 border-b border-ink-50 pb-4">
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-1 sm:gap-0 border-b border-ink-50 pb-4">
               <span class="col-span-1 text-ink-500 text-sm font-medium">Tanggal Lahir</span>
-              <span class="col-span-2 text-ink-900 text-sm font-bold">{{ formData.dob }}</span>
+              <span class="sm:col-span-2 text-ink-900 text-sm font-bold">{{ formData.dob }}</span>
             </div>
-            <div class="grid grid-cols-3 border-b border-ink-50 pb-4">
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-1 sm:gap-0 border-b border-ink-50 pb-4">
               <span class="col-span-1 text-ink-500 text-sm font-medium">Email</span>
-              <span class="col-span-2 text-ink-900 text-sm font-bold">{{ user?.email }}</span>
+              <span class="sm:col-span-2 text-ink-900 text-sm font-bold">{{ user?.email }}</span>
             </div>
-            <div class="grid grid-cols-3">
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-1 sm:gap-0">
               <span class="col-span-1 text-ink-500 text-sm font-medium">Nomor WhatsApp</span>
-              <span class="col-span-2 text-ink-900 text-sm font-bold">{{ userPhone }}</span>
+              <span class="sm:col-span-2 text-ink-900 text-sm font-bold">{{ userPhone }}</span>
             </div>
           </div>
         </div>

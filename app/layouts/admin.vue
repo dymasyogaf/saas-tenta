@@ -87,9 +87,10 @@
         <div class="flex items-center gap-3 sm:gap-5">
           <NuxtLink
             to="/dashboard"
-            class="text-sm font-medium text-ink-500 hover:text-orange-600 flex items-center gap-2 transition-colors border border-ink-200 bg-white px-3 py-1.5 rounded-lg hover:bg-orange-50"
+            class="text-sm font-medium text-ink-500 hover:text-orange-600 flex items-center gap-1.5 sm:gap-2 transition-colors border border-ink-200 bg-white px-2 sm:px-3 py-1.5 rounded-lg hover:bg-orange-50 shrink-0"
+            :title="$t('nav.clientDashboard')"
           >
-            <LogOut class="w-4 h-4" /> {{ $t('nav.clientDashboard') }}
+            <LogOut class="w-4 h-4 shrink-0" /> <span class="hidden sm:inline">{{ $t('nav.clientDashboard') }}</span>
           </NuxtLink>
           
           <!-- Profile Dropdown -->

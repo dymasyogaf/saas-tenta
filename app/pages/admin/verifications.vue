@@ -1,11 +1,11 @@
 <template>
   <div class="max-w-7xl mx-auto space-y-6 pb-12">
-    <div class="flex justify-between items-center mb-6">
+    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
       <div>
         <h1 class="text-2xl font-display font-bold text-ink-900">Review Verifikasi KYC</h1>
         <p class="text-ink-500 text-sm mt-1">Kelola persetujuan verifikasi identitas (eKYC) klien.</p>
       </div>
-      <button @click="fetchPendingUsers" class="flex items-center gap-2 px-4 py-2 bg-white border border-ink-200 rounded-lg text-sm font-bold text-ink-700 hover:bg-ink-50 transition-colors shadow-sm">
+      <button @click="fetchPendingUsers" class="flex items-center justify-center gap-2 px-4 py-2 bg-white border border-ink-200 rounded-lg text-sm font-bold text-ink-700 hover:bg-ink-50 transition-colors shadow-sm w-full sm:w-auto">
         <RefreshCw class="w-4 h-4" :class="{ 'animate-spin': isLoading }" /> Segarkan
       </button>
     </div>
@@ -13,7 +13,7 @@
     <!-- Data Table -->
     <div class="bg-white rounded-2xl shadow-sm border border-ink-100 overflow-hidden">
       <div class="overflow-x-auto">
-        <table class="w-full text-left border-collapse">
+        <table class="w-full text-left border-collapse min-w-[700px]">
           <thead>
             <tr class="border-b border-ink-100 bg-ink-50 text-xs text-ink-500 uppercase tracking-wider font-bold">
               <th class="p-4">Tanggal Pengajuan</th>
@@ -126,7 +126,7 @@
                 <div class="text-base font-medium text-ink-900">{{ selectedUser.verification_details?.dob || '-' }}</div>
               </div>
               
-              <div class="pt-4 border-t border-ink-100 grid grid-cols-2 gap-4">
+              <div class="pt-4 border-t border-ink-100 grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label class="block text-xs font-bold text-ink-500 uppercase">Email</label>
                   <div class="text-sm text-ink-700">{{ selectedUser.email }}</div>

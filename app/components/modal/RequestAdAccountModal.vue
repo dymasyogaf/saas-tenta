@@ -68,17 +68,14 @@
                 </div>
               </div>
               
-              <div>
+              <div class="relative">
                 <label class="block text-sm font-bold text-ink-900 mb-2">{{ $t('modals.requestAd.adCategory') }} <span class="text-red-500">*</span></label>
-                <select v-model="form.adCategory" required class="w-full px-4 py-2.5 border border-ink-200 rounded-lg text-sm focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 text-ink-900 bg-white">
-                  <option value="" disabled>{{ $t('modals.requestAd.categoryPlaceholder') }}</option>
-                  <option value="UMKM">{{ $t('modals.requestAd.catUMKM') }}</option>
-                  <option value="Produk Kecantikan">{{ $t('modals.requestAd.catBeauty') }}</option>
-                  <option value="FnB">{{ $t('modals.requestAd.catFnb') }}</option>
-                  <option value="Konsultan Pendidikan">{{ $t('modals.requestAd.catEdu') }}</option>
-                  <option value="Fashion">{{ $t('modals.requestAd.catFashion') }}</option>
-                  <option value="Lainnya">{{ $t('modals.requestAd.catOther') }}</option>
-                </select>
+                <BaseSelect 
+                  v-model="form.adCategory" 
+                  :options="categoryOptions"
+                  :placeholder="$t('modals.requestAd.categoryPlaceholder')"
+                  wrapperClass="w-full px-4 py-2.5 border border-ink-200 rounded-lg text-sm focus:outline-none focus:border-orange-500 bg-white"
+                />
               </div>
 
               <div v-if="activePlatformName.includes('Meta')">
@@ -243,19 +240,34 @@
 import { ref, computed, watch, reactive, nextTick } from 'vue'
 import { X, MonitorPlay } from 'lucide-vue-next'
 import { useFocusTrap } from '@vueuse/integrations/useFocusTrap'
+import BaseSelect from '~/components/ui/BaseSelect.vue'
+import { useI18n, useSupabaseClient, useRuntimeConfig, useCsrf } from '#imports'
+import { useToast } from '~/composables/useToast'
+import { useAuth } from '~/composables/useAuth'
+import { useAppMode } from '~/composables/useAppMode'
 
 const props = defineProps<{
   modelValue: boolean
   platformName?: string
 }>()
 
-const emit = defineEmits(['update:modelValue', 'success'])
+const emit = defineEmits(['update:modelValue', 'request-submitted'])
+
+const { t } = useI18n()
+
+const categoryOptions = computed(() => [
+  { label: t('modals.requestAd.catUMKM'), value: 'UMKM' },
+  { label: t('modals.requestAd.catBeauty'), value: 'Produk Kecantikan' },
+  { label: t('modals.requestAd.catFnb'), value: 'FnB' },
+  { label: t('modals.requestAd.catEdu'), value: 'Konsultan Pendidikan' },
+  { label: t('modals.requestAd.catFashion'), value: 'Fashion' },
+  { label: t('modals.requestAd.catOther'), value: 'Lainnya' },
+])
 
 const toast = useToast()
 const supabase = useSupabaseClient()
 const { user } = useAuth()
 const runtimeConfig = useRuntimeConfig()
-const { t } = useI18n()
 const { isGlobal } = useAppMode()
 
 const pricing = computed(() => {
@@ -494,7 +506,7 @@ const submitPayment = async () => {
     }
 
     toast.addToast(t('modals.requestAd.successMsg'), 'success')
-    emit('success')
+    emit('request-submitted')
     forceCloseModal()
     
   } catch (err: any) {

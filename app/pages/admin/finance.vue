@@ -32,7 +32,7 @@
           <p class="text-3xl font-display font-bold text-white">{{ formatCurrency(totalFeeRevenue) }}</p>
           <p class="text-xs text-slate-500 mt-1">Akumulasi dari seluruh potongan fee sesuai paket klien (Starter/Growth/Scale) untuk transaksi Top Up yang sukses.</p>
         </div>
-        <div class="flex items-center gap-0 bg-slate-800 border border-slate-600 rounded-lg p-1 shrink-0">
+        <div class="flex overflow-x-auto whitespace-nowrap items-center gap-0 bg-slate-800 border border-slate-600 rounded-lg p-1 shrink-0 max-w-full scrollbar-hide">
           <button @click="envFilter = 'production'" 
             class="px-3 py-1.5 text-xs font-bold rounded-md transition-all"
             :class="envFilter === 'production' ? 'bg-emerald-500 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'">
@@ -95,13 +95,13 @@
           <input v-model="feeSearchQuery" type="text" placeholder="Cari nama klien..." class="w-full pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500" />
           <Search class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
         </div>
-        <div class="flex items-center gap-3">
+        <div class="flex flex-wrap items-center gap-3">
           <div class="relative">
             <button @click="isFeeExportMenuOpen = !isFeeExportMenuOpen" @blur="closeFeeExportMenu" class="flex items-center gap-2 px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm font-bold text-slate-700 hover:bg-slate-50 transition-colors shadow-sm">
               <Download class="w-4 h-4" /> Export
               <ChevronDown class="w-4 h-4 text-slate-400" />
             </button>
-            <div v-if="isFeeExportMenuOpen" class="absolute right-0 top-full mt-2 w-48 bg-white border border-slate-200 shadow-xl rounded-xl overflow-hidden z-50 origin-top-right transition-all" @mousedown.prevent>
+            <div v-if="isFeeExportMenuOpen" class="absolute left-0 sm:left-auto sm:right-0 top-full mt-2 w-48 bg-white border border-slate-200 shadow-xl rounded-xl overflow-hidden z-50 origin-top-left sm:origin-top-right transition-all" @mousedown.prevent>
               <button @click="openFeeReportModal" class="w-full flex items-center gap-3 px-4 py-3 text-left text-sm font-medium text-slate-700 hover:bg-slate-50 border-b border-slate-100 transition-colors">
                 <PieChart class="w-4 h-4 text-emerald-600" /> Laporan Visual
               </button>
@@ -115,7 +115,7 @@
       </div>
 
       <div class="overflow-x-auto rounded-b-xl">
-        <table class="w-full text-left text-sm">
+        <table class="w-full text-left text-sm min-w-[800px] whitespace-nowrap">
           <thead class="bg-white border-b border-slate-200 text-slate-600 font-semibold">
             <tr>
               <th class="px-4 py-4 w-12 text-center">No</th>
@@ -164,13 +164,13 @@
           <input v-model="searchQuery" type="text" placeholder="Cari nama klien..." class="w-full pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500" />
           <Search class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
         </div>
-        <div class="flex items-center gap-3">
+        <div class="flex flex-wrap items-center gap-3">
           <div class="relative">
             <button @click="isExportMenuOpen = !isExportMenuOpen" @blur="closeExportMenu" class="flex items-center gap-2 px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm font-bold text-slate-700 hover:bg-slate-50 transition-colors shadow-sm">
               <Download class="w-4 h-4" /> Export
               <ChevronDown class="w-4 h-4 text-slate-400" />
             </button>
-            <div v-if="isExportMenuOpen" class="absolute right-0 top-full mt-2 w-48 bg-white border border-slate-200 shadow-xl rounded-xl overflow-hidden z-50 origin-top-right transition-all" @mousedown.prevent>
+            <div v-if="isExportMenuOpen" class="absolute left-0 sm:left-auto sm:right-0 top-full mt-2 w-48 bg-white border border-slate-200 shadow-xl rounded-xl overflow-hidden z-50 origin-top-left sm:origin-top-right transition-all" @mousedown.prevent>
               <button @click="openReportModal" class="w-full flex items-center gap-3 px-4 py-3 text-left text-sm font-medium text-slate-700 hover:bg-slate-50 border-b border-slate-100 transition-colors">
                 <PieChart class="w-4 h-4 text-emerald-600" /> Laporan Visual
               </button>
@@ -180,17 +180,18 @@
             </div>
           </div>
           <SharedDateRangePicker v-model="historyDateRange" />
-          <select v-model="typeFilter" class="bg-white border border-slate-200 rounded-lg text-sm px-3 py-2 focus:outline-none focus:border-emerald-500">
-            <option value="all">Semua Jenis Transaksi</option>
-            <option value="topup">Top Up Masuk</option>
-            <option value="withdraw">Pencairan Keluar</option>
-            <option value="affiliate_commission">Pencairan Komisi</option>
-          </select>
+          <div class="w-56 relative z-10">
+            <BaseSelect 
+              v-model="typeFilter" 
+              :options="typeFilterOptions"
+              wrapperClass="bg-white border border-slate-200 rounded-lg text-sm px-3 py-2 w-full focus:outline-none focus:border-emerald-500"
+            />
+          </div>
         </div>
       </div>
 
       <div class="overflow-x-auto rounded-b-xl">
-        <table class="w-full text-left text-sm">
+        <table class="w-full text-left text-sm min-w-[800px] whitespace-nowrap">
           <thead class="bg-white border-b border-slate-200 text-slate-600 font-semibold">
             <tr>
               <th class="px-4 py-4 w-12 text-center">No</th>
@@ -276,7 +277,7 @@
     <!-- Tab 3: Pencairan Referral -->
     <div v-if="activeTab === 'referral'" class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden mt-4">
       <div class="overflow-x-auto">
-        <table class="w-full text-left text-sm">
+        <table class="w-full text-left text-sm min-w-[800px] whitespace-nowrap">
           <thead class="bg-slate-50 border-b border-slate-200 text-slate-600 font-semibold">
             <tr>
               <th class="px-6 py-4">Afiliator & Tanggal</th>
@@ -358,7 +359,7 @@
         <h3 class="font-bold text-slate-800">Daftar Rekening Afiliator</h3>
       </div>
       <div class="overflow-x-auto">
-        <table class="w-full text-left text-sm">
+        <table class="w-full text-left text-sm min-w-[800px] whitespace-nowrap">
           <thead class="bg-slate-50 border-b border-slate-200 text-slate-600 font-semibold">
             <tr>
               <th class="px-6 py-4">Tgl Daftar</th>
@@ -529,7 +530,7 @@
         <div class="overflow-y-auto flex-1">
 
           <!-- Tabel Ringkasan per Klien -->
-          <table class="w-full text-left text-sm">
+          <table class="w-full text-left text-sm min-w-[800px] whitespace-nowrap">
             <thead class="bg-slate-50 border-b border-slate-200 text-slate-600 font-semibold sticky top-0 z-10">
               <tr>
                 <th class="px-4 py-3 w-10 text-center text-xs">No</th>
@@ -629,7 +630,7 @@
           <!-- Statistik -->
           <div class="bg-white p-5 rounded-xl border border-slate-100 shadow-sm print:shadow-none print:border-slate-300">
             <h4 class="text-sm font-bold text-slate-700 mb-4">Statistik Total</h4>
-            <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
               <div class="p-4 bg-slate-50 rounded-lg border border-slate-100 print:border-slate-300">
                 <p class="text-xs text-slate-500 mb-1">Jumlah Klien</p>
                 <p class="text-lg font-bold text-slate-900">{{ filteredFeeSummary.length }} Klien</p>
@@ -678,6 +679,7 @@
 import { RefreshCw, WalletCards, Search, Receipt, ChevronDown, Download, PieChart, FileSpreadsheet, FileText, X } from 'lucide-vue-next'
 import { ref, computed } from 'vue'
 import { useSupabaseUser, useCsrf, useToast, useConfirm } from '#imports'
+import BaseSelect from '~/components/ui/BaseSelect.vue'
 
 definePageMeta({
   layout: 'admin',
@@ -693,6 +695,14 @@ const managingTxId = ref<string | null>(null)
 const activeTab = ref('history')
 const searchQuery = ref('')
 const typeFilter = ref('all')
+
+const typeFilterOptions = [
+  { label: 'Semua Jenis Transaksi', value: 'all' },
+  { label: 'Top Up Masuk', value: 'topup' },
+  { label: 'Pencairan Keluar', value: 'withdraw' },
+  { label: 'Pencairan Komisi', value: 'affiliate_commission' },
+]
+
 const envFilter = ref('production')
 const isSubmitting = ref<string | null>(null)
 const isSubmittingWd = ref<string | null>(null)

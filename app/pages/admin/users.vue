@@ -23,7 +23,7 @@
     <!-- Table Container -->
     <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden mt-6">
       <div class="overflow-x-auto">
-        <table class="w-full text-left text-sm">
+        <table class="w-full text-left text-sm min-w-[800px] whitespace-nowrap">
           <thead class="bg-slate-50 border-b border-slate-200 text-slate-600 font-semibold">
             <tr>
               <th class="px-6 py-4">Karyawan</th>

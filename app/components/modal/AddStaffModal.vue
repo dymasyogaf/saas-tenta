@@ -32,7 +32,7 @@
         </button>
       </div>
 
-      <div class="p-6 overflow-y-auto">
+      <div class="p-6 pb-32 overflow-y-auto">
         <!-- Error Message -->
         <div v-if="errorMsg" class="mb-4 p-3 bg-red-50 border border-red-200 text-red-600 text-sm rounded-lg flex items-start gap-2">
           <AlertCircle class="w-4 h-4 mt-0.5 shrink-0" />
@@ -44,31 +44,43 @@
           <p class="text-sm text-slate-600 mb-2">{{ $t('modals.addStaff.promoteDesc') }}</p>
           
           <div class="space-y-1">
-            <label class="text-xs font-semibold text-slate-700">{{ $t('modals.addStaff.selectClient') }}</label>
-            <select v-model="formPromote.user_id" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-orange-500">
-              <option value="">{{ $t('modals.addStaff.selectClientPlaceholder') }}</option>
-              <option v-for="c in clients" :key="c.id" :value="c.id">
-                {{ c.full_name || c.email }} ({{ c.email }})
-              </option>
-            </select>
+            <label class="text-xs font-semibold text-slate-700">{{ $t('modals.addStaff.selectRole') }}</label>
+            <BaseSelect 
+              v-model="formPromote.role" 
+              :options="roleOptions"
+              :placeholder="$t('modals.addStaff.selectRolePlaceholder')" 
+            />
           </div>
 
           <div class="space-y-1">
-            <label class="text-xs font-semibold text-slate-700">{{ $t('modals.addStaff.selectRole') }}</label>
-            <select v-model="formPromote.role" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-orange-500">
-              <option value="">{{ $t('modals.addStaff.selectRolePlaceholder') }}</option>
-              <option value="admin_compliance">{{ $t('admin.roles.admin_compliance') }}</option>
-              <option value="admin_ads_ops">{{ $t('admin.roles.admin_ads_ops') }}</option>
-              <option value="admin_finance">{{ $t('admin.roles.admin_finance') }}</option>
-              <option value="super_admin">{{ $t('admin.roles.super_admin') }}</option>
-            </select>
+            <label class="text-xs font-semibold text-slate-700">{{ $t('modals.addStaff.selectClient') }}</label>
+            <BaseSelect 
+              v-model="formPromote.user_id" 
+              :options="clientOptions"
+              :placeholder="$t('modals.addStaff.selectClientPlaceholder')"
+            >
+              <template #option="{ option }">
+                <span class="block font-medium truncate">{{ option.label }}</span>
+                <span class="block text-[11px] text-slate-400 truncate">{{ option.email }}</span>
+              </template>
+            </BaseSelect>
           </div>
+
         </div>
 
         <!-- TAB 2: CREATE -->
         <div v-if="activeTab === 'create'" class="space-y-4">
           <p class="text-sm text-slate-600 mb-2">{{ $t('modals.addStaff.createDesc') }}</p>
           
+          <div class="space-y-1">
+            <label class="text-xs font-semibold text-slate-700">{{ $t('modals.addStaff.selectRole') }}</label>
+            <BaseSelect 
+              v-model="formCreate.role" 
+              :options="roleOptions"
+              :placeholder="$t('modals.addStaff.selectRolePlaceholder')" 
+            />
+          </div>
+
           <div class="space-y-1">
             <label class="text-xs font-semibold text-slate-700">{{ $t('modals.addStaff.fullName') }}</label>
             <input v-model="formCreate.full_name" type="text" :placeholder="$t('modals.addStaff.fullNamePlaceholder')" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-orange-500" />
@@ -84,16 +96,6 @@
             <input v-model="formCreate.password" type="text" :placeholder="$t('modals.addStaff.passwordPlaceholder')" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-orange-500" />
           </div>
 
-          <div class="space-y-1">
-            <label class="text-xs font-semibold text-slate-700">{{ $t('modals.addStaff.selectRole') }}</label>
-            <select v-model="formCreate.role" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-orange-500">
-              <option value="">{{ $t('modals.addStaff.selectRolePlaceholder') }}</option>
-              <option value="admin_compliance">{{ $t('admin.roles.admin_compliance') }}</option>
-              <option value="admin_ads_ops">{{ $t('admin.roles.admin_ads_ops') }}</option>
-              <option value="admin_finance">{{ $t('admin.roles.admin_finance') }}</option>
-              <option value="super_admin">{{ $t('admin.roles.super_admin') }}</option>
-            </select>
-          </div>
         </div>
       </div>
 
@@ -118,11 +120,13 @@
 
 <script setup lang="ts">
 import { X, AlertCircle } from 'lucide-vue-next'
-import { ref, watch } from 'vue'
+import { ref, watch, unref, computed } from 'vue'
+import BaseSelect from '~/components/ui/BaseSelect.vue'
+import { useI18n, useToast, useCsrf } from '#imports'
 
-const props = defineProps({
-  isOpen: Boolean
-})
+const props = defineProps<{
+  isOpen: boolean
+}>()
 
 const emit = defineEmits(['update:isOpen', 'success'])
 
@@ -142,6 +146,21 @@ const formCreate = ref({
   email: '',
   password: '',
   role: ''
+})
+
+const roleOptions = [
+  { label: 'Tim Audit', value: 'admin_compliance' },
+  { label: 'Tim Iklan', value: 'admin_ads_ops' },
+  { label: 'Tim Keuangan', value: 'admin_finance' },
+  { label: 'Super Admin', value: 'super_admin' },
+]
+
+const clientOptions = computed(() => {
+  return clients.value.map(c => ({
+    label: c.full_name || 'Tanpa Nama',
+    value: c.id,
+    email: c.email
+  }))
 })
 
 // Ambil daftar klien saat modal dibuka

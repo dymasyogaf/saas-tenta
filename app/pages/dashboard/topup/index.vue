@@ -188,14 +188,12 @@
           <Search class="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-ink-400" />
         </div>
         
-        <div class="relative w-full md:w-56">
-          <select v-model="statusFilter" class="w-full appearance-none bg-white border border-ink-200 text-ink-700 py-2.5 pl-4 pr-10 rounded-lg text-sm focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 cursor-pointer">
-            <option value="all">{{ $t('topup.allStatus') }}</option>
-            <option value="success">{{ $t('topup.success') }}</option>
-            <option value="pending">{{ $t('topup.pending') }}</option>
-            <option value="failed">{{ $t('topup.failed') }}</option>
-          </select>
-          <ChevronDown class="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-ink-400 pointer-events-none" />
+        <div class="relative w-full md:w-56 z-10">
+          <BaseSelect 
+            v-model="statusFilter" 
+            :options="statusFilterOptions"
+            wrapperClass="w-full appearance-none bg-white border border-ink-200 text-ink-700 py-2.5 px-4 rounded-lg text-sm focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500"
+          />
         </div>
       </div>
       
@@ -430,6 +428,7 @@
 <script setup lang="ts">
 import { Calendar, Wallet, Info, Download, Search, ChevronDown, X, Loader2, FileText } from 'lucide-vue-next'
 import InvoiceModal from '~/components/dashboard/InvoiceModal.vue'
+import { useSupabaseClient } from '#imports'
 import { useSaldoStore } from '~/stores/saldo'
 import { useAdsStore } from '~/stores/ads'
 import { useI18n } from 'vue-i18n'
@@ -460,6 +459,8 @@ const paymentMethods = computed(() => {
     { value: 'IR', name: 'Indomaret', logo: '/logos/indomaret.png' },
   ]
 })
+
+import BaseSelect from '~/components/ui/BaseSelect.vue'
 
 definePageMeta({
   layout: 'dashboard',
@@ -545,6 +546,12 @@ const activeTab = ref('semua')
 const isDatePopoverOpen = ref(false)
 const searchQuery = ref('')
 const statusFilter = ref('all')
+const statusFilterOptions = computed(() => [
+  { label: t('topup.allStatus'), value: 'all' },
+  { label: t('topup.success'), value: 'success' },
+  { label: t('topup.pending'), value: 'pending' },
+  { label: t('topup.failed'), value: 'failed' },
+])
 
 const today = new Date()
 const thirtyDaysAgo = new Date()

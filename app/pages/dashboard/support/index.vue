@@ -142,23 +142,24 @@
             <!-- Kategori / Layanan Terkait -->
             <div>
               <label class="block text-sm font-bold text-ink-900 mb-1.5">{{ $t('support.form.category') }} <span class="text-red-500">*</span></label>
-              <select v-model="form.category" required class="w-full px-4 py-2.5 bg-white border border-ink-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-sm">
-                <option value="top_up">{{ $t('support.category.top_up') }}</option>
-                <option value="ad_account">{{ $t('support.category.ad_account') }}</option>
-                <option value="technical">{{ $t('support.category.technical') }}</option>
-                <option value="other">{{ $t('support.category.other') }}</option>
-              </select>
+              <BaseSelect 
+                v-model="form.category" 
+                :options="categoryOptions"
+                wrapperClass="w-full bg-white border border-ink-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-sm px-4 py-2.5"
+                required
+              />
               <p class="text-[11px] text-ink-500 mt-1.5">{{ $t('support.form.categoryHint') }}</p>
             </div>
             
             <!-- Prioritas / Departemen -->
             <div>
               <label class="block text-sm font-bold text-ink-900 mb-1.5">{{ $t('support.form.priority') }} <span class="text-red-500">*</span></label>
-              <select v-model="form.priority" required class="w-full px-4 py-2.5 bg-white border border-ink-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-sm">
-                <option value="low">{{ $t('support.priorityLabel.low') }}</option>
-                <option value="normal">{{ $t('support.priorityLabel.normal') }}</option>
-                <option value="high">{{ $t('support.priorityLabel.high') }}</option>
-              </select>
+              <BaseSelect 
+                v-model="form.priority" 
+                :options="priorityOptions"
+                wrapperClass="w-full bg-white border border-ink-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-sm px-4 py-2.5"
+                required
+              />
             </div>
             
             <div v-if="form.category === 'other'" class="sm:col-span-2">
@@ -228,6 +229,10 @@
 
 <script setup lang="ts">
 import { Ticket, X, Image, Search, ArrowLeft, Paperclip, Send, MessageCircle, Eye } from 'lucide-vue-next'
+import { useI18n } from 'vue-i18n'
+import { useSupabaseClient, useAsyncData, useCsrf } from '#imports'
+import { useToast } from '~/composables/useToast'
+import BaseSelect from '~/components/ui/BaseSelect.vue'
 
 
 definePageMeta({ layout: 'dashboard' })
@@ -253,6 +258,43 @@ const { data: tickets, pending, refresh } = useAsyncData('user-tickets', async (
 const isCreating = ref(false)
 const filterStatus = ref('all')
 const searchQuery = ref('')
+
+const getStatusOutlineClass = (status: string) => {
+  if (status === 'open') return 'inline-block px-2.5 py-1 text-[11px] font-bold rounded-full bg-blue-100 text-blue-700 border border-blue-200'
+  if (status === 'in_progress') return 'inline-block px-2.5 py-1 text-[11px] font-bold rounded-full bg-orange-100 text-orange-700 border border-orange-200'
+  if (status === 'answered') return 'inline-block px-2.5 py-1 text-[11px] font-bold rounded-full bg-green-100 text-green-700 border border-green-200'
+  if (status === 'closed') return 'inline-block px-2.5 py-1 text-[11px] font-bold rounded-full bg-ink-100 text-ink-700 border border-ink-200'
+  return 'inline-block px-2.5 py-1 text-[11px] font-bold rounded-full bg-ink-100 text-ink-600 border border-ink-200'
+}
+
+const getPriorityClass = (priority: string) => {
+  if (priority === 'high') return 'inline-flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-bold rounded-full bg-red-100 text-red-700'
+  if (priority === 'normal') return 'inline-flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-bold rounded-full bg-ink-100 text-ink-700'
+  if (priority === 'low') return 'inline-flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-bold rounded-full bg-ink-100 text-ink-500'
+  return 'inline-flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-bold rounded-full bg-ink-100 text-ink-600'
+}
+
+const formatDateOnly = (dateString: string, loc: string) => {
+  if (!dateString) return '-'
+  const d = new Date(dateString)
+  return new Intl.DateTimeFormat(loc === 'en' ? 'en-US' : 'id-ID', {
+    day: 'numeric', month: 'short', year: 'numeric'
+  }).format(d)
+}
+
+const formatRelativeTime = (dateString: string, loc: string) => {
+  if (!dateString) return ''
+  const d = new Date(dateString)
+  const now = new Date()
+  const diffInMinutes = Math.floor((now.getTime() - d.getTime()) / (1000 * 60))
+  if (diffInMinutes < 1) return loc === 'en' ? 'Just now' : 'Baru saja'
+  if (diffInMinutes < 60) return loc === 'en' ? `${diffInMinutes}m ago` : `${diffInMinutes}mnt lalu`
+  const diffInHours = Math.floor(diffInMinutes / 60)
+  if (diffInHours < 24) return loc === 'en' ? `${diffInHours}h ago` : `${diffInHours}jam lalu`
+  const diffInDays = Math.floor(diffInHours / 24)
+  if (diffInDays < 7) return loc === 'en' ? `${diffInDays}d ago` : `${diffInDays}hri lalu`
+  return ''
+}
 
 const filterOptions = computed(() => [
   { id: 'all', label: t('support.filter.all') },
@@ -291,6 +333,19 @@ const form = ref({
   subject: '',
   description: ''
 })
+
+const categoryOptions = computed(() => [
+  { label: t('support.category.top_up'), value: 'top_up' },
+  { label: t('support.category.ad_account'), value: 'ad_account' },
+  { label: t('support.category.technical'), value: 'technical' },
+  { label: t('support.category.other'), value: 'other' },
+])
+
+const priorityOptions = computed(() => [
+  { label: t('support.priorityLabel.low'), value: 'low' },
+  { label: t('support.priorityLabel.normal'), value: 'normal' },
+  { label: t('support.priorityLabel.high'), value: 'high' },
+])
 
 // Logika Upload Gambar
 const fileInput = ref<HTMLInputElement | null>(null)

@@ -28,17 +28,11 @@
       <form @submit.prevent="submitBroadcast" class="space-y-5">
         <div>
           <label class="block text-sm font-bold text-ink-900 mb-1">Target Penerima</label>
-          <select 
+          <BaseSelect 
             v-model="form.targetRole" 
-            class="w-full border border-ink-200 rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500"
-            required
-          >
-            <option value="all">📢 Semua Pengguna (Semua Klien & Admin)</option>
-            <option value="admin_only">🛡️ Hanya Admin (Semua jenis Admin, tanpa klien)</option>
-            <option value="admin_ads_ops">📣 Tim Iklan (Admin Iklan & Super Admin)</option>
-            <option value="admin_finance">💰 Tim Keuangan (Admin Keuangan & Super Admin)</option>
-            <option value="admin_compliance">🔍 Tim Audit (Admin Audit & Super Admin)</option>
-          </select>
+            :options="targetRoleOptions"
+            wrapperClass="w-full border border-ink-200 rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 bg-white"
+          />
           <p class="text-xs text-ink-500 mt-1">Notifikasi akan langsung masuk ke menu lonceng 🔔 target terpilih.</p>
         </div>
 
@@ -55,16 +49,20 @@
 
         <div>
           <label class="block text-sm font-bold text-ink-900 mb-1">Isi Pesan</label>
-          <ClientOnly>
-            <QuillEditor 
-              ref="quillSendRef"
-              v-model:content="form.message" 
-              contentType="html" 
-              theme="snow" 
-              placeholder="Tulis pesan pengumuman... (bisa dicetak tebal, list, dll)"
-              class="bg-white min-h-[200px] border-ink-200 rounded-lg text-sm"
-            />
-          </ClientOnly>
+          <div class="max-w-full overflow-x-auto scrollbar-hide">
+            <div class="min-w-[500px]">
+              <ClientOnly>
+                <QuillEditor 
+                  ref="quillSendRef"
+                  v-model:content="form.message" 
+                  contentType="html" 
+                  theme="snow" 
+                  placeholder="Tulis pesan pengumuman... (bisa dicetak tebal, list, dll)"
+                  class="bg-white min-h-[200px] border-ink-200 rounded-lg text-sm"
+                />
+              </ClientOnly>
+            </div>
+          </div>
         </div>
 
         <div class="pt-2">
@@ -94,24 +92,20 @@
             class="w-full pl-10 pr-4 py-2 border border-ink-200 rounded-lg text-sm focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 bg-white"
           />
         </div>
-        <select 
-          v-model="filterTarget" 
-          class="border border-ink-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-orange-500 bg-white min-w-[180px]"
-        >
-          <option value="all_filter">Semua Target</option>
-          <option value="all">📢 Semua Pengguna</option>
-          <option value="admin_only">🛡️ Hanya Admin</option>
-          <option value="admin_ads_ops">📣 Tim Iklan</option>
-          <option value="admin_finance">💰 Tim Keuangan</option>
-          <option value="admin_compliance">🔍 Tim Audit</option>
-        </select>
-        <select 
-          v-model="sortOrder" 
-          class="border border-ink-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-orange-500 bg-white min-w-[140px]"
-        >
-          <option value="newest">Terbaru</option>
-          <option value="oldest">Terlama</option>
-        </select>
+        <div class="relative min-w-[180px] z-10">
+          <BaseSelect 
+            v-model="filterTarget" 
+            :options="filterTargetOptions"
+            wrapperClass="border border-ink-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-orange-500 bg-white w-full"
+          />
+        </div>
+        <div class="relative min-w-[140px] z-10">
+          <BaseSelect 
+            v-model="sortOrder" 
+            :options="sortOrderOptions"
+            wrapperClass="border border-ink-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-orange-500 bg-white w-full"
+          />
+        </div>
       </div>
 
       <div v-if="isLoadingHistory" class="flex justify-center p-12">
@@ -312,6 +306,10 @@
 <script setup lang="ts">
 import { Send, Loader2, CheckCircle2, Edit2, Trash2, Users, Plus, Search } from 'lucide-vue-next'
 import { stripHtml } from '../../../utils/formatters'
+import BaseSelect from '~/components/ui/BaseSelect.vue'
+import { useToast } from '~/composables/useToast'
+import { useConfirm } from '~/composables/useConfirm'
+import { useCsrf } from '#imports'
 
 definePageMeta({
   layout: 'admin',
@@ -330,6 +328,14 @@ const form = reactive({
   title: '',
   message: ''
 })
+
+const targetRoleOptions = [
+  { label: '📢 Semua (Klien & Admin)', value: 'all' },
+  { label: '🛡️ Semua Admin', value: 'admin_only' },
+  { label: '📣 Tim Iklan', value: 'admin_ads_ops' },
+  { label: '💰 Tim Keuangan', value: 'admin_finance' },
+  { label: '🔍 Tim Audit', value: 'admin_compliance' },
+]
 const isSubmitting = ref(false)
 const showSuccess = ref(false)
 
@@ -371,6 +377,21 @@ const isLoadingHistory = ref(false)
 const searchQuery = ref('')
 const filterTarget = ref('all_filter')
 const sortOrder = ref('newest')
+
+const filterTargetOptions = [
+  { label: 'Semua Target', value: 'all_filter' },
+  { label: '📢 Semua Pengguna', value: 'all' },
+  { label: '🛡️ Hanya Admin', value: 'admin_only' },
+  { label: '📣 Tim Iklan', value: 'admin_ads_ops' },
+  { label: '💰 Tim Keuangan', value: 'admin_finance' },
+  { label: '🔍 Tim Audit', value: 'admin_compliance' },
+]
+
+const sortOrderOptions = [
+  { label: 'Terbaru', value: 'newest' },
+  { label: 'Terlama', value: 'oldest' },
+]
+
 const currentPage = ref(1)
 const perPage = 10
 

@@ -6,24 +6,25 @@
         <h2 class="text-2xl font-display font-bold text-slate-900">Daftar Klien (CRM)</h2>
         <p class="text-slate-500 text-sm mt-1">Pantau seluruh pengguna, status KYC, dan saldo mereka.</p>
       </div>
-      <div class="flex items-center gap-3">
+      <div class="flex flex-wrap items-center gap-3">
         <div class="relative w-64">
           <input v-model="searchQuery" type="text" placeholder="Cari nama atau email..." class="w-full pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500" />
           <Search class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
         </div>
-        <select v-model="statusFilter" class="bg-white border border-slate-200 rounded-lg text-sm px-3 py-2 focus:outline-none focus:border-orange-500">
-          <option value="all">Semua Status</option>
-          <option value="verified">Verified (Aktif)</option>
-          <option value="pending">Pending KYC</option>
-          <option value="unverified">Belum KYC</option>
-        </select>
+        <div class="w-48">
+          <BaseSelect 
+            v-model="statusFilter" 
+            :options="statusOptions"
+            wrapperClass="bg-white border border-slate-200 rounded-lg text-sm px-3 py-2 w-full focus:outline-none focus:border-orange-500"
+          />
+        </div>
       </div>
     </div>
 
     <!-- Table Container -->
     <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
       <div class="overflow-x-auto">
-        <table class="w-full text-left text-sm">
+        <table class="w-full text-left text-sm min-w-[800px] whitespace-nowrap">
           <thead class="bg-slate-50 border-b border-slate-200 text-slate-600 font-semibold">
             <tr>
               <th class="px-6 py-4">Klien</th>
@@ -129,6 +130,7 @@
 
 <script setup lang="ts">
 import { Search, Users, ExternalLink, Trash2, RotateCcw, UserCheck } from 'lucide-vue-next'
+import BaseSelect from '~/components/ui/BaseSelect.vue'
 
 definePageMeta({
   layout: 'admin',
@@ -140,6 +142,14 @@ const user = useSupabaseUser()
 const { csrf } = useCsrf()
 const searchQuery = ref('')
 const statusFilter = ref('all')
+
+const statusOptions = [
+  { label: 'Semua Status', value: 'all' },
+  { label: 'Verified (Aktif)', value: 'verified' },
+  { label: 'Menunggu Verifikasi', value: 'pending' },
+  { label: 'Belum KYC', value: 'unverified' },
+  { label: 'Ditangguhkan', value: 'suspended' },
+]
 
 const isSuperAdmin = ref(false)
 const selectedClientId = ref<string | null>(null)

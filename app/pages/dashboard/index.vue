@@ -61,14 +61,12 @@
         </div>
         <div class="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
           <!-- Platform Filter -->
-          <div class="relative w-full sm:w-44">
-            <select v-model="selectedPlatform" class="w-full appearance-none bg-white border border-ink-200 text-ink-700 py-2 pl-3 pr-8 rounded-lg text-sm focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 shadow-sm cursor-pointer">
-              <option value="all">{{ $t('dashboard.allAds') }}</option>
-              <option value="meta">Meta Ads</option>
-              <option value="tiktok">TikTok Ads</option>
-              <option value="google">Google Ads</option>
-            </select>
-            <ChevronDown class="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-ink-400 pointer-events-none" />
+          <div class="relative w-full sm:w-44 z-10">
+            <BaseSelect 
+              v-model="selectedPlatform" 
+              :options="platformOptions"
+              wrapperClass="w-full appearance-none bg-white border border-ink-200 text-ink-700 py-2 px-3 rounded-lg text-sm focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 shadow-sm"
+            />
           </div>
           
           <!-- Date Filter -->
@@ -178,6 +176,7 @@
 
 <script setup lang="ts">
 import { TrendingUp, Activity, ShieldAlert, ChevronDown, RefreshCw, Clock } from 'lucide-vue-next'
+import BaseSelect from '~/components/ui/BaseSelect.vue'
 import { onMounted, onUnmounted, ref, computed, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useAuth } from '~/composables/useAuth'
@@ -201,6 +200,12 @@ const verificationStatus = ref<string | null>(null)
 
 // Filter states
 const selectedPlatform = ref('all')
+const platformOptions = computed(() => [
+  { label: t('dashboard.allAds'), value: 'all' },
+  { label: 'Meta Ads', value: 'meta' },
+  { label: 'TikTok Ads', value: 'tiktok' },
+  { label: 'Google Ads', value: 'google' },
+])
 const dateRange = ref({ start: '', end: '' })
 
 // Computed filtered campaigns

@@ -179,17 +179,14 @@
         <!-- Status Ubah via Reply -->
         <div class="flex items-center gap-3">
           <span class="text-xs font-semibold text-ink-500 uppercase tracking-wider">Ubah Status:</span>
-          <select 
-            v-model="replyStatus"
-            @change="updateStatus(($event.target as HTMLSelectElement).value)"
-            class="px-3 py-1.5 bg-ink-50 border border-ink-200 text-ink-700 text-xs font-bold rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 cursor-pointer"
-          >
-            <option value="open">Terbuka</option>
-            <option value="in_progress">In Progress</option>
-            <option value="answered">Dijawab</option>
-            <option value="pending">Ditunda</option>
-            <option value="closed">Selesai</option>
-          </select>
+          <div class="w-36 relative z-10">
+            <BaseSelect 
+              v-model="replyStatus"
+              @update:modelValue="updateStatus"
+              :options="replyStatusOptions"
+              wrapperClass="px-3 py-1.5 bg-ink-50 border border-ink-200 text-ink-700 text-xs font-bold rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 cursor-pointer w-full"
+            />
+          </div>
         </div>
       </div>
       
@@ -271,7 +268,7 @@ import {
   X,
   Loader2
 } from 'lucide-vue-next'
-
+import BaseSelect from '~/components/ui/BaseSelect.vue'
 
 definePageMeta({ layout: 'admin' })
 
@@ -299,6 +296,13 @@ const { data: ticket, pending, refresh } = useFetch<any>(`/api/admin/tickets/${t
 // Refs
 const replyContent = ref('')
 const editorKey = ref(0)
+const replyStatusOptions = [
+  { label: 'Terbuka', value: 'open' },
+  { label: 'In Progress', value: 'in_progress' },
+  { label: 'Dijawab', value: 'answered' },
+  { label: 'Ditunda', value: 'pending' },
+  { label: 'Selesai', value: 'closed' },
+]
 const replyStatus = ref('answered')
 const isSubmitting = ref(false)
 

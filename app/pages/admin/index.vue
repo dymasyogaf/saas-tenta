@@ -120,41 +120,47 @@
 
     <!-- Alert / Perhatian -->
     <div v-if="(stats?.expiringRentals || 0) > 0 || (stats?.lowBalanceRentals || 0) > 0 || (stats?.lowLimitRentals || 0) > 0" class="mb-8 space-y-4">
-      <div v-if="(stats?.expiringRentals || 0) > 0" class="bg-red-50 border border-red-200 rounded-xl p-5 shadow-sm flex items-start gap-4">
-        <div class="w-10 h-10 bg-red-100 text-red-600 rounded-xl flex items-center justify-center shrink-0">
-          <Megaphone class="w-5 h-5" />
+      <div v-if="(stats?.expiringRentals || 0) > 0" class="bg-red-50 border border-red-200 rounded-xl p-4 md:p-5 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div class="flex items-start gap-3 md:gap-4">
+          <div class="w-10 h-10 bg-red-100 text-red-600 rounded-xl flex items-center justify-center shrink-0">
+            <Megaphone class="w-5 h-5" />
+          </div>
+          <div>
+            <h3 class="text-base font-bold text-red-900">Perhatian: Ada {{ stats?.expiringRentals }} Akun Iklan Segera Kedaluwarsa</h3>
+            <p class="text-sm text-red-700 mt-1">Masa sewa akun iklan klien ini akan habis dalam waktu kurang dari 7 hari. Segera lakukan follow up ke klien agar layanan tidak terputus.</p>
+          </div>
         </div>
-        <div class="flex-1">
-          <h3 class="text-base font-bold text-red-900">Perhatian: Ada {{ stats?.expiringRentals }} Akun Iklan Segera Kedaluwarsa</h3>
-          <p class="text-sm text-red-700 mt-1">Masa sewa akun iklan klien ini akan habis dalam waktu kurang dari 7 hari. Segera lakukan follow up ke klien agar layanan tidak terputus.</p>
-        </div>
-        <NuxtLink to="/admin/ads-ops?tab=expiring" class="shrink-0 px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-bold rounded-lg transition-colors">
+        <NuxtLink to="/admin/ads-ops?tab=expiring" class="w-full md:w-auto text-center shrink-0 px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-bold rounded-lg transition-colors">
           Lihat & Follow Up
         </NuxtLink>
       </div>
 
-      <div v-if="(stats?.lowBalanceRentals || 0) > 0" class="bg-orange-50 border border-orange-200 rounded-xl p-5 shadow-sm flex items-start gap-4">
-        <div class="w-10 h-10 bg-orange-100 text-orange-600 rounded-xl flex items-center justify-center shrink-0">
-          <WalletCards class="w-5 h-5" />
+      <div v-if="(stats?.lowBalanceRentals || 0) > 0" class="bg-orange-50 border border-orange-200 rounded-xl p-4 md:p-5 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div class="flex items-start gap-3 md:gap-4">
+          <div class="w-10 h-10 bg-orange-100 text-orange-600 rounded-xl flex items-center justify-center shrink-0">
+            <WalletCards class="w-5 h-5" />
+          </div>
+          <div>
+            <h3 class="text-base font-bold text-orange-900">Perhatian: Ada {{ stats?.lowBalanceRentals }} Akun Iklan Sisa Saldo Iklan Menipis</h3>
+            <p class="text-sm text-orange-700 mt-1">Sisa anggaran pada akun iklan klien ini di bawah Rp 300.000. Segera hubungi klien untuk melakukan Top Up anggaran.</p>
+          </div>
         </div>
-        <div class="flex-1">
-          <h3 class="text-base font-bold text-orange-900">Perhatian: Ada {{ stats?.lowBalanceRentals }} Akun Iklan Sisa Saldo Iklan Menipis</h3>
-          <p class="text-sm text-orange-700 mt-1">Sisa anggaran pada akun iklan klien ini di bawah Rp 300.000. Segera hubungi klien untuk melakukan Top Up anggaran.</p>
-        </div>
-        <NuxtLink to="/admin/ads-ops?tab=low-balance" class="shrink-0 px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white text-sm font-bold rounded-lg transition-colors">
+        <NuxtLink to="/admin/ads-ops?tab=low-balance" class="w-full md:w-auto text-center shrink-0 px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white text-sm font-bold rounded-lg transition-colors">
           Lihat & Follow Up
         </NuxtLink>
       </div>
 
-      <div v-if="(stats?.lowLimitRentals || 0) > 0" class="bg-yellow-50 border border-yellow-200 rounded-xl p-5 shadow-sm flex items-start gap-4">
-        <div class="w-10 h-10 bg-yellow-100 text-yellow-600 rounded-xl flex items-center justify-center shrink-0">
-          <Activity class="w-5 h-5" />
+      <div v-if="(stats?.lowLimitRentals || 0) > 0" class="bg-yellow-50 border border-yellow-200 rounded-xl p-4 md:p-5 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div class="flex items-start gap-3 md:gap-4">
+          <div class="w-10 h-10 bg-yellow-100 text-yellow-600 rounded-xl flex items-center justify-center shrink-0">
+            <Activity class="w-5 h-5" />
+          </div>
+          <div>
+            <h3 class="text-base font-bold text-yellow-900">Perhatian: Ada {{ stats?.lowLimitRentals }} Akun Iklan Sisa Limit Menipis</h3>
+            <p class="text-sm text-yellow-700 mt-1">Sisa limit harian/siklus pada akun iklan klien ini di bawah Rp 300.000. Segera hubungi klien untuk melakukan pembayaran agar iklan tidak terhenti.</p>
+          </div>
         </div>
-        <div class="flex-1">
-          <h3 class="text-base font-bold text-yellow-900">Perhatian: Ada {{ stats?.lowLimitRentals }} Akun Iklan Sisa Limit Menipis</h3>
-          <p class="text-sm text-yellow-700 mt-1">Sisa limit harian/siklus pada akun iklan klien ini di bawah Rp 300.000. Segera hubungi klien untuk melakukan pembayaran agar iklan tidak terhenti.</p>
-        </div>
-        <NuxtLink to="/admin/ads-ops?tab=low-limit" class="shrink-0 px-4 py-2 bg-yellow-600 hover:bg-yellow-700 text-white text-sm font-bold rounded-lg transition-colors">
+        <NuxtLink to="/admin/ads-ops?tab=low-limit" class="w-full md:w-auto text-center shrink-0 px-4 py-2 bg-yellow-600 hover:bg-yellow-700 text-white text-sm font-bold rounded-lg transition-colors">
           Lihat & Follow Up
         </NuxtLink>
       </div>
@@ -204,12 +210,13 @@
             <h3 class="font-bold text-xl text-slate-900">Volume Top-Up</h3>
             <p class="text-sm text-slate-500 mt-1">{{ dateRangeText === 'Pilih Rentang Waktu' ? '7 Hari Terakhir' : dateRangeText }}</p>
           </div>
-          <select v-model="selectedFilter" class="text-sm border border-slate-200 rounded-md py-1.5 px-3 text-slate-700 bg-white shadow-sm focus:outline-none focus:ring-1 focus:ring-orange-500 cursor-pointer">
-            <option value="7">7 Hari Terakhir</option>
-            <option value="30">30 Hari Terakhir</option>
-            <option value="month">Bulan Ini</option>
-            <option value="custom" disabled hidden>Kustom</option>
-          </select>
+          <div class="w-40 relative z-10">
+            <BaseSelect 
+              v-model="selectedFilter" 
+              :options="selectedFilterOptions"
+              wrapperClass="text-sm border border-slate-200 rounded-md py-1.5 px-3 text-slate-700 bg-white shadow-sm focus:outline-none focus:ring-1 focus:ring-orange-500 w-full"
+            />
+          </div>
         </div>
 
         <!-- Mini Stats -->
@@ -651,12 +658,13 @@
       <div class="bg-white border border-slate-200 rounded-xl shadow-sm flex flex-col">
         <div class="p-5 border-b border-slate-100 flex justify-between items-center">
           <h3 class="font-bold text-slate-900">Aktivitas Terkini</h3>
-          <select v-model="adsOpsPlatformFilter" class="text-xs bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 text-slate-600 focus:outline-none focus:border-orange-500">
-            <option value="all">Semua Platform</option>
-            <option value="Meta">Meta</option>
-            <option value="Google">Google</option>
-            <option value="TikTok">TikTok</option>
-          </select>
+          <div class="w-36 relative z-10">
+            <BaseSelect 
+              v-model="adsOpsPlatformFilter" 
+              :options="adsOpsPlatformOptions"
+              wrapperClass="text-xs bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 text-slate-600 focus:outline-none focus:border-orange-500 w-full"
+            />
+          </div>
         </div>
         <div class="flex-1 overflow-y-auto p-2">
           <div v-if="pendingAdsOps" class="p-4 space-y-4">
@@ -715,7 +723,14 @@
 import { computed, ref, watch } from 'vue'
 import { useSupabaseClient, useAuth } from '#imports'
 import VueApexCharts from 'vue3-apexcharts'
-import { ShieldCheck, Megaphone, TrendingUp, WalletCards, Info, RefreshCw, Calendar, Users, AlertTriangle, CheckCircle2, XCircle, UserX, Clock, ArrowRight, Headset } from 'lucide-vue-next'
+import { 
+  Users, CheckCircle, ShieldAlert, MonitorPlay, PiggyBank,
+  TrendingUp, TrendingDown, Clock, AlertCircle, ArrowUpRight, ArrowDownRight, WalletCards, Megaphone, CheckCircle2,
+  ShieldCheck, Info, RefreshCw, Calendar, AlertTriangle, XCircle, UserX, ArrowRight, Headset
+} from 'lucide-vue-next'
+import { formatCurrencyShort } from '~/utils/currency'
+import { useDateStore } from '~/stores/dateStore'
+import BaseSelect from '~/components/ui/BaseSelect.vue'
 
 definePageMeta({
   layout: 'admin',
@@ -755,6 +770,11 @@ const applyDateFilter = () => {
 }
 
 const selectedFilter = ref('30')
+const selectedFilterOptions = [
+  { label: '7 Hari Terakhir', value: '7' },
+  { label: '30 Hari Terakhir', value: '30' },
+  { label: 'Bulan Ini', value: 'month' },
+]
 
 watch(selectedFilter, (val) => {
   if (val === 'custom') return
@@ -828,6 +848,12 @@ const { data: stats, pending, refresh } = useFetch<AdminStats>('/api/admin/stats
 })
 
 const adsOpsPlatformFilter = ref('all')
+const adsOpsPlatformOptions = [
+  { label: 'Semua Platform', value: 'all' },
+  { label: 'Meta', value: 'Meta' },
+  { label: 'Google', value: 'Google' },
+  { label: 'TikTok', value: 'TikTok' },
+]
 
 // Fetch Ads Ops stats
 const { data: adsOpsStats, pending: pendingAdsOps, refresh: refreshAdsOps } = useFetch<any>('/api/admin/ads-ops-stats', {

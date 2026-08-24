@@ -91,15 +91,14 @@
               <!-- DELEGASI -->
               <td class="p-4 sm:px-6 py-4 align-middle">
                 <template v-if="isAuditRole">
-                  <select 
-                    :value="ticket.assigned_to_role || ''"
-                    @change="updateAssignment(ticket.id, ticket.status, ($event.target as HTMLSelectElement).value)"
-                    class="w-32 px-3 py-1.5 bg-ink-50 border border-ink-200 text-ink-700 text-xs font-bold rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-colors cursor-pointer"
-                  >
-                    <option value="">Belum Diassign</option>
-                    <option value="admin_ads_ops">Tim Ads Ops</option>
-                    <option value="admin_finance">Tim Keuangan</option>
-                  </select>
+                  <div class="w-36 relative z-10">
+                    <BaseSelect 
+                      :modelValue="ticket.assigned_to_role || ''"
+                      @update:modelValue="(val: string) => updateAssignment(ticket.id, ticket.status, val)"
+                      :options="assignmentOptions"
+                      wrapperClass="w-full px-3 py-1.5 bg-ink-50 border border-ink-200 text-ink-700 text-xs font-bold rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-colors"
+                    />
+                  </div>
                 </template>
                 <template v-else>
                   <span v-if="ticket.assigned_to_role" class="inline-block px-2.5 py-1 text-[11px] font-bold rounded-full bg-blue-100 text-blue-700 whitespace-nowrap">
@@ -127,17 +126,14 @@
               <!-- AKSI -->
               <td class="p-4 sm:px-6 py-4 align-middle text-right">
                 <div class="flex items-center justify-end gap-2">
-                  <select 
-                    :value="ticket.status"
-                    @change="updateStatus(ticket.id, ($event.target as HTMLSelectElement).value)"
-                    class="w-28 px-3 py-1.5 bg-ink-50 border border-ink-200 text-ink-700 text-xs font-bold rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-colors cursor-pointer"
-                  >
-                    <option value="open">Terbuka</option>
-                    <option value="in_progress">In Progress</option>
-                    <option value="answered">Dijawab</option>
-                    <option value="pending">Ditunda</option>
-                    <option value="closed">Selesai</option>
-                  </select>
+                  <div class="w-32 relative z-10">
+                    <BaseSelect 
+                      :modelValue="ticket.status"
+                      @update:modelValue="(val: string) => updateStatus(ticket.id, val)"
+                      :options="statusOptions"
+                      wrapperClass="w-full px-3 py-1.5 bg-ink-50 border border-ink-200 text-ink-700 text-xs font-bold rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-colors"
+                    />
+                  </div>
                   
                   <template v-if="!isAuditRole && ticket.assigned_to_role !== userRole">
                     <button 
@@ -175,6 +171,7 @@
 
 <script setup lang="ts">
 import { MessageCircle, Trash2, Search } from 'lucide-vue-next'
+import BaseSelect from '~/components/ui/BaseSelect.vue'
 
 definePageMeta({ layout: 'admin' })
 
@@ -188,6 +185,20 @@ const { data: tickets, pending, refresh } = useFetch<any>('/api/admin/tickets')
 
 const filterStatus = ref('all')
 const searchQuery = ref('')
+
+const statusOptions = [
+  { label: 'Terbuka', value: 'open' },
+  { label: 'In Progress', value: 'in_progress' },
+  { label: 'Dijawab', value: 'answered' },
+  { label: 'Ditunda', value: 'pending' },
+  { label: 'Selesai', value: 'closed' },
+]
+
+const assignmentOptions = [
+  { label: 'Belum Diassign', value: '' },
+  { label: 'Tim Ads Ops', value: 'admin_ads_ops' },
+  { label: 'Tim Keuangan', value: 'admin_finance' },
+]
 
 const filteredTickets = computed(() => {
   if (!tickets.value?.data) return []

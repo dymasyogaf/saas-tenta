@@ -12,7 +12,7 @@
     </button>
     
     <!-- Popover Content -->
-    <div v-if="showDatePopover" class="absolute right-0 top-full mt-2 w-72 bg-white rounded-xl shadow-xl border border-ink-200 p-4 z-50">
+    <div v-if="showDatePopover" class="absolute left-0 sm:left-auto sm:right-0 top-full mt-2 w-72 bg-white rounded-xl shadow-xl border border-ink-200 p-4 z-50 origin-top-left sm:origin-top-right">
       <h4 class="font-bold text-ink-900 mb-4">{{ $t('components.dateRangePicker.title') }}</h4>
       
       <div class="space-y-3">

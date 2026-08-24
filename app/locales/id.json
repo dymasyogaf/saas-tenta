@@ -133,8 +133,8 @@
     "accessManagement": "Manajemen Akses",
     "panelAdmin": "Panel Admin",
     "roles": {
-      "admin_compliance": "Tim Audit (Kepatuhan)",
-      "admin_ads_ops": "Tim Ops Iklan",
+      "admin_compliance": "Tim Audit",
+      "admin_ads_ops": "Tim Iklan",
       "admin_finance": "Tim Keuangan",
       "super_admin": "Super Admin"
     },

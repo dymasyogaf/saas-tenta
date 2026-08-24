@@ -11,24 +11,19 @@
         
         <!-- Filters for Histori Akun Pengganti -->
         <div v-if="activeTab === 'histori-pengganti'" class="flex flex-col sm:flex-row items-start sm:items-center gap-3 w-full sm:w-auto">
-          <div class="relative w-full sm:w-44">
-            <select class="w-full appearance-none bg-white border border-ink-200 text-ink-700 py-2 pl-3 pr-8 rounded-lg text-sm focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 shadow-sm cursor-pointer">
-              <option>{{ $t('saldo.selectPlatform') }}</option>
-              <option>Meta Ads</option>
-              <option>Tiktok Ads</option>
-              <option>Google Ads</option>
-            </select>
-            <ChevronDown class="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-ink-400 pointer-events-none" />
+          <div class="relative w-full sm:w-44 z-10">
+            <BaseSelect 
+              v-model="filterPenggantiPlatform" 
+              :options="filterPenggantiPlatformOptions"
+              wrapperClass="w-full appearance-none bg-white border border-ink-200 text-ink-700 py-2 px-3 rounded-lg text-sm focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 shadow-sm"
+            />
           </div>
-          <div class="relative w-full sm:w-56">
-            <select class="w-full appearance-none bg-white border border-ink-200 text-ink-700 py-2 pl-3 pr-8 rounded-lg text-sm focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 shadow-sm cursor-pointer">
-              <option>{{ $t('saldo.allStatus') }}</option>
-              <option>{{ $t('saldo.waitingApproval') }}</option>
-              <option>{{ $t('saldo.beingProcessed') }}</option>
-              <option>{{ $t('saldo.approved') }}</option>
-              <option>{{ $t('saldo.requestRejected') }}</option>
-            </select>
-            <ChevronDown class="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-ink-400 pointer-events-none" />
+          <div class="relative w-full sm:w-56 z-10">
+            <BaseSelect 
+              v-model="filterPenggantiStatus" 
+              :options="filterPenggantiStatusOptions"
+              wrapperClass="w-full appearance-none bg-white border border-ink-200 text-ink-700 py-2 px-3 rounded-lg text-sm focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 shadow-sm"
+            />
           </div>
         </div>
       </div>
@@ -75,12 +70,12 @@
           </button>
         </div>
         <div class="flex items-center gap-3 w-full lg:w-auto mt-4 sm:mt-0">
-          <div class="relative min-w-[140px] shrink-0">
-            <select v-model="sortOrder" class="appearance-none pl-4 pr-10 py-2 border border-ink-200 rounded-md text-sm w-full focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 text-ink-900 bg-white cursor-pointer">
-              <option value="terbaru">{{ $t('saldo.newest') }}</option>
-              <option value="terlama">{{ $t('saldo.oldest') }}</option>
-            </select>
-            <ChevronDown class="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-ink-400 pointer-events-none" />
+          <div class="relative min-w-[140px] shrink-0 z-10">
+            <BaseSelect 
+              v-model="sortOrder" 
+              :options="sortOrderOptions"
+              wrapperClass="w-full appearance-none px-4 py-2 border border-ink-200 rounded-md text-sm focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 text-ink-900 bg-white"
+            />
           </div>
           <div class="relative w-full lg:w-72">
             <input v-model="searchQuery" type="text" :placeholder="$t('saldo.searchAccount')" class="pl-4 pr-10 py-2 border border-ink-200 rounded-md text-sm w-full focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 text-ink-900 placeholder:text-ink-400 bg-white" />
@@ -618,6 +613,8 @@
 <script setup lang="ts">
 import { Calendar, ChevronDown, Search, Download, ArrowDown, ArrowUpRight, CreditCard, PlusCircle, ChevronLeft, ChevronRight, RefreshCw, Info } from 'lucide-vue-next'
 import { ref, onMounted, computed } from 'vue'
+import { useI18n } from 'vue-i18n'
+import BaseSelect from '~/components/ui/BaseSelect.vue'
 import { useSaldoStore } from '~/stores/saldo'
 import { useAdsStore } from '~/stores/ads'
 import { useToast } from '~/composables/useToast'
@@ -668,6 +665,28 @@ const adsStore = useAdsStore()
 
 const searchQuery = ref('')
 const sortOrder = ref('terbaru')
+const sortOrderOptions = computed(() => [
+  { label: t('saldo.newest'), value: 'terbaru' },
+  { label: t('saldo.oldest'), value: 'terlama' },
+])
+
+const filterPenggantiPlatform = ref('Platform')
+const filterPenggantiPlatformOptions = computed(() => [
+  { label: t('saldo.selectPlatform'), value: 'Platform' },
+  { label: 'Meta Ads', value: 'Meta Ads' },
+  { label: 'Tiktok Ads', value: 'Tiktok Ads' },
+  { label: 'Google Ads', value: 'Google Ads' },
+])
+
+const filterPenggantiStatus = ref('Semua Status')
+const filterPenggantiStatusOptions = computed(() => [
+  { label: t('saldo.allStatus'), value: 'Semua Status' },
+  { label: t('saldo.waitingApproval'), value: 'Menunggu Persetujuan' },
+  { label: t('saldo.beingProcessed'), value: 'Sedang Diproses' },
+  { label: t('saldo.approved'), value: 'Disetujui' },
+  { label: t('saldo.requestRejected'), value: 'Ditolak' },
+])
+
 const currentPage = ref(1)
 const perPage = ref(10)
 
