@@ -341,6 +341,7 @@ import {
 import { useRoute, useRouter } from 'vue-router'
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useToast } from '#imports'
+import { useSaldoStore } from '~/stores/saldo'
 import InvoiceModal from '~/components/dashboard/InvoiceModal.vue'
 
 definePageMeta({ layout: 'dashboard' })
@@ -348,6 +349,7 @@ definePageMeta({ layout: 'dashboard' })
 const route = useRoute()
 const router = useRouter()
 const toast = useToast()
+const saldoStore = useSaldoStore()
 
 // ─── State ───────────────────────────────────────────────────────────────────
 const paymentStatus = ref<'pending' | 'success' | 'failed'>('pending')
@@ -600,9 +602,13 @@ const checkStatus = async () => {
     if (res.status === 'success') {
       paymentStatus.value = 'success'
       stopPolling()
+      await saldoStore.fetchSaldo()
+      await saldoStore.fetchTransactions()
+      await saldoStore.fetchActiveSubscriptions()
     } else if (res.status === 'failed') {
       paymentStatus.value = 'failed'
       stopPolling()
+      await saldoStore.fetchTransactions()
     }
   } catch (e: any) {
     if (e.response && e.response.status === 400) {

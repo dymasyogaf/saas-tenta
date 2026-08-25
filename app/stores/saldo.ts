@@ -12,12 +12,35 @@ export const useSaldoStore = defineStore('saldo', {
     usdPendingBalance: 0,
     activePackage: null as string | null,
     weeklyLimit: 0 as number,
+    packageExpiresAt: null as string | null,
+    activeSubscriptions: [] as any[],
     transactions: [] as any[],
     isLoading: false,
     isFetchingSaldo: true,
     isFetchingTransactions: true,
     error: null as string | null
   }),
+
+  getters: {
+    daysRemaining: (state) => {
+      if (!state.packageExpiresAt) return 0
+      const diffMs = new Date(state.packageExpiresAt).getTime() - Date.now()
+      if (diffMs <= 0) return 0
+      const days = Math.floor(diffMs / (1000 * 60 * 60 * 24))
+      return days > 0 ? days : 1
+    },
+    isPackageExpired: (state) => {
+      if (!state.packageExpiresAt) return true
+      return new Date(state.packageExpiresAt).getTime() <= Date.now()
+    },
+    isExpiringSoon: (state) => {
+      if (!state.packageExpiresAt) return false
+      const diffMs = new Date(state.packageExpiresAt).getTime() - Date.now()
+      if (diffMs <= 0) return true
+      const days = Math.floor(diffMs / (1000 * 60 * 60 * 24))
+      return days <= 5
+    }
+  },
 
   actions: {
     async fetchSaldo() {
@@ -46,22 +69,35 @@ export const useSaldoStore = defineStore('saldo', {
           this.usdBalance = data.usd_balance || 0
           this.usdPendingBalance = data.usd_pending_balance || 0
 
-          // Ambil info paket dari tabel users
+          // Ambil info paket & masa aktif dari tabel users
           const { data: userData, error: userError } = await supabase
             .from('users')
-            .select('active_package, package_weekly_limit')
+            .select('active_package, package_weekly_limit, package_expires_at')
             .eq('id', data.user_id)
             .single()
             
           if (!userError && userData) {
             this.activePackage = userData.active_package
             this.weeklyLimit = userData.package_weekly_limit
+            this.packageExpiresAt = userData.package_expires_at
           }
+          await this.fetchActiveSubscriptions()
         }
       } catch (e: any) {
         console.error('Failed to fetch saldo:', e.message)
       } finally {
         this.isFetchingSaldo = false
+      }
+    },
+
+    async fetchActiveSubscriptions() {
+      try {
+        const response = await $fetch<any>('/api/saldo/active-subscriptions')
+        if (response && response.success) {
+          this.activeSubscriptions = response.subscriptions || []
+        }
+      } catch (e: any) {
+        console.error('Failed to fetch active subscriptions:', e.message)
       }
     },
 
@@ -236,6 +272,39 @@ export const useSaldoStore = defineStore('saldo', {
         } else {
           useToast().addToast('Gagal Alokasi: ' + this.error, 'error')
         }
+        return false
+      } finally {
+        this.isLoading = false
+      }
+    },
+
+    async switchPackage(packageType: string, csrfToken?: string) {
+      this.isLoading = true
+      let toast: any = null
+      try {
+        toast = useToast()
+      } catch (err) {}
+
+      try {
+        const headers: Record<string, string> = {}
+        if (csrfToken) {
+          headers['csrf-token'] = csrfToken
+        }
+
+        const response = await $fetch<any>('/api/saldo/switch-package', {
+          method: 'POST',
+          headers,
+          body: { package_type: packageType }
+        })
+        if (response && response.success) {
+          if (toast) toast.addToast(`Berhasil mengubah paket aktif menjadi ${packageType.toUpperCase()}`, 'success')
+          await this.fetchSaldo()
+          await this.fetchActiveSubscriptions()
+          return true
+        }
+      } catch (e: any) {
+        const msg = e.data?.message || e.message || 'Gagal mengubah paket'
+        if (toast) toast.addToast(msg, 'error')
         return false
       } finally {
         this.isLoading = false

@@ -159,11 +159,48 @@
               </td>
             </tr>
             <!-- Actual Data -->
-            <tr v-else-if="filteredAdAccounts.length > 0" v-for="account in filteredAdAccounts" :key="account.id" class="transition-colors group border-b border-ink-100 relative" :class="getDaysLeftNum(account.subscription_expires_at) !== null && getDaysLeftNum(account.subscription_expires_at)! <= 0 ? 'bg-ink-50/50' : 'hover:bg-ink-50/50'">
+            <tr 
+              v-else-if="filteredAdAccounts.length > 0" 
+              v-for="account in filteredAdAccounts" 
+              :key="account.id" 
+              class="transition-colors group border-b border-ink-100 relative" 
+              :class="{
+                'bg-red-50/20': isAccountAutoPaused(account),
+                'bg-ink-50/50': getDaysLeftNum(account.subscription_expires_at) !== null && getDaysLeftNum(account.subscription_expires_at)! <= 0,
+                'hover:bg-ink-50/50': !(getDaysLeftNum(account.subscription_expires_at) !== null && getDaysLeftNum(account.subscription_expires_at)! <= 0) && !isAccountAutoPaused(account)
+              }"
+            >
               
               <!-- Kolom Pertama dengan Overlay Badge (Center Row) -->
               <td class="py-4 px-5 whitespace-nowrap static align-top">
                 
+                <!-- Overlay Auto-Pause (Segel Panjang Horizontal di Sisi Kanan, ID & Nama Tetap Jelas) -->
+                <div 
+                  v-if="isAccountAutoPaused(account) && !(getDaysLeftNum(account.subscription_expires_at) !== null && getDaysLeftNum(account.subscription_expires_at)! <= 0)" 
+                  class="absolute top-1/2 right-3 -translate-y-1/2 z-30 flex flex-nowrap items-center justify-between gap-3 w-[68%] max-w-4xl py-2 px-4 bg-ink-900/95 text-white backdrop-blur-md rounded-2xl border border-red-500/50 shadow-2xl shadow-red-950/40 pointer-events-auto"
+                >
+                  <!-- Segel Stamp Header -->
+                  <div class="flex items-center gap-2 font-black text-xs md:text-sm uppercase tracking-wider shrink-0 bg-red-600 px-3.5 py-1.5 rounded-xl border border-red-400/40 shadow-inner">
+                    <Lock class="w-4 h-4 text-white animate-pulse" />
+                    <span>IKLAN TERPAUSE (LIMIT 100%)</span>
+                  </div>
+
+                  <!-- Countdown info -->
+                  <div class="flex items-center gap-1.5 text-xs text-ink-200 font-semibold shrink-0 bg-ink-800/80 px-3.5 py-1.5 rounded-xl border border-ink-700">
+                    <Clock class="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                    <span>Reset Otomatis: <strong class="text-amber-300 font-bold">Sisa {{ getDaysToNextReset(account.created_at) }} Hari</strong></span>
+                  </div>
+
+                  <!-- Action Button Update Paket -->
+                  <NuxtLink 
+                    to="/dashboard/topup?action=update_package" 
+                    class="shrink-0 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-extrabold text-xs px-4 py-2 rounded-xl shadow-lg hover:shadow-orange-500/30 hover:scale-[1.02] transition-all flex items-center gap-1.5 whitespace-nowrap"
+                  >
+                    <RefreshCw class="w-3.5 h-3.5" />
+                    Update Paket (Buka Iklan)
+                  </NuxtLink>
+                </div>
+
                 <div v-if="getDaysLeftNum(account.subscription_expires_at) !== null && getDaysLeftNum(account.subscription_expires_at)! <= 0" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 flex flex-col items-center justify-center pointer-events-auto">
                   <div class="bg-ink-700 text-white font-bold px-6 py-1.5 rounded-full -rotate-6 shadow-xl uppercase tracking-widest text-sm border-2 border-white shadow-ink-900/20">
                     {{ $t('saldo.adsPaused') }}
@@ -258,22 +295,22 @@
 
                 <!-- Warning states -->
                 <div v-if="getBudgetTotal(account) <= 0" class="mt-2.5">
-                  <NuxtLink to="/dashboard/topup" class="w-full flex justify-center items-center gap-1.5 bg-orange-50 border border-orange-200 text-orange-600 text-[10px] font-bold px-3 py-1.5 rounded-lg hover:bg-orange-100 hover:text-orange-700 transition-colors shadow-sm">
+                  <button @click="openAllocateBudgetModal(account.id)" class="w-full flex justify-center items-center gap-1.5 bg-orange-50 border border-orange-200 text-orange-600 text-[10px] font-bold px-3 py-1.5 rounded-lg hover:bg-orange-100 hover:text-orange-700 transition-colors shadow-sm">
                     <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                    Alokasikan Anggaran
-                  </NuxtLink>
+                    + Alokasikan Anggaran
+                  </button>
                 </div>
                 <div v-else-if="getBudgetRemaining(account) <= 0" class="mt-2.5">
-                  <NuxtLink to="/dashboard/topup" class="w-full flex justify-center items-center gap-1.5 bg-red-50 border border-red-100 text-red-600 text-[10px] font-bold px-3 py-1.5 rounded-lg hover:bg-red-100 hover:text-red-700 transition-colors">
+                  <button @click="openAllocateBudgetModal(account.id)" class="w-full flex justify-center items-center gap-1.5 bg-red-50 border border-red-100 text-red-600 text-[10px] font-bold px-3 py-1.5 rounded-lg hover:bg-red-100 hover:text-red-700 transition-colors">
                     <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
                     Anggaran Habis — Tambah
-                  </NuxtLink>
+                  </button>
                 </div>
                 <div v-else-if="getBudgetRemaining(account) <= 350000" class="mt-2.5">
-                  <NuxtLink to="/dashboard/topup" class="w-full flex justify-center items-center gap-1.5 bg-amber-50 border border-amber-200 text-amber-700 text-[10px] font-bold px-3 py-1.5 rounded-lg hover:bg-amber-100 hover:text-amber-800 transition-colors">
+                  <button @click="openAllocateBudgetModal(account.id)" class="w-full flex justify-center items-center gap-1.5 bg-amber-50 border border-amber-200 text-amber-700 text-[10px] font-bold px-3 py-1.5 rounded-lg hover:bg-amber-100 hover:text-amber-800 transition-colors">
                     <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
                     Anggaran Menipis — Tambah
-                  </NuxtLink>
+                  </button>
                 </div>
               </td>
               <td class="py-4 px-5 min-w-[200px] align-top" :class="{'opacity-30 grayscale blur-[1.5px] pointer-events-none': getDaysLeftNum(account.subscription_expires_at) !== null && getDaysLeftNum(account.subscription_expires_at)! <= 0}">
@@ -303,10 +340,10 @@
                   </span>
                 </div>
                 
-                <!-- Update Paket Button -->
-                <div v-if="getLimitUsagePercent(account) >= 100" class="mt-2.5">
-                  <NuxtLink to="/dashboard/topup?action=topup" class="inline-flex w-full justify-center items-center gap-1 bg-red-500 text-white text-[10px] font-bold px-2 py-1 rounded hover:bg-red-600 transition-colors shadow-sm">
-                    <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                <!-- Update Paket Button (Menyentuh >= 95% & < 100%) -->
+                <div v-if="getLimitUsagePercent(account) >= 95 && !isAccountAutoPaused(account)" class="mt-2.5">
+                  <NuxtLink to="/dashboard/topup?action=update_package" class="inline-flex w-full justify-center items-center gap-1.5 bg-red-500 hover:bg-red-600 text-white text-[10px] font-bold px-3 py-1.5 rounded-lg transition-colors shadow-sm">
+                    <RefreshCw class="w-3.5 h-3.5" />
                     Update Paket
                   </NuxtLink>
                 </div>
@@ -607,11 +644,19 @@
       :account="selectedAccountForExtend"
       @success="() => { adsStore.fetchAdAccounts(); saldoStore.fetchTransactions(); }"
     />
+
+    <!-- Modal Alokasikan Anggaran -->
+    <ModalAllocateBudgetModal 
+      :is-open="isAllocateModalOpen"
+      :initial-account-id="selectedAccountForAllocate"
+      @close="isAllocateModalOpen = false"
+      @success="() => { adsStore.fetchAdAccounts(); saldoStore.fetchTransactions(); saldoStore.fetchSaldo(); }"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
-import { Calendar, ChevronDown, Search, Download, ArrowDown, ArrowUpRight, CreditCard, PlusCircle, ChevronLeft, ChevronRight, RefreshCw, Info } from 'lucide-vue-next'
+import { Calendar, ChevronDown, Search, Download, ArrowDown, ArrowUpRight, CreditCard, PlusCircle, ChevronLeft, ChevronRight, RefreshCw, Info, Lock, Clock } from 'lucide-vue-next'
 import { ref, onMounted, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import BaseSelect from '~/components/ui/BaseSelect.vue'
@@ -659,6 +704,13 @@ const resumePayment = (trx: any) => {
 
 const { t, locale } = useI18n()
 const isRequestModalOpen = ref(false)
+const isAllocateModalOpen = ref(false)
+const selectedAccountForAllocate = ref('')
+
+const openAllocateBudgetModal = (accountId?: string) => {
+  selectedAccountForAllocate.value = accountId || ''
+  isAllocateModalOpen.value = true
+}
 
 const saldoStore = useSaldoStore()
 const adsStore = useAdsStore()
@@ -790,17 +842,35 @@ const getLimitUsagePercent = (account: any) => {
 
 const getLimitColor = (account: any) => {
   const pct = getLimitUsagePercent(account)
-  if (pct >= 100) return 'text-red-500'
-  if (pct >= 80) return 'text-amber-500'
+  if (pct >= 95) return 'text-red-500 font-extrabold'
+  if (pct >= 80) return 'text-amber-500 font-bold'
   return 'text-ink-900'
 }
 
 const getLimitBarColor = (account: any) => {
   const pct = getLimitUsagePercent(account)
-  if (pct >= 100) return 'bg-red-500'
+  if (pct >= 95) return 'bg-red-500'
   if (pct >= 80) return 'bg-amber-400'
   if (pct >= 50) return 'bg-blue-500'
   return 'bg-emerald-500'
+}
+
+const isAccountAutoPaused = (account: any) => {
+  if (!account || !account.limit || account.limit <= 0) return false
+  return getLimitUsagePercent(account) >= 100
+}
+
+const getDaysToNextReset = (createdAt: string) => {
+  if (!createdAt) return 7
+  const start = new Date(createdAt)
+  start.setHours(0, 0, 0, 0)
+  const now = new Date()
+  now.setHours(0, 0, 0, 0)
+  const diffMs = now.getTime() - start.getTime()
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24))
+  const dayInCycle = diffDays % 7
+  const daysLeft = 7 - dayInCycle
+  return daysLeft === 0 ? 7 : daysLeft
 }
 
 const formatLastUpdated = (dateStr: string) => {

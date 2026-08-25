@@ -157,8 +157,8 @@ export const useAdsStore = defineStore('ads', {
         
         this.adAccounts = accounts.map(acc => {
           const limit = saldoStore.weeklyLimit || 0
-          const penggunaan = 0 // Akan di-update via live fetch (total selama sewa)
-          const weeklySpend = 0 // Akan di-update via live fetch (siklus 7 hari saat ini)
+          const penggunaan = Number(acc.penggunaan || acc.total_spend || 0)
+          const weeklySpend = Number(acc.weekly_spend || 0)
           const saldo = acc.saldo || 0 // Murni dari database lokal (alokasi klien)
           return {
             ...acc,
@@ -184,7 +184,10 @@ export const useAdsStore = defineStore('ads', {
                 // Fetch 1: Penggunaan total selama masa sewa (tanpa filter tanggal)
                 const res = await $fetch<any>(endpoint, { params: defaultParams })
                 if (res && res.success && res.data) {
-                   const penggunaan = res.data.totalSpend || 0
+                   const livePenggunaan = Number(res.data.totalSpend || 0)
+                   const dbPenggunaan = Number(acc.penggunaan || 0)
+                   const penggunaan = livePenggunaan > 0 ? livePenggunaan : dbPenggunaan
+                   
                    const saldoStore = useSaldoStore()
                    const limit = saldoStore.weeklyLimit || 0
                    const api_balance = res.data.api_balance
@@ -214,12 +217,25 @@ export const useAdsStore = defineStore('ads', {
                 const { params: weeklyParams } = this.getEndpoint(acc.platform, acc.account_id, cycleStart, todayStr)
                 const weeklyRes = await $fetch<any>(endpoint, { params: weeklyParams })
                 if (weeklyRes && weeklyRes.success && weeklyRes.data) {
-                  this.adAccounts[index].weeklySpend = weeklyRes.data.totalSpend || 0
+                  const liveWeekly = Number(weeklyRes.data.totalSpend || 0)
+                  const dbWeekly = Number(acc.weeklySpend || acc.weekly_spend || 0)
+                  this.adAccounts[index].weeklySpend = liveWeekly > 0 ? liveWeekly : dbWeekly
                   
-                  // Simpan weeklySpend ke DB untuk dibaca Admin
-                  const supabase = useSupabaseClient<any>()
-                  // Note: DB update for weekly_spend and saldo could be combined here, but we do it separately for simplicity since they depend on different fetches
-                  supabase.from('ad_accounts').update({ weekly_spend: this.adAccounts[index].weeklySpend, updated_at: new Date().toISOString() }).eq('account_id', acc.account_id).then()
+                  if (liveWeekly > 0) {
+                    const supabase = useSupabaseClient<any>()
+                    supabase.from('ad_accounts').update({ weekly_spend: liveWeekly, updated_at: new Date().toISOString() }).eq('account_id', acc.account_id).then()
+                  }
+
+                  if (this.adAccounts[index].weeklySpend >= this.adAccounts[index].limit && this.adAccounts[index].limit > 0) {
+                    $fetch('/api/ads/check-auto-pause', {
+                      method: 'POST',
+                      body: {
+                        account_id: acc.account_id,
+                        weekly_spend: this.adAccounts[index].weeklySpend,
+                        limit: this.adAccounts[index].limit
+                      }
+                    }).catch(() => {})
+                  }
                 }
              } catch (e) {
                 // Ignore if fetch fails for one account

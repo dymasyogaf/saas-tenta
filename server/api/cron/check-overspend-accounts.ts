@@ -9,10 +9,10 @@ export default defineEventHandler(async (event) => {
   }
 
   try {
-    // 1. Get all active ad accounts with their user's weekly limit
+    // 1. Get all active ad accounts with their user's weekly limit & package expiration
     const { data: activeAccounts, error: fetchErr } = await supabase
       .from('ad_accounts')
-      .select('id, account_id, platform, user_id, users(package_weekly_limit)')
+      .select('id, account_id, platform, user_id, users(package_weekly_limit, package_expires_at)')
       .eq('status', 'active')
 
     if (fetchErr) {
@@ -30,10 +30,23 @@ export default defineEventHandler(async (event) => {
     for (const account of activeAccounts) {
       const platformStr = (account.platform || '').toLowerCase()
       const usersObj: any = account.users
-      const limit = (Array.isArray(usersObj) ? usersObj[0]?.package_weekly_limit : usersObj?.package_weekly_limit) || 0
-      
+      const userRecord = Array.isArray(usersObj) ? usersObj[0] : usersObj
+
+      const rawLimit = Number(userRecord?.package_weekly_limit || 0)
+      const expiresAtStr = userRecord?.package_expires_at
+
+      // Cek apakah paket sudah expired (atau belum pernah aktif)
+      const isExpired = !expiresAtStr || new Date(expiresAtStr).getTime() < Date.now()
+      // Jika expired, limit dianggap 0 (iklan otomatis ter-pause)
+      const limit = isExpired ? 0 : rawLimit
+
       let isOverspend = false
       let liveSpend = 0
+
+      if (isExpired) {
+        // Jika paket expired, langsung tandai overspend (pause iklan)
+        isOverspend = true
+      }
       
       try {
         let res: any = null

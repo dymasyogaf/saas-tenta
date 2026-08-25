@@ -1,5 +1,5 @@
 <template>
-  <div v-if="pendingTrx.length > 0 && pendingTimeLeft !== 'Kedaluwarsa'" class="bg-orange-50 border border-orange-200 p-4 sm:px-6 sm:py-5 rounded-2xl mb-6 flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between shadow-sm animate-fade-in mx-4 sm:mx-8 mt-4 sm:mt-6">
+  <div v-if="shouldShowBanner" class="bg-orange-50 border border-orange-200 p-4 sm:px-6 sm:py-5 rounded-2xl mb-6 flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between shadow-sm animate-fade-in mx-4 sm:mx-8 mt-4 sm:mt-6">
     <div class="flex gap-3 items-start sm:items-center">
       <div class="mt-0.5 text-orange-600 bg-orange-100 p-2 rounded-xl shrink-0">
         <Info class="w-6 h-6" />
@@ -22,20 +22,32 @@
 </template>
 
 <script setup lang="ts">
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { Info } from 'lucide-vue-next'
 import { useSaldoStore } from '~/stores/saldo'
+import { useRoute, useRouter } from 'vue-router'
 
 const saldoStore = useSaldoStore()
 const router = useRouter()
+const route = useRoute()
 
 const pendingTrx = computed(() => {
   return saldoStore.transactions.filter(t => t.type === 'topup' && t.status === 'pending')
+})
+
+const shouldShowBanner = computed(() => {
+  if (pendingTrx.value.length === 0) return false
+  if (pendingTimeLeft.value === 'Kedaluwarsa') return false
+  // Jangan tampilkan banner jika user sedang berada di halaman instruksi/struk pembayaran (/dashboard/topup/payment)
+  if (route.path === '/dashboard/topup/payment') return false
+  return true
 })
 
 const now = ref(Date.now())
 let countdownTimer: ReturnType<typeof setInterval>
 
 onMounted(() => {
+  saldoStore.fetchTransactions()
   countdownTimer = setInterval(() => {
     now.value = Date.now()
   }, 1000)

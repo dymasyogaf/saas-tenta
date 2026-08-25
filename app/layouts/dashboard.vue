@@ -217,6 +217,7 @@
       <div class="flex-1 overflow-auto p-4 md:p-8">
         <DashboardVerificationBanner />
         <DashboardPendingPaymentBanner />
+        <DashboardPackageRenewalModal />
         <NuxtErrorBoundary>
           <slot />
           <template #error="{ error, clearError }">

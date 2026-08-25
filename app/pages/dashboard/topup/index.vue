@@ -75,14 +75,46 @@
         
         <hr class="border-ink-100 mb-6">
         
-        <div class="flex items-center justify-between mb-4">
-          <div>
-            <p class="text-sm font-medium text-ink-500">{{ $t('topup.activePackage') }}</p>
-            <p class="text-lg font-bold text-ink-900 capitalize">{{ saldoStore.activePackage || $t('topup.noneYet') }}</p>
+        <div class="mb-4">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-sm font-medium text-ink-500">{{ $t('topup.activePackage') }}</p>
+              <div class="flex items-center gap-2">
+                <p class="text-lg font-bold text-ink-900 capitalize">{{ saldoStore.activePackage || $t('topup.noneYet') }}</p>
+                <span 
+                  v-if="saldoStore.activePackage" 
+                  :class="saldoStore.isPackageExpired ? 'bg-red-100 text-red-700' : 'bg-emerald-100 text-emerald-700'"
+                  class="px-2 py-0.5 rounded-full text-xs font-semibold"
+                >
+                  {{ saldoStore.isPackageExpired ? 'Expired' : `Sisa ${saldoStore.daysRemaining} Hari` }}
+                </span>
+              </div>
+            </div>
+            <div class="text-right">
+              <p class="text-sm font-medium text-ink-500">{{ $t('topup.weeklyLimit') }}</p>
+              <p class="text-lg font-bold text-ink-900">{{ saldoStore.weeklyLimit ? formatRupiah(saldoStore.weeklyLimit) : '-' }}</p>
+            </div>
           </div>
-          <div class="text-right">
-            <p class="text-sm font-medium text-ink-500">{{ $t('topup.weeklyLimit') }}</p>
-            <p class="text-lg font-bold text-ink-900">{{ saldoStore.weeklyLimit ? formatRupiah(saldoStore.weeklyLimit) : '-' }}</p>
+          
+          <div class="flex items-center gap-2 mt-3">
+            <button 
+              @click="isSwitchPackageModalOpen = true" 
+              class="flex-1 bg-white hover:bg-ink-50 text-ink-700 border border-ink-200 font-bold py-2 rounded-xl text-xs flex items-center justify-center gap-1.5 transition-colors shadow-2xs"
+            >
+              <svg class="w-3.5 h-3.5 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+              </svg>
+              Ubah Paket
+            </button>
+            <button 
+              @click="openUpdatePackageModal" 
+              class="flex-1 bg-orange-50 hover:bg-orange-100 text-orange-600 border border-orange-200 font-bold py-2 rounded-xl text-xs flex items-center justify-center gap-1.5 transition-colors shadow-2xs"
+            >
+              <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+              Beli / Perpanjang
+            </button>
           </div>
         </div>
         
@@ -252,8 +284,8 @@
       <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg sm:max-w-2xl lg:max-w-3xl overflow-hidden relative border border-ink-100 flex flex-col max-h-[90vh]">
         <div class="p-6 border-b border-ink-100 flex justify-between items-center">
           <div>
-            <h3 class="text-xl font-display font-bold text-ink-900">{{ $t('topup.topupAdBalance') }}</h3>
-            <p class="text-ink-500 text-sm mt-1">{{ $t('topup.selectPackageAndNominal') }}</p>
+            <h3 class="text-xl font-display font-bold text-ink-900">{{ topupStep === 1 ? $t('topup.choosePackageTitle') : $t('topup.topupAdBalance') }}</h3>
+            <p class="text-ink-500 text-sm mt-1">{{ topupStep === 1 ? $t('topup.choosePackageSubtitle') : $t('topup.selectPackageAndNominal') }}</p>
           </div>
           <button @click="isTopupModalOpen = false" class="text-ink-400 hover:text-ink-700 bg-ink-50 p-2 rounded-full">
             <span class="sr-only">Close</span>
@@ -266,37 +298,144 @@
           <div v-if="topupStep === 1" class="space-y-4">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
               <!-- Starter -->
-              <div @click="selectedPackage = 'starter'" :class="['border-2 rounded-xl p-5 cursor-pointer transition-all', selectedPackage === 'starter' ? 'border-orange-500 bg-orange-50' : 'border-ink-100 hover:border-ink-300']">
-                <h4 class="font-bold text-lg text-ink-900 mb-2">{{ $t('topup.starter') }}</h4>
-                <p class="text-3xl font-display font-bold text-ink-900 mb-4">5% <span class="text-sm font-medium text-ink-500">{{ $t('topup.topupFee') }}</span></p>
-                <ul class="space-y-2 text-sm text-ink-700">
-                  <li class="flex items-start gap-2"><svg class="w-5 h-5 text-orange-500 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg> {{ $t('topup.starterFeature1') }}</li>
-                  <li class="flex items-start gap-2"><svg class="w-5 h-5 text-orange-500 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg> {{ $t('topup.starterFeature2') }}</li>
-                  <li class="flex items-start gap-2"><svg class="w-5 h-5 text-orange-500 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg> {{ $t('topup.starterFeature3') }}</li>
-                </ul>
+              <div 
+                @click="selectedPackage = 'starter'" 
+                :class="[
+                  'border-2 rounded-2xl p-5 cursor-pointer transition-all flex flex-col justify-between h-full relative overflow-hidden',
+                  selectedPackage === 'starter' ? 'border-orange-500 bg-orange-50/60 ring-2 ring-orange-500/20 shadow-md' : 'border-ink-100 bg-white hover:border-ink-300 hover:shadow-sm'
+                ]"
+              >
+                <div>
+                  <div class="flex items-center justify-between mb-2 h-7">
+                    <h4 class="font-bold text-lg text-ink-900">{{ $t('topup.starter') }}</h4>
+                  </div>
+                  <div class="flex items-baseline gap-1.5 mb-4">
+                    <span class="text-3xl font-display font-black text-ink-900 shrink-0">5%</span>
+                    <span class="text-[11px] font-semibold text-ink-400 uppercase tracking-wider shrink-0 whitespace-nowrap">{{ $t('topup.topupFee') }}</span>
+                  </div>
+
+                  <!-- Highlight Limit & Masa Aktif Box -->
+                  <div class="bg-orange-100/80 border border-orange-200 text-orange-950 rounded-xl p-3 mb-4 text-xs font-medium space-y-1.5">
+                    <div class="flex justify-between items-center gap-1">
+                      <span class="text-orange-700 font-semibold shrink-0">Limit Iklan:</span>
+                      <span class="font-bold text-orange-900 text-right">Rp 5.000.000 / mgg</span>
+                    </div>
+                    <div class="flex justify-between items-center pt-1.5 border-t border-orange-200/60 gap-1">
+                      <span class="text-orange-700 font-semibold shrink-0">Masa Aktif:</span>
+                      <span class="font-bold text-emerald-700 text-right">28 Hari</span>
+                    </div>
+                  </div>
+
+                  <ul class="space-y-2.5 text-xs text-ink-700">
+                    <li class="flex items-center gap-2">
+                      <svg class="w-4 h-4 text-orange-500 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+                      <span>{{ $t('topup.starterFeature1') }}</span>
+                    </li>
+                    <li class="flex items-center gap-2">
+                      <svg class="w-4 h-4 text-orange-500 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+                      <span>{{ $t('topup.starterFeature2') }}</span>
+                    </li>
+                    <li class="flex items-center gap-2">
+                      <svg class="w-4 h-4 text-orange-500 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+                      <span>{{ $t('topup.starterFeature3') }}</span>
+                    </li>
+                  </ul>
+                </div>
               </div>
 
               <!-- Growth -->
-              <div @click="selectedPackage = 'growth'" :class="['border-2 rounded-xl p-5 cursor-pointer transition-all relative', selectedPackage === 'growth' ? 'border-orange-500 bg-orange-50' : 'border-ink-100 hover:border-ink-300']">
-                <div class="absolute -top-3 inset-x-0 flex justify-center"><span class="bg-orange-500 text-white text-xs font-bold px-3 py-1 rounded-full">{{ $t('topup.mostPopular') }}</span></div>
-                <h4 class="font-bold text-lg text-ink-900 mb-2 mt-2">{{ $t('topup.growth') }}</h4>
-                <p class="text-3xl font-display font-bold text-ink-900 mb-4">4.5% <span class="text-sm font-medium text-ink-500">{{ $t('topup.topupFee') }}</span></p>
-                <ul class="space-y-2 text-sm text-ink-700">
-                  <li class="flex items-start gap-2"><svg class="w-5 h-5 text-orange-500 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg> {{ $t('topup.growthFeature1') }}</li>
-                  <li class="flex items-start gap-2"><svg class="w-5 h-5 text-orange-500 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg> {{ $t('topup.starterFeature2') }}</li>
-                  <li class="flex items-start gap-2"><svg class="w-5 h-5 text-orange-500 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg> {{ $t('topup.growthFeature3') }}</li>
-                </ul>
+              <div 
+                @click="selectedPackage = 'growth'" 
+                :class="[
+                  'border-2 rounded-2xl p-5 cursor-pointer transition-all flex flex-col justify-between h-full relative overflow-hidden',
+                  selectedPackage === 'growth' ? 'border-orange-500 bg-orange-50/60 ring-2 ring-orange-500/20 shadow-md' : 'border-ink-100 bg-white hover:border-ink-300 hover:shadow-sm'
+                ]"
+              >
+                <div>
+                  <div class="flex items-center justify-between mb-2 h-7">
+                    <h4 class="font-bold text-lg text-ink-900">{{ $t('topup.growth') }}</h4>
+                    <span class="bg-orange-500 text-white text-[10px] uppercase tracking-wider font-bold px-2 py-0.5 rounded-full shrink-0">
+                      {{ $t('topup.mostPopular') }}
+                    </span>
+                  </div>
+                  <div class="flex items-baseline gap-1.5 mb-4">
+                    <span class="text-3xl font-display font-black text-ink-900 shrink-0">4.5%</span>
+                    <span class="text-[11px] font-semibold text-ink-400 uppercase tracking-wider shrink-0 whitespace-nowrap">{{ $t('topup.topupFee') }}</span>
+                  </div>
+
+                  <!-- Highlight Limit & Masa Aktif Box -->
+                  <div class="bg-orange-100/80 border border-orange-200 text-orange-950 rounded-xl p-3 mb-4 text-xs font-medium space-y-1.5">
+                    <div class="flex justify-between items-center gap-1">
+                      <span class="text-orange-700 font-semibold shrink-0">Limit Iklan:</span>
+                      <span class="font-bold text-orange-900 text-right">Rp 15.000.000 / mgg</span>
+                    </div>
+                    <div class="flex justify-between items-center pt-1.5 border-t border-orange-200/60 gap-1">
+                      <span class="text-orange-700 font-semibold shrink-0">Masa Aktif:</span>
+                      <span class="font-bold text-emerald-700 text-right">28 Hari</span>
+                    </div>
+                  </div>
+
+                  <ul class="space-y-2.5 text-xs text-ink-700">
+                    <li class="flex items-center gap-2">
+                      <svg class="w-4 h-4 text-orange-500 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+                      <span>{{ $t('topup.growthFeature1') }}</span>
+                    </li>
+                    <li class="flex items-center gap-2">
+                      <svg class="w-4 h-4 text-orange-500 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+                      <span>{{ $t('topup.growthFeature2') }}</span>
+                    </li>
+                    <li class="flex items-center gap-2">
+                      <svg class="w-4 h-4 text-orange-500 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+                      <span>{{ $t('topup.growthFeature3') }}</span>
+                    </li>
+                  </ul>
+                </div>
               </div>
 
               <!-- Scale -->
-              <div @click="selectedPackage = 'scale'" :class="['border-2 rounded-xl p-5 cursor-pointer transition-all', selectedPackage === 'scale' ? 'border-orange-500 bg-orange-50' : 'border-ink-100 hover:border-ink-300']">
-                <h4 class="font-bold text-lg text-ink-900 mb-2">{{ $t('topup.scale') }}</h4>
-                <p class="text-3xl font-display font-bold text-ink-900 mb-4">3.5% <span class="text-sm font-medium text-ink-500">{{ $t('topup.topupFee') }}</span></p>
-                <ul class="space-y-2 text-sm text-ink-700">
-                  <li class="flex items-start gap-2"><svg class="w-5 h-5 text-orange-500 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg> {{ $t('topup.scaleFeature1') }}</li>
-                  <li class="flex items-start gap-2"><svg class="w-5 h-5 text-orange-500 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg> {{ $t('topup.starterFeature2') }}</li>
-                  <li class="flex items-start gap-2"><svg class="w-5 h-5 text-orange-500 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg> {{ $t('topup.scaleFeature3') }}</li>
-                </ul>
+              <div 
+                @click="selectedPackage = 'scale'" 
+                :class="[
+                  'border-2 rounded-2xl p-5 cursor-pointer transition-all flex flex-col justify-between h-full relative overflow-hidden',
+                  selectedPackage === 'scale' ? 'border-orange-500 bg-orange-50/60 ring-2 ring-orange-500/20 shadow-md' : 'border-ink-100 bg-white hover:border-ink-300 hover:shadow-sm'
+                ]"
+              >
+                <div>
+                  <div class="flex items-center justify-between mb-2 h-7">
+                    <h4 class="font-bold text-lg text-ink-900">{{ $t('topup.scale') }}</h4>
+                  </div>
+                  <div class="flex items-baseline gap-1.5 mb-4">
+                    <span class="text-3xl font-display font-black text-ink-900 shrink-0">3.5%</span>
+                    <span class="text-[11px] font-semibold text-ink-400 uppercase tracking-wider shrink-0 whitespace-nowrap">{{ $t('topup.topupFee') }}</span>
+                  </div>
+
+                  <!-- Highlight Limit & Masa Aktif Box -->
+                  <div class="bg-orange-100/80 border border-orange-200 text-orange-950 rounded-xl p-3 mb-4 text-xs font-medium space-y-1.5">
+                    <div class="flex justify-between items-center gap-1">
+                      <span class="text-orange-700 font-semibold shrink-0">Limit Iklan:</span>
+                      <span class="font-bold text-orange-900 text-right">30Jt+ / Unlimited</span>
+                    </div>
+                    <div class="flex justify-between items-center pt-1.5 border-t border-orange-200/60 gap-1">
+                      <span class="text-orange-700 font-semibold shrink-0">Masa Aktif:</span>
+                      <span class="font-bold text-emerald-700 text-right">28 Hari</span>
+                    </div>
+                  </div>
+
+                  <ul class="space-y-2.5 text-xs text-ink-700">
+                    <li class="flex items-center gap-2">
+                      <svg class="w-4 h-4 text-orange-500 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+                      <span>{{ $t('topup.scaleFeature1') }}</span>
+                    </li>
+                    <li class="flex items-center gap-2">
+                      <svg class="w-4 h-4 text-orange-500 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+                      <span>{{ $t('topup.scaleFeature2') }}</span>
+                    </li>
+                    <li class="flex items-center gap-2">
+                      <svg class="w-4 h-4 text-orange-500 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+                      <span>{{ $t('topup.scaleFeature3') }}</span>
+                    </li>
+                  </ul>
+                </div>
               </div>
             </div>
             
@@ -306,18 +445,47 @@
           </div>
 
           <!-- Wizard Step 2: Nominal & Metode -->
-          <div v-if="topupStep === 2" class="space-y-6 max-w-md mx-auto">
-            <div>
-              <div class="flex items-center gap-2 mb-2 text-orange-600 font-bold text-sm cursor-pointer hover:underline w-max" @click="topupStep = 1">
-                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg> Kembali ke Pilih Paket
+          <div v-if="topupStep === 2" class="space-y-6 max-w-lg mx-auto">
+            <!-- Selected Package Header Banner -->
+            <div class="bg-orange-50/80 border-2 border-orange-200 rounded-2xl p-4 flex items-center justify-between shadow-xs">
+              <div class="flex items-center gap-3">
+                <div class="p-2.5 bg-orange-500 text-white rounded-xl shadow-md shrink-0">
+                  <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 001.946.806 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138z" />
+                  </svg>
+                </div>
+                <div>
+                  <div class="flex items-center gap-2 flex-wrap">
+                    <span class="text-xs font-semibold text-ink-500 uppercase tracking-wider">{{ selectedPackage ? 'Paket Terpilih:' : 'Paket Terdeteksi:' }}</span>
+                    <h4 class="font-extrabold text-base text-ink-900 capitalize">{{ effectivePackage }}</h4>
+                    <span class="px-2 py-0.5 bg-orange-500 text-white text-[10px] font-extrabold rounded-full uppercase">
+                      Fee {{ formattedFeePercent }}%
+                    </span>
+                  </div>
+                  <p class="text-xs text-ink-600 mt-0.5">
+                    Limit: <strong>{{ selectedPackageLimitText }}</strong> • Masa Aktif: <strong class="text-emerald-700">28 Hari</strong>
+                  </p>
+                </div>
               </div>
-              <label class="block text-sm font-medium text-ink-700 mb-2">{{ $t('topup.topupNominalLabel', { package: selectedPackage.charAt(0).toUpperCase() + selectedPackage.slice(1) }) }}</label>
+              <button 
+                @click="topupStep = 1" 
+                class="text-xs font-bold text-orange-600 hover:text-orange-700 bg-white border border-orange-200 hover:bg-orange-100 px-3 py-1.5 rounded-lg transition-colors shrink-0 flex items-center gap-1 shadow-2xs"
+              >
+                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" /></svg>
+                Pilih Paket
+              </button>
+            </div>
+
+            <div>
+              <label class="block text-sm font-semibold text-ink-800 mb-1.5">{{ $t('topup.topupNominalLabel', { package: effectivePackage.charAt(0).toUpperCase() + effectivePackage.slice(1) }) }}</label>
               <p class="text-xs text-ink-500 mb-2">{{ $t('topup.rangeLabel', { min: formatRupiah(packageInfo.min), max: packageInfo.max === Infinity ? $t('topup.unlimited') : formatRupiah(packageInfo.max) }) }}</p>
               <div class="relative">
                 <span class="absolute left-4 top-1/2 -translate-y-1/2 text-ink-500 font-medium text-lg">{{ isGlobal ? '$' : 'Rp' }}</span>
                 <input type="text" v-model="formattedTopupAmount" class="w-full pl-12 pr-4 py-3 bg-white border-2 border-ink-200 rounded-xl focus:outline-none focus:border-orange-500 focus:ring-4 focus:ring-orange-500/20 font-bold text-ink-900 text-lg transition-all" />
               </div>
-              <p v-if="!isValidTopup && topupAmount" class="text-xs font-medium text-red-500 mt-1">{{ $t('topup.invalidNominal') }}</p>
+              <p v-if="!isValidTopup && topupAmount" class="text-xs font-medium text-red-500 mt-1.5">
+                {{ $t('topup.invalidNominal', { package: effectivePackage.charAt(0).toUpperCase() + effectivePackage.slice(1), min: formatRupiah(packageInfo.min), max: packageInfo.max === Infinity ? $t('topup.unlimited') : formatRupiah(packageInfo.max) }) }}
+              </p>
             </div>
             
             <div class="bg-ink-50 rounded-xl p-4 border border-ink-100 space-y-2">
@@ -326,7 +494,7 @@
                 <span class="font-bold text-ink-900">{{ formatRupiah(Number(topupAmount) || 0) }}</span>
               </div>
               <div class="flex justify-between text-sm">
-                <span class="text-ink-500">{{ $t('topup.topupFeeLabel', { fee: packageInfo.fee * 100 }) }}</span>
+                <span class="text-ink-500">{{ $t('topup.topupFeeLabel', { fee: formattedFeePercent }) }}</span>
                 <span class="font-bold text-ink-900">{{ formatRupiah(feeAmount) }}</span>
               </div>
               <hr class="border-ink-200 my-2">
@@ -421,6 +589,7 @@
     </Teleport>
 
     <InvoiceModal :is-open="isInvoiceModalOpen" :transaction="selectedInvoiceTransaction" @close="isInvoiceModalOpen = false" />
+    <DashboardSwitchPackageModal :is-open="isSwitchPackageModalOpen" @close="isSwitchPackageModalOpen = false" />
 
   </div>
 </template>
@@ -464,6 +633,11 @@ import BaseSelect from '~/components/ui/BaseSelect.vue'
 
 definePageMeta({
   layout: 'dashboard',
+})
+
+onMounted(() => {
+  saldoStore.fetchSaldo()
+  saldoStore.fetchTransactions()
 })
 
 const isInvoiceModalOpen = ref(false)
@@ -741,26 +915,56 @@ const formattedTopupAmount = computed({
   }
 })
 
-const packageInfo = computed(() => {
+const effectivePackage = computed(() => {
+  if (selectedPackage.value) return selectedPackage.value
+  const amt = Number(topupAmount.value) || 0
   if (isGlobal.value) {
-    if (selectedPackage.value === 'starter') return { fee: 0.05, min: 30, max: 10000 }
-    if (selectedPackage.value === 'growth') return { fee: 0.04, min: 11000, max: 50000 }
-    if (selectedPackage.value === 'scale') return { fee: 0.03, min: 51000, max: Infinity }
+    if (amt >= 51000) return 'scale'
+    if (amt >= 11000) return 'growth'
+    return 'starter'
   } else {
-    if (selectedPackage.value === 'starter') return { fee: 0.05, min: 300000, max: 5000000 }
-    if (selectedPackage.value === 'growth') return { fee: 0.045, min: 5000000, max: 15000000 }
-    if (selectedPackage.value === 'scale') return { fee: 0.035, min: 15000000, max: Infinity }
+    if (amt >= 15500000) return 'scale'
+    if (amt >= 5500000) return 'growth'
+    return 'starter'
   }
-  return { fee: 0, min: 0, max: 0 }
 })
 
-watch(selectedPackage, () => {
-  topupAmount.value = packageInfo.value.min
+const packageInfo = computed(() => {
+  const pkg = effectivePackage.value
+  if (isGlobal.value) {
+    if (pkg === 'scale') return { fee: 0.03, min: selectedPackage.value ? 51000 : 30, max: Infinity }
+    if (pkg === 'growth') return { fee: 0.04, min: selectedPackage.value ? 11000 : 30, max: selectedPackage.value ? 50000 : Infinity }
+    return { fee: 0.05, min: 30, max: selectedPackage.value ? 10000 : Infinity }
+  } else {
+    if (pkg === 'scale') return { fee: 0.035, min: selectedPackage.value ? 15500000 : 300000, max: Infinity }
+    if (pkg === 'growth') return { fee: 0.045, min: selectedPackage.value ? 5500000 : 300000, max: selectedPackage.value ? 15000000 : Infinity }
+    return { fee: 0.05, min: 300000, max: selectedPackage.value ? 5000000 : Infinity }
+  }
+})
+
+const formattedFeePercent = computed(() => {
+  return Number((packageInfo.value.fee * 100).toFixed(2)).toString()
+})
+
+const selectedPackageLimitText = computed(() => {
+  const pkg = effectivePackage.value
+  if (pkg === 'scale') return isGlobal.value ? '$51.000+/Unlimited' : '30Jt+/Unlimited'
+  if (pkg === 'growth') return isGlobal.value ? '$11.000/mgg' : 'Rp 15.000.000 / mgg'
+  return isGlobal.value ? '$30 - $10.000' : 'Rp 5.000.000 / mgg'
+})
+
+watch(selectedPackage, (newPkg) => {
+  if (newPkg) {
+    topupAmount.value = packageInfo.value.min
+  }
 })
 
 const isValidTopup = computed(() => {
   const amt = Number(topupAmount.value)
-  return !isNaN(amt) && amt >= packageInfo.value.min && amt <= packageInfo.value.max
+  if (isNaN(amt) || !amt) return false
+  if (amt < packageInfo.value.min) return false
+  if (packageInfo.value.max !== Infinity && amt > packageInfo.value.max) return false
+  return true
 })
 
 const feeAmount = computed(() => {
@@ -773,14 +977,22 @@ const totalAmount = computed(() => {
 
 const handleTopup = () => {
   isTopupModalOpen.value = true
-  topupStep.value = 1
-  selectedPackage.value = 'starter'
+  topupStep.value = 2
+  selectedPackage.value = ''
   topupAmount.value = isGlobal.value ? 30 : 300000
   selectedMethod.value = isGlobal.value ? 'USDT_TRC20' : 'M2'
 }
 
+const openUpdatePackageModal = () => {
+  isTopupModalOpen.value = true
+  topupStep.value = 1
+  selectedPackage.value = saldoStore.activePackage || 'starter'
+  topupAmount.value = isGlobal.value ? 30 : 300000
+}
+
 const submitTopup = async () => {
   if (!isValidTopup.value) return
+  const pkgToUse = effectivePackage.value
   
   if (isGlobal.value) {
     saldoStore.isLoading = true
@@ -790,7 +1002,7 @@ const submitTopup = async () => {
         headers: unref(csrf) ? { 'csrf-token': unref(csrf) } : {},
         body: {
           amount: topupAmount.value,
-          packageType: selectedPackage.value
+          packageType: pkgToUse
         }
       })
       if (response && response.success && response.paymentUrl) {
@@ -805,13 +1017,14 @@ const submitTopup = async () => {
   }
 
   const csrfToken = unref(csrf)
-  await saldoStore.topup(topupAmount.value as number, user.value, selectedMethod.value, selectedPackage.value, csrfToken)
+  await saldoStore.topup(topupAmount.value as number, user.value, selectedMethod.value, pkgToUse, csrfToken)
   if (!saldoStore.error) {
     isTopupModalOpen.value = false
     topupStep.value = 1
   }
 }
 
+const isSwitchPackageModalOpen = ref(false)
 const isAllocateBudgetModalOpen = ref(false)
 const allocateSelectedAccount = ref('')
 const allocateAmountInput = ref('')
@@ -899,6 +1112,8 @@ onMounted(async () => {
 
   if (route.query.action === 'topup') {
     handleTopup()
+  } else if (route.query.action === 'update_package' || route.query.action === 'update' || route.query.action === 'package') {
+    openUpdatePackageModal()
   }
 
   saldoStore.fetchSaldo()

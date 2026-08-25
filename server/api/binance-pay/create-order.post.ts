@@ -9,29 +9,20 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, statusMessage: 'Minimal deposit layanan $30' })
   }
 
-  // Validasi Paket dan Hitung Fee
-  let feePercentage = 0;
-  let minAmount = 0;
-  let maxAmount = Infinity;
+  const netAmount = parseFloat(amount);
 
-  if (packageType === 'starter') {
-    feePercentage = 0.05; // 5%
-    minAmount = 30;
-    maxAmount = 10000;
-  } else if (packageType === 'growth') {
-    feePercentage = 0.04; // 4%
-    minAmount = 11000;
-    maxAmount = 50000;
-  } else if (packageType === 'scale') {
-    feePercentage = 0.03; // 3%
-    minAmount = 51000;
-  } else {
-    throw createError({ statusCode: 400, statusMessage: 'Paket tidak valid.' })
+  let feePercentage = 0.05; // 5% default (< $11,000)
+  if (netAmount >= 51000) {
+    feePercentage = 0.03; // 3% ($51,000+)
+  } else if (netAmount >= 11000) {
+    feePercentage = 0.04; // 4% ($11,000 - $50,000)
   }
 
-  const netAmount = parseFloat(amount);
-  if (netAmount < minAmount || netAmount > maxAmount) {
-    throw createError({ statusCode: 400, statusMessage: `Nominal untuk paket ${packageType} harus antara $${minAmount} dan $${maxAmount}` })
+  let selectedPkg = packageType;
+  if (!selectedPkg || !['starter', 'growth', 'scale'].includes(selectedPkg)) {
+    if (netAmount >= 51000) selectedPkg = 'scale';
+    else if (netAmount >= 11000) selectedPkg = 'growth';
+    else selectedPkg = 'starter';
   }
 
   const feeAmount = netAmount * feePercentage;
@@ -108,10 +99,10 @@ export default defineEventHandler(async (event) => {
           type: 'topup',
           amount: netAmount, 
           fee_amount: feeAmount,
-          package_selected: packageType,
+          package_selected: selectedPkg,
           status: 'pending',
           payment_gateway_ref: merchantOrderId,
-          description: `Deposit Layanan Iklan (USD) via Binance Pay (Paket ${packageType})`
+          description: `Deposit Layanan Iklan (USD) via Binance Pay (Paket ${selectedPkg})`
         })
 
       if (dbError) {

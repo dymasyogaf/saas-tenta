@@ -11,29 +11,22 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, statusMessage: 'Minimal deposit layanan Rp 10.000' })
   }
 
-  // Validasi Paket dan Hitung Fee
-  let feePercentage = 0;
-  let minAmount = 0;
-  let maxAmount = Infinity;
+  const netAmount = parseInt(amount);
 
-  if (packageType === 'starter') {
-    feePercentage = 0.05; // 5%
-    minAmount = 300000;
-    maxAmount = 5000000;
-  } else if (packageType === 'growth') {
-    feePercentage = 0.045; // 4.5%
-    minAmount = 5000000;
-    maxAmount = 15000000;
-  } else if (packageType === 'scale') {
-    feePercentage = 0.035; // 3.5%
-    minAmount = 15000000;
-  } else {
-    throw createError({ statusCode: 400, statusMessage: 'Paket tidak valid. Pilih Starter, Growth, atau Scale.' })
+  // Hitung Fee Persentase murni berdasarkan nominal topup per-transaksi
+  let feePercentage = 0.05; // Default 5% (Starter nominal: < 5jt)
+  if (netAmount >= 15000000) {
+    feePercentage = 0.035; // 3.5% (Scale nominal: >= 15jt)
+  } else if (netAmount >= 5000000) {
+    feePercentage = 0.045; // 4.5% (Growth nominal: 5jt - 15jt)
   }
 
-  const netAmount = parseInt(amount);
-  if (netAmount < minAmount || netAmount > maxAmount) {
-    throw createError({ statusCode: 400, statusMessage: `Nominal untuk paket ${packageType} harus antara ${minAmount} dan ${maxAmount}` })
+  // Tentukan selectedPackage untuk transaksi (jika dikirim dari frontend, atau di-infer dari nominal)
+  let selectedPkg = packageType;
+  if (!selectedPkg || !['starter', 'growth', 'scale'].includes(selectedPkg)) {
+    if (netAmount >= 15000000) selectedPkg = 'scale';
+    else if (netAmount >= 5000000) selectedPkg = 'growth';
+    else selectedPkg = 'starter';
   }
 
   const feeAmount = Math.round(netAmount * feePercentage);
@@ -156,7 +149,7 @@ export default defineEventHandler(async (event) => {
         paymentAmount,
         netAmount,
         feeAmount,
-        packageType,
+        packageType: selectedPkg,
         bankCode: bankCodes[method] || null,
         vaNumber: result.vaNumber || result.paymentCode || null,
         paymentCode: result.paymentCode || result.vaNumber || null,
@@ -170,10 +163,10 @@ export default defineEventHandler(async (event) => {
           type: 'topup',
           amount: netAmount, // Simpan saldo bersih
           fee_amount: feeAmount,
-          package_selected: packageType,
+          package_selected: selectedPkg,
           status: 'pending',
           payment_gateway_ref: result.reference,
-          description: `Pembayaran Layanan Iklan via ${paymentName} (Paket ${packageType})`,
+          description: `Pembayaran Layanan Iklan via ${paymentName} (Paket ${selectedPkg})`,
           is_sandbox: !isProduction,
           payment_url: result.paymentUrl || null,
           payment_data: paymentData
