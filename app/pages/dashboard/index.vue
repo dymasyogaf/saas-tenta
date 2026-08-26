@@ -18,7 +18,7 @@
       </div>
 
       <div class="bg-white p-6 rounded-2xl shadow-sm border border-ink-100">
-        <p class="text-sm font-medium text-ink-500 mb-2">Total Penggunaan</p>
+        <p class="text-sm font-medium text-ink-500 mb-2">{{ $t('dashboard.totalSpend') }}</p>
         <template v-if="adsStore.isLoading || adsStore.isFetchingAccounts">
           <div class="h-9 w-32 bg-ink-200 rounded-md animate-pulse mb-3 mt-1"></div>
           <div class="h-4 w-24 bg-ink-200 rounded-md animate-pulse mt-4"></div>
@@ -26,7 +26,7 @@
         <template v-else>
           <h3 class="text-2xl xl:text-3xl font-display font-bold text-ink-900">{{ formatCurrency(totalPenggunaan) }}</h3>
           <p class="text-sm text-ink-500 mt-3 flex items-center gap-1">
-            <Activity class="w-4 h-4 text-orange-500" /> Semua Akun Aktif
+            <Activity class="w-4 h-4 text-orange-500" /> {{ $t('dashboard.allActiveAccounts') }}
           </p>
         </template>
       </div>
@@ -51,12 +51,12 @@
         <div>
           <h4 class="font-display font-bold text-lg text-ink-900 flex items-center gap-2">
             {{ $t('dashboard.topCampaignPerformance') }}
-            <button @click="handleSync" :disabled="adsLive.isSyncing.value" class="p-1.5 hover:bg-ink-100 rounded-md transition-colors text-ink-500 hover:text-ink-700" title="Sync Sekarang">
+            <button @click="handleSync" :disabled="adsLive.isSyncing.value" class="p-1.5 hover:bg-ink-100 rounded-md transition-colors text-ink-500 hover:text-ink-700" :title="$t('saldo.syncNow')">
               <RefreshCw class="w-4 h-4" :class="{ 'animate-spin': adsLive.isSyncing.value }" />
             </button>
           </h4>
           <p v-if="adsLive.lastRefreshed.value" class="text-xs text-ink-400 mt-1 flex items-center gap-1">
-            <Clock class="w-3 h-3" /> Update terakhir: {{ formatTime(adsLive.lastRefreshed.value) }}
+            <Clock class="w-3 h-3" /> {{ $t('dashboard.lastUpdated') }}: {{ formatTime(adsLive.lastRefreshed.value) }}
           </p>
         </div>
         <div class="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">

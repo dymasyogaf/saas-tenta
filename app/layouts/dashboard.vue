@@ -48,13 +48,13 @@
     <!-- Main Content -->
     <main class="flex-1 flex flex-col h-screen overflow-hidden">
       <!-- Header -->
-      <header class="h-16 bg-white border-b border-ink-100 flex items-center justify-between px-3 sm:px-6 shrink-0 gap-1 sm:gap-2">
+      <header class="h-16 bg-white border-b border-ink-100 flex items-center justify-between px-3 sm:px-6 shrink-0 gap-1.5 sm:gap-2 relative z-30">
         <!-- Mobile: menu + logo -->
-        <div class="flex items-center gap-1.5 sm:gap-4 lg:hidden shrink-0">
-          <button class="text-ink-600 hover:text-orange-500 shrink-0 p-1" @click="isSidebarOpen = true">
+        <div class="flex items-center gap-2 sm:gap-4 lg:hidden shrink-0">
+          <button class="text-ink-600 hover:text-orange-500 shrink-0 p-1 rounded-lg hover:bg-ink-50 transition-colors" @click="isSidebarOpen = true">
             <Menu class="w-5 h-5 sm:w-6 sm:h-6" />
           </button>
-          <img src="/logo-full.png" alt="Tentaklik Logo" class="h-4 sm:h-6 w-auto shrink-0 object-contain" />
+          <img src="/logo-full.png" alt="Tentaklik Logo" class="h-5 sm:h-6 w-auto shrink-0 object-contain" />
         </div>
 
         <!-- Desktop: page title -->
@@ -63,28 +63,28 @@
         </div>
 
         <!-- Right side actions -->
-        <div class="flex items-center gap-1.5 sm:gap-5">
+        <div class="flex items-center gap-1.5 sm:gap-4">
           <!-- Language Dropdown (Hidden on Global Mode) -->
-          <div class="relative" v-if="!isGlobal">
-            <button class="border border-ink-200 text-ink-700 hover:bg-ink-50 transition-colors p-1.5 sm:px-4 sm:py-2 rounded-lg sm:rounded-xl flex items-center gap-2" @click="toggleLang">
+          <div ref="langRef" class="relative z-50" v-if="!isGlobal">
+            <button class="border border-ink-200 text-ink-700 hover:bg-ink-50 transition-colors p-1.5 sm:px-3 sm:py-2 rounded-lg sm:rounded-xl flex items-center gap-1.5 sm:gap-2" @click="toggleLang">
               <img :src="`https://flagcdn.com/${locale === 'en' ? 'gb' : locale}.svg`" alt="Flag" class="w-4 h-4 sm:w-5 sm:h-5 object-cover rounded-[2px] shadow-sm shrink-0 border border-ink-100" />
               <span class="text-xs sm:text-sm font-semibold hidden sm:block">{{ locale === 'id' ? 'Indonesia' : 'English' }}</span>
-              <ChevronDown class="w-4 h-4 sm:w-5 sm:h-5 text-ink-400 hidden sm:block" />
+              <ChevronDown class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-ink-400 hidden sm:block" />
             </button>
 
             <!-- Language Popup -->
             <div
               v-if="isLangOpen"
-              class="absolute right-0 md:-right-2 top-full mt-4 w-48 bg-white border border-ink-100 rounded-xl shadow-lg shadow-ink-900/5 z-50 py-2 flex flex-col"
+              class="absolute left-0 sm:left-auto sm:right-0 top-full mt-2 w-44 sm:w-48 bg-white border border-ink-100 rounded-xl shadow-xl shadow-ink-900/10 z-50 py-1.5 flex flex-col pointer-events-auto"
             >
               <button
                 v-for="loc in locales"
                 :key="loc.code"
-                @click="setLocale(loc.code); isLangOpen = false"
-                class="w-full flex items-center justify-between px-4 py-2.5 hover:bg-ink-50 transition-colors text-left"
+                @click.stop.prevent="handleSetLocale(loc.code)"
+                class="w-full flex items-center justify-between px-3.5 py-2 hover:bg-ink-50 transition-colors text-left text-xs sm:text-sm cursor-pointer"
                 :class="locale === loc.code ? 'text-orange-600 font-bold bg-orange-50/50' : 'text-ink-700 font-medium'"
               >
-                <div class="flex items-center gap-2.5">
+                <div class="flex items-center gap-2">
                   <img :src="`https://flagcdn.com/${loc.code === 'en' ? 'gb' : loc.code}.svg`" alt="Flag" class="w-4 h-4 object-cover rounded-[2px] shadow-sm shrink-0 border border-ink-100" />
                   <span>{{ loc.name }}</span>
                 </div>
@@ -94,10 +94,10 @@
           </div>
 
           <!-- Notification Bell -->
-          <div class="relative">
-            <button class="text-ink-500 hover:text-orange-500 transition-colors relative mt-1 p-1" @click="toggleNotif">
+          <div ref="notifRef" class="relative z-50">
+            <button class="text-ink-500 hover:text-orange-500 transition-colors relative p-1.5 rounded-lg hover:bg-ink-50" @click="toggleNotif">
               <Bell class="w-4 h-4 sm:w-5 sm:h-5" />
-              <span v-if="unreadCount > 0" class="absolute -top-1 -right-1 bg-red-500 text-white text-[9px] sm:text-[10px] font-bold px-1 sm:px-1.5 py-0.5 rounded-full border-2 border-white leading-none">
+              <span v-if="unreadCount > 0" class="absolute top-0.5 right-0.5 bg-red-500 text-white text-[9px] font-bold px-1 py-0.2 rounded-full border border-white leading-none">
                 {{ unreadCount }}
               </span>
             </button>
@@ -105,18 +105,15 @@
             <!-- Notification Popup -->
             <div
               v-if="isNotifOpen"
-              class="fixed inset-x-4 top-[72px] sm:absolute sm:inset-x-auto sm:right-0 sm:top-full sm:mt-4 w-auto sm:w-80 bg-white border border-ink-100 rounded-xl shadow-lg shadow-ink-900/5 z-50 flex flex-col"
+              class="fixed inset-x-3 top-[64px] sm:absolute sm:inset-x-auto sm:right-0 sm:top-full sm:mt-2 w-auto sm:w-80 bg-white border border-ink-100 rounded-xl shadow-xl shadow-ink-900/10 z-50 flex flex-col"
             >
-              <div class="flex items-center justify-between p-4 border-b border-ink-100">
-                <h3 class="font-semibold text-ink-900">{{ $t('header.notifications') }}</h3>
-                <button class="p-1.5 bg-ink-50 hover:bg-ink-100 rounded-md text-ink-500 transition-colors">
-                  <Settings class="w-4 h-4" />
-                </button>
+              <div class="flex items-center justify-between p-3.5 border-b border-ink-100">
+                <h3 class="font-semibold text-ink-900 text-sm">{{ $t('header.notifications') }}</h3>
               </div>
               <div class="flex flex-col h-72 overflow-y-auto">
                 <div v-if="notifications.length === 0" class="p-8 flex flex-col items-center justify-center text-center h-full">
-                  <div class="w-24 h-24 mb-6 bg-ink-50 rounded-full flex items-center justify-center text-ink-300 relative">
-                    <Bell class="w-10 h-10" />
+                  <div class="w-20 h-20 mb-4 bg-ink-50 rounded-full flex items-center justify-center text-ink-300 relative">
+                    <Bell class="w-8 h-8" />
                     <span class="absolute top-2 right-2 text-ink-400 font-bold text-xs transform rotate-12">zZ</span>
                   </div>
                   <p class="text-ink-500 text-sm">{{ $t('header.noNotifications') }}</p>
@@ -126,25 +123,25 @@
                     v-for="notif in notifications" 
                     :key="notif.id"
                     @click="viewNotification(notif)"
-                    class="p-4 hover:bg-ink-50 cursor-pointer transition-colors relative"
+                    class="p-3.5 hover:bg-ink-50 cursor-pointer transition-colors relative"
                     :class="{'bg-orange-50/30': !notif.is_read}"
                   >
                     <div v-if="!notif.is_read" class="absolute left-2 top-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-orange-500"></div>
                     <div class="pl-3">
                       <p class="text-xs font-bold text-ink-900 mb-1">{{ notif.title }}</p>
                       <p class="text-xs text-ink-600 line-clamp-2">{{ stripHtml(notif.message) }}</p>
-                      <p class="text-[10px] text-ink-400 mt-2">{{ new Date(notif.created_at).toLocaleDateString('id-ID') }}</p>
+                      <p class="text-[10px] text-ink-400 mt-1.5">{{ new Date(notif.created_at).toLocaleDateString('id-ID') }}</p>
                     </div>
                   </div>
                 </div>
               </div>
-              <div class="p-4 border-t border-ink-100 text-center">
+              <div class="p-3 border-t border-ink-100 text-center">
                 <NuxtLink
                   to="/dashboard/notifikasi"
-                  class="w-full text-sm font-semibold text-orange-500 hover:text-orange-600 flex items-center justify-center gap-1.5"
+                  class="w-full text-xs sm:text-sm font-semibold text-orange-500 hover:text-orange-600 flex items-center justify-center gap-1.5"
                   @click="isNotifOpen = false"
                 >
-                  {{ $t('header.viewAll') }} <ArrowRight class="w-4 h-4" />
+                  {{ $t('header.viewAll') }} <ArrowRight class="w-3.5 h-3.5" />
                 </NuxtLink>
               </div>
             </div>
@@ -153,20 +150,20 @@
           <!-- Top Up Button -->
           <NuxtLink
             to="/dashboard/topup"
-            class="bg-orange-500 hover:bg-orange-600 text-white px-2.5 py-1.5 sm:px-5 sm:py-2 rounded-lg sm:rounded-xl text-xs sm:text-sm font-semibold shadow-sm transition-all flex items-center gap-1 sm:gap-2 whitespace-nowrap shrink-0"
+            class="bg-orange-500 hover:bg-orange-600 text-white px-2.5 py-1.5 sm:px-4 sm:py-2 rounded-lg sm:rounded-xl text-xs sm:text-sm font-semibold shadow-sm transition-all flex items-center gap-1 sm:gap-2 whitespace-nowrap shrink-0"
           >
             <Plus class="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
             <span class="hidden sm:inline">{{ $t('header.topUp') }}</span>
-            <span class="sm:hidden">{{ $t('header.topUpShort') }}</span>
+            <span class="sm:hidden">+ Top Up</span>
           </NuxtLink>
 
           <!-- Profile Dropdown -->
-          <div class="relative pl-1.5 sm:pl-4 border-l border-ink-100">
+          <div ref="profileRef" class="relative z-50 pl-1 sm:pl-3 border-l border-ink-100">
             <button
-              class="flex items-center gap-1 sm:gap-3 hover:bg-ink-50 p-1 sm:p-1.5 rounded-xl transition-colors"
+              class="flex items-center gap-1 sm:gap-2 hover:bg-ink-50 p-1 rounded-xl transition-colors"
               @click="isProfileOpen = !isProfileOpen; isNotifOpen = false; isLangOpen = false"
             >
-              <div class="w-7 h-7 sm:w-9 sm:h-9 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center font-bold text-xs sm:text-sm shrink-0">
+              <div class="w-7 h-7 sm:w-9 sm:h-9 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center font-bold text-xs sm:text-sm shrink-0 border border-orange-200">
                 {{ userInitials }}
               </div>
               <span class="font-bold text-ink-900 hidden lg:block">{{ userName }}</span>
@@ -176,15 +173,15 @@
             <!-- Profile Menu -->
             <div
               v-if="isProfileOpen"
-              class="absolute right-0 top-full mt-2 w-56 bg-white border border-ink-100 rounded-xl shadow-lg shadow-ink-900/5 py-2 z-50"
+              class="absolute right-0 top-full mt-2 w-52 sm:w-56 bg-white border border-ink-100 rounded-xl shadow-xl shadow-ink-900/10 py-2 z-50"
             >
               <NuxtLink
                 to="/dashboard/profile"
                 class="w-full flex items-center justify-between px-4 py-2.5 hover:bg-ink-50 transition-colors group"
                 @click="isProfileOpen = false"
               >
-                <span class="font-semibold text-ink-900 group-hover:text-orange-600">{{ $t('common.profile') }}</span>
-                <div class="flex items-center gap-1.5 px-2 py-1 rounded-full border border-orange-500 text-orange-600 bg-orange-50 text-[10px] font-bold uppercase tracking-wider">
+                <span class="font-semibold text-ink-900 group-hover:text-orange-600 text-sm">{{ $t('common.profile') }}</span>
+                <div class="flex items-center gap-1 px-2 py-0.5 rounded-full border border-orange-500 text-orange-600 bg-orange-50 text-[10px] font-bold uppercase tracking-wider">
                   <Gem class="w-3 h-3" /> {{ saldoStore.activePackage || 'GRATIS' }}
                 </div>
               </NuxtLink>
@@ -194,17 +191,15 @@
               <NuxtLink
                 v-if="user?.user_metadata?.role && user.user_metadata.role !== 'client'"
                 to="/admin"
-                class="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-ink-50 transition-colors group text-left border-b border-ink-100"
+                class="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-ink-50 transition-colors group text-left border-b border-ink-100 text-sm"
               >
                 <ShieldCheck class="w-4 h-4 text-ink-400 group-hover:text-orange-500" />
                 <span class="font-semibold text-ink-900 group-hover:text-orange-600">{{ $t('nav.switchToAdmin') }}</span>
               </NuxtLink>
 
-
-
               <button
                 @click="handleLogout"
-                class="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-ink-50 transition-colors group text-left"
+                class="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-ink-50 transition-colors group text-left text-sm"
               >
                 <span class="font-semibold text-ink-900 group-hover:text-red-600">{{ $t('common.logout') }}</span>
               </button>
@@ -231,13 +226,6 @@
         </NuxtErrorBoundary>
       </div>
     </main>
-
-    <!-- Click outside to close dropdowns -->
-    <div
-      v-if="isNotifOpen || isProfileOpen || isLangOpen"
-      class="fixed inset-0 z-40"
-      @click="isNotifOpen = false; isProfileOpen = false; isLangOpen = false"
-    />
 
     <!-- Floating WhatsApp -->
     <SharedFloatingWhatsApp />
@@ -266,7 +254,8 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, onUnmounted, watch } from 'vue'
+import { onMounted, onUnmounted, watch, ref } from 'vue'
+import { onClickOutside } from '@vueuse/core'
 import { stripHtml } from '../../utils/formatters'
 import { useSaldoStore } from '~/stores/saldo'
 import { useAppMode } from '~/composables/useAppMode'
@@ -395,16 +384,34 @@ const handleLogout = async () => {
 // Sidebar state
 const isSidebarOpen = ref(false)
 
-// Dropdown states
+// Dropdown states & refs
 const isNotifOpen = ref(false)
 const isProfileOpen = ref(false)
 const isLangOpen = ref(false)
+
+const langRef = ref<HTMLElement | null>(null)
+const notifRef = ref<HTMLElement | null>(null)
+const profileRef = ref<HTMLElement | null>(null)
+
+onClickOutside(langRef, () => { isLangOpen.value = false })
+onClickOutside(notifRef, () => { isNotifOpen.value = false })
+onClickOutside(profileRef, () => { isProfileOpen.value = false })
 
 const toggleLang = () => {
   isLangOpen.value = !isLangOpen.value
   if (isLangOpen.value) {
     isNotifOpen.value = false
     isProfileOpen.value = false
+  }
+}
+
+const handleSetLocale = async (code: string) => {
+  try {
+    await setLocale(code as 'id' | 'en')
+  } catch (err) {
+    console.error('Failed to change language:', err)
+  } finally {
+    isLangOpen.value = false
   }
 }
 

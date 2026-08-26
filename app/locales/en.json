@@ -22,7 +22,8 @@
     "retry": "Try Again",
     "confirm": "Yes, Continue",
     "logout": "Logout",
-    "profile": "Profile"
+    "profile": "Profile",
+    "yesClose": "Yes, Close"
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -191,7 +192,10 @@
       "clicks": "Clicks",
       "ctr": "CTR",
       "cpc": "CPC"
-    }
+    },
+    "totalSpend": "Total Usage",
+    "allActiveAccounts": "All Active Accounts",
+    "lastUpdated": "Last Updated"
   },
   "profile": {
     "title": "Profile",
@@ -415,7 +419,16 @@
       "dailyLimitFailed": "Failed to set daily limit",
       "minutes": "min",
       "seconds": "sec"
-    }
+    },
+    "adsPausedLimit100": "ADS PAUSED (100% LIMIT)",
+    "autoResetIn": "Auto Reset",
+    "daysLeftCount": "{days} Days Left",
+    "updatePackageBtn": "Upgrade Plan (Resume Ads)",
+    "syncedFromApi": "Synced from platform API",
+    "allocateBudgetShort": "Allocate Budget",
+    "budgetEmptyShort": "Budget Depleted — Add",
+    "budgetLowShort": "Budget Low — Add",
+    "updatePackage": "Upgrade Plan"
   },
   "referral": {
     "title": "Affiliate Program",
@@ -690,6 +703,24 @@
       "errorInsufficient": "Insufficient balance. Please top up first.",
       "errorProcess": "Failed to process payment.",
       "successMsg": "Account rental extension successful."
+    },
+    "allocateBudget": {
+      "title": "Allocate Ad Budget",
+      "selectAccount": "Select Ad Account",
+      "selectAccountPlaceholder": "Select Ad Account",
+      "availableBalanceLabel": "Available Balance",
+      "amountLabel": "Budget Allocation Amount",
+      "insufficientBalance": "Insufficient available balance",
+      "submitBtn": "Submit Request"
+    },
+    "switchPackage": {
+      "title": "Switch Active Plan",
+      "subtitle": "Select the plan you wish to use currently.",
+      "currentlyActive": "Currently Active",
+      "expiresAt": "Expires On",
+      "useThisPackage": "Use This Plan",
+      "active": "Active",
+      "noPackages": "No active plans available."
     }
   },
   "components": {
@@ -785,15 +816,15 @@
     "scale": "Scale",
     "mostPopular": "Most Popular",
     "topupFee": "service fee",
-    "starterFeature1": "Min. Deposit: Rp 300k – Rp 5m",
+    "starterFeature1": "Min. Deposit: IDR 300k – IDR 5m",
     "starterFeature2": "Official Whitelisted Account",
     "starterFeature3": "Standard Priority Support",
-    "starterLimit": "Ad Limit Rp 5 Million / week",
-    "growthFeature1": "Min. Deposit: Rp 5.5m – Rp 15m",
+    "starterLimit": "Ad Limit IDR 5 Million / week",
+    "growthFeature1": "Min. Deposit: IDR 5.5m – IDR 15m",
     "growthFeature2": "Official Whitelisted Account",
     "growthFeature3": "VIP Priority Support",
-    "growthLimit": "Ad Limit Rp 15 Million / week",
-    "scaleFeature1": "Min. Deposit: Rp 15.5m+",
+    "growthLimit": "Ad Limit IDR 15 Million / week",
+    "scaleFeature1": "Min. Deposit: IDR 15.5m+",
     "scaleFeature2": "Official Whitelisted Account",
     "scaleFeature3": "VVIP Priority Support",
     "scaleLimit": "Unlimited Ad Limit",
@@ -814,7 +845,23 @@
     "pay": "Pay",
     "syncSuccess": "Transaction status synchronized successfully.",
     "syncFailed": "Failed to synchronize status:",
-    "noDataDownload": "No transaction data to download."
+    "noDataDownload": "No transaction data to download.",
+    "alertPendingAccountTitle": "{platform} Account Request is Processing",
+    "alertPendingAccountDesc": "You have a pending {platform} account request awaiting team approval. Your main balance of {amount} is temporarily frozen until approved.",
+    "alertPendingBudgetTitle": "Budget Allocation Processing",
+    "alertPendingBudgetDesc": "Budget allocation request of {amount} for {account} is currently processing.",
+    "allocateBudgetBtn": "Allocate Budget",
+    "expired": "Expired",
+    "daysRemaining": "{days} Days Remaining",
+    "switchPackage": "Switch Plan",
+    "buyRenew": "Buy / Renew",
+    "downloadReportBtn": "Download Transaction Report",
+    "viewInvoice": "View Invoice",
+    "resumePayment": "Resume Payment",
+    "adLimitLabel": "Ad Limit",
+    "activePeriodLabel": "Active Duration",
+    "weekShort": "wk",
+    "days": "Days"
   },
   "verification": {
     "title": "Profile Verification",
@@ -882,6 +929,7 @@
     "otpSent": "OTP code has been sent to your WhatsApp.",
     "otpSendFailed": "Failed to send OTP.",
     "submitSuccess": "Verification request successfully submitted. The Audit Team will review your data soon.",
-    "submitFailed": "Failed to perform verification."
+    "submitFailed": "Failed to perform verification.",
+    "verifyNowBtn": "Verify Now"
   }
 }

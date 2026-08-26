@@ -620,9 +620,9 @@
                 </td>
                 <td class="px-6 py-4">
                   <p class="font-bold text-yellow-600">
-                    {{ formatRupiah((req.limit_amount || 0) - (req.weekly_spend || 0)) }}
+                    {{ formatRupiah((Number(req.users?.package_weekly_limit) || Number(req.limit_amount) || 0) - (Number(req.weekly_spend) || 0)) }}
                   </p>
-                  <p class="text-[10px] text-slate-500 mt-1">Total Limit: {{ formatRupiah(req.limit_amount || 0) }}</p>
+                  <p class="text-[10px] text-slate-500 mt-1">Total Limit: {{ formatRupiah(Number(req.users?.package_weekly_limit) || Number(req.limit_amount) || 0) }}</p>
                 </td>
                 <td class="px-6 py-4 text-center">
                   <a v-if="req.users?.phone" :href="`https://wa.me/${req.users.phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent('Halo Bapak/Ibu ' + (req.users?.full_name || '') + ', sisa limit pada akun iklan ' + req.platform + ' (' + (req.account_name || '') + ') Anda saat ini tersisa ' + formatRupiah((req.limit_amount || 0) - (req.weekly_spend || 0)) + '. Silakan lakukan pembayaran agar iklan Anda tidak terhenti.')}`" target="_blank" class="inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-green-500 hover:bg-green-600 text-white text-xs font-bold rounded-lg transition-colors">

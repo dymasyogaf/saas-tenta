@@ -22,7 +22,8 @@
     "retry": "Coba Lagi",
     "confirm": "Ya, Lanjutkan",
     "logout": "Logout",
-    "profile": "Profil"
+    "profile": "Profil",
+    "yesClose": "Ya, Tutup"
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -191,7 +192,10 @@
       "clicks": "Klik",
       "ctr": "CTR",
       "cpc": "CPC"
-    }
+    },
+    "totalSpend": "Total Penggunaan",
+    "allActiveAccounts": "Semua Akun Aktif",
+    "lastUpdated": "Update Terakhir"
   },
   "profile": {
     "title": "Profile",
@@ -415,7 +419,16 @@
       "dailyLimitFailed": "Gagal mengatur limit harian",
       "minutes": "menit",
       "seconds": "detik"
-    }
+    },
+    "adsPausedLimit100": "IKLAN TERPAUSE (LIMIT 100%)",
+    "autoResetIn": "Reset Otomatis",
+    "daysLeftCount": "Sisa {days} Hari",
+    "updatePackageBtn": "Update Paket (Buka Iklan)",
+    "syncedFromApi": "Sinkron dari API platform",
+    "allocateBudgetShort": "Alokasikan Anggaran",
+    "budgetEmptyShort": "Anggaran Habis — Tambah",
+    "budgetLowShort": "Anggaran Menipis — Tambah",
+    "updatePackage": "Update Paket"
   },
   "referral": {
     "title": "Program Affiliate",
@@ -690,6 +703,24 @@
       "errorInsufficient": "Saldo tidak mencukupi. Silakan tambah anggaran terlebih dahulu.",
       "errorProcess": "Gagal memproses pembayaran.",
       "successMsg": "Perpanjangan sewa akun berhasil."
+    },
+    "allocateBudget": {
+      "title": "Alokasikan Anggaran Iklan",
+      "selectAccount": "Pilih Akun Iklan",
+      "selectAccountPlaceholder": "Pilih Akun Iklan",
+      "availableBalanceLabel": "Sisa Saldo Tersedia (Available Balance)",
+      "amountLabel": "Nominal Tambah Anggaran",
+      "insufficientBalance": "Saldo Tersedia tidak mencukupi",
+      "submitBtn": "Kirim Pengajuan"
+    },
+    "switchPackage": {
+      "title": "Ubah Paket Aktif",
+      "subtitle": "Pilih paket yang ingin Anda gunakan saat ini.",
+      "currentlyActive": "Sedang Aktif",
+      "expiresAt": "Kedaluwarsa",
+      "useThisPackage": "Gunakan Paket Ini",
+      "active": "Aktif",
+      "noPackages": "Tidak ada paket aktif yang tersedia."
     }
   },
   "components": {
@@ -814,7 +845,23 @@
     "pay": "Bayar",
     "syncSuccess": "Status transaksi berhasil disinkronisasi.",
     "syncFailed": "Gagal sinkronisasi status:",
-    "noDataDownload": "Tidak ada data transaksi untuk diunduh."
+    "noDataDownload": "Tidak ada data transaksi untuk diunduh.",
+    "alertPendingAccountTitle": "Pengajuan Akun Iklan {platform} Sedang Diproses",
+    "alertPendingAccountDesc": "Anda memiliki pengajuan sewa akun iklan {platform} yang sedang menunggu persetujuan tim iklan. Saldo utama Anda senilai {amount} dibekukan sementara hingga pengajuan disetujui.",
+    "alertPendingBudgetTitle": "Pengajuan Alokasi Anggaran Sedang Diproses",
+    "alertPendingBudgetDesc": "Pengajuan Alokasi Anggaran Iklan {account} sebesar {amount} Sedang Diproses.",
+    "allocateBudgetBtn": "Alokasikan Anggaran",
+    "expired": "Expired",
+    "daysRemaining": "Sisa {days} Hari",
+    "switchPackage": "Ubah Paket",
+    "buyRenew": "Beli / Perpanjang",
+    "downloadReportBtn": "Download Laporan Transaksi",
+    "viewInvoice": "Lihat Invoice",
+    "resumePayment": "Lanjutkan",
+    "adLimitLabel": "Limit Iklan",
+    "activePeriodLabel": "Masa Aktif",
+    "weekShort": "mgg",
+    "days": "Hari"
   },
   "verification": {
     "title": "Verifikasi Profile",
@@ -882,6 +929,7 @@
     "otpSent": "Kode OTP telah dikirim ke WhatsApp Anda.",
     "otpSendFailed": "Gagal mengirim OTP.",
     "submitSuccess": "Pengajuan verifikasi berhasil dikirim. Tim Audit akan segera meninjau data Anda.",
-    "submitFailed": "Gagal melakukan verifikasi."
+    "submitFailed": "Gagal melakukan verifikasi.",
+    "verifyNowBtn": "Verifikasi Sekarang"
   }
 }

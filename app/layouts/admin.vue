@@ -94,7 +94,7 @@
           </NuxtLink>
           
           <!-- Profile Dropdown -->
-          <div class="relative pl-4 border-l border-ink-200">
+          <div ref="adminProfileRef" class="relative pl-4 border-l border-ink-200">
             <button
               class="flex items-center gap-3 hover:bg-ink-50 p-1.5 rounded-xl transition-colors"
               @click="isProfileOpen = !isProfileOpen"
@@ -150,6 +150,8 @@
 </template>
 
 <script setup lang="ts">
+import { ref } from 'vue'
+import { onClickOutside } from '@vueuse/core'
 import {
   LayoutDashboard,
   ShieldCheck,
@@ -194,6 +196,8 @@ const isSidebarOpen = ref(false)
 
 // Dropdown states
 const isProfileOpen = ref(false)
+const adminProfileRef = ref<HTMLElement | null>(null)
+onClickOutside(adminProfileRef, () => { isProfileOpen.value = false })
 
 const { data: badges } = useFetch('/api/admin/badges', { key: 'admin-badges' })
 

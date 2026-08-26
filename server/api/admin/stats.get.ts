@@ -69,7 +69,7 @@ export default defineEventHandler(async (event) => {
     const expiringRentals = expiringData?.length || 0
 
     // 5.6 Low Balance Rentals (saldo <= Rp 350.000)
-    let lowBalanceQuery = supabase.from('ad_accounts').select('saldo, limit_amount, weekly_spend').eq('status', 'active')
+    let lowBalanceQuery = supabase.from('ad_accounts').select('saldo, limit_amount, weekly_spend, users(active_package, package_weekly_limit)').eq('status', 'active')
     const { data: lbData } = await lowBalanceQuery
     const lowBalanceRentals = (lbData || []).filter((acc: any) => {
       const saldo = Number(acc.saldo) || 0
@@ -77,12 +77,13 @@ export default defineEventHandler(async (event) => {
       return false
     }).length
 
-    // 5.7 Low Limit Rentals (limit_amount - weekly_spend < 300.000)
+    // 5.7 Low Limit Rentals (sisa limit < 300.000)
     const lowLimitRentals = (lbData || []).filter((acc: any) => {
-      const limit = Number(acc.limit_amount) || 0
-      if (limit <= 0) return false
+      const activePkg = (acc.users?.active_package || '').toLowerCase()
+      const userLimit = Number(acc.users?.package_weekly_limit) || Number(acc.limit_amount) || 5000000
+      if (activePkg === 'scale' || userLimit >= 999000000) return false
       const weeklySpend = Number(acc.weekly_spend) || 0
-      return (limit - weeklySpend) < 300000
+      return (userLimit - weeklySpend) < 300000
     }).length
 
     // 6. Top Up Berdasarkan Filter Custom Date

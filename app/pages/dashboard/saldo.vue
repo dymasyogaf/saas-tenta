@@ -30,13 +30,13 @@
     </div>
 
     <!-- Navigation Tabs -->
-    <div class="border-b border-ink-200 mb-6 flex gap-8 overflow-x-auto hide-scrollbar whitespace-nowrap">
+    <div class="border-b border-ink-200 mb-6 flex gap-4 sm:gap-8 overflow-x-auto hide-scrollbar whitespace-nowrap scrollbar-none pb-0.5">
       <button 
         v-for="tab in tabs" 
         :key="tab.id"
         @click="activeTab = tab.id" 
         :class="[
-          'pb-3.5 text-sm px-1 border-b-2 transition-colors',
+          'pb-3 text-xs sm:text-sm px-1 border-b-2 transition-colors shrink-0',
           activeTab === tab.id 
             ? 'font-semibold text-orange-500 border-orange-500' 
             : 'font-medium text-ink-600 hover:text-ink-900 border-transparent'
@@ -182,13 +182,13 @@
                   <!-- Segel Stamp Header -->
                   <div class="flex items-center gap-2 font-black text-xs md:text-sm uppercase tracking-wider shrink-0 bg-red-600 px-3.5 py-1.5 rounded-xl border border-red-400/40 shadow-inner">
                     <Lock class="w-4 h-4 text-white animate-pulse" />
-                    <span>IKLAN TERPAUSE (LIMIT 100%)</span>
+                    <span>{{ $t('saldo.adsPausedLimit100') }}</span>
                   </div>
 
                   <!-- Countdown info -->
                   <div class="flex items-center gap-1.5 text-xs text-ink-200 font-semibold shrink-0 bg-ink-800/80 px-3.5 py-1.5 rounded-xl border border-ink-700">
                     <Clock class="w-3.5 h-3.5 text-amber-400 shrink-0" />
-                    <span>Reset Otomatis: <strong class="text-amber-300 font-bold">Sisa {{ getDaysToNextReset(account.created_at) }} Hari</strong></span>
+                    <span>{{ $t('saldo.autoResetIn') }}: <strong class="text-amber-300 font-bold">{{ $t('saldo.daysLeftCount', { days: getDaysToNextReset(account.created_at) }) }}</strong></span>
                   </div>
 
                   <!-- Action Button Update Paket -->
@@ -197,7 +197,7 @@
                     class="shrink-0 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-extrabold text-xs px-4 py-2 rounded-xl shadow-lg hover:shadow-orange-500/30 hover:scale-[1.02] transition-all flex items-center gap-1.5 whitespace-nowrap"
                   >
                     <RefreshCw class="w-3.5 h-3.5" />
-                    Update Paket (Buka Iklan)
+                    {{ $t('saldo.updatePackageBtn') }}
                   </NuxtLink>
                 </div>
 
@@ -268,7 +268,7 @@
                   <span class="font-bold text-[14px]" :class="getBudgetColor(account)">
                     {{ formatCurrency(getBudgetRemaining(account)) }}
                   </span>
-                  <span v-if="account.api_balance_active" class="inline-flex items-center gap-1 text-[9px] font-bold text-emerald-600" title="Sinkron dari API platform">
+                  <span v-if="account.api_balance_active" class="inline-flex items-center gap-1 text-[9px] font-bold text-emerald-600" :title="$t('saldo.syncedFromApi')">
                     <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
                     Live
                   </span>
@@ -297,19 +297,19 @@
                 <div v-if="getBudgetTotal(account) <= 0" class="mt-2.5">
                   <button @click="openAllocateBudgetModal(account.id)" class="w-full flex justify-center items-center gap-1.5 bg-orange-50 border border-orange-200 text-orange-600 text-[10px] font-bold px-3 py-1.5 rounded-lg hover:bg-orange-100 hover:text-orange-700 transition-colors shadow-sm">
                     <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                    + Alokasikan Anggaran
+                    + {{ $t('saldo.allocateBudgetShort') }}
                   </button>
                 </div>
                 <div v-else-if="getBudgetRemaining(account) <= 0" class="mt-2.5">
                   <button @click="openAllocateBudgetModal(account.id)" class="w-full flex justify-center items-center gap-1.5 bg-red-50 border border-red-100 text-red-600 text-[10px] font-bold px-3 py-1.5 rounded-lg hover:bg-red-100 hover:text-red-700 transition-colors">
                     <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                    Anggaran Habis — Tambah
+                    {{ $t('saldo.budgetEmptyShort') }}
                   </button>
                 </div>
                 <div v-else-if="getBudgetRemaining(account) <= 350000" class="mt-2.5">
                   <button @click="openAllocateBudgetModal(account.id)" class="w-full flex justify-center items-center gap-1.5 bg-amber-50 border border-amber-200 text-amber-700 text-[10px] font-bold px-3 py-1.5 rounded-lg hover:bg-amber-100 hover:text-amber-800 transition-colors">
                     <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-                    Anggaran Menipis — Tambah
+                    {{ $t('saldo.budgetLowShort') }}
                   </button>
                 </div>
               </td>
@@ -344,7 +344,7 @@
                 <div v-if="getLimitUsagePercent(account) >= 95 && !isAccountAutoPaused(account)" class="mt-2.5">
                   <NuxtLink to="/dashboard/topup?action=update_package" class="inline-flex w-full justify-center items-center gap-1.5 bg-red-500 hover:bg-red-600 text-white text-[10px] font-bold px-3 py-1.5 rounded-lg transition-colors shadow-sm">
                     <RefreshCw class="w-3.5 h-3.5" />
-                    Update Paket
+                    {{ $t('saldo.updatePackage') }}
                   </NuxtLink>
                 </div>
               </td>
@@ -778,12 +778,13 @@ const formatCurrency = (value: number) => {
 
 const formatCompact = (value: number) => {
   if (Number(value) >= 999000000) return 'Unlimited'
-  if (!value || value <= 0) return 'Rp 0'
+  const prefix = locale.value === 'en' ? 'IDR ' : 'Rp '
+  if (!value || value <= 0) return prefix + '0'
   const m = t('saldo.compact.million')
   const k = t('saldo.compact.thousand')
-  if (value >= 1000000) return `Rp ${(value / 1000000).toFixed(1).replace('.0', '')}${m}`
-  if (value >= 1000) return `Rp ${(value / 1000).toFixed(0)}${k}`
-  return `Rp ${value}`
+  if (value >= 1000000) return `${prefix}${(value / 1000000).toFixed(1).replace('.0', '')}${m}`
+  if (value >= 1000) return `${prefix}${(value / 1000).toFixed(0)}${k}`
+  return `${prefix}${value}`
 }
 
 const getBudgetTotal = (account: any) => {

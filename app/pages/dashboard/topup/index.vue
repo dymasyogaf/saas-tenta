@@ -35,8 +35,8 @@
         <Info class="w-5 h-5" />
       </div>
       <div>
-        <h4 class="font-bold text-blue-900 text-sm mb-1">Pengajuan Akun Iklan {{ req.platform === 'meta' || req.platform === 'Meta Ads' ? 'Meta Ads' : req.platform === 'google' || req.platform === 'Google Ads' ? 'Google Ads' : req.platform }} Sedang Diproses</h4>
-        <p class="text-sm text-blue-800">Anda memiliki pengajuan sewa akun iklan <strong>{{ req.platform === 'meta' || req.platform === 'Meta Ads' ? 'Meta Ads' : req.platform === 'google' || req.platform === 'Google Ads' ? 'Google Ads' : req.platform }}</strong> yang sedang menunggu persetujuan tim iklan. Saldo utama Anda senilai <strong class="font-bold">{{ formatRupiah(req.rental_fee || 150000) }}</strong> dibekukan sementara hingga pengajuan disetujui.</p>
+        <h4 class="font-bold text-blue-900 text-sm mb-1">{{ $t('topup.alertPendingAccountTitle', { platform: req.platform === 'meta' || req.platform === 'Meta Ads' ? 'Meta Ads' : req.platform === 'google' || req.platform === 'Google Ads' ? 'Google Ads' : req.platform }) }}</h4>
+        <p class="text-sm text-blue-800">{{ $t('topup.alertPendingAccountDesc', { platform: req.platform === 'meta' || req.platform === 'Meta Ads' ? 'Meta Ads' : req.platform === 'google' || req.platform === 'Google Ads' ? 'Google Ads' : req.platform, amount: formatRupiah(req.rental_fee || 150000) }) }}</p>
       </div>
     </div>
 
@@ -46,8 +46,8 @@
         <Info class="w-5 h-5" />
       </div>
       <div>
-        <h4 class="font-bold text-orange-900 text-sm mb-1">Pengajuan Alokasi Anggaran Sedang Diproses</h4>
-        <p class="text-sm text-orange-800">Pengajuan Alokasi Anggaran Iklan <strong>{{ extractAccountName(trx.description) }}</strong> sebesar <strong class="font-bold">{{ formatRupiah(trx.amount) }}</strong> Sedang Diproses.</p>
+        <h4 class="font-bold text-orange-900 text-sm mb-1">{{ $t('topup.alertPendingBudgetTitle') }}</h4>
+        <p class="text-sm text-orange-800">{{ $t('topup.alertPendingBudgetDesc', { account: extractAccountName(trx.description), amount: formatRupiah(trx.amount) }) }}</p>
       </div>
     </div>
 
@@ -69,7 +69,7 @@
             {{ saldoStore.isLoading ? $t('topup.processing') : $t('topup.addBalance') }}
           </button>
           <button @click="openAllocateBudgetModal" class="w-full bg-white border-2 border-orange-500 text-orange-600 hover:bg-orange-50 font-bold py-2.5 rounded-lg text-sm transition-colors">
-            Alokasikan Anggaran
+            {{ $t('topup.allocateBudgetBtn') }}
           </button>
         </div>
         
@@ -86,7 +86,7 @@
                   :class="saldoStore.isPackageExpired ? 'bg-red-100 text-red-700' : 'bg-emerald-100 text-emerald-700'"
                   class="px-2 py-0.5 rounded-full text-xs font-semibold"
                 >
-                  {{ saldoStore.isPackageExpired ? 'Expired' : `Sisa ${saldoStore.daysRemaining} Hari` }}
+                  {{ saldoStore.isPackageExpired ? $t('topup.expired') : $t('topup.daysRemaining', { days: saldoStore.daysRemaining }) }}
                 </span>
               </div>
             </div>
@@ -104,7 +104,7 @@
               <svg class="w-3.5 h-3.5 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
               </svg>
-              Ubah Paket
+              {{ $t('topup.switchPackage') }}
             </button>
             <button 
               @click="openUpdatePackageModal" 
@@ -113,7 +113,7 @@
               <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
               </svg>
-              Beli / Perpanjang
+              {{ $t('topup.buyRenew') }}
             </button>
           </div>
         </div>
@@ -208,7 +208,7 @@
         </div>
         <div class="px-2 xl:px-4 shrink-0 pb-2 xl:pb-0">
           <button @click="downloadReport" class="w-full xl:w-auto bg-orange-500 hover:bg-orange-600 text-white px-5 py-2.5 rounded-lg text-sm font-semibold flex items-center justify-center gap-2 transition-colors shadow-sm">
-            <Download class="w-4 h-4" /> Download Laporan Transaksi
+            <Download class="w-4 h-4" /> {{ $t('topup.downloadReportBtn') }}
           </button>
         </div>
       </div>
@@ -265,10 +265,10 @@
                     {{ trx.status.toUpperCase() }}
                   </span>
                   <button v-if="(trx.status === 'success' || trx.status === 'settled') && trx.type === 'topup'" @click="openInvoice(trx)" class="text-xs text-orange-500 hover:text-orange-600 font-bold flex items-center gap-1 mt-1 transition-colors">
-                    <FileText class="w-3.5 h-3.5" /> Lihat Invoice
+                    <FileText class="w-3.5 h-3.5" /> {{ $t('topup.viewInvoice') }}
                   </button>
                   <button v-else-if="trx.status === 'pending' && trx.type === 'topup'" @click="resumePayment(trx)" class="text-xs text-orange-500 hover:text-orange-600 font-bold underline mt-1">
-                    Lanjutkan
+                    {{ $t('topup.resumePayment') }}
                   </button>
                 </div>
               </td>
@@ -317,12 +317,12 @@
                   <!-- Highlight Limit & Masa Aktif Box -->
                   <div class="bg-orange-100/80 border border-orange-200 text-orange-950 rounded-xl p-3 mb-4 text-xs font-medium space-y-1.5">
                     <div class="flex justify-between items-center gap-1">
-                      <span class="text-orange-700 font-semibold shrink-0">Limit Iklan:</span>
-                      <span class="font-bold text-orange-900 text-right">Rp 5.000.000 / mgg</span>
+                      <span class="text-orange-700 font-semibold shrink-0">{{ $t('topup.adLimitLabel') }}:</span>
+                      <span class="font-bold text-orange-900 text-right">{{ locale === 'en' ? 'IDR 5,000,000' : 'Rp 5.000.000' }} / {{ $t('topup.weekShort') }}</span>
                     </div>
                     <div class="flex justify-between items-center pt-1.5 border-t border-orange-200/60 gap-1">
-                      <span class="text-orange-700 font-semibold shrink-0">Masa Aktif:</span>
-                      <span class="font-bold text-emerald-700 text-right">28 Hari</span>
+                      <span class="text-orange-700 font-semibold shrink-0">{{ $t('topup.activePeriodLabel') }}:</span>
+                      <span class="font-bold text-emerald-700 text-right">28 {{ $t('topup.days') }}</span>
                     </div>
                   </div>
 
@@ -366,12 +366,12 @@
                   <!-- Highlight Limit & Masa Aktif Box -->
                   <div class="bg-orange-100/80 border border-orange-200 text-orange-950 rounded-xl p-3 mb-4 text-xs font-medium space-y-1.5">
                     <div class="flex justify-between items-center gap-1">
-                      <span class="text-orange-700 font-semibold shrink-0">Limit Iklan:</span>
-                      <span class="font-bold text-orange-900 text-right">Rp 15.000.000 / mgg</span>
+                      <span class="text-orange-700 font-semibold shrink-0">{{ $t('topup.adLimitLabel') }}:</span>
+                      <span class="font-bold text-orange-900 text-right">{{ locale === 'en' ? 'IDR 15,000,000' : 'Rp 15.000.000' }} / {{ $t('topup.weekShort') }}</span>
                     </div>
                     <div class="flex justify-between items-center pt-1.5 border-t border-orange-200/60 gap-1">
-                      <span class="text-orange-700 font-semibold shrink-0">Masa Aktif:</span>
-                      <span class="font-bold text-emerald-700 text-right">28 Hari</span>
+                      <span class="text-orange-700 font-semibold shrink-0">{{ $t('topup.activePeriodLabel') }}:</span>
+                      <span class="font-bold text-emerald-700 text-right">28 {{ $t('topup.days') }}</span>
                     </div>
                   </div>
 
@@ -412,12 +412,12 @@
                   <!-- Highlight Limit & Masa Aktif Box -->
                   <div class="bg-orange-100/80 border border-orange-200 text-orange-950 rounded-xl p-3 mb-4 text-xs font-medium space-y-1.5">
                     <div class="flex justify-between items-center gap-1">
-                      <span class="text-orange-700 font-semibold shrink-0">Limit Iklan:</span>
+                      <span class="text-orange-700 font-semibold shrink-0">{{ $t('topup.adLimitLabel') }}:</span>
                       <span class="font-bold text-orange-900 text-right">Unlimited</span>
                     </div>
                     <div class="flex justify-between items-center pt-1.5 border-t border-orange-200/60 gap-1">
-                      <span class="text-orange-700 font-semibold shrink-0">Masa Aktif:</span>
-                      <span class="font-bold text-emerald-700 text-right">28 Hari</span>
+                      <span class="text-orange-700 font-semibold shrink-0">{{ $t('topup.activePeriodLabel') }}:</span>
+                      <span class="font-bold text-emerald-700 text-right">28 {{ $t('topup.days') }}</span>
                     </div>
                   </div>
 
@@ -533,60 +533,12 @@
     </Teleport>
 
 
-    <!-- Allocate Budget Modal -->
-    <Teleport to="body">
-<div v-if="isAllocateBudgetModalOpen" class="fixed inset-0 bg-ink-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4" @click.self="isAllocateBudgetModalOpen = false">
-        <div class="bg-white rounded-2xl w-full max-w-md overflow-hidden shadow-xl animate-scale-up">
-          <div class="p-6">
-            <div class="flex items-center justify-between mb-6">
-              <h3 class="text-xl font-display font-bold text-ink-900">Alokasikan Anggaran Iklan</h3>
-              <button @click="isAllocateBudgetModalOpen = false" class="text-ink-400 hover:text-ink-600 p-1 rounded-full hover:bg-ink-50 transition-colors">
-                <X class="w-5 h-5" />
-              </button>
-            </div>
-            
-            <div class="space-y-5">
-              <div>
-                <label class="block text-sm font-bold text-ink-900 mb-1.5">Pilih Akun Iklan</label>
-                <select v-model="allocateSelectedAccount" class="w-full px-4 py-2.5 bg-ink-50 border border-ink-200 rounded-xl text-ink-900 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500">
-                  <option value="" disabled>-- Pilih Akun Iklan --</option>
-                  <option v-for="acc in adsStore.adAccounts" :key="acc.id" :value="acc.id">
-                    {{ acc.name }} ({{ acc.platform }})
-                  </option>
-                </select>
-              </div>
-
-              <div class="bg-blue-50 border border-blue-100 rounded-xl p-4 flex items-center justify-between">
-                <div>
-                  <p class="text-xs font-medium text-blue-600 mb-0.5">Sisa Saldo Tersedia (Available Balance)</p>
-                  <p class="text-lg font-bold text-blue-700">{{ formatRupiah(availableBalance) }}</p>
-                </div>
-                <Wallet class="w-6 h-6 text-blue-300" />
-              </div>
-
-              <div>
-                <label class="block text-sm font-bold text-ink-900 mb-1.5">Nominal Tambah Anggaran</label>
-                <div class="relative">
-                  <span class="absolute left-4 top-1/2 -translate-y-1/2 text-ink-500 font-medium">{{ isGlobal ? '$' : 'Rp' }}</span>
-                  <input type="text" v-model="allocateAmountInput" @input="formatAllocateInput" placeholder="1.000.000" class="w-full pl-11 pr-4 py-3 bg-white border border-ink-200 rounded-xl text-ink-900 text-lg font-bold focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition-all placeholder:font-normal placeholder:text-ink-300" />
-                </div>
-                <p v-if="allocateAmount > availableBalance" class="text-xs text-red-500 font-medium mt-1.5 flex items-center gap-1">
-                  <Info class="w-3.5 h-3.5" /> Saldo Tersedia tidak mencukupi
-                </p>
-              </div>
-            </div>
-
-            <div class="mt-8 flex gap-3">
-              <button @click="isAllocateBudgetModalOpen = false" class="flex-1 px-4 py-2.5 border border-ink-200 text-ink-600 rounded-xl font-bold hover:bg-ink-50 transition-colors">Batal</button>
-              <button @click="submitAllocateBudget" :disabled="isAllocatingBudget || !allocateSelectedAccount || allocateAmount <= 0 || allocateAmount > availableBalance" class="flex-1 px-4 py-2.5 bg-orange-500 text-white rounded-xl font-bold hover:bg-orange-600 transition-colors disabled:opacity-50 flex items-center justify-center gap-2">
-                <Loader2 v-if="isAllocatingBudget" class="w-4 h-4 animate-spin" />
-                {{ isAllocatingBudget ? 'Memproses...' : 'Kirim Pengajuan' }}
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </Teleport>
+    <!-- Allocate Budget Modal Component -->
+    <ModalAllocateBudgetModal 
+      :is-open="isAllocateBudgetModalOpen"
+      @close="isAllocateBudgetModalOpen = false"
+      @success="() => { adsStore.fetchAdAccounts(); saldoStore.fetchTransactions(); saldoStore.fetchSaldo(); }"
+    />
 
     <InvoiceModal :is-open="isInvoiceModalOpen" :transaction="selectedInvoiceTransaction" @close="isInvoiceModalOpen = false" />
     <DashboardSwitchPackageModal :is-open="isSwitchPackageModalOpen" @close="isSwitchPackageModalOpen = false" />
@@ -605,7 +557,7 @@ import { useToast } from '#imports'
 import { useSupabaseUser, useCsrf } from '#imports'
 import { useAppMode } from '~/composables/useAppMode'
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const toast = useToast()
 const saldoStore = useSaldoStore()
 const adsStore = useAdsStore()
@@ -769,6 +721,14 @@ const formatRupiah = (angka: number) => {
       currency: 'USD',
       minimumFractionDigits: 2,
       maximumFractionDigits: 2
+    }).format(angka || 0)
+  }
+  if (locale.value === 'en') {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'IDR',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
     }).format(angka || 0)
   }
   return new Intl.NumberFormat('id-ID', {

@@ -47,13 +47,15 @@ export default defineEventHandler(async (event) => {
     // 5. Hitung antrean Saldo Menipis (<= 15% dari limit)
     const { data: accountsData } = await supabase
       .from('ad_accounts')
-      .select('saldo, limit_amount')
+      .select('saldo, limit_amount, users(package_weekly_limit, active_package)')
       .eq('status', 'active')
-      .gt('limit_amount', 0)
       
     const lowBalanceRentalsCount = (accountsData || []).filter((acc: any) => {
+      const activePkg = (acc.users?.active_package || '').toLowerCase()
+      if (activePkg === 'scale') return false
       const saldo = Number(acc.saldo) || 0
-      const limit = Number(acc.limit_amount) || 0
+      const limit = Number(acc.users?.package_weekly_limit) || Number(acc.limit_amount) || 5000000
+      if (limit >= 999000000) return false
       return saldo <= (limit * 0.15)
     }).length
 

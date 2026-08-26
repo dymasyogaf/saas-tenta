@@ -218,13 +218,10 @@ export const useAdsStore = defineStore('ads', {
                 const weeklyRes = await $fetch<any>(endpoint, { params: weeklyParams })
                 if (weeklyRes && weeklyRes.success && weeklyRes.data) {
                   const liveWeekly = Number(weeklyRes.data.totalSpend || 0)
-                  const dbWeekly = Number(acc.weeklySpend || acc.weekly_spend || 0)
-                  this.adAccounts[index].weeklySpend = liveWeekly > 0 ? liveWeekly : dbWeekly
+                  this.adAccounts[index].weeklySpend = liveWeekly
                   
-                  if (liveWeekly > 0) {
-                    const supabase = useSupabaseClient<any>()
-                    supabase.from('ad_accounts').update({ weekly_spend: liveWeekly, updated_at: new Date().toISOString() }).eq('account_id', acc.account_id).then()
-                  }
+                  const supabase = useSupabaseClient<any>()
+                  supabase.from('ad_accounts').update({ weekly_spend: liveWeekly, updated_at: new Date().toISOString() }).eq('account_id', acc.account_id).then()
 
                   if (this.adAccounts[index].weeklySpend >= this.adAccounts[index].limit && this.adAccounts[index].limit > 0) {
                     $fetch('/api/ads/check-auto-pause', {

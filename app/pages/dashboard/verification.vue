@@ -39,7 +39,7 @@
 
           <div class="pt-2">
             <button @click="currentStep = 1" class="bg-orange-500 hover:bg-orange-600 text-white font-bold py-3.5 px-8 rounded-xl shadow-lg shadow-orange-500/20 transition-all w-full md:w-auto">
-              Verifikasi Sekarang
+              {{ $t('verification.verifyNowBtn') }}
             </button>
           </div>
         </div>
