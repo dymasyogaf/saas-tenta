@@ -79,6 +79,9 @@ export default defineEventHandler(async (event) => {
 
         if (rpcError) throw rpcError
 
+        // Ensure user's highest package tier remains active
+        await syncUserHighestPackage(supabase, transaction.user_id)
+
         // Kirim email pembayaran berhasil ke customer
         // Ambil data user untuk email
         const { data: userData } = await supabase.auth.admin.getUserById(transaction.user_id)

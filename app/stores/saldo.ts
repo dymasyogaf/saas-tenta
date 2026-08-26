@@ -84,7 +84,10 @@ export const useSaldoStore = defineStore('saldo', {
           this.usdBalance = data.usd_balance || 0
           this.usdPendingBalance = data.usd_pending_balance || 0
 
-          // Ambil info paket & masa aktif dari tabel users
+          // Sync & fetch active subscriptions terlebih dahulu
+          await this.fetchActiveSubscriptions()
+
+          // Ambil info paket & masa aktif dari tabel users (setelah auto-sync tier tertinggi)
           const { data: userData, error: userError } = await supabase
             .from('users')
             .select('active_package, package_weekly_limit, package_expires_at')
@@ -96,7 +99,6 @@ export const useSaldoStore = defineStore('saldo', {
             this.weeklyLimit = userData.package_weekly_limit
             this.packageExpiresAt = userData.package_expires_at
           }
-          await this.fetchActiveSubscriptions()
         }
       } catch (e: any) {
         console.error('Failed to fetch saldo:', e.message)

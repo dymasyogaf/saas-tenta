@@ -100,6 +100,9 @@ export default defineEventHandler(async (event) => {
 
       if (rpcError) throw rpcError
 
+      // Ensure user's highest package tier remains active
+      await syncUserHighestPackage(supabase, transaction.user_id)
+
       return {
         statusCode: 200,
         message: 'Transaksi berhasil disinkronisasi: SUKSES',

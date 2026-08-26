@@ -10,6 +10,9 @@ export default defineEventHandler(async (event) => {
     const userId = user.id || (user as any).sub
     const supabaseAdmin = serverSupabaseServiceRole<any>(event)
 
+    // Sync user's highest active package tier
+    await syncUserHighestPackage(supabaseAdmin, userId)
+
     const now = new Date().toISOString()
     const { data: subs, error } = await supabaseAdmin
       .from('user_package_subscriptions')
