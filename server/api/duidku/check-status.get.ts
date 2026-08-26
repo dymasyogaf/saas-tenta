@@ -1,5 +1,6 @@
 import { serverSupabaseServiceRole, serverSupabaseUser } from '#supabase/server'
 import crypto from 'node:crypto'
+import { syncUserHighestPackage } from '../../utils/packageSync'
 
 export default defineEventHandler(async (event) => {
   const query = getQuery(event)

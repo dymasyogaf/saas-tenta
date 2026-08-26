@@ -1,4 +1,5 @@
 import { serverSupabaseServiceRole, serverSupabaseUser } from '#supabase/server'
+import { syncUserHighestPackage } from '../../utils/packageSync'
 
 export default defineEventHandler(async (event) => {
   try {
