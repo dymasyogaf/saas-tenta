@@ -92,7 +92,7 @@
             </div>
             <div class="text-right">
               <p class="text-sm font-medium text-ink-500">{{ $t('topup.weeklyLimit') }}</p>
-              <p class="text-lg font-bold text-ink-900">{{ saldoStore.weeklyLimit ? formatRupiah(saldoStore.weeklyLimit) : '-' }}</p>
+              <p class="text-lg font-bold text-ink-900">{{ formattedWeeklyLimit }}</p>
             </div>
           </div>
           
@@ -413,7 +413,7 @@
                   <div class="bg-orange-100/80 border border-orange-200 text-orange-950 rounded-xl p-3 mb-4 text-xs font-medium space-y-1.5">
                     <div class="flex justify-between items-center gap-1">
                       <span class="text-orange-700 font-semibold shrink-0">Limit Iklan:</span>
-                      <span class="font-bold text-orange-900 text-right">30Jt+ / Unlimited</span>
+                      <span class="font-bold text-orange-900 text-right">Unlimited</span>
                     </div>
                     <div class="flex justify-between items-center pt-1.5 border-t border-orange-200/60 gap-1">
                       <span class="text-orange-700 font-semibold shrink-0">Masa Aktif:</span>
@@ -948,9 +948,21 @@ const formattedFeePercent = computed(() => {
 
 const selectedPackageLimitText = computed(() => {
   const pkg = effectivePackage.value
-  if (pkg === 'scale') return isGlobal.value ? '$51.000+/Unlimited' : '30Jt+/Unlimited'
+  if (pkg === 'scale') return 'Unlimited'
   if (pkg === 'growth') return isGlobal.value ? '$11.000/mgg' : 'Rp 15.000.000 / mgg'
   return isGlobal.value ? '$30 - $10.000' : 'Rp 5.000.000 / mgg'
+})
+
+const formattedWeeklyLimit = computed(() => {
+  const pkg = saldoStore.activePackage?.toLowerCase()
+  const limit = Number(saldoStore.weeklyLimit || 0)
+  if (pkg === 'scale' || limit >= 999000000) {
+    return 'Unlimited'
+  }
+  if (limit > 0) {
+    return formatRupiah(limit)
+  }
+  return '-'
 })
 
 watch(selectedPackage, (newPkg) => {

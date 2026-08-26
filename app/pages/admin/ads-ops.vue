@@ -969,6 +969,7 @@ const getPlatformLogo = (platform: string) => {
 }
 
 const formatRupiah = (angka: number) => {
+  if (angka >= 999000000) return 'Unlimited'
   return new Intl.NumberFormat('id-ID', {
     style: 'currency',
     currency: 'IDR',

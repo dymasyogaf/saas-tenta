@@ -772,10 +772,12 @@ const filteredAdAccounts = computed(() => {
 watch([searchQuery, perPage], () => { currentPage.value = 1 })
 
 const formatCurrency = (value: number) => {
+  if (Number(value) >= 999000000) return 'Unlimited'
   return new Intl.NumberFormat(locale.value === 'id' ? 'id-ID' : 'en-US', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(value || 0)
 }
 
 const formatCompact = (value: number) => {
+  if (Number(value) >= 999000000) return 'Unlimited'
   if (!value || value <= 0) return 'Rp 0'
   const m = t('saldo.compact.million')
   const k = t('saldo.compact.thousand')

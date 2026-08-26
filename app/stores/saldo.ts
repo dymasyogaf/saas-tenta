@@ -39,6 +39,21 @@ export const useSaldoStore = defineStore('saldo', {
       if (diffMs <= 0) return true
       const days = Math.floor(diffMs / (1000 * 60 * 60 * 24))
       return days <= 5
+    },
+    formattedWeeklyLimit: (state) => {
+      const pkg = state.activePackage?.toLowerCase()
+      const limit = Number(state.weeklyLimit || 0)
+      if (pkg === 'scale' || limit >= 999000000) {
+        return 'Unlimited'
+      }
+      if (limit > 0) {
+        return new Intl.NumberFormat('id-ID', {
+          style: 'currency',
+          currency: 'IDR',
+          minimumFractionDigits: 0
+        }).format(limit)
+      }
+      return '-'
     }
   },
 

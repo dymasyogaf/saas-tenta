@@ -103,7 +103,7 @@ const activeSubscriptionsList = computed(() => {
 })
 
 const getLimitText = (pkg: string) => {
-  if (pkg === 'scale') return 'Rp 30.000.000+ / Unlimited'
+  if (pkg === 'scale') return 'Unlimited'
   if (pkg === 'growth') return 'Rp 15.000.000'
   return 'Rp 5.000.000'
 }
