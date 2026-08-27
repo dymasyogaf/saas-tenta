@@ -3,7 +3,7 @@
     <!-- Floating Button -->
     <button
       @click="openWhatsApp"
-      class="fixed bottom-6 right-4 sm:right-6 z-50 flex flex-col items-center justify-center gap-1.5 transition-all transform hover:-translate-y-1 group hover:scale-105"
+      class="fixed bottom-6 right-4 sm:right-6 z-40 flex flex-col items-center justify-center gap-1.5 transition-all transform hover:-translate-y-1 group hover:scale-105"
       :title="$t('components.floatingWhatsApp.title')"
     >
       <!-- Gambar dengan border orange -->

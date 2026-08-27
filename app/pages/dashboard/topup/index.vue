@@ -280,20 +280,20 @@
     
     <!-- Modal Top Up -->
     <Teleport to="body">
-<div v-if="isTopupModalOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-ink-900/50 backdrop-blur-sm p-4">
-      <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg sm:max-w-2xl lg:max-w-3xl overflow-hidden relative border border-ink-100 flex flex-col max-h-[90vh]">
-        <div class="p-6 border-b border-ink-100 flex justify-between items-center">
+    <div v-if="isTopupModalOpen" class="fixed inset-0 z-[100] flex items-center justify-center bg-ink-900/60 backdrop-blur-sm p-3 sm:p-4">
+      <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg sm:max-w-2xl lg:max-w-3xl overflow-hidden relative border border-ink-100 flex flex-col max-h-[88vh] sm:max-h-[90vh] my-auto">
+        <div class="p-4 sm:p-6 border-b border-ink-100 flex justify-between items-center bg-white shrink-0">
           <div>
-            <h3 class="text-xl font-display font-bold text-ink-900">{{ topupStep === 1 ? $t('topup.choosePackageTitle') : $t('topup.topupAdBalance') }}</h3>
-            <p class="text-ink-500 text-sm mt-1">{{ topupStep === 1 ? $t('topup.choosePackageSubtitle') : $t('topup.selectPackageAndNominal') }}</p>
+            <h3 class="text-lg sm:text-xl font-display font-bold text-ink-900">{{ topupStep === 1 ? $t('topup.choosePackageTitle') : $t('topup.topupAdBalance') }}</h3>
+            <p class="text-ink-500 text-xs sm:text-sm mt-0.5 sm:mt-1">{{ topupStep === 1 ? $t('topup.choosePackageSubtitle') : $t('topup.selectPackageAndNominal') }}</p>
           </div>
-          <button @click="isTopupModalOpen = false" class="text-ink-400 hover:text-ink-700 bg-ink-50 p-2 rounded-full">
+          <button @click="isTopupModalOpen = false" class="text-ink-400 hover:text-ink-700 bg-ink-50 p-2 rounded-full transition-colors">
             <span class="sr-only">Close</span>
             <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
           </button>
         </div>
         
-        <div class="p-6 overflow-y-auto">
+        <div class="p-4 sm:p-6 overflow-y-auto">
           <!-- Wizard Step 1: Pilih Paket -->
           <div v-if="topupStep === 1" class="space-y-4">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -505,25 +505,25 @@
             </div>
             
             <div>
-              <label class="block text-sm font-medium text-ink-700 mb-3">{{ $t('topup.paymentMethod') }}</label>
-              <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              <label class="block text-sm font-medium text-ink-700 mb-2.5">{{ $t('topup.paymentMethod') }}</label>
+              <div class="grid grid-cols-2 sm:grid-cols-3 gap-2.5 sm:gap-3">
                 <div v-for="method in paymentMethods" :key="method.value" 
                      @click="selectedMethod = method.value"
-                     :class="['border-2 rounded-xl p-3 cursor-pointer transition-all flex flex-col items-center justify-center gap-2 h-24 text-center relative', selectedMethod === method.value ? 'border-orange-500 bg-orange-50 shadow-sm' : 'border-ink-200 bg-white hover:border-ink-300 hover:bg-ink-50']">
-                  <div v-if="selectedMethod === method.value" class="absolute top-2 right-2 text-orange-500">
+                     :class="['border-2 rounded-xl p-2 sm:p-3 cursor-pointer transition-all flex flex-col items-center justify-center gap-1.5 h-20 sm:h-24 text-center relative', selectedMethod === method.value ? 'border-orange-500 bg-orange-50 shadow-sm' : 'border-ink-200 bg-white hover:border-ink-300 hover:bg-ink-50']">
+                  <div v-if="selectedMethod === method.value" class="absolute top-1.5 right-1.5 text-orange-500">
                     <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
                   </div>
-                  <img :src="method.logo" :alt="method.name" class="h-6 w-full object-contain mix-blend-multiply" />
-                  <span class="text-xs font-bold text-ink-800 leading-tight">{{ method.name }}</span>
+                  <img :src="method.logo" :alt="method.name" class="h-5 sm:h-6 w-full object-contain mix-blend-multiply" />
+                  <span class="text-[11px] sm:text-xs font-bold text-ink-800 leading-tight">{{ method.name }}</span>
                 </div>
               </div>
             </div>
           </div>
         </div>
         
-        <div v-if="topupStep === 2" class="p-5 bg-ink-50 flex gap-3 border-t border-ink-100 shrink-0 mt-auto">
-          <button @click="isTopupModalOpen = false" class="flex-1 bg-white border-2 border-ink-200 text-ink-700 hover:bg-ink-100 font-bold py-3 rounded-xl transition-colors">{{ $t('topup.cancel') }}</button>
-          <button @click="submitTopup" :disabled="saldoStore.isLoading || !isValidTopup" class="flex-1 bg-orange-500 border-2 border-orange-500 text-white hover:bg-orange-600 font-bold py-3 rounded-xl transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+        <div v-if="topupStep === 2" class="p-3.5 sm:p-5 bg-ink-50 flex gap-2.5 sm:gap-3 border-t border-ink-100 shrink-0 mt-auto shadow-md relative z-10">
+          <button @click="isTopupModalOpen = false" class="flex-1 bg-white border-2 border-ink-200 text-ink-700 hover:bg-ink-100 font-bold py-2.5 sm:py-3 rounded-xl transition-colors text-sm sm:text-base">{{ $t('topup.cancel') }}</button>
+          <button @click="submitTopup" :disabled="saldoStore.isLoading || !isValidTopup" class="flex-1 bg-orange-500 border-2 border-orange-500 text-white hover:bg-orange-600 font-bold py-2.5 sm:py-3 rounded-xl transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm sm:text-base">
             <span v-if="saldoStore.isLoading" class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
             {{ saldoStore.isLoading ? $t('topup.processing') : `${$t('topup.pay')} ${formatRupiah(totalAmount)}` }}
           </button>
