@@ -29,7 +29,7 @@ export default defineNuxtConfig({
   // Security Configuration
   security: {
     sri: false,
-    csrf: false,
+    csrf: true,
     requestSizeLimiter: {
       maxRequestSizeInBytes: 15000000,
       maxUploadFileRequestInBytes: 25000000,
