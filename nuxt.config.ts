@@ -62,7 +62,7 @@ export default defineNuxtConfig({
       httpOnly: true,
       sameSite: 'lax',
     },
-    encryptSecret: process.env.CSRF_SECRET || 'tentaklik-saas-tenta-csrf-secret-key-32chars',
+    encryptSecret: process.env.CSRF_SECRET || 'tentakliksaastentacsrfsecretkey1',
   },
 
   routeRules: {
