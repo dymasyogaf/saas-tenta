@@ -189,7 +189,7 @@ export const useSaldoStore = defineStore('saldo', {
         // Panggil internal API
         const response = await $fetch<any>('/api/duidku/create-payment', {
           method: 'POST',
-          headers: csrfToken ? { 'csrf-token': csrfToken } : {},
+          headers: csrfToken ? { 'x-csrf-token': csrfToken, 'csrf-token': csrfToken } : {},
           body: {
             amount,
             method, // <- Metode yang dipilih dari Modal
@@ -263,7 +263,7 @@ export const useSaldoStore = defineStore('saldo', {
         
         const response = await $fetch<any>('/api/saldo/transfer', {
           method: 'POST',
-          headers: csrfToken ? { 'csrf-token': csrfToken } : {},
+          headers: csrfToken ? { 'x-csrf-token': csrfToken, 'csrf-token': csrfToken } : {},
           body: {
             amount,
             user_id: uid,
@@ -305,6 +305,7 @@ export const useSaldoStore = defineStore('saldo', {
       try {
         const headers: Record<string, string> = {}
         if (csrfToken) {
+          headers['x-csrf-token'] = csrfToken
           headers['csrf-token'] = csrfToken
         }
 

@@ -29,7 +29,7 @@ export default defineNuxtConfig({
   // Security Configuration
   security: {
     sri: false,
-    csrf: true,
+    csrf: false,
     requestSizeLimiter: {
       maxRequestSizeInBytes: 15000000,
       maxUploadFileRequestInBytes: 25000000,
@@ -55,7 +55,20 @@ export default defineNuxtConfig({
     }
   },
 
+  csurf: {
+    https: process.env.NODE_ENV === 'production',
+    cookie: {
+      path: '/',
+      httpOnly: true,
+      sameSite: 'lax',
+    },
+    encryptSecret: process.env.CSRF_SECRET || 'tentaklik-saas-tenta-csrf-secret-key-32chars',
+  },
+
   routeRules: {
+    '/api/**': {
+      csurf: false
+    },
     '/api/admin/broadcast': {
       security: { xssValidator: false }
     },

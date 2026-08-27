@@ -971,7 +971,7 @@ const submitTopup = async () => {
     try {
       const response = await $fetch<any>('/api/binance-pay/create-order', {
         method: 'POST',
-        headers: unref(csrf) ? { 'csrf-token': unref(csrf) } : {},
+        headers: unref(csrf) ? { 'x-csrf-token': unref(csrf), 'csrf-token': unref(csrf) } : {},
         body: {
           amount: topupAmount.value,
           packageType: pkgToUse
@@ -1032,7 +1032,7 @@ const submitAllocateBudget = async () => {
     const csrfToken = unref(csrf)
     const res = await $fetch('/api/ads/add-budget', {
       method: 'POST',
-      headers: csrfToken ? { 'csrf-token': csrfToken } : {},
+      headers: csrfToken ? { 'x-csrf-token': csrfToken, 'csrf-token': csrfToken } : {},
       body: {
         accountId: allocateSelectedAccount.value,
         amount: allocateAmount.value
