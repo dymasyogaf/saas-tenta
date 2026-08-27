@@ -154,7 +154,7 @@
           >
             <Plus class="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
             <span class="hidden sm:inline">{{ $t('header.topUp') }}</span>
-            <span class="sm:hidden">+ Top Up</span>
+            <span class="sm:hidden">Top Up</span>
           </NuxtLink>
 
           <!-- Profile Dropdown -->
