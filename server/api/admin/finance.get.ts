@@ -16,6 +16,7 @@ export default defineEventHandler(async (event) => {
         fee_amount,
         is_sandbox,
         status, 
+        currency,
         payment_gateway_ref,
         description,
         created_at,
@@ -59,7 +60,17 @@ export default defineEventHandler(async (event) => {
       supabase.from('transactions').delete().in('id', toDelete).then()
     }
 
-    return validData
+    const resultWithCurrency = validData.map(tx => {
+      const txRef = tx.payment_gateway_ref || ''
+      const txDesc = tx.description || ''
+      const isUsdTrx = tx.currency === 'USD' || txRef.startsWith('NP-') || txRef.startsWith('USDT-') || txDesc.includes('USDT') || txDesc.includes('NOWPayments') || txDesc.includes('Binance')
+      return {
+        ...tx,
+        currency: isUsdTrx ? 'USD' : 'IDR'
+      }
+    })
+
+    return resultWithCurrency
   } catch (error: any) {
     console.error('Error fetching finance transactions:', error)
 

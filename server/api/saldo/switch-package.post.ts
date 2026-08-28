@@ -26,26 +26,45 @@ export default defineEventHandler(async (event) => {
     if (rpcError) {
       console.warn('RPC switch_user_active_package error, falling back to direct update:', rpcError.message)
 
+      const host = getRequestHost(event) || ''
+      const isGlobal = host.startsWith('area.') || body.currency === 'USD'
+      const currency = isGlobal ? 'USD' : 'IDR'
+
       // Fallback: direct database updates
-      const { data: sub, error: subError } = await supabaseAdmin
+      let subQuery = supabaseAdmin
         .from('user_package_subscriptions')
         .select('*')
         .eq('user_id', userId)
         .eq('package_type', package_type)
         .gt('expires_at', new Date().toISOString())
+
+      if (currency === 'USD') {
+        subQuery = subQuery.eq('currency', 'USD')
+      } else {
+        subQuery = subQuery.or('currency.eq.IDR,currency.is.null')
+      }
+
+      const { data: sub, error: subError } = await subQuery
         .order('expires_at', { ascending: false })
         .limit(1)
         .single()
 
       if (subError || !sub) {
-        throw createError({ statusCode: 404, message: `Tidak ada langganan ${package_type} yang sedang aktif` })
+        throw createError({ statusCode: 404, message: `Tidak ada langganan ${package_type} (${currency}) yang sedang aktif` })
       }
 
-      // Deactivate all user subscriptions
-      await supabaseAdmin
+      // Deactivate user subscriptions for this currency
+      let deactQuery = supabaseAdmin
         .from('user_package_subscriptions')
         .update({ is_active: false, updated_at: new Date().toISOString() })
         .eq('user_id', userId)
+
+      if (currency === 'USD') {
+        deactQuery = deactQuery.eq('currency', 'USD')
+      } else {
+        deactQuery = deactQuery.or('currency.eq.IDR,currency.is.null')
+      }
+      await deactQuery
 
       // Activate chosen subscription
       await supabaseAdmin
@@ -54,25 +73,43 @@ export default defineEventHandler(async (event) => {
         .eq('id', sub.id)
 
       // Update users table
-      const limitMap: Record<string, number> = {
+      const limitMapIDR: Record<string, number> = {
         starter: 5000000,
         growth: 15000000,
         scale: 999999999
       }
+      const limitMapUSD: Record<string, number> = {
+        starter: 10000,
+        growth: 50000,
+        scale: 999999999
+      }
 
-      await supabaseAdmin
-        .from('users')
-        .update({
-          active_package: package_type,
-          package_weekly_limit: limitMap[package_type] || 0,
-          package_expires_at: sub.expires_at,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', userId)
+      if (currency === 'USD') {
+        await supabaseAdmin
+          .from('users')
+          .update({
+            usd_active_package: package_type,
+            usd_package_weekly_limit: limitMapUSD[package_type] || 0,
+            usd_package_expires_at: sub.expires_at,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', userId)
+      } else {
+        await supabaseAdmin
+          .from('users')
+          .update({
+            active_package: package_type,
+            package_weekly_limit: limitMapIDR[package_type] || 0,
+            package_expires_at: sub.expires_at,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', userId)
+      }
 
       return {
         success: true,
         active_package: package_type,
+        currency,
         expires_at: sub.expires_at
       }
     }

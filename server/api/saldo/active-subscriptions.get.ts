@@ -11,34 +11,49 @@ export default defineEventHandler(async (event) => {
     const userId = user.id || (user as any).sub
     const supabaseAdmin = serverSupabaseServiceRole<any>(event)
 
-    // Sync user's highest active package tier
-    await syncUserHighestPackage(supabaseAdmin, userId)
+    const host = getRequestHost(event) || ''
+    const query = getQuery(event)
+    const isGlobal = host.startsWith('area.') || query.currency === 'USD'
+    const currency: 'IDR' | 'USD' = isGlobal ? 'USD' : 'IDR'
+
+    // Sync user's highest active package tier for this currency
+    await syncUserHighestPackage(supabaseAdmin, userId, currency)
 
     const now = new Date().toISOString()
-    const { data: subs, error } = await supabaseAdmin
+    let subQuery = supabaseAdmin
       .from('user_package_subscriptions')
       .select('*')
       .eq('user_id', userId)
       .gt('expires_at', now)
-      .order('expires_at', { ascending: false })
+
+    if (currency === 'USD') {
+      subQuery = subQuery.eq('currency', 'USD')
+    } else {
+      subQuery = subQuery.or('currency.eq.IDR,currency.is.null')
+    }
+
+    const { data: subs, error } = await subQuery.order('expires_at', { ascending: false })
 
     if (error || !subs || subs.length === 0) {
       const { data: userData } = await supabaseAdmin
         .from('users')
-        .select('active_package, package_expires_at')
+        .select('active_package, package_expires_at, usd_active_package, usd_package_expires_at')
         .eq('id', userId)
         .single()
 
-      if (userData?.active_package && userData?.package_expires_at) {
-        const diffMs = new Date(userData.package_expires_at).getTime() - Date.now()
+      const activePkg = currency === 'USD' ? userData?.usd_active_package : userData?.active_package
+      const expiresAt = currency === 'USD' ? userData?.usd_package_expires_at : userData?.package_expires_at
+
+      if (activePkg && expiresAt) {
+        const diffMs = new Date(expiresAt).getTime() - Date.now()
         if (diffMs > 0) {
           const daysRemaining = Math.max(1, Math.floor(diffMs / (1000 * 60 * 60 * 24)))
           return {
             success: true,
             subscriptions: [{
               id: 'fallback-1',
-              package_type: userData.active_package,
-              expires_at: userData.package_expires_at,
+              package_type: activePkg,
+              expires_at: expiresAt,
               is_active: true,
               days_remaining: daysRemaining
             }]

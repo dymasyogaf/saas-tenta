@@ -151,9 +151,6 @@ export const useAdsStore = defineStore('ads', {
         if (!accounts) return
         
         const saldoStore = useSaldoStore()
-        if (!saldoStore.weeklyLimit && !saldoStore.activePackage) {
-           await saldoStore.fetchSaldo()
-        }
         
         this.adAccounts = accounts.map(acc => {
           const limit = saldoStore.weeklyLimit || 0

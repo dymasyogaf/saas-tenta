@@ -10,7 +10,7 @@
           <div class="h-4 w-24 bg-ink-200 rounded-md animate-pulse mt-4"></div>
         </template>
         <template v-else>
-          <h3 class="text-2xl xl:text-3xl font-display font-bold text-ink-900">{{ formatCurrency(saldoStore.balance) }}</h3>
+          <h3 class="text-2xl xl:text-3xl font-display font-bold text-ink-900">{{ formatCurrency(isGlobal ? saldoStore.usdBalance : saldoStore.balance) }}</h3>
           <p class="text-sm text-green-600 mt-3 flex items-center gap-1 font-medium">
             <TrendingUp class="w-4 h-4" /> {{ $t('dashboard.fromLastMonth') }}
           </p>
@@ -193,6 +193,7 @@ const { t, locale } = useI18n()
 const saldoStore = useSaldoStore()
 const adsStore = useAdsStore()
 const adsLive = useAdsLive()
+const { isGlobal } = useAppMode()
 
 const { user } = useAuth()
 const supabase = useSupabaseClient()
@@ -294,6 +295,14 @@ const formatTime = (date: Date | string | null | undefined) => {
 }
 
 const formatCurrency = (value: number) => {
+  if (isGlobal.value) {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    }).format(value || 0)
+  }
   return new Intl.NumberFormat(locale.value === 'id' ? 'id-ID' : 'en-US', {
     style: 'currency',
     currency: 'IDR',

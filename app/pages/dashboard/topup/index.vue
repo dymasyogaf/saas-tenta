@@ -80,13 +80,13 @@
             <div>
               <p class="text-sm font-medium text-ink-500">{{ $t('topup.activePackage') }}</p>
               <div class="flex items-center gap-2">
-                <p class="text-lg font-bold text-ink-900 capitalize">{{ saldoStore.activePackage || $t('topup.noneYet') }}</p>
+                <p class="text-lg font-bold text-ink-900 capitalize">{{ displayActivePackage || $t('topup.noneYet') }}</p>
                 <span 
-                  v-if="saldoStore.activePackage" 
-                  :class="saldoStore.isPackageExpired ? 'bg-red-100 text-red-700' : 'bg-emerald-100 text-emerald-700'"
+                  v-if="displayActivePackage" 
+                  :class="displayIsPackageExpired ? 'bg-red-100 text-red-700' : 'bg-emerald-100 text-emerald-700'"
                   class="px-2 py-0.5 rounded-full text-xs font-semibold"
                 >
-                  {{ saldoStore.isPackageExpired ? $t('topup.expired') : $t('topup.daysRemaining', { days: saldoStore.daysRemaining }) }}
+                  {{ displayIsPackageExpired ? $t('topup.expired') : $t('topup.daysRemaining', { days: displayDaysRemaining }) }}
                 </span>
               </div>
             </div>
@@ -113,7 +113,7 @@
               <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
               </svg>
-              {{ $t('topup.buyRenew') }}
+              {{ displayActivePackage ? $t('topup.renewUpgrade') : $t('topup.getPackage') }}
             </button>
           </div>
         </div>
@@ -318,7 +318,7 @@
                   <div class="bg-orange-100/80 border border-orange-200 text-orange-950 rounded-xl p-3 mb-4 text-xs font-medium space-y-1.5">
                     <div class="flex justify-between items-center gap-1">
                       <span class="text-orange-700 font-semibold shrink-0">{{ $t('topup.adLimitLabel') }}:</span>
-                      <span class="font-bold text-orange-900 text-right">{{ locale === 'en' ? 'IDR 5,000,000' : 'Rp 5.000.000' }} / {{ $t('topup.weekShort') }}</span>
+                      <span class="font-bold text-orange-900 text-right">{{ isGlobal ? '$10,000' : (locale === 'en' ? 'IDR 5,000,000' : 'Rp 5.000.000') }} / {{ $t('topup.weekShort') }}</span>
                     </div>
                     <div class="flex justify-between items-center pt-1.5 border-t border-orange-200/60 gap-1">
                       <span class="text-orange-700 font-semibold shrink-0">{{ $t('topup.activePeriodLabel') }}:</span>
@@ -329,7 +329,7 @@
                   <ul class="space-y-2.5 text-xs text-ink-700">
                     <li class="flex items-center gap-2">
                       <svg class="w-4 h-4 text-orange-500 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
-                      <span>{{ $t('topup.starterFeature1') }}</span>
+                      <span>{{ $t(isGlobal ? 'topup.starterFeature1Usd' : 'topup.starterFeature1') }}</span>
                     </li>
                     <li class="flex items-center gap-2">
                       <svg class="w-4 h-4 text-orange-500 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
@@ -359,7 +359,7 @@
                     </span>
                   </div>
                   <div class="flex items-baseline gap-1.5 mb-4">
-                    <span class="text-3xl font-display font-black text-ink-900 shrink-0">4.5%</span>
+                    <span class="text-3xl font-display font-black text-ink-900 shrink-0">{{ isGlobal ? '4%' : '4.5%' }}</span>
                     <span class="text-[11px] font-semibold text-ink-400 uppercase tracking-wider shrink-0 whitespace-nowrap">{{ $t('topup.topupFee') }}</span>
                   </div>
 
@@ -367,7 +367,7 @@
                   <div class="bg-orange-100/80 border border-orange-200 text-orange-950 rounded-xl p-3 mb-4 text-xs font-medium space-y-1.5">
                     <div class="flex justify-between items-center gap-1">
                       <span class="text-orange-700 font-semibold shrink-0">{{ $t('topup.adLimitLabel') }}:</span>
-                      <span class="font-bold text-orange-900 text-right">{{ locale === 'en' ? 'IDR 15,000,000' : 'Rp 15.000.000' }} / {{ $t('topup.weekShort') }}</span>
+                      <span class="font-bold text-orange-900 text-right">{{ isGlobal ? '$50,000' : (locale === 'en' ? 'IDR 15,000,000' : 'Rp 15.000.000') }} / {{ $t('topup.weekShort') }}</span>
                     </div>
                     <div class="flex justify-between items-center pt-1.5 border-t border-orange-200/60 gap-1">
                       <span class="text-orange-700 font-semibold shrink-0">{{ $t('topup.activePeriodLabel') }}:</span>
@@ -378,7 +378,7 @@
                   <ul class="space-y-2.5 text-xs text-ink-700">
                     <li class="flex items-center gap-2">
                       <svg class="w-4 h-4 text-orange-500 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
-                      <span>{{ $t('topup.growthFeature1') }}</span>
+                      <span>{{ $t(isGlobal ? 'topup.growthFeature1Usd' : 'topup.growthFeature1') }}</span>
                     </li>
                     <li class="flex items-center gap-2">
                       <svg class="w-4 h-4 text-orange-500 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
@@ -405,7 +405,7 @@
                     <h4 class="font-bold text-lg text-ink-900">{{ $t('topup.scale') }}</h4>
                   </div>
                   <div class="flex items-baseline gap-1.5 mb-4">
-                    <span class="text-3xl font-display font-black text-ink-900 shrink-0">3.5%</span>
+                    <span class="text-3xl font-display font-black text-ink-900 shrink-0">{{ isGlobal ? '3%' : '3.5%' }}</span>
                     <span class="text-[11px] font-semibold text-ink-400 uppercase tracking-wider shrink-0 whitespace-nowrap">{{ $t('topup.topupFee') }}</span>
                   </div>
 
@@ -424,7 +424,7 @@
                   <ul class="space-y-2.5 text-xs text-ink-700">
                     <li class="flex items-center gap-2">
                       <svg class="w-4 h-4 text-orange-500 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
-                      <span>{{ $t('topup.scaleFeature1') }}</span>
+                      <span>{{ $t(isGlobal ? 'topup.scaleFeature1Usd' : 'topup.scaleFeature1') }}</span>
                     </li>
                     <li class="flex items-center gap-2">
                       <svg class="w-4 h-4 text-orange-500 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
@@ -456,14 +456,14 @@
                 </div>
                 <div>
                   <div class="flex items-center gap-2 flex-wrap">
-                    <span class="text-xs font-semibold text-ink-500 uppercase tracking-wider">{{ selectedPackage ? 'Paket Terpilih:' : 'Paket Terdeteksi:' }}</span>
+                    <span class="text-xs font-semibold text-ink-500 uppercase tracking-wider">{{ selectedPackage ? $t('topup.selectedPackage') : $t('topup.detectedPackage') }}</span>
                     <h4 class="font-extrabold text-base text-ink-900 capitalize">{{ effectivePackage }}</h4>
                     <span class="px-2 py-0.5 bg-orange-500 text-white text-[10px] font-extrabold rounded-full uppercase">
                       Fee {{ formattedFeePercent }}%
                     </span>
                   </div>
                   <p class="text-xs text-ink-600 mt-0.5">
-                    Limit: <strong>{{ selectedPackageLimitText }}</strong> • Masa Aktif: <strong class="text-emerald-700">28 Hari</strong>
+                    Limit: <strong>{{ selectedPackageLimitText }}</strong> • {{ $t('topup.activeDurationLabel') }}: <strong class="text-emerald-700">28 {{ $t('topup.days') }}</strong>
                   </p>
                 </div>
               </div>
@@ -472,7 +472,7 @@
                 class="text-xs font-bold text-orange-600 hover:text-orange-700 bg-white border border-orange-200 hover:bg-orange-100 px-3 py-1.5 rounded-lg transition-colors shrink-0 flex items-center gap-1 shadow-2xs"
               >
                 <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" /></svg>
-                Pilih Paket
+                {{ $t('topup.selectPackageBtn') }}
               </button>
             </div>
 
@@ -513,7 +513,7 @@
                   <div v-if="selectedMethod === method.value" class="absolute top-1.5 right-1.5 text-orange-500">
                     <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
                   </div>
-                  <img :src="method.logo" :alt="method.name" class="h-5 sm:h-6 w-full object-contain mix-blend-multiply" />
+                  <img :src="method.logo" :alt="method.name" class="h-5 sm:h-6 w-full object-contain" />
                   <span class="text-[11px] sm:text-xs font-bold text-ink-800 leading-tight">{{ method.name }}</span>
                 </div>
               </div>
@@ -543,6 +543,14 @@
     <InvoiceModal :is-open="isInvoiceModalOpen" :transaction="selectedInvoiceTransaction" @close="isInvoiceModalOpen = false" />
     <DashboardSwitchPackageModal :is-open="isSwitchPackageModalOpen" @close="isSwitchPackageModalOpen = false" />
 
+    <!-- NOWPayments USDT QR Modal (Global/area.tentaklik.com only) -->
+    <ModalNowPaymentQRModal
+      :is-open="isQRModalOpen"
+      :pay-data="nowPaymentData"
+      @close="isQRModalOpen = false"
+      @success="handleNowPaymentSuccess"
+    />
+
   </div>
 </template>
 
@@ -567,8 +575,7 @@ const { isGlobal, isLocal } = useAppMode()
 const paymentMethods = computed(() => {
   if (isGlobal.value) {
     return [
-      { value: 'USDT_TRC20', name: 'USDT (TRC20)', logo: 'https://cryptologos.cc/logos/tether-usdt-logo.png' },
-      { value: 'USDT_ERC20', name: 'USDT (ERC20)', logo: 'https://cryptologos.cc/logos/tether-usdt-logo.png' },
+      { value: 'USDT_TRC20', name: 'USDT (TRC20)', logo: '/logos/usdt.svg' }
     ]
   }
   return [
@@ -590,6 +597,7 @@ definePageMeta({
 onMounted(() => {
   saldoStore.fetchSaldo()
   saldoStore.fetchTransactions()
+  fetchPendingRequests()
 })
 
 const isInvoiceModalOpen = ref(false)
@@ -867,10 +875,13 @@ const activeRentals = computed(() => {
 const formattedTopupAmount = computed({
   get: () => {
     if (!topupAmount.value) return ''
+    if (isGlobal.value) {
+      return new Intl.NumberFormat('en-US').format(Number(topupAmount.value))
+    }
     return new Intl.NumberFormat('id-ID').format(Number(topupAmount.value))
   },
   set: (val: string) => {
-    const numericString = val.replace(/\D/g, '')
+    const numericString = val.replace(/[^0-9.]/g, '')
     topupAmount.value = numericString ? Number(numericString) : ''
   }
 })
@@ -906,23 +917,30 @@ const formattedFeePercent = computed(() => {
   return Number((packageInfo.value.fee * 100).toFixed(2)).toString()
 })
 
+const displayActivePackage = computed(() => {
+  return isGlobal.value ? saldoStore.usdActivePackage : saldoStore.activePackage
+})
+
+const displayIsPackageExpired = computed(() => {
+  return isGlobal.value ? saldoStore.isUsdPackageExpired : saldoStore.isPackageExpired
+})
+
+const displayDaysRemaining = computed(() => {
+  return isGlobal.value ? saldoStore.usdDaysRemaining : saldoStore.daysRemaining
+})
+
 const selectedPackageLimitText = computed(() => {
   const pkg = effectivePackage.value
   if (pkg === 'scale') return 'Unlimited'
-  if (pkg === 'growth') return isGlobal.value ? '$11.000/mgg' : 'Rp 15.000.000 / mgg'
-  return isGlobal.value ? '$30 - $10.000' : 'Rp 5.000.000 / mgg'
+  if (pkg === 'growth') return isGlobal.value ? '$50.000/mgg' : 'Rp 15.000.000 / mgg'
+  return isGlobal.value ? '$30 - $10.000' : 'Rp 300.000 - Rp 5.000.000'
 })
 
 const formattedWeeklyLimit = computed(() => {
-  const pkg = saldoStore.activePackage?.toLowerCase()
-  const limit = Number(saldoStore.weeklyLimit || 0)
-  if (pkg === 'scale' || limit >= 999000000) {
-    return 'Unlimited'
+  if (isGlobal.value) {
+    return saldoStore.formattedUsdWeeklyLimit
   }
-  if (limit > 0) {
-    return formatRupiah(limit)
-  }
-  return '-'
+  return saldoStore.formattedWeeklyLimit
 })
 
 watch(selectedPackage, (newPkg) => {
@@ -958,8 +976,33 @@ const handleTopup = () => {
 const openUpdatePackageModal = () => {
   isTopupModalOpen.value = true
   topupStep.value = 1
-  selectedPackage.value = saldoStore.activePackage || 'starter'
+  selectedPackage.value = (isGlobal.value ? saldoStore.usdActivePackage : saldoStore.activePackage) || 'starter'
   topupAmount.value = isGlobal.value ? 30 : 300000
+}
+
+// NOWPayments QR Modal state
+const isQRModalOpen = ref(false)
+const nowPaymentData = ref<{
+  paymentId: string
+  payAddress: string
+  payAmount: number
+  merchantOrderId: string
+  netAmount: number
+  feeAmount: number
+  totalAmount: number
+  packageType: string
+  expirationEstimate: string
+} | null>(null)
+
+const handleNowPaymentSuccess = () => {
+  isQRModalOpen.value = false
+  nowPaymentData.value = null
+  isTopupModalOpen.value = false
+  topupStep.value = 1
+  // Refresh saldo and transactions
+  saldoStore.fetchSaldo()
+  saldoStore.fetchTransactions()
+  toast.addToast('Payment successful! Your USD balance has been updated.', 'success')
 }
 
 const submitTopup = async () => {
@@ -969,7 +1012,7 @@ const submitTopup = async () => {
   if (isGlobal.value) {
     saldoStore.isLoading = true
     try {
-      const response = await $fetch<any>('/api/binance-pay/create-order', {
+      const response = await $fetch<any>('/api/nowpayments/create-payment', {
         method: 'POST',
         headers: unref(csrf) ? { 'x-csrf-token': unref(csrf), 'csrf-token': unref(csrf) } : {},
         body: {
@@ -977,11 +1020,14 @@ const submitTopup = async () => {
           packageType: pkgToUse
         }
       })
-      if (response && response.success && response.paymentUrl) {
-        window.location.href = response.paymentUrl
+      if (response && response.success) {
+        // Open in-app QR modal instead of redirecting
+        nowPaymentData.value = response
+        isQRModalOpen.value = true
+        isTopupModalOpen.value = false
       }
     } catch (err: any) {
-      toast.addToast(err.statusMessage || 'Failed to create Binance Pay order', 'error')
+      toast.addToast(err.statusMessage || 'Failed to create payment', 'error')
     } finally {
       saldoStore.isLoading = false
     }

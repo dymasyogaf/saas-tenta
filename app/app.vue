@@ -6,7 +6,10 @@ const { isGlobal } = useAppMode()
 useHead({
   titleTemplate: (titleChunk) => {
     const baseTitle = isGlobal.value ? 'Area Tentaklik' : 'Member Tentaklik'
-    return titleChunk && titleChunk !== 'Member Tentaklik' ? `${titleChunk} - ${baseTitle}` : baseTitle
+    if (!titleChunk || titleChunk === 'Member Tentaklik' || titleChunk === 'Area Tentaklik' || titleChunk === baseTitle) {
+      return baseTitle
+    }
+    return `${titleChunk} - ${baseTitle}`
   }
 })
 

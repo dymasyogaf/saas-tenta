@@ -32,22 +32,41 @@
           <p class="text-3xl font-display font-bold text-white">{{ formatCurrency(totalFeeRevenue) }}</p>
           <p class="text-xs text-slate-500 mt-1">Akumulasi dari seluruh potongan fee sesuai paket klien (Starter/Growth/Scale) untuk transaksi Top Up yang sukses.</p>
         </div>
-        <div class="flex overflow-x-auto whitespace-nowrap items-center gap-0 bg-slate-800 border border-slate-600 rounded-lg p-1 shrink-0 max-w-full scrollbar-hide">
-          <button @click="envFilter = 'production'" 
-            class="px-3 py-1.5 text-xs font-bold rounded-md transition-all"
-            :class="envFilter === 'production' ? 'bg-emerald-500 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'">
-            🟢 Produksi
-          </button>
-          <button @click="envFilter = 'sandbox'" 
-            class="px-3 py-1.5 text-xs font-bold rounded-md transition-all"
-            :class="envFilter === 'sandbox' ? 'bg-yellow-500 text-slate-900 shadow-sm' : 'text-slate-400 hover:text-slate-200'">
-            🟡 Sandbox
-          </button>
-          <button @click="envFilter = 'all'" 
-            class="px-3 py-1.5 text-xs font-bold rounded-md transition-all"
-            :class="envFilter === 'all' ? 'bg-slate-500 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'">
-            Semua
-          </button>
+        <div class="flex overflow-x-auto whitespace-nowrap items-center gap-2 shrink-0 max-w-full scrollbar-hide">
+          <div class="flex items-center gap-0 bg-slate-800 border border-slate-600 rounded-lg p-1">
+            <button @click="currencyFilter = 'all'" 
+              class="px-3 py-1.5 text-xs font-bold rounded-md transition-all"
+              :class="currencyFilter === 'all' ? 'bg-slate-500 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'">
+              Semua Valuta
+            </button>
+            <button @click="currencyFilter = 'IDR'" 
+              class="px-3 py-1.5 text-xs font-bold rounded-md transition-all"
+              :class="currencyFilter === 'IDR' ? 'bg-blue-500 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'">
+              🇮🇩 IDR
+            </button>
+            <button @click="currencyFilter = 'USD'" 
+              class="px-3 py-1.5 text-xs font-bold rounded-md transition-all"
+              :class="currencyFilter === 'USD' ? 'bg-emerald-500 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'">
+              🌐 USD
+            </button>
+          </div>
+          <div class="flex items-center gap-0 bg-slate-800 border border-slate-600 rounded-lg p-1">
+            <button @click="envFilter = 'production'" 
+              class="px-3 py-1.5 text-xs font-bold rounded-md transition-all"
+              :class="envFilter === 'production' ? 'bg-emerald-500 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'">
+              🟢 Produksi
+            </button>
+            <button @click="envFilter = 'sandbox'" 
+              class="px-3 py-1.5 text-xs font-bold rounded-md transition-all"
+              :class="envFilter === 'sandbox' ? 'bg-yellow-500 text-slate-900 shadow-sm' : 'text-slate-400 hover:text-slate-200'">
+              🟡 Sandbox
+            </button>
+            <button @click="envFilter = 'all'" 
+              class="px-3 py-1.5 text-xs font-bold rounded-md transition-all"
+              :class="envFilter === 'all' ? 'bg-slate-500 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'">
+              Semua
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -235,7 +254,7 @@
                     'text-emerald-600': tx.type === 'topup',
                     'text-slate-900': tx.type !== 'topup',
                   }">
-                {{ tx.type === 'topup' ? '+' : '-' }} {{ formatCurrency(tx.amount || 0) }}
+                {{ tx.type === 'topup' ? '+' : '-' }} {{ formatCurrency(tx.amount || 0, tx.currency) }}
               </td>
               <td class="px-6 py-4 text-center">
                 <span class="px-2.5 py-1 text-[10px] font-bold rounded-full"
@@ -704,6 +723,7 @@ const typeFilterOptions = [
 ]
 
 const envFilter = ref('production')
+const currencyFilter = ref('all')
 const isSubmitting = ref<string | null>(null)
 const isSubmittingWd = ref<string | null>(null)
 
@@ -956,6 +976,14 @@ const filteredHistory = computed(() => {
   } else if (envFilter.value === 'sandbox') {
     history = history.filter(tx => tx.is_sandbox)
   }
+
+  // Filter by currency
+  if (currencyFilter.value === 'IDR') {
+    history = history.filter(tx => (tx.currency || 'IDR') === 'IDR')
+  } else if (currencyFilter.value === 'USD') {
+    history = history.filter(tx => tx.currency === 'USD')
+  }
+
   if (searchQuery.value) {
     const q = searchQuery.value.toLowerCase()
     history = history.filter(tx => tx.users?.full_name?.toLowerCase().includes(q))
@@ -973,6 +1001,12 @@ const totalFeeRevenue = computed(() => {
     txs = txs.filter(tx => !tx.is_sandbox)
   } else if (envFilter.value === 'sandbox') {
     txs = txs.filter(tx => tx.is_sandbox)
+  }
+  // Filter by currency
+  if (currencyFilter.value === 'IDR') {
+    txs = txs.filter(tx => (tx.currency || 'IDR') === 'IDR')
+  } else if (currencyFilter.value === 'USD') {
+    txs = txs.filter(tx => tx.currency === 'USD')
   }
   return txs.reduce((sum, tx) => sum + (Number(tx.fee_amount) || 0), 0)
 })
@@ -1120,7 +1154,11 @@ const executeRejectReferralWithdraw = async () => {
   }
 }
 
-const formatCurrency = (val: number) => {
-  return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(val)
+const formatCurrency = (val: number, curr?: string) => {
+  const targetCurr = curr || (currencyFilter.value === 'USD' ? 'USD' : 'IDR')
+  if (targetCurr === 'USD') {
+    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2 }).format(val || 0)
+  }
+  return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(val || 0)
 }
 </script>

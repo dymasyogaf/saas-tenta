@@ -21,7 +21,7 @@
           :key="sub.package_type"
           :class="[
             'border-2 rounded-xl p-4 transition-all flex items-center justify-between',
-            sub.package_type === saldoStore.activePackage 
+            sub.package_type === activePkg 
               ? 'border-orange-500 bg-orange-50/70 shadow-xs' 
               : 'border-ink-100 bg-white hover:border-ink-300'
           ]"
@@ -30,22 +30,22 @@
             <div class="flex items-center gap-2">
               <h4 class="font-extrabold text-base text-ink-900 capitalize">{{ sub.package_type }}</h4>
               <span 
-                :class="sub.package_type === saldoStore.activePackage ? 'bg-orange-500 text-white' : 'bg-emerald-100 text-emerald-700'"
+                :class="sub.package_type === activePkg ? 'bg-orange-500 text-white' : 'bg-emerald-100 text-emerald-700'"
                 class="px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase"
               >
-                {{ sub.package_type === saldoStore.activePackage ? $t('modals.switchPackage.currentlyActive') : $t('topup.daysRemaining', { days: sub.days_remaining }) }}
+                {{ sub.package_type === activePkg ? $t('modals.switchPackage.currentlyActive') : $t('topup.daysRemaining', { days: sub.days_remaining }) }}
               </span>
             </div>
             <p class="text-xs text-ink-600 mt-1">
               {{ $t('topup.weeklyLimit') }}: <strong class="text-orange-950">{{ getLimitText(sub.package_type) }}</strong>
             </p>
-            <p v-if="sub.package_type === saldoStore.activePackage" class="text-[11px] text-emerald-700 font-semibold mt-0.5">
+            <p v-if="sub.package_type === activePkg" class="text-[11px] text-emerald-700 font-semibold mt-0.5">
               {{ $t('modals.switchPackage.expiresAt') }}: {{ formatDate(sub.expires_at) }}
             </p>
           </div>
 
           <button 
-            v-if="sub.package_type !== saldoStore.activePackage"
+            v-if="sub.package_type !== activePkg"
             @click="handleSelect(sub.package_type)"
             :disabled="isSubmitting"
             class="bg-orange-500 hover:bg-orange-600 text-white font-bold text-xs py-2 px-3 rounded-lg transition-colors shadow-xs disabled:opacity-50 shrink-0"
@@ -77,6 +77,7 @@ import { ref, computed, unref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useSaldoStore } from '~/stores/saldo'
 import { useCsrf } from '#imports'
+import { useAppMode } from '~/composables/useAppMode'
 
 const props = defineProps({
   isOpen: { type: Boolean, default: false }
@@ -87,17 +88,25 @@ const emit = defineEmits(['close'])
 const { t, locale } = useI18n()
 const saldoStore = useSaldoStore()
 const { csrf } = useCsrf()
+const { isGlobal } = useAppMode()
 const isSubmitting = ref(false)
+
+const activePkg = computed(() => {
+  return isGlobal.value ? saldoStore.usdActivePackage : saldoStore.activePackage
+})
 
 const activeSubscriptionsList = computed(() => {
   if (saldoStore.activeSubscriptions && saldoStore.activeSubscriptions.length > 0) {
     return saldoStore.activeSubscriptions
   }
-  if (saldoStore.activePackage) {
+  const currPkg = activePkg.value
+  const currExpires = isGlobal.value ? saldoStore.usdPackageExpiresAt : saldoStore.packageExpiresAt
+  const currDays = isGlobal.value ? saldoStore.usdDaysRemaining : saldoStore.daysRemaining
+  if (currPkg) {
     return [{
-      package_type: saldoStore.activePackage,
-      days_remaining: saldoStore.daysRemaining,
-      expires_at: saldoStore.packageExpiresAt,
+      package_type: currPkg,
+      days_remaining: currDays,
+      expires_at: currExpires,
       is_active: true
     }]
   }
@@ -106,6 +115,9 @@ const activeSubscriptionsList = computed(() => {
 
 const getLimitText = (pkg: string) => {
   if (pkg === 'scale') return 'Unlimited'
+  if (isGlobal.value) {
+    return pkg === 'growth' ? '$50,000' : '$10,000'
+  }
   if (pkg === 'growth') return locale.value === 'en' ? 'IDR 15,000,000' : 'Rp 15.000.000'
   return locale.value === 'en' ? 'IDR 5,000,000' : 'Rp 5.000.000'
 }

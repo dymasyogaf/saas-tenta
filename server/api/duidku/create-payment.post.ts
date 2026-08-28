@@ -165,6 +165,7 @@ export default defineEventHandler(async (event) => {
           fee_amount: feeAmount,
           package_selected: selectedPkg,
           status: 'pending',
+          currency: 'IDR',
           payment_gateway_ref: result.reference,
           description: `Pembayaran Layanan Iklan via ${paymentName} (Paket ${selectedPkg})`,
           is_sandbox: !isProduction,

@@ -703,6 +703,7 @@ const resumePayment = (trx: any) => {
 }
 
 const { t, locale } = useI18n()
+const { isGlobal } = useAppMode()
 const isRequestModalOpen = ref(false)
 const isAllocateModalOpen = ref(false)
 const selectedAccountForAllocate = ref('')
@@ -773,11 +774,17 @@ watch([searchQuery, perPage], () => { currentPage.value = 1 })
 
 const formatCurrency = (value: number) => {
   if (Number(value) >= 999000000) return 'Unlimited'
+  if (isGlobal.value) {
+    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2 }).format(value || 0)
+  }
   return new Intl.NumberFormat(locale.value === 'id' ? 'id-ID' : 'en-US', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(value || 0)
 }
 
 const formatCompact = (value: number) => {
   if (Number(value) >= 999000000) return 'Unlimited'
+  if (isGlobal.value) {
+    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2 }).format(value || 0)
+  }
   const prefix = locale.value === 'en' ? 'IDR ' : 'Rp '
   if (!value || value <= 0) return prefix + '0'
   const m = t('saldo.compact.million')

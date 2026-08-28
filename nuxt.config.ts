@@ -39,7 +39,7 @@ export default defineNuxtConfig({
       crossOriginResourcePolicy: 'cross-origin',
       xFrameOptions: 'DENY',
       contentSecurityPolicy: {
-        'img-src': ["'self'", "data:", "https://pjmsnphhnporuownasxe.supabase.co", "https://flagcdn.com"],
+        'img-src': ["'self'", "data:", "https://pjmsnphhnporuownasxe.supabase.co", "https://flagcdn.com", "https://api.qrserver.com"],
       }
     },
     corsHandler: {
@@ -89,6 +89,7 @@ export default defineNuxtConfig({
   // Konfigurasi Nitro untuk deployment ke Cloudflare Pages
   nitro: {
     preset: 'cloudflare-pages',
+    compressPublicAssets: true,
   },
 
   // App metadata
@@ -128,8 +129,9 @@ export default defineNuxtConfig({
     googleClientSecret: '',
     googleRefreshToken: '',
     resendApiKey: '',
-    binancePayApiKey: process.env.BINANCE_PAY_API_KEY || '',
-    binancePaySecretKey: process.env.BINANCE_PAY_SECRET_KEY || '',
+    nowpaymentsApiKey: process.env.NOWPAYMENTS_API_KEY || '',
+    nowpaymentsIpnSecret: process.env.NOWPAYMENTS_IPN_SECRET || '',
+    nowpaymentsWebhookUrl: process.env.NOWPAYMENTS_WEBHOOK_URL || 'https://area.tentaklik.com/api/nowpayments/webhook',
     // Public keys (exposed to client)
     public: {
       appName: 'Tentaklik',

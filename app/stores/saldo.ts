@@ -13,6 +13,9 @@ export const useSaldoStore = defineStore('saldo', {
     activePackage: null as string | null,
     weeklyLimit: 0 as number,
     packageExpiresAt: null as string | null,
+    usdActivePackage: null as string | null,
+    usdWeeklyLimit: 0 as number,
+    usdPackageExpiresAt: null as string | null,
     activeSubscriptions: [] as any[],
     transactions: [] as any[],
     isLoading: false,
@@ -40,6 +43,17 @@ export const useSaldoStore = defineStore('saldo', {
       const days = Math.floor(diffMs / (1000 * 60 * 60 * 24))
       return days <= 5
     },
+    usdDaysRemaining: (state) => {
+      if (!state.usdPackageExpiresAt) return 0
+      const diffMs = new Date(state.usdPackageExpiresAt).getTime() - Date.now()
+      if (diffMs <= 0) return 0
+      const days = Math.floor(diffMs / (1000 * 60 * 60 * 24))
+      return days > 0 ? days : 1
+    },
+    isUsdPackageExpired: (state) => {
+      if (!state.usdPackageExpiresAt) return true
+      return new Date(state.usdPackageExpiresAt).getTime() <= Date.now()
+    },
     formattedWeeklyLimit: (state) => {
       const pkg = state.activePackage?.toLowerCase()
       const limit = Number(state.weeklyLimit || 0)
@@ -51,6 +65,21 @@ export const useSaldoStore = defineStore('saldo', {
           style: 'currency',
           currency: 'IDR',
           minimumFractionDigits: 0
+        }).format(limit)
+      }
+      return '-'
+    },
+    formattedUsdWeeklyLimit: (state) => {
+      const pkg = state.usdActivePackage?.toLowerCase()
+      const limit = Number(state.usdWeeklyLimit || 0)
+      if (pkg === 'scale' || limit >= 999000000) {
+        return 'Unlimited'
+      }
+      if (limit > 0) {
+        return new Intl.NumberFormat('en-US', {
+          style: 'currency',
+          currency: 'USD',
+          minimumFractionDigits: 2
         }).format(limit)
       }
       return '-'
@@ -84,20 +113,24 @@ export const useSaldoStore = defineStore('saldo', {
           this.usdBalance = data.usd_balance || 0
           this.usdPendingBalance = data.usd_pending_balance || 0
 
-          // Sync & fetch active subscriptions terlebih dahulu
-          await this.fetchActiveSubscriptions()
+          // PERF-02: Parallelize subscription sync + user data fetch
+          const [, userData] = await Promise.all([
+            this.fetchActiveSubscriptions(),
+            supabase
+              .from('users')
+              .select('active_package, package_weekly_limit, package_expires_at, usd_active_package, usd_package_weekly_limit, usd_package_expires_at')
+              .eq('id', data.user_id)
+              .single()
+          ])
 
-          // Ambil info paket & masa aktif dari tabel users (setelah auto-sync tier tertinggi)
-          const { data: userData, error: userError } = await supabase
-            .from('users')
-            .select('active_package, package_weekly_limit, package_expires_at')
-            .eq('id', data.user_id)
-            .single()
-            
-          if (!userError && userData) {
-            this.activePackage = userData.active_package
-            this.weeklyLimit = userData.package_weekly_limit
-            this.packageExpiresAt = userData.package_expires_at
+          if (!userData.error && userData.data) {
+            this.activePackage = userData.data.active_package
+            this.weeklyLimit = userData.data.package_weekly_limit
+            this.packageExpiresAt = userData.data.package_expires_at
+
+            this.usdActivePackage = userData.data.usd_active_package || null
+            this.usdWeeklyLimit = userData.data.usd_package_weekly_limit || 0
+            this.usdPackageExpiresAt = userData.data.usd_package_expires_at || null
           }
         }
       } catch (e: any) {
@@ -107,9 +140,18 @@ export const useSaldoStore = defineStore('saldo', {
       }
     },
 
-    async fetchActiveSubscriptions() {
+    async fetchActiveSubscriptions(currencyOverride?: 'IDR' | 'USD') {
       try {
-        const response = await $fetch<any>('/api/saldo/active-subscriptions')
+        // BUG-03: Safely get currency - try composable, fallback to override or default
+        let currency: string = currencyOverride || 'IDR'
+        try {
+          const { isGlobal } = useAppMode()
+          currency = isGlobal.value ? 'USD' : 'IDR'
+        } catch { /* SSR fallback: use override or default */ }
+
+        const response = await $fetch<any>('/api/saldo/active-subscriptions', {
+          params: { currency }
+        })
         if (response && response.success) {
           this.activeSubscriptions = response.subscriptions || []
         }
@@ -142,8 +184,21 @@ export const useSaldoStore = defineStore('saldo', {
           const now = new Date().getTime()
           const validData = []
           const toDelete = []
+          const { isGlobal } = useAppMode()
+          const targetCurrency = isGlobal.value ? 'USD' : 'IDR'
           
           for (const tx of data as any[]) {
+            // Determine transaction currency (fallback to detection if column null)
+            const txRef = tx.payment_gateway_ref || ''
+            const txDesc = tx.description || ''
+            const isUsdTrx = tx.currency === 'USD' || txRef.startsWith('NP-') || txRef.startsWith('USDT-') || txDesc.includes('USDT') || txDesc.includes('NOWPayments') || txDesc.includes('Binance')
+            const txCurrency = isUsdTrx ? 'USD' : 'IDR'
+
+            // Skip transaction if currency doesn't match current mode
+            if (txCurrency !== targetCurrency) {
+              continue
+            }
+
             if (tx.status === 'pending' && (tx.type === 'topup' || tx.type === 'subscription')) {
               const txTime = new Date(tx.created_at).getTime()
               // Jika lebih dari 60 menit (60 * 60 * 1000 ms)
