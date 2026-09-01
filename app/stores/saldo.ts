@@ -293,7 +293,11 @@ export const useSaldoStore = defineStore('saldo', {
           throw new Error('Gagal mendapatkan link pembayaran')
         }
       } catch (e: any) {
-        this.error = e.data?.statusMessage || e.data?.message || e.statusMessage || e.message || 'Terjadi kesalahan'
+        let rawError = e.data?.statusMessage || e.data?.message || e.statusMessage || e.message || 'Terjadi kesalahan'
+        if (typeof rawError === 'string' && (rawError.includes('<no response>') || rawError.includes('Load failed') || rawError.includes('Failed to fetch'))) {
+          rawError = 'Koneksi ke server pembayaran terputus atau timeout. Silakan periksa koneksi internet Anda atau coba beberapa saat lagi.'
+        }
+        this.error = rawError
         if (toast) {
           toast.addToast('Gagal Top Up: ' + this.error, 'error')
         } else {

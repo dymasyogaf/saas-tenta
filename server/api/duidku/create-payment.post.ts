@@ -50,7 +50,15 @@ export default defineEventHandler(async (event) => {
   const merchantCode = config.duidkuMerchantCode || process.env.DUIDKU_MERCHANT_CODE
   const apiKey = config.duidkuApiKey || process.env.DUIDKU_API_KEY
   const isProduction = process.env.DUIDKU_IS_PRODUCTION === 'true'
-  
+
+  if (!merchantCode || !apiKey) {
+    console.error('[Duitku] Error: Merchant Code atau API Key belum dikonfigurasi di Environment Variable')
+    throw createError({ 
+      statusCode: 500, 
+      statusMessage: 'Layanan pembayaran Duitku belum dikonfigurasi dengan benar di server.' 
+    })
+  }
+
   // 4. Siapkan Data Transaksi
   const merchantOrderId = `TP-${Date.now()}-${Math.floor(Math.random() * 1000)}`
   
@@ -100,7 +108,10 @@ export default defineEventHandler(async (event) => {
 
   payload.paymentMethod = method || 'OV' // 'OV' adalah kode untuk OVO
 
-  // 5. Kirim Request ke Duitku
+  // 5. Kirim Request ke Duitku dengan Timeout Controller (15 detik)
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => controller.abort(), 15000)
+
   try {
     const response = await fetch(endpoint, {
       method: 'POST',
@@ -108,8 +119,19 @@ export default defineEventHandler(async (event) => {
         'Content-Type': 'application/json',
         'Accept': 'application/json'
       },
-      body: JSON.stringify(payload)
+      body: JSON.stringify(payload),
+      signal: controller.signal
     })
+    clearTimeout(timeoutId)
+
+    if (!response.ok) {
+      const errText = await response.text().catch(() => '')
+      console.error('[Duitku] Gateway returned HTTP error:', response.status, errText)
+      throw createError({
+        statusCode: 502,
+        statusMessage: `Payment gateway Duitku merespon error (HTTP ${response.status}). Silakan coba beberapa saat lagi.`
+      })
+    }
 
     const result = await response.json()
 
@@ -219,7 +241,14 @@ export default defineEventHandler(async (event) => {
     }
 
   } catch (error: any) {
+    clearTimeout(timeoutId)
     console.error('Error create payment:', error)
+    if (error.name === 'AbortError') {
+      throw createError({
+        statusCode: 504,
+        statusMessage: 'Koneksi ke gateway pembayaran Duitku mengalami timeout (lebih dari 15 detik). Silakan coba beberapa saat lagi.'
+      })
+    }
     throw createError({
       statusCode: error.statusCode || 500,
       statusMessage: error.statusMessage || error.message || 'Terjadi kesalahan saat memproses pembayaran'
