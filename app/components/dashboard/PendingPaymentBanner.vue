@@ -91,32 +91,9 @@ const resumePayment = async (trx: any) => {
 
   // NOWPayments (USD / Crypto) Transaction
   if (isUsdTrx) {
-    let payAddress = pd?.payAddress
-    let payAmount = pd?.payAmount
-    let paymentId = pd?.paymentId
-
-    if (!payAddress) {
-      isResuming.value = true
-      try {
-        const response = await $fetch<any>('/api/nowpayments/create-payment', {
-          method: 'POST',
-          body: {
-            amount: trx.amount,
-            packageType: trx.package_selected || 'starter'
-          }
-        })
-        if (response && response.payAddress) {
-          payAddress = response.payAddress
-          payAmount = response.payAmount
-          paymentId = response.paymentId
-          pd = response
-        }
-      } catch (err) {
-        console.error('Failed to resume NOWPayments transaction:', err)
-      } finally {
-        isResuming.value = false
-      }
-    }
+    const payAddress = pd?.payAddress
+    const payAmount = pd?.payAmount
+    const paymentId = pd?.paymentId
 
     const rawAmt = parseFloat(String(payAmount || pd?.totalAmount || Number(trx.amount || 0) * 1.05))
     const roundedAmt = (!rawAmt || isNaN(rawAmt)) ? '31.50' : (Math.ceil(rawAmt * 2) / 2).toFixed(2)

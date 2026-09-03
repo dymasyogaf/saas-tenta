@@ -266,8 +266,7 @@ export const useSaldoStore = defineStore('saldo', {
             window.location.href = response.paymentUrl
           } else if (response.vaNumber || response.paymentCode) {
             // Virtual Account: redirect ke halaman custom kita sendiri
-            const router = useRouter()
-            await router.push({
+            await navigateTo({
               path: '/dashboard/topup/payment',
               query: {
                 orderId: response.merchantOrderId,

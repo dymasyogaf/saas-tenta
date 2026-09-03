@@ -573,6 +573,7 @@ import { useAppMode } from '~/composables/useAppMode'
 
 const { t, locale } = useI18n()
 const toast = useToast()
+const router = useRouter()
 const saldoStore = useSaldoStore()
 const adsStore = useAdsStore()
 const { csrf } = useCsrf()
@@ -1085,7 +1086,9 @@ const submitTopup = async () => {
         })
       }
     } catch (err: any) {
-      toast.addToast(err.statusMessage || 'Failed to create payment', 'error')
+      console.error('NOWPayments submit error:', err)
+      const msg = err.data?.statusMessage || err.data?.message || err.statusMessage || err.message || 'Failed to create payment'
+      toast.addToast(msg, 'error')
     } finally {
       saldoStore.isLoading = false
     }
