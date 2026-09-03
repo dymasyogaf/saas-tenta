@@ -10,7 +10,7 @@ export default defineEventHandler(async (event) => {
   }
 
   const config = useRuntimeConfig()
-  const apiKey = config.nowpaymentsApiKey
+  const apiKey = config.nowpaymentsApiKey || process.env.NOWPAYMENTS_API_KEY || process.env.NUXT_NOWPAYMENTS_API_KEY
 
   if (!apiKey) {
     throw createError({ statusCode: 500, statusMessage: 'NOWPayments API Key not configured' })
