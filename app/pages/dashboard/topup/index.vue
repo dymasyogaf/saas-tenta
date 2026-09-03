@@ -481,7 +481,13 @@
               <p class="text-xs text-ink-500 mb-2">{{ $t('topup.rangeLabel', { min: formatRupiah(packageInfo.min), max: packageInfo.max === Infinity ? $t('topup.unlimited') : formatRupiah(packageInfo.max) }) }}</p>
               <div class="relative">
                 <span class="absolute left-4 top-1/2 -translate-y-1/2 text-ink-500 font-medium text-lg">{{ isGlobal ? '$' : 'Rp' }}</span>
-                <input type="text" v-model="formattedTopupAmount" class="w-full pl-12 pr-4 py-3 bg-white border-2 border-ink-200 rounded-xl focus:outline-none focus:border-orange-500 focus:ring-4 focus:ring-orange-500/20 font-bold text-ink-900 text-lg transition-all" />
+                <input 
+                  type="text" 
+                  inputmode="numeric"
+                  :value="formattedTopupAmount" 
+                  @input="onAmountInput"
+                  class="w-full pl-12 pr-4 py-3 bg-white border-2 border-ink-200 rounded-xl focus:outline-none focus:border-orange-500 focus:ring-4 focus:ring-orange-500/20 font-bold text-ink-900 text-lg transition-all" 
+                />
               </div>
               <p v-if="!isValidTopup && topupAmount" class="text-xs font-medium text-red-500 mt-1.5">
                 {{ $t('topup.invalidNominal', { package: effectivePackage.charAt(0).toUpperCase() + effectivePackage.slice(1), min: formatRupiah(packageInfo.min), max: packageInfo.max === Infinity ? $t('topup.unlimited') : formatRupiah(packageInfo.max) }) }}
@@ -874,17 +880,52 @@ const activeRentals = computed(() => {
 
 const formattedTopupAmount = computed({
   get: () => {
-    if (!topupAmount.value) return ''
+    if (topupAmount.value === '' || topupAmount.value === null || topupAmount.value === undefined) return ''
     if (isGlobal.value) {
       return new Intl.NumberFormat('en-US').format(Number(topupAmount.value))
     }
     return new Intl.NumberFormat('id-ID').format(Number(topupAmount.value))
   },
   set: (val: string) => {
-    const numericString = val.replace(/[^0-9.]/g, '')
-    topupAmount.value = numericString ? Number(numericString) : ''
+    if (!val) {
+      topupAmount.value = ''
+      return
+    }
+    if (isGlobal.value) {
+      // USD mode: allow numbers and single decimal dot
+      const cleanStr = val.replace(/,/g, '').replace(/[^0-9.]/g, '')
+      topupAmount.value = cleanStr ? Number(cleanStr) : ''
+    } else {
+      // IDR mode: strip all non-digits (id-ID uses dots as thousand separators)
+      const digitsOnly = val.replace(/\D/g, '')
+      topupAmount.value = digitsOnly ? Number(digitsOnly) : ''
+    }
   }
 })
+
+const onAmountInput = (e: Event) => {
+  const inputEl = e.target as HTMLInputElement
+  const rawValue = inputEl.value
+
+  if (!rawValue) {
+    topupAmount.value = ''
+    inputEl.value = ''
+    return
+  }
+
+  if (isGlobal.value) {
+    const cleanStr = rawValue.replace(/,/g, '').replace(/[^0-9.]/g, '')
+    topupAmount.value = cleanStr ? Number(cleanStr) : ''
+  } else {
+    const digitsOnly = rawValue.replace(/\D/g, '')
+    topupAmount.value = digitsOnly ? Number(digitsOnly) : ''
+  }
+
+  // Force DOM element to display formatted number immediately, blocking any typed letters
+  nextTick(() => {
+    inputEl.value = formattedTopupAmount.value
+  })
+}
 
 const effectivePackage = computed(() => {
   if (selectedPackage.value) return selectedPackage.value
@@ -1021,10 +1062,27 @@ const submitTopup = async () => {
         }
       })
       if (response && response.success) {
-        // Open in-app QR modal instead of redirecting
-        nowPaymentData.value = response
-        isQRModalOpen.value = true
         isTopupModalOpen.value = false
+        const rawPay = response.payAmount ? parseFloat(String(response.payAmount)) : Number(response.totalAmount)
+        const roundedPay = (!rawPay || isNaN(rawPay)) ? '31.50' : (Math.ceil(rawPay * 2) / 2).toFixed(2)
+
+        router.push({
+          path: '/dashboard/topup/payment',
+          query: {
+            orderId: response.merchantOrderId,
+            paymentId: response.paymentId,
+            ref: response.merchantOrderId,
+            payAddress: response.payAddress,
+            payAmount: roundedPay,
+            method: 'USDT TRC-20 (Crypto)',
+            bank: 'USDT TRC-20',
+            amount: String(response.totalAmount),
+            net: String(response.netAmount),
+            fee: String(response.feeAmount),
+            pkg: response.packageType,
+            createdAt: new Date().toISOString()
+          }
+        })
       }
     } catch (err: any) {
       toast.addToast(err.statusMessage || 'Failed to create payment', 'error')

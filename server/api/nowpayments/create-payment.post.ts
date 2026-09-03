@@ -73,6 +73,10 @@ export default defineEventHandler(async (event) => {
       })
     }
 
+    // Round up USDT pay_amount to nearest 0.50 step (e.g., 1.23 -> 1.50, 31.37 -> 31.50)
+    const rawPayAmount = result.pay_amount ? parseFloat(result.pay_amount) : paymentAmount
+    const finalPayAmount = Math.ceil(rawPayAmount * 2) / 2
+
     // Save transaction to DB
     const { error: dbError } = await supabase
       .from('transactions')
@@ -85,7 +89,18 @@ export default defineEventHandler(async (event) => {
         status: 'pending',
         currency: 'USD',
         payment_gateway_ref: merchantOrderId,
-        description: `Deposit Layanan Iklan (USD) via USDT TRC-20 (Paket ${selectedPkg})`
+        description: `Deposit Layanan Iklan (USD) via USDT TRC-20 (Paket ${selectedPkg})`,
+        payment_data: {
+          paymentId: result.payment_id,
+          payAddress: result.pay_address,
+          payAmount: finalPayAmount,
+          merchantOrderId,
+          netAmount,
+          feeAmount,
+          totalAmount: paymentAmount,
+          packageType: selectedPkg,
+          expirationEstimate: new Date(Date.now() + 60 * 60 * 1000).toISOString()
+        }
       })
 
     if (dbError) {
@@ -97,7 +112,7 @@ export default defineEventHandler(async (event) => {
       success: true,
       paymentId: result.payment_id,
       payAddress: result.pay_address,
-      payAmount: result.pay_amount,
+      payAmount: finalPayAmount,
       merchantOrderId,
       netAmount,
       feeAmount,

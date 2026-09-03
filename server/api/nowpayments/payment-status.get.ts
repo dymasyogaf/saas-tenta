@@ -1,3 +1,6 @@
+import { serverSupabaseServiceRole } from '#supabase/server'
+import { syncUserHighestPackage } from '../../utils/packageSync'
+
 export default defineEventHandler(async (event) => {
   const query = getQuery(event)
   const paymentId = query.paymentId as string
@@ -29,6 +32,42 @@ export default defineEventHandler(async (event) => {
         statusCode: response.status,
         statusMessage: result.message || 'Failed to check payment status'
       })
+    }
+
+    // If payment confirmed/finished, sync database and credit USD balance immediately
+    if (['finished', 'confirmed'].includes(result.payment_status) && result.order_id) {
+      try {
+        const supabase = serverSupabaseServiceRole<any>(event)
+        const { data: trx } = await supabase
+          .from('transactions')
+          .select('id, user_id, amount, status')
+          .eq('payment_gateway_ref', result.order_id)
+          .maybeSingle()
+
+        if (trx && trx.status === 'pending') {
+          await supabase
+            .from('transactions')
+            .update({ status: 'success', currency: 'USD', updated_at: new Date().toISOString() })
+            .eq('id', trx.id)
+
+          const { data: saldo } = await supabase
+            .from('saldo')
+            .select('usd_balance')
+            .eq('user_id', trx.user_id)
+            .maybeSingle()
+
+          const currentUsd = Number(saldo?.usd_balance || 0)
+          const newUsd = currentUsd + Number(trx.amount || 0)
+
+          await supabase
+            .from('saldo')
+            .upsert({ user_id: trx.user_id, usd_balance: newUsd, updated_at: new Date().toISOString() }, { onConflict: 'user_id' })
+
+          await syncUserHighestPackage(supabase, trx.user_id)
+        }
+      } catch (err) {
+        console.error('Failed to sync NOWPayments status to DB:', err)
+      }
     }
 
     return {

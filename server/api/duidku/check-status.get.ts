@@ -66,8 +66,8 @@ export default defineEventHandler(async (event) => {
     const { data: transaction, error: fetchTxError } = await supabase
       .from('transactions')
       .select('*, user_id')
-      .eq('payment_gateway_ref', reference)
-      .single()
+      .or(`payment_gateway_ref.eq.${merchantOrderId},payment_gateway_ref.eq.${reference}`)
+      .maybeSingle()
 
     if (fetchTxError || !transaction) {
       return { 

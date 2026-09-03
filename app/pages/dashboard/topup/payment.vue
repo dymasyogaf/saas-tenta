@@ -30,16 +30,19 @@
             </div>
 
             <div class="result-badge result-badge--success">
-              <Sparkles class="w-3 h-3" /> Transaksi Selesai
+              <Sparkles class="w-3 h-3" /> Transaction Complete
             </div>
 
-            <h2 class="payment-result__title">Pembayaran Berhasil!</h2>
-            <p class="payment-result__subtitle">Pembayaran layanan manajemen iklan digital berhasil.</p>
+            <h2 class="payment-result__title">Payment Successful!</h2>
+            <p class="payment-result__subtitle">
+              Your balance of <strong class="text-ink-900 font-semibold">{{ displayAmount(Number(route.query.net)) }}</strong> has been credited to your account balance.
+            </p>
 
-            <div class="result-amount-box result-amount-box--success">
-              <p class="result-amount-box__label">Nilai Layanan</p>
+            <!-- Success Amount Card -->
+            <div class="result-amount-box">
+              <p class="result-amount-box__label">Inbound Balance</p>
               <p class="result-amount-box__value result-amount-box__value--success">
-                {{ formatRupiah(Number(route.query.net)) }}
+                {{ displayAmount(Number(route.query.net)) }}
               </p>
             </div>
 
@@ -47,7 +50,7 @@
             <div class="result-receipt">
               <div class="result-receipt__header">
                 <Receipt class="w-4 h-4 text-ink-400" />
-                <span>Detail Transaksi</span>
+                <span>Transaction Details</span>
               </div>
               <div class="result-receipt__body">
                 <div class="result-receipt__row">
@@ -55,32 +58,32 @@
                   <span class="font-mono text-ink-900">{{ truncateRef(route.query.orderId as string) }}</span>
                 </div>
                 <div class="result-receipt__row">
-                  <span>Referensi</span>
+                  <span>Reference</span>
                   <span class="font-mono text-ink-900">{{ truncateRef(route.query.ref as string) }}</span>
                 </div>
                 <div class="result-receipt__row">
-                  <span>Metode</span>
+                  <span>Method</span>
                   <span class="text-ink-900 font-semibold">{{ route.query.method }}</span>
                 </div>
                 <div class="result-receipt__row">
-                  <span>Paket</span>
+                  <span>Package</span>
                   <span class="payment-pkg-badge capitalize">{{ route.query.pkg }}</span>
                 </div>
                 <div class="result-receipt__divider"></div>
                 <div class="result-receipt__row">
-                  <span>Nilai Layanan</span>
-                  <span class="text-green-600 font-bold">{{ formatRupiah(Number(route.query.net)) }}</span>
+                  <span>Inbound Balance</span>
+                  <span class="text-green-600 font-bold">{{ displayAmount(Number(route.query.net)) }}</span>
                 </div>
                 <div class="result-receipt__row">
-                  <span>Biaya Layanan</span>
-                  <span class="text-ink-700 font-semibold">{{ formatRupiah(Number(route.query.fee)) }}</span>
+                  <span>Service Fee</span>
+                  <span class="text-ink-700 font-semibold">{{ displayAmount(Number(route.query.fee)) }}</span>
                 </div>
                 <div class="result-receipt__row">
-                  <span>Total Dibayar</span>
-                  <span class="text-ink-900 font-bold">{{ formatRupiah(Number(route.query.amount)) }}</span>
+                  <span>Total Paid</span>
+                  <span class="text-ink-900 font-bold">{{ displayAmount(Number(route.query.amount)) }}</span>
                 </div>
                 <div class="result-receipt__row">
-                  <span>Waktu</span>
+                  <span>Time</span>
                   <span class="text-ink-700">{{ currentTime }}</span>
                 </div>
               </div>
@@ -89,10 +92,10 @@
             <div class="result-actions print:hidden">
               <button @click="isInvoiceModalOpen = true" class="payment-btn payment-btn--primary bg-white text-ink-900 border border-ink-200 hover:bg-ink-50">
                 <FileText class="w-4 h-4" />
-                Lihat Invoice
+                View Invoice
               </button>
               <NuxtLink to="/dashboard" class="payment-btn payment-btn--ghost">
-                Kembali
+                Back
               </NuxtLink>
             </div>
           </div>
@@ -108,16 +111,16 @@
             </div>
 
             <div class="result-badge result-badge--failed">
-              {{ isExpired ? 'Waktu Habis' : 'Gagal' }}
+              {{ isExpired ? 'Expired' : 'Failed' }}
             </div>
 
             <h2 class="payment-result__title">
-              {{ isExpired ? 'Waktu Pembayaran Habis' : 'Pembayaran Gagal' }}
+              {{ isExpired ? 'Payment Session Expired' : 'Payment Failed' }}
             </h2>
             <p class="payment-result__subtitle">
               {{ isExpired
-                ? 'Sesi pembayaran sudah berakhir. Tidak ada dana yang didebit dari rekening Anda.'
-                : 'Transaksi tidak berhasil diproses. Silakan coba lagi dengan transaksi baru.'
+                ? 'Payment session has expired. No funds were debited from your account.'
+                : 'Transaction failed to process. Please try creating a new transaction.'
               }}
             </p>
 
@@ -128,8 +131,8 @@
                   <span class="font-mono text-ink-900">{{ truncateRef(route.query.orderId as string) }}</span>
                 </div>
                 <div class="result-receipt__row">
-                  <span>Nominal</span>
-                  <span class="text-ink-900 font-bold">{{ formatRupiah(Number(route.query.amount)) }}</span>
+                  <span>Amount</span>
+                  <span class="text-ink-900 font-bold">{{ displayAmount(Number(route.query.amount)) }}</span>
                 </div>
               </div>
             </div>
@@ -137,10 +140,10 @@
             <div class="result-actions">
               <NuxtLink to="/dashboard/topup" class="payment-btn payment-btn--primary">
                 <RefreshCw class="w-4 h-4" />
-                Buat Transaksi Baru
+                Create New Transaction
               </NuxtLink>
               <NuxtLink to="/dashboard" class="payment-btn payment-btn--ghost">
-                Kembali ke Dashboard
+                Return to Dashboard
               </NuxtLink>
             </div>
           </div>
@@ -153,17 +156,17 @@
           <div class="payment-steps">
             <div class="payment-step payment-step--done">
               <div class="payment-step__circle"><CheckCircle class="w-4 h-4" /></div>
-              <span class="payment-step__label">Buat Pesanan</span>
+              <span class="payment-step__label">Create Order</span>
             </div>
             <div class="payment-step__line payment-step__line--active"></div>
             <div class="payment-step payment-step--active">
               <div class="payment-step__circle"><Clock class="w-4 h-4" /></div>
-              <span class="payment-step__label">Menunggu Bayar</span>
+              <span class="payment-step__label">Pending Payment</span>
             </div>
             <div class="payment-step__line"></div>
             <div class="payment-step">
               <div class="payment-step__circle"><Sparkles class="w-4 h-4" /></div>
-              <span class="payment-step__label">Saldo Masuk</span>
+              <span class="payment-step__label">Balance Credited</span>
             </div>
           </div>
 
@@ -184,7 +187,7 @@
                   </div>
                 </div>
                 <div>
-                  <p class="payment-timer__label">Selesaikan pembayaran dalam</p>
+                  <p class="payment-timer__label">Complete payment within</p>
                   <p :class="['payment-timer__time', timeLeft < 300 ? 'payment-timer__time--urgent' : '']">
                     {{ formattedTime }}
                   </p>
@@ -195,20 +198,20 @@
             <!-- Amount Section -->
             <div class="payment-amount-section">
               <div class="payment-amount">
-                <p class="payment-amount__label">Total Pembayaran</p>
-                <p class="payment-amount__value">{{ formatRupiah(Number(route.query.amount)) }}</p>
+                <p class="payment-amount__label">Total Payment</p>
+                <p class="payment-amount__value">{{ displayAmount(Number(route.query.amount)) }}</p>
               </div>
               <div class="payment-amount-breakdown">
                 <div class="payment-amount-breakdown__row">
-                  <span>Saldo yang akan masuk</span>
-                  <span class="text-green-600 font-semibold">+{{ formatRupiah(Number(route.query.net)) }}</span>
+                  <span>Inbound Balance</span>
+                  <span class="text-green-600 font-semibold">+{{ displayAmount(Number(route.query.net)) }}</span>
                 </div>
                 <div class="payment-amount-breakdown__row">
-                  <span>Biaya layanan</span>
-                  <span class="font-semibold">{{ formatRupiah(Number(route.query.fee)) }}</span>
+                  <span>Service Fee</span>
+                  <span class="font-semibold">{{ displayAmount(Number(route.query.fee)) }}</span>
                 </div>
                 <div class="payment-amount-breakdown__row">
-                  <span>Paket</span>
+                  <span>Package</span>
                   <span class="payment-pkg-badge capitalize">{{ route.query.pkg }}</span>
                 </div>
               </div>
@@ -221,40 +224,92 @@
               <div class="payment-divider__notch payment-divider__notch--right"></div>
             </div>
 
-            <!-- VA Section -->
-            <div class="payment-va-section">
+            <!-- Deposit Section (Crypto USDT TRC-20 or Duidku VA) -->
+            <div v-if="isCrypto" class="payment-va-section">
+              <!-- Loading State -->
+              <div v-if="isFetchingAddress" class="p-8 text-center space-y-3 bg-white rounded-2xl border border-slate-200/90 shadow-sm my-2">
+                <div class="w-8 h-8 border-3 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
+                <p class="text-xs font-semibold text-slate-600">Generating secure USDT TRC-20 deposit address...</p>
+              </div>
+
+              <template v-else>
+                <!-- QR Code Box -->
+                <div class="bg-white p-4 rounded-2xl border border-slate-200/90 shadow-sm text-center mb-1">
+                  <img v-if="cryptoQRUrl" :src="cryptoQRUrl" alt="USDT TRC-20 Deposit QR" class="w-48 h-48 sm:w-56 sm:h-56 rounded-xl mx-auto object-contain" />
+                  <p class="text-[11px] font-semibold text-slate-500 mt-2.5">Scan QR using your Crypto Wallet App (Binance, Indodax, Tokocrypto, TrustWallet)</p>
+                </div>
+
+                <!-- Exact Amount Box -->
+                <div class="payment-va__number-box">
+                  <div class="flex items-center justify-between mb-1.5">
+                    <p class="payment-va__number-label mb-0">Exact Amount to Send</p>
+                    <span class="text-[10px] font-bold px-2 py-0.5 bg-orange-100 text-orange-700 rounded-md border border-orange-200">USDT TRC-20</span>
+                  </div>
+                  <div class="payment-va__number-row">
+                    <span class="text-xl sm:text-2xl font-black font-mono text-slate-900 tracking-tight">
+                      {{ payAmount }} <span class="text-xs font-bold text-orange-600">USDT</span>
+                    </span>
+                    <button @click="copyAmountText" :class="['payment-va__copy-btn', copiedAmount ? 'payment-va__copy-btn--copied' : '']">
+                      <component :is="copiedAmount ? CheckCircle : Copy" class="w-4 h-4" />
+                      {{ copiedAmount ? 'Copied!' : 'Copy Amount' }}
+                    </button>
+                  </div>
+                </div>
+
+                <!-- TRC-20 Address Box -->
+                <div class="payment-va__number-box">
+                  <p class="payment-va__number-label">TRC-20 Wallet Deposit Address</p>
+                  <div class="payment-va__number-row">
+                    <span class="text-xs sm:text-sm font-bold font-mono text-slate-900 break-all select-all leading-relaxed flex-1 pr-2">{{ payAddress }}</span>
+                    <button @click="copyAddressText" :class="['payment-va__copy-btn', copiedAddress ? 'payment-va__copy-btn--copied' : '']">
+                      <component :is="copiedAddress ? CheckCircle : Copy" class="w-4 h-4 shrink-0" />
+                      {{ copiedAddress ? 'Copied!' : 'Copy Address' }}
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Network Warning -->
+                <div class="payment-va__warning">
+                  <AlertTriangle class="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                  <p>Send <strong>ONLY via TRC-20 (Tron) network</strong>. Do not use BEP-20 or ERC-20 to avoid permanent loss.</p>
+                </div>
+              </template>
+            </div>
+
+            <!-- Duidku VA Section (IDR) -->
+            <div v-else class="payment-va-section">
               <!-- Bank Info -->
               <div class="payment-va__bank">
                 <img v-if="bankLogo" :src="bankLogo" :alt="route.query.method as string" class="payment-va__bank-logo" />
                 <div>
                   <p class="payment-va__bank-name">{{ route.query.method }}</p>
-                  <p v-if="route.query.bankCode" class="payment-va__bank-code">Kode Bank: {{ route.query.bankCode }}</p>
+                  <p v-if="route.query.bankCode" class="payment-va__bank-code">Bank Code: {{ route.query.bankCode }}</p>
                 </div>
               </div>
 
               <!-- VA Number -->
               <div class="payment-va__number-box">
-                <p class="payment-va__number-label">Nomor Virtual Account</p>
+                <p class="payment-va__number-label">Virtual Account Number</p>
                 <div class="payment-va__number-row">
                   <span class="payment-va__number">{{ formatVA(route.query.va as string) }}</span>
                   <button @click="copyVA" :class="['payment-va__copy-btn', copied ? 'payment-va__copy-btn--copied' : '']">
                     <component :is="copied ? CheckCircle : Copy" class="w-4 h-4" />
-                    {{ copied ? 'Tersalin!' : 'Salin' }}
+                    {{ copied ? 'Copied!' : 'Copy' }}
                   </button>
                 </div>
               </div>
 
-              <!-- Penting -->
+              <!-- Warning -->
               <div class="payment-va__warning">
                 <AlertTriangle class="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
-                <p>Transfer tepat sesuai nominal <strong>{{ formatRupiah(Number(route.query.amount)) }}</strong> agar pembayaran terverifikasi otomatis.</p>
+                <p>Transfer the exact amount <strong>{{ formatRupiah(Number(route.query.amount)) }}</strong> for automatic verification.</p>
               </div>
             </div>
 
             <!-- Status Indicator -->
             <div class="payment-status-bar">
               <div :class="['payment-status-dot', isChecking ? 'payment-status-dot--checking' : 'payment-status-dot--idle']"></div>
-              <span>{{ isChecking ? 'Mengecek pembayaran...' : 'Menunggu pembayaran' }}</span>
+              <span>{{ isChecking ? 'Checking payment status...' : 'Awaiting payment' }}</span>
             </div>
 
             <!-- Instructions Accordion -->
@@ -262,13 +317,13 @@
               <button @click="isInstructionOpen = !isInstructionOpen" class="payment-instructions__toggle">
                 <div class="payment-instructions__toggle-left">
                   <BookOpen class="w-4 h-4 text-orange-500" />
-                  <span>Panduan Pembayaran</span>
+                  <span>Payment Guide</span>
                 </div>
                 <ChevronDown :class="['w-4 h-4 text-ink-400 transition-transform duration-300', isInstructionOpen ? 'rotate-180' : '']" />
               </button>
 
               <div v-show="isInstructionOpen" class="payment-instructions__body">
-                <div v-if="currentBankInstructions" class="payment-instructions__content">
+                <div v-if="currentInstructions && currentInstructions.length > 0" class="payment-instructions__content">
                   <!-- Channel Tabs -->
                   <div class="payment-instructions__tabs">
                     <button
@@ -290,19 +345,23 @@
                   </ol>
                 </div>
                 <p v-else class="payment-instructions__empty">
-                  Silakan bayar sesuai instruksi di mesin ATM atau mobile banking bank Anda.
+                  {{ isCrypto ? 'Please transfer USDT via TRC-20 network using your crypto app.' : 'Please pay according to instructions on your ATM machine or mobile banking app.' }}
                 </p>
               </div>
             </div>
 
             <!-- Actions -->
-            <div class="payment-actions">
-              <button @click="checkStatusManual" :disabled="isChecking" class="payment-btn payment-btn--outline">
+            <div class="payment-actions flex-wrap">
+              <button @click="checkStatusManual" :disabled="isChecking" class="payment-btn payment-btn--outline flex-1">
                 <RefreshCw :class="['w-4 h-4', isChecking ? 'animate-spin' : '']" />
-                {{ isChecking ? 'Mengecek...' : 'Cek Status Pembayaran' }}
+                {{ isChecking ? 'Checking...' : 'Check Payment Status' }}
               </button>
-              <NuxtLink to="/dashboard/topup" class="payment-btn payment-btn--ghost">
-                Batalkan & Kembali
+              <button @click="isInvoiceModalOpen = true" class="payment-btn payment-btn--primary bg-white text-ink-900 border border-ink-200 hover:bg-ink-50 flex-1">
+                <FileText class="w-4 h-4 text-orange-500" />
+                View Invoice
+              </button>
+              <NuxtLink to="/dashboard/topup" class="payment-btn payment-btn--ghost w-full">
+                Cancel & Return
               </NuxtLink>
             </div>
           </div>
@@ -311,17 +370,17 @@
           <div class="payment-trust">
             <div class="payment-trust__item">
               <ShieldCheck class="w-4 h-4 text-green-500" />
-              <span>Transaksi Aman</span>
+              <span>Secure Transaction</span>
             </div>
             <div class="payment-trust__divider"></div>
             <div class="payment-trust__item">
               <Lock class="w-4 h-4 text-blue-500" />
-              <span>Data Terenkripsi</span>
+              <span>Encrypted Data</span>
             </div>
             <div class="payment-trust__divider"></div>
             <div class="payment-trust__item">
               <Zap class="w-4 h-4 text-orange-500" />
-              <span>Verifikasi Otomatis</span>
+              <span>Automatic Verification</span>
             </div>
           </div>
         </div>
@@ -351,6 +410,61 @@ const router = useRouter()
 const toast = useToast()
 const saldoStore = useSaldoStore()
 
+// ─── Crypto & VA Helpers ─────────────────────────────────────────────────────
+const isCrypto = computed(() => {
+  const method = String(route.query.method || '').toLowerCase()
+  const orderId = String(route.query.orderId || '')
+  const bank = String(route.query.bank || '').toLowerCase()
+  return method.includes('usdt') || method.includes('trc') || method.includes('crypto') || orderId.startsWith('NP-') || bank.includes('usdt') || bank.includes('np')
+})
+
+const isFetchingAddress = ref(false)
+const fetchedPayAddress = ref('')
+const fetchedPayAmount = ref('')
+
+const payAddress = computed(() => {
+  return (fetchedPayAddress.value || route.query.payAddress || route.query.address || route.query.va || '') as string
+})
+
+const payAmount = computed(() => {
+  if (fetchedPayAmount.value) return fetchedPayAmount.value
+  const rawStr = route.query.payAmount || route.query.pay_amount || route.query.amount || '0'
+  const val = parseFloat(String(rawStr))
+  if (!val || isNaN(val)) return '0.00'
+  const rounded = Math.ceil(val * 2) / 2
+  return rounded.toFixed(2)
+})
+
+const cryptoQRUrl = computed(() => {
+  if (!payAddress.value) return ''
+  const address = encodeURIComponent(payAddress.value)
+  return `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${address}&margin=8`
+})
+
+const copiedAddress = ref(false)
+const copiedAmount = ref(false)
+
+const copyAddressText = () => {
+  if (!payAddress.value) return
+  navigator.clipboard.writeText(payAddress.value)
+  copiedAddress.value = true
+  setTimeout(() => { copiedAddress.value = false }, 2500)
+}
+
+const copyAmountText = () => {
+  if (!payAmount.value) return
+  navigator.clipboard.writeText(payAmount.value)
+  copiedAmount.value = true
+  setTimeout(() => { copiedAmount.value = false }, 2500)
+}
+
+const displayAmount = (num: number) => {
+  if (isCrypto.value) {
+    return `$${Number(num || 0).toFixed(2)} USD`
+  }
+  return formatRupiah(Number(num || 0))
+}
+
 // ─── State ───────────────────────────────────────────────────────────────────
 const paymentStatus = ref<'pending' | 'success' | 'failed'>('pending')
 const isChecking = ref(false)
@@ -361,14 +475,20 @@ const isInvoiceModalOpen = ref(false)
 const invoiceTransaction = computed(() => {
   return {
     id: route.query.orderId || route.query.ref,
+    status: paymentStatus.value === 'success' ? 'success' : (paymentStatus.value === 'failed' || isExpired.value ? 'failed' : 'pending'),
     created_at: route.query.createdAt || new Date().toISOString(),
-    amount: route.query.net,
-    fee_amount: route.query.fee,
-    description: `Layanan Manajemen Iklan Digital - Paket ${route.query.pkg}`,
+    amount: Number(route.query.net || route.query.amount || 0),
+    fee_amount: Number(route.query.fee || 0),
+    currency: isCrypto.value ? 'USD' : 'IDR',
+    description: isCrypto.value 
+      ? `Digital Ad Management Deposit (USD) - Package ${route.query.pkg || 'starter'}` 
+      : `Layanan Manajemen Iklan Digital - Paket ${route.query.pkg}`,
     payment_data: {
-      merchantOrderId: route.query.orderId,
-      paymentName: route.query.method,
-      method: route.query.bank
+      merchantOrderId: route.query.orderId || route.query.ref,
+      paymentName: route.query.method || (isCrypto.value ? 'USDT TRC-20 (Crypto)' : 'Transfer Bank'),
+      method: route.query.bank || 'USDT TRC-20',
+      payAddress: payAddress.value,
+      payAmount: payAmount.value
     }
   }
 })
@@ -415,18 +535,18 @@ const copyVA = () => {
   setTimeout(() => { copied.value = false }, 2500)
 }
 
-const truncateRef = (ref: string) => {
-  if (!ref) return '-'
-  if (ref.length <= 16) return ref
-  return ref.substring(0, 8) + '...' + ref.substring(ref.length - 6)
-}
-
 const currentTime = computed(() => {
   return new Intl.DateTimeFormat('id-ID', {
     day: '2-digit', month: 'short', year: 'numeric',
     hour: '2-digit', minute: '2-digit'
   }).format(new Date())
 })
+
+const truncateRef = (ref: string) => {
+  if (!ref) return '-'
+  if (ref.length <= 16) return ref
+  return ref.substring(0, 8) + '...' + ref.substring(ref.length - 6)
+}
 
 const confettiColors = ['#f97316', '#22c55e', '#3b82f6', '#eab308', '#ec4899', '#8b5cf6']
 const confettiStyle = (i: number) => {
@@ -579,43 +699,85 @@ const vaInstructions: Record<string, Record<string, string[]>> = {
 }
 
 const currentBankInstructions = computed(() => {
-  return vaInstructions[route.query.bank as string] || null
+  if (isCrypto.value) {
+    return {
+      mobile: [
+        'Open your Crypto App (Binance, Indodax, Tokocrypto, TrustWallet, etc.)',
+        'Select "Withdraw" or "Send" and choose USDT',
+        'Choose Network: TRC-20 (Tron / TRON Network)',
+        `Scan QR Code or paste Deposit Address: ${payAddress.value}`,
+        `Enter exact amount: ${payAmount.value} USDT`,
+        'Confirm transaction and enter your PIN/2FA code',
+        'Payment verified automatically upon 1 blockchain confirmation'
+      ],
+      atm: [
+        'Login to your Crypto Exchange account',
+        'Navigate to Wallet -> Fiat and Crypto -> Withdraw',
+        'Select USDT currency',
+        'Select TRC-20 network (Do NOT use BEP-20 or ERC-20)',
+        `Paste Deposit Address: ${payAddress.value}`,
+        `Input Withdrawal Amount: ${payAmount.value} USDT`,
+        'Submit withdrawal request'
+      ],
+      internet: [
+        'Open your Web3 Wallet or Exchange web dashboard',
+        'Go to Transfer / Send USDT',
+        `Paste TRC-20 Address: ${payAddress.value}`,
+        `Specify Amount: ${payAmount.value} USDT`,
+        'Approve the transaction and keep receipt'
+      ]
+    }
+  }
+  const bank = (route.query.bank as string) || 'M2'
+  return vaInstructions[bank] || vaInstructions['M2']
 })
 
 const currentInstructions = computed(() => {
-  const bankInstr = currentBankInstructions.value
-  if (!bankInstr) return []
-  return bankInstr[activeInstructionTab.value] || []
+  const bank = currentBankInstructions.value
+  if (!bank) return []
+  return bank[activeInstructionTab.value as keyof typeof bank] || []
 })
 
 // ─── Check Status ─────────────────────────────────────────────────────────────
 const checkStatus = async () => {
-  const orderId = route.query.orderId as string
-  if (!orderId || isChecking.value) return
-
+  if (isChecking.value) return
   isChecking.value = true
   try {
-    const res = await $fetch<any>('/api/duidku/check-status', {
-      params: { orderId }
-    })
-
-    if (res.status === 'success') {
-      paymentStatus.value = 'success'
-      stopPolling()
-      await saldoStore.fetchSaldo()
-      await saldoStore.fetchTransactions()
-      await saldoStore.fetchActiveSubscriptions()
-    } else if (res.status === 'failed') {
-      paymentStatus.value = 'failed'
-      stopPolling()
-      await saldoStore.fetchTransactions()
+    if (isCrypto.value) {
+      const res = await $fetch<any>('/api/nowpayments/payment-status', {
+        params: { paymentId: route.query.paymentId || route.query.orderId }
+      })
+      if (['finished', 'confirmed'].includes(res?.status)) {
+        paymentStatus.value = 'success'
+        stopPolling()
+        await saldoStore.fetchSaldo()
+        await saldoStore.fetchTransactions()
+      } else if (['failed', 'expired'].includes(res?.status)) {
+        paymentStatus.value = 'failed'
+        stopPolling()
+      }
+    } else {
+      const res = await $fetch<any>('/api/duidku/check-status', {
+        method: 'GET',
+        params: { orderId: route.query.orderId || route.query.ref }
+      })
+      if (res?.status === 'success') {
+        paymentStatus.value = 'success'
+        stopPolling()
+        await saldoStore.fetchSaldo()
+        await saldoStore.fetchTransactions()
+        await saldoStore.fetchActiveSubscriptions()
+      } else if (res?.status === 'failed') {
+        paymentStatus.value = 'failed'
+        stopPolling()
+        await saldoStore.fetchTransactions()
+      }
     }
   } catch (e: any) {
     if (e.response && e.response.status === 400) {
       console.error('Invalid request to check status, stopping poll:', e)
       stopPolling()
     }
-    // Tetap polling jika error jaringan/500
   } finally {
     isChecking.value = false
   }
@@ -632,10 +794,32 @@ const stopPolling = () => {
   clearInterval(timerInterval)
 }
 
-onMounted(() => {
-  if (!route.query.orderId || !route.query.va) {
+onMounted(async () => {
+  if (!route.query.orderId) {
     router.replace('/dashboard/topup')
     return
+  }
+
+  // Auto-generate deposit address if missing for crypto payment
+  if (isCrypto.value && !payAddress.value) {
+    isFetchingAddress.value = true
+    try {
+      const response = await $fetch<any>('/api/nowpayments/create-payment', {
+        method: 'POST',
+        body: {
+          amount: Number(route.query.net || route.query.amount || 30),
+          packageType: String(route.query.pkg || 'starter')
+        }
+      })
+      if (response && response.payAddress) {
+        fetchedPayAddress.value = response.payAddress
+        fetchedPayAmount.value = (Math.ceil(Number(response.payAmount || response.totalAmount) * 2) / 2).toFixed(2)
+      }
+    } catch (err) {
+      console.error('Failed to auto-generate deposit address:', err)
+    } finally {
+      isFetchingAddress.value = false
+    }
   }
 
   timerInterval = setInterval(() => {
@@ -645,8 +829,6 @@ onMounted(() => {
       stopPolling()
     }
   }, 1000)
-
-
 
   checkStatus()
 })
@@ -713,7 +895,7 @@ onUnmounted(() => {
   position: relative;
   z-index: 1;
   width: 100%;
-  max-width: 480px;
+  max-width: 560px;
 }
 
 /* ─── Progress Steps ──────────────────────────────────────── */
