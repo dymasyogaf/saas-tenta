@@ -416,9 +416,10 @@ const submitTicket = async () => {
       payload.subject = `[${customCategory.value}] ${payload.subject}`
     }
 
+    const csrfToken = unref(csrf) || ''
     const res = await $fetch('/api/support/tickets', {
       method: 'POST',
-      headers: { 'csrf-token': csrf },
+      headers: csrfToken ? { 'csrf-token': csrfToken } : {},
       body: payload
     })
     

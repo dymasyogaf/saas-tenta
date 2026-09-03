@@ -45,7 +45,7 @@
                   type="text" 
                   v-model="allocateAmountInput" 
                   @input="formatAllocateInput" 
-                  :placeholder="locale === 'en' ? '1,000,000' : '1.000.000'" 
+                  :placeholder="isGlobal ? '100' : (locale === 'en' ? '1,000,000' : '1.000.000')" 
                   :class="[
                     'w-full pr-4 py-3 bg-white border border-ink-200 rounded-xl text-ink-900 text-lg font-bold focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition-all placeholder:font-normal placeholder:text-ink-300 shadow-2xs',
                     isGlobal ? 'pl-9' : (locale === 'en' ? 'pl-14' : 'pl-11')
@@ -119,7 +119,9 @@ const accountOptions = computed(() => {
 })
 
 const availableBalance = computed(() => {
-  return isGlobal.value ? saldoStore.usdBalance : saldoStore.balance
+  return isGlobal.value
+    ? Math.max(0, Number(saldoStore.usdBalance || 0) - Number(saldoStore.usdPendingBalance || 0))
+    : Math.max(0, Number(saldoStore.balance || 0) - Number(saldoStore.pendingBalance || 0))
 })
 
 watch(() => props.isOpen, (newVal) => {
@@ -155,7 +157,7 @@ const formatAllocateInput = (e: Event) => {
     return
   }
   allocateAmount.value = parseInt(val, 10)
-  allocateAmountInput.value = new Intl.NumberFormat(locale.value === 'en' ? 'en-US' : 'id-ID').format(allocateAmount.value)
+  allocateAmountInput.value = new Intl.NumberFormat(isGlobal.value ? 'en-US' : (locale.value === 'en' ? 'en-US' : 'id-ID')).format(allocateAmount.value)
 }
 
 const close = () => {
@@ -175,11 +177,12 @@ const submitAllocateBudget = async () => {
       headers: csrfToken ? { 'csrf-token': csrfToken } : {},
       body: {
         accountId: allocateSelectedAccount.value,
-        amount: allocateAmount.value
+        amount: allocateAmount.value,
+        isGlobal: isGlobal.value
       }
     })
 
-    toast.addToast(res?.message || 'Permintaan anggaran berhasil dikirim', 'success')
+    toast.addToast(res?.message || (isGlobal.value ? 'Budget allocation request successfully submitted' : 'Permintaan anggaran berhasil dikirim'), 'success')
 
     await saldoStore.fetchSaldo()
     await saldoStore.fetchTransactions()
@@ -188,7 +191,7 @@ const submitAllocateBudget = async () => {
     emit('success')
     close()
   } catch (error: any) {
-    toast.addToast(error.data?.message || error.message || 'Gagal mengalokasikan anggaran', 'error')
+    toast.addToast(error.data?.statusMessage || error.data?.message || error.message || (isGlobal.value ? 'Failed to allocate budget' : 'Gagal mengalokasikan anggaran'), 'error')
   } finally {
     isAllocatingBudget.value = false
   }

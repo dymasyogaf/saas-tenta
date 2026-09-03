@@ -181,17 +181,17 @@
                 <!-- Payment Summary Breakdown -->
                 <div class="bg-white dark:bg-slate-800/80 rounded-2xl p-4 border border-slate-200/80 dark:border-slate-700/80 space-y-2 text-xs">
                   <div class="flex justify-between items-center text-slate-600 dark:text-slate-400">
-                    <span>Inbound Balance (USD)</span>
-                    <span class="font-bold text-slate-900 dark:text-white">${{ payData?.netAmount?.toFixed(2) }}</span>
+                    <span>Inbound Balance (USDT)</span>
+                    <span class="font-bold text-slate-900 dark:text-white">{{ payData?.netAmount?.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }} USDT</span>
                   </div>
                   <div class="flex justify-between items-center text-slate-600 dark:text-slate-400">
                     <span>Service Fee</span>
-                    <span class="font-bold text-slate-900 dark:text-white">${{ payData?.feeAmount?.toFixed(2) }}</span>
+                    <span class="font-bold text-slate-900 dark:text-white">{{ payData?.feeAmount?.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }} USDT</span>
                   </div>
                   <div class="h-px bg-slate-200 dark:bg-slate-700 my-1"></div>
                   <div class="flex justify-between items-center">
-                    <span class="font-bold text-slate-900 dark:text-white">Total USD Payable</span>
-                    <span class="font-black text-orange-600 text-sm">${{ payData?.totalAmount?.toFixed(2) }} USD</span>
+                    <span class="font-bold text-slate-900 dark:text-white">Total USDT Payable</span>
+                    <span class="font-black text-orange-600 text-sm">{{ payData?.totalAmount?.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }} USDT</span>
                   </div>
                   <div class="flex justify-between items-center text-[11px] text-slate-400 pt-1">
                     <span>Order Reference</span>

@@ -669,12 +669,56 @@ definePageMeta({
 })
 
 const resumePayment = (trx: any) => {
+  if (!trx) return
+
+  const txRef = trx.payment_gateway_ref || ''
+  const txDesc = trx.description || ''
+  const isUsdTrx = trx.currency === 'USD' || txRef.startsWith('NP-') || txRef.startsWith('USDT-') || txDesc.includes('USDT') || txDesc.includes('NOWPayments')
+
   let pd = trx.payment_data
-  if (!pd) return
   if (typeof pd === 'string') {
-    try { pd = JSON.parse(pd) } catch (e) { return }
+    try { pd = JSON.parse(pd) } catch (e) { pd = null }
   }
-  
+
+  // NOWPayments (USD / Crypto) Transaction
+  if (isUsdTrx) {
+    const payAddress = pd?.payAddress
+    const payAmount = pd?.payAmount
+    const paymentId = pd?.paymentId
+
+    const rawAmt = parseFloat(String(payAmount || pd?.totalAmount || Number(trx.amount || 0) * 1.05))
+    const formattedAmt = (!rawAmt || isNaN(rawAmt)) ? '31.50' : rawAmt.toFixed(2)
+
+    const query: Record<string, string> = {
+      orderId: String(pd?.merchantOrderId || trx.payment_gateway_ref || ''),
+      paymentId: String(paymentId || ''),
+      ref: String(trx.payment_gateway_ref || ''),
+      payAddress: String(payAddress || ''),
+      payAmount: formattedAmt,
+      method: 'USDT TRC-20 (Crypto)',
+      bank: 'USDT TRC-20',
+      amount: String(pd?.totalAmount || (Number(trx.amount || 0) * 1.05)),
+      net: String(pd?.netAmount || trx.amount || 0),
+      fee: String(pd?.feeAmount || (Number(trx.amount || 0) * 0.05)),
+      pkg: String(pd?.packageType || trx.package_selected || 'starter'),
+      createdAt: String(trx.created_at || new Date().toISOString())
+    }
+
+    Object.keys(query).forEach(k => {
+      if (query[k] === 'undefined' || query[k] === 'null' || !query[k]) {
+        delete query[k]
+      }
+    })
+
+    useRouter().push({
+      path: '/dashboard/topup/payment',
+      query
+    })
+    return
+  }
+
+  if (!pd) return
+
   const query: Record<string, string> = {
     orderId: String(pd.merchantOrderId || trx.payment_gateway_ref || ''),
     ref: String(trx.payment_gateway_ref || ''),

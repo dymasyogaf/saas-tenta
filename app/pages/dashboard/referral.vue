@@ -5,35 +5,28 @@
         <h1 class="text-2xl font-bold text-ink-900">{{ $t('referral.title') }}</h1>
         <p class="text-ink-500 text-sm mt-1">{{ $t('referral.subtitle') }}</p>
       </div>
-      <div>
-        <button 
-          v-if="isAdmin"
-          @click="resetDevData"
-          :disabled="isResetting"
-          class="bg-red-50 hover:bg-red-100 text-red-600 font-bold py-2 px-4 rounded-md text-sm border border-red-200 shadow-sm flex items-center gap-2 transition-colors"
-        >
-          <Loader2 v-if="isResetting" class="w-4 h-4 animate-spin" />
-          <Trash2 v-else class="w-4 h-4" />
-          {{ $t('referral.resetDev') }}
-        </button>
-      </div>
     </div>
 
     <!-- Overview Stats -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
       <div class="bg-white border border-ink-100 rounded-2xl p-5 shadow-sm relative overflow-hidden">
         <p class="text-ink-500 text-sm font-medium">{{ $t('referral.stats.totalEarned') }}</p>
-        <h3 class="text-2xl font-bold text-ink-900 mt-2">Rp {{ totalEarned.toLocaleString(locale === 'id' ? 'id-ID' : 'en-US') }}</h3>
+        <h3 class="text-2xl font-bold text-ink-900 mt-2">
+          {{ isGlobal ? `${totalEarned.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USDT` : `Rp ${totalEarned.toLocaleString(locale === 'id' ? 'id-ID' : 'en-US')}` }}
+        </h3>
         
         <div v-if="availableToClaim > 0" class="mt-4 pt-4 border-t border-ink-100">
             <button 
               @click="claimCommission"
-              :disabled="isClaiming"
+              :disabled="isClaiming || availableToClaim < (isGlobal ? 10 : 100000)"
               class="w-full bg-green-500 hover:bg-green-600 disabled:opacity-50 text-white font-bold py-2 px-4 rounded-md text-sm transition-colors shadow-sm flex items-center justify-center gap-2"
             >
               <Loader2 v-if="isClaiming" class="w-4 h-4 animate-spin" />
-              Ajukan Pencairan
+              {{ isGlobal ? `Request Payout (${availableToClaim.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USDT)` : `Ajukan Pencairan (Rp ${availableToClaim.toLocaleString('id-ID')})` }}
             </button>
+            <p v-if="availableToClaim < (isGlobal ? 10 : 100000)" class="text-[11px] text-ink-400 text-center mt-1.5 font-medium">
+              {{ isGlobal ? 'Minimum payout is 10.00 USDT' : 'Minimal pencairan adalah Rp 100.000' }}
+            </p>
         </div>
       </div>
       <div class="bg-white border border-ink-100 rounded-2xl p-5 shadow-sm">
@@ -75,7 +68,7 @@
                   @click="showTermsModal = true"
                   class="bg-orange-500 hover:bg-orange-600 text-white font-bold py-2.5 px-8 rounded-md text-sm transition-colors shadow-sm inline-flex items-center justify-center gap-2"
                 >
-                  Buat Link Referral
+                  {{ isGlobal ? 'Create Referral Link' : 'Buat Link Referral' }}
                 </button>
               </div>
             </div>
@@ -211,11 +204,11 @@
     
     <!-- Registration & Terms Modal -->
     <Teleport to="body">
-<div v-if="showTermsModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-ink-900/60 backdrop-blur-sm">
+    <div v-if="showTermsModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-ink-900/60 backdrop-blur-sm">
       <div class="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] flex flex-col shadow-xl overflow-hidden">
         <!-- Header -->
         <div class="px-6 py-4 border-b border-ink-100 flex justify-between items-center bg-orange-50/50">
-          <h2 class="text-lg font-bold text-ink-900">Pengajuan Program Afiliasi</h2>
+          <h2 class="text-lg font-bold text-ink-900">{{ isGlobal ? 'Affiliate Program Registration' : 'Pengajuan Program Afiliasi' }}</h2>
           <button @click="showTermsModal = false" class="text-ink-400 hover:text-ink-600 p-1 rounded-md hover:bg-ink-50 transition-colors">
             <span class="sr-only">Close</span>
             <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
@@ -225,29 +218,52 @@
         <!-- Body -->
         <div class="p-6 overflow-y-auto flex-1 text-sm text-ink-700">
           <form @submit.prevent="registerAffiliate" id="affiliateForm" class="space-y-4 mb-6">
-            <div>
-              <label class="block text-xs font-bold text-ink-700 mb-1">Nama Lengkap <span class="text-red-500">*</span></label>
-              <input v-model="affiliateForm.fullName" type="text" required class="w-full bg-white border border-ink-200 rounded-lg px-3 py-2 text-sm text-ink-900 focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 transition-shadow" placeholder="Masukkan nama lengkap sesuai KTP" />
-            </div>
-            <div>
-              <label class="block text-xs font-bold text-ink-700 mb-1">Pilih Bank <span class="text-red-500">*</span></label>
-              <select v-model="affiliateForm.bankName" required class="w-full bg-white border border-ink-200 rounded-lg px-3 py-2 text-sm text-ink-900 focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 transition-shadow">
-                <option value="" disabled selected>Pilih Bank Anda</option>
-                <option v-for="bank in bankList" :key="bank" :value="bank">{{ bank }}</option>
-              </select>
-            </div>
-            <div>
-              <label class="block text-xs font-bold text-ink-700 mb-1">Nomor Rekening <span class="text-red-500">*</span></label>
-              <input v-model="affiliateForm.bankAccount" type="text" inputmode="numeric" @input="affiliateForm.bankAccount = affiliateForm.bankAccount.replace(/\D/g, '')" required class="w-full bg-white border border-ink-200 rounded-lg px-3 py-2 text-sm text-ink-900 focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 transition-shadow" placeholder="Misal: 1234567890" />
-            </div>
-            <div>
-              <label class="block text-xs font-bold text-ink-700 mb-1">Atas Nama Rekening <span class="text-red-500">*</span></label>
-              <input v-model="affiliateForm.accountName" type="text" required class="w-full bg-white border border-ink-200 rounded-lg px-3 py-2 text-sm text-ink-900 focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 transition-shadow" placeholder="Nama pemilik rekening bank" />
-            </div>
+            <!-- Global Mode Form: USDT TRC-20 -->
+            <template v-if="isGlobal">
+              <div>
+                <label class="block text-xs font-bold text-ink-700 mb-1">Full Name <span class="text-red-500">*</span></label>
+                <input v-model="affiliateForm.fullName" type="text" required class="w-full bg-white border border-ink-200 rounded-lg px-3 py-2 text-sm text-ink-900 focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 transition-shadow" placeholder="Enter your full legal name" />
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-ink-700 mb-1">Payout Method</label>
+                <div class="w-full bg-ink-50 border border-ink-200 rounded-lg px-3 py-2.5 text-sm font-semibold text-ink-900 flex items-center justify-between">
+                  <span>USDT (TRC-20 Network)</span>
+                  <span class="text-xs bg-emerald-100 text-emerald-700 font-bold px-2 py-0.5 rounded">Crypto TRC-20</span>
+                </div>
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-ink-700 mb-1">USDT TRC-20 Wallet Address <span class="text-red-500">*</span></label>
+                <input v-model="affiliateForm.walletAddress" type="text" required class="w-full bg-white border border-ink-200 rounded-lg px-3 py-2 font-mono text-sm text-ink-900 focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 transition-shadow" placeholder="e.g. TF17AUPT774c8p1p894..." />
+                <p class="text-[11px] text-ink-400 mt-1">Make sure to provide a valid TRON TRC-20 USDT wallet address starting with 'T'.</p>
+              </div>
+            </template>
+
+            <!-- Domestic IDR Mode Form -->
+            <template v-else>
+              <div>
+                <label class="block text-xs font-bold text-ink-700 mb-1">Nama Lengkap <span class="text-red-500">*</span></label>
+                <input v-model="affiliateForm.fullName" type="text" required class="w-full bg-white border border-ink-200 rounded-lg px-3 py-2 text-sm text-ink-900 focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 transition-shadow" placeholder="Masukkan nama lengkap sesuai KTP" />
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-ink-700 mb-1">Pilih Bank <span class="text-red-500">*</span></label>
+                <select v-model="affiliateForm.bankName" required class="w-full bg-white border border-ink-200 rounded-lg px-3 py-2 text-sm text-ink-900 focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 transition-shadow">
+                  <option value="" disabled selected>Pilih Bank Anda</option>
+                  <option v-for="bank in bankList" :key="bank" :value="bank">{{ bank }}</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-ink-700 mb-1">Nomor Rekening <span class="text-red-500">*</span></label>
+                <input v-model="affiliateForm.bankAccount" type="text" inputmode="numeric" @input="affiliateForm.bankAccount = affiliateForm.bankAccount.replace(/\D/g, '')" required class="w-full bg-white border border-ink-200 rounded-lg px-3 py-2 text-sm text-ink-900 focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 transition-shadow" placeholder="Misal: 1234567890" />
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-ink-700 mb-1">Atas Nama Rekening <span class="text-red-500">*</span></label>
+                <input v-model="affiliateForm.accountName" type="text" required class="w-full bg-white border border-ink-200 rounded-lg px-3 py-2 text-sm text-ink-900 focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 transition-shadow" placeholder="Nama pemilik rekening bank" />
+              </div>
+            </template>
           </form>
 
           <div class="border-t border-ink-100 pt-6 space-y-4">
-            <h4 class="font-bold text-ink-900 text-base">Syarat & Ketentuan</h4>
+            <h4 class="font-bold text-ink-900 text-base">{{ isGlobal ? 'Terms & Conditions' : 'Syarat & Ketentuan' }}</h4>
             <div class="bg-ink-50 rounded-xl p-4 text-xs space-y-4 text-ink-600 max-h-40 overflow-y-auto border border-ink-100">
               <p>{{ $t('referral.termsModal.intro1') }}</p>
               <p>{{ $t('referral.termsModal.intro2') }}</p>
@@ -292,7 +308,7 @@
             <div class="flex items-start gap-2 pt-2">
               <input v-model="affiliateForm.agreeTerms" type="checkbox" id="agreeTermsModal" class="mt-0.5 rounded border-ink-300 text-orange-500 focus:ring-orange-500" />
               <label for="agreeTermsModal" class="text-xs font-medium text-ink-700 leading-tight cursor-pointer">
-                Saya telah membaca dan menyetujui Syarat & Ketentuan Program Afiliasi TentaKlik. <span class="text-red-500">*</span>
+                {{ isGlobal ? 'I have read and agree to the TentaKlik Affiliate Program Terms & Conditions.' : 'Saya telah membaca dan menyetujui Syarat & Ketentuan Program Afiliasi TentaKlik.' }} <span class="text-red-500">*</span>
               </label>
             </div>
           </div>
@@ -304,31 +320,31 @@
             @click="showTermsModal = false"
             class="px-5 py-2.5 text-sm font-bold text-ink-600 hover:text-ink-900 hover:bg-ink-100 rounded-md transition-colors"
           >
-            Batal
+            {{ isGlobal ? 'Cancel' : 'Batal' }}
           </button>
           <button 
             type="submit"
             form="affiliateForm"
-            :disabled="isRegisteringAffiliate || !affiliateForm.agreeTerms || !affiliateForm.fullName || !affiliateForm.bankName || !affiliateForm.bankAccount || !affiliateForm.accountName"
+            :disabled="isRegisteringAffiliate || !affiliateForm.agreeTerms || !isFormFilled"
             class="bg-orange-500 hover:bg-orange-600 disabled:opacity-50 text-white font-bold py-2.5 px-6 rounded-md text-sm transition-colors shadow-sm inline-flex items-center justify-center gap-2"
           >
             <Loader2 v-if="isRegisteringAffiliate" class="w-4 h-4 animate-spin" />
-            Kirim Pengajuan
+            {{ isGlobal ? 'Submit Registration' : 'Kirim Pengajuan' }}
           </button>
         </div>
       </div>
     </div>
     </Teleport>
 
-
   </div>
 </template>
 
 <script setup lang="ts">
 import { 
-  Gift, Users, Copy, ShieldCheck, Loader2, Trash2
+  Gift, Users, Copy, Loader2
 } from 'lucide-vue-next'
-import { useI18n, useToast, useCsrf } from '#imports'
+import { useI18n, useToast, useCsrf, useSupabaseUser, useConfirm } from '#imports'
+import { useAppMode } from '~/composables/useAppMode'
 
 definePageMeta({
   layout: 'dashboard',
@@ -337,12 +353,7 @@ definePageMeta({
 const { t, locale } = useI18n()
 const { addToast } = useToast()
 const { csrf } = useCsrf()
-
-const user = useSupabaseUser()
-const isAdmin = computed(() => {
-  const role = user.value?.user_metadata?.role || user.value?.app_metadata?.role
-  return role === 'admin' || role === 'super_admin'
-})
+const { isGlobal } = useAppMode()
 
 const referralStatus = ref({
   isLoading: true,
@@ -355,14 +366,21 @@ const referralStatus = ref({
 })
 const isRegisteringAffiliate = ref(false)
 const showTermsModal = ref(false)
-const isResetting = ref(false)
 
 const affiliateForm = ref({
   fullName: '',
   bankName: '',
   bankAccount: '',
   accountName: '',
+  walletAddress: '',
   agreeTerms: false
+})
+
+const isFormFilled = computed(() => {
+  if (isGlobal.value) {
+    return !!affiliateForm.value.fullName && !!affiliateForm.value.walletAddress
+  }
+  return !!affiliateForm.value.fullName && !!affiliateForm.value.bankName && !!affiliateForm.value.bankAccount && !!affiliateForm.value.accountName
 })
 
 const bankList = [
@@ -389,7 +407,7 @@ const referralLink = computed(() => {
   if (!referralStatus.value.myReferralCode) return ''
   return typeof window !== 'undefined' 
     ? `${window.location.origin}/register?ref=${referralStatus.value.myReferralCode}`
-    : `https://tentaklik.com/register?ref=${referralStatus.value.myReferralCode}`
+    : `https://area.tentaklik.com/register?ref=${referralStatus.value.myReferralCode}`
 })
 
 const shareText = computed(() =>
@@ -450,9 +468,16 @@ const fetchHistory = async () => {
 }
 
 const registerAffiliate = async () => {
-  if (!affiliateForm.value.fullName || !affiliateForm.value.bankName || !affiliateForm.value.bankAccount || !affiliateForm.value.accountName) {
-    addToast('Mohon lengkapi semua data formulir', 'error')
-    return
+  if (isGlobal.value) {
+    if (!affiliateForm.value.fullName || !affiliateForm.value.walletAddress) {
+      addToast('Please provide your Full Name and USDT TRC-20 Wallet Address', 'error')
+      return
+    }
+  } else {
+    if (!affiliateForm.value.fullName || !affiliateForm.value.bankName || !affiliateForm.value.bankAccount || !affiliateForm.value.accountName) {
+      addToast('Mohon lengkapi semua data formulir', 'error')
+      return
+    }
   }
 
   isRegisteringAffiliate.value = true
@@ -465,7 +490,9 @@ const registerAffiliate = async () => {
         fullName: affiliateForm.value.fullName,
         bankName: affiliateForm.value.bankName,
         bankAccount: affiliateForm.value.bankAccount,
-        accountName: affiliateForm.value.accountName
+        accountName: affiliateForm.value.accountName,
+        walletAddress: affiliateForm.value.walletAddress,
+        payoutType: isGlobal.value ? 'crypto' : 'bank'
       }
     }) as any
 
@@ -482,8 +509,6 @@ const registerAffiliate = async () => {
   }
 }
 
-
-
 const copyReferralCode = async () => {
   if (!referralLink.value) return
   try {
@@ -494,34 +519,20 @@ const copyReferralCode = async () => {
   }
 }
 
-const resetDevData = async () => {
-  if (!(await useConfirm().show({ message: t('referral.resetConfirm') }))) return
-  
-  isResetting.value = true
-  try {
-    const csrfToken3 = unref(csrf)
-    const res = await $fetch('/api/referral/reset', { method: 'POST', headers: csrfToken3 ? { 'csrf-token': csrfToken3 } : {} }) as any
-    if (res && res.success) {
-      addToast(t('referral.toast.resetSuccess'), 'success')
-      window.location.reload()
-    } else {
-      addToast(res.message || t('referral.toast.resetFailed'), 'error')
-    }
-  } catch (error: any) {
-    addToast(error.data?.message || t('referral.toast.resetError'), 'error')
-  } finally {
-    isResetting.value = false
-  }
-}
-
 const isClaiming = ref(false)
 const claimCommission = async () => {
-  if (availableToClaim.value < 100000) {
-    addToast('Pencairan komisi bisa dilakukan minimal Rp 100.000', 'error')
+  const minThreshold = isGlobal.value ? 10 : 100000
+  if (availableToClaim.value < minThreshold) {
+    const msg = isGlobal.value ? 'Minimum commission payout is 10.00 USDT' : 'Pencairan komisi bisa dilakukan minimal Rp 100.000'
+    addToast(msg, 'error')
     return
   }
 
-  if (!(await useConfirm().show({ message: 'Apakah Anda yakin ingin mencairkan komisi ini ke Rekening Bank Anda? Tim Finance akan memproses pengajuan Anda.' }))) return
+  const confirmMsg = isGlobal.value 
+    ? 'Are you sure you want to request this commission payout to your USDT TRC-20 wallet address? Our Finance team will process it shortly.'
+    : 'Apakah Anda yakin ingin mencairkan komisi ini ke Rekening Bank Anda? Tim Finance akan memproses pengajuan Anda.'
+
+  if (!(await useConfirm().show({ message: confirmMsg }))) return
   
   isClaiming.value = true
   try {
@@ -532,10 +543,10 @@ const claimCommission = async () => {
       // Refresh data
       fetchHistory()
     } else {
-      addToast(res.message || 'Gagal mencairkan komisi', 'error')
+      addToast(res.message || (isGlobal.value ? 'Failed to withdraw commission' : 'Gagal mencairkan komisi'), 'error')
     }
   } catch (error: any) {
-    addToast(error.data?.message || 'Terjadi kesalahan saat mencairkan komisi', 'error')
+    addToast(error.data?.message || (isGlobal.value ? 'An error occurred during withdrawal request' : 'Terjadi kesalahan saat mencairkan komisi'), 'error')
   } finally {
     isClaiming.value = false
   }

@@ -32,6 +32,9 @@ export default defineEventHandler(async (event) => {
       throw error
     }
 
+    const host = getRequestHost(event) || ''
+    const isGlobal = host.startsWith('area.')
+
     // Mask emails and prepare data
     const history = (referrals || []).map((r: any) => {
       // Handle the users array if it comes as an array (usually an object for single relation)
@@ -48,11 +51,20 @@ export default defineEventHandler(async (event) => {
         }
       }
       
+      const numReward = Number(r.reward_amount || 0)
+      let rewardText = 'Pending'
+      if (r.status === 'reward_given') {
+        rewardText = isGlobal 
+          ? `${numReward.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USDT`
+          : `Rp ${numReward.toLocaleString('id-ID')}`
+      }
+      
       return {
         date: r.created_at,
         email: maskedEmail,
         status: r.status, // 'pending_reward', 'reward_given'
-        reward: r.reward_amount ? `Rp ${Number(r.reward_amount).toLocaleString('id-ID')}` : (r.status === 'reward_given' ? 'Rp 0' : 'Pending'),
+        reward: rewardText,
+        raw_reward: numReward,
         is_claimed: r.is_claimed
       }
     })

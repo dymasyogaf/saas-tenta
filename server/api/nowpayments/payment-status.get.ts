@@ -40,7 +40,7 @@ export default defineEventHandler(async (event) => {
         const supabase = serverSupabaseServiceRole<any>(event)
         const { data: trx } = await supabase
           .from('transactions')
-          .select('id, user_id, amount, status')
+          .select('id, user_id, amount, package_selected, status')
           .eq('payment_gateway_ref', result.order_id)
           .maybeSingle()
 
@@ -63,7 +63,24 @@ export default defineEventHandler(async (event) => {
             .from('saldo')
             .upsert({ user_id: trx.user_id, usd_balance: newUsd, updated_at: new Date().toISOString() }, { onConflict: 'user_id' })
 
-          await syncUserHighestPackage(supabase, trx.user_id)
+          if (trx.package_selected) {
+            const expiresAt = new Date(Date.now() + 28 * 24 * 60 * 60 * 1000).toISOString()
+            try {
+              await supabase
+                .from('user_package_subscriptions')
+                .insert({
+                  user_id: trx.user_id,
+                  package_type: trx.package_selected,
+                  expires_at: expiresAt,
+                  is_active: true,
+                  currency: 'USD'
+                })
+            } catch (err) {
+              console.error('Error inserting USD package subscription:', err)
+            }
+          }
+
+          await syncUserHighestPackage(supabase, trx.user_id, 'USD')
         }
       } catch (err) {
         console.error('Failed to sync NOWPayments status to DB:', err)

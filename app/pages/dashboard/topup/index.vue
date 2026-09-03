@@ -616,12 +616,56 @@ const openInvoice = (trx: any) => {
 }
 
 const resumePayment = (trx: any) => {
+  if (!trx) return
+
+  const txRef = trx.payment_gateway_ref || ''
+  const txDesc = trx.description || ''
+  const isUsdTrx = trx.currency === 'USD' || txRef.startsWith('NP-') || txRef.startsWith('USDT-') || txDesc.includes('USDT') || txDesc.includes('NOWPayments')
+
   let pd = trx.payment_data
-  if (!pd) return
   if (typeof pd === 'string') {
-    try { pd = JSON.parse(pd) } catch (e) { return }
+    try { pd = JSON.parse(pd) } catch (e) { pd = null }
   }
-  
+
+  // NOWPayments (USD / Crypto) Transaction
+  if (isUsdTrx) {
+    const payAddress = pd?.payAddress
+    const payAmount = pd?.payAmount
+    const paymentId = pd?.paymentId
+
+    const rawAmt = parseFloat(String(payAmount || pd?.totalAmount || Number(trx.amount || 0) * 1.05))
+    const formattedAmt = (!rawAmt || isNaN(rawAmt)) ? '31.50' : rawAmt.toFixed(2)
+
+    const query: Record<string, string> = {
+      orderId: String(pd?.merchantOrderId || trx.payment_gateway_ref || ''),
+      paymentId: String(paymentId || ''),
+      ref: String(trx.payment_gateway_ref || ''),
+      payAddress: String(payAddress || ''),
+      payAmount: formattedAmt,
+      method: 'USDT TRC-20 (Crypto)',
+      bank: 'USDT TRC-20',
+      amount: String(pd?.totalAmount || (Number(trx.amount || 0) * 1.05)),
+      net: String(pd?.netAmount || trx.amount || 0),
+      fee: String(pd?.feeAmount || (Number(trx.amount || 0) * 0.05)),
+      pkg: String(pd?.packageType || trx.package_selected || 'starter'),
+      createdAt: String(trx.created_at || new Date().toISOString())
+    }
+
+    Object.keys(query).forEach(k => {
+      if (query[k] === 'undefined' || query[k] === 'null' || !query[k]) {
+        delete query[k]
+      }
+    })
+
+    router.push({
+      path: '/dashboard/topup/payment',
+      query
+    })
+    return
+  }
+
+  if (!pd) return
+
   const query: Record<string, string> = {
     orderId: String(pd.merchantOrderId || trx.payment_gateway_ref || ''),
     ref: String(trx.payment_gateway_ref || ''),
@@ -643,7 +687,7 @@ const resumePayment = (trx: any) => {
     }
   })
   
-  useRouter().push({
+  router.push({
     path: '/dashboard/topup/payment',
     query
   })
@@ -974,8 +1018,8 @@ const displayDaysRemaining = computed(() => {
 const selectedPackageLimitText = computed(() => {
   const pkg = effectivePackage.value
   if (pkg === 'scale') return 'Unlimited'
-  if (pkg === 'growth') return isGlobal.value ? '$50.000/mgg' : 'Rp 15.000.000 / mgg'
-  return isGlobal.value ? '$30 - $10.000' : 'Rp 300.000 - Rp 5.000.000'
+  if (pkg === 'growth') return isGlobal.value ? '$50,000 / week' : 'Rp 15.000.000 / mgg'
+  return isGlobal.value ? '$30 - $10,000' : 'Rp 300.000 - Rp 5.000.000'
 })
 
 const formattedWeeklyLimit = computed(() => {
@@ -1000,6 +1044,9 @@ const isValidTopup = computed(() => {
 })
 
 const feeAmount = computed(() => {
+  if (isGlobal.value) {
+    return Number(topupAmount.value) * packageInfo.value.fee
+  }
   return Math.round(Number(topupAmount.value) * packageInfo.value.fee)
 })
 
@@ -1065,7 +1112,7 @@ const submitTopup = async () => {
       if (response && response.success) {
         isTopupModalOpen.value = false
         const rawPay = response.payAmount ? parseFloat(String(response.payAmount)) : Number(response.totalAmount)
-        const roundedPay = (!rawPay || isNaN(rawPay)) ? '31.50' : (Math.ceil(rawPay * 2) / 2).toFixed(2)
+        const formattedPay = (!rawPay || isNaN(rawPay)) ? '31.50' : rawPay.toFixed(2)
 
         router.push({
           path: '/dashboard/topup/payment',
@@ -1074,7 +1121,7 @@ const submitTopup = async () => {
             paymentId: response.paymentId,
             ref: response.merchantOrderId,
             payAddress: response.payAddress,
-            payAmount: roundedPay,
+            payAmount: formattedPay,
             method: 'USDT TRC-20 (Crypto)',
             bank: 'USDT TRC-20',
             amount: String(response.totalAmount),
@@ -1126,7 +1173,7 @@ const formatAllocateInput = (e: Event) => {
     return
   }
   allocateAmount.value = parseInt(val, 10)
-  allocateAmountInput.value = new Intl.NumberFormat('id-ID').format(allocateAmount.value)
+  allocateAmountInput.value = new Intl.NumberFormat(isGlobal.value ? 'en-US' : (locale.value === 'en' ? 'en-US' : 'id-ID')).format(allocateAmount.value)
 }
 
 const submitAllocateBudget = async () => {
@@ -1142,11 +1189,12 @@ const submitAllocateBudget = async () => {
       headers: csrfToken ? { 'x-csrf-token': csrfToken, 'csrf-token': csrfToken } : {},
       body: {
         accountId: allocateSelectedAccount.value,
-        amount: allocateAmount.value
+        amount: allocateAmount.value,
+        isGlobal: isGlobal.value
       }
     })
     
-    toast.addToast((res as any).message || 'Permintaan anggaran berhasil dikirim', 'success')
+    toast.addToast((res as any).message || (isGlobal.value ? 'Budget allocation request successfully submitted' : 'Permintaan anggaran berhasil dikirim'), 'success')
     
     // Refresh data
     await saldoStore.fetchSaldo()
@@ -1154,7 +1202,7 @@ const submitAllocateBudget = async () => {
     await adsStore.fetchAdAccounts()
     isAllocateBudgetModalOpen.value = false
   } catch (error: any) {
-    toast.addToast(error.data?.message || error.message || 'Gagal mengalokasikan anggaran', 'error')
+    toast.addToast(error.data?.statusMessage || error.data?.message || error.message || (isGlobal.value ? 'Failed to allocate budget' : 'Gagal mengalokasikan anggaran'), 'error')
   } finally {
     isAllocatingBudget.value = false
   }

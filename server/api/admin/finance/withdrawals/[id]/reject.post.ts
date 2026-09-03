@@ -20,7 +20,14 @@ export default defineEventHandler(async (event) => {
     // Ambil data withdrawal
     const { data: withdrawal, error: fetchError } = await supabase
       .from('affiliate_withdrawals')
-      .select('user_id, amount, status')
+      .select(`
+        user_id, 
+        amount, 
+        status,
+        users (
+          affiliate_profiles (bank_name, bank_account)
+        )
+      `)
       .eq('id', id)
       .single()
 
@@ -31,6 +38,11 @@ export default defineEventHandler(async (event) => {
     if (withdrawal.status !== 'pending') {
       throw createError({ statusCode: 400, message: 'Hanya pengajuan dengan status pending yang dapat ditolak' })
     }
+
+    const userObj = Array.isArray((withdrawal as any).users) ? (withdrawal as any).users[0] : (withdrawal as any).users
+    let profile = userObj?.affiliate_profiles
+    if (Array.isArray(profile)) profile = profile[0]
+    const isCrypto = profile?.bank_name?.includes('USDT') || profile?.bank_name?.includes('TRC') || Number(withdrawal.amount) < 1000
 
     // 1. Update status menjadi rejected
     const { error: updateError } = await supabase
@@ -55,15 +67,20 @@ export default defineEventHandler(async (event) => {
       .eq('withdrawal_id', id)
 
     // 3. Buat notifikasi untuk user
+    const notifTitle = isCrypto ? 'Affiliate Payout Rejected' : 'Pencairan Komisi Ditolak'
+    const notifMessage = isCrypto
+      ? `Your affiliate commission payout of ${Number(withdrawal.amount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USDT was rejected. Reason: ${reason}`
+      : `Pencairan komisi afiliasi Anda sebesar Rp ${Number(withdrawal.amount).toLocaleString('id-ID')} ditolak. Alasan: ${reason}`
+
     await supabase.from('notifications').insert({
       user_id: withdrawal.user_id,
-      title: 'Pencairan Komisi Ditolak',
-      message: `Pencairan komisi afiliasi Anda sebesar Rp ${withdrawal.amount.toLocaleString('id-ID')} ditolak. Alasan: ${reason}`,
+      title: notifTitle,
+      message: notifMessage,
       type: 'system',
       is_read: false
     })
 
-    return { success: true, message: 'Pengajuan pencairan berhasil ditolak.' }
+    return { success: true, message: isCrypto ? 'Payout request rejected and commission restored.' : 'Pengajuan pencairan berhasil ditolak.' }
   } catch (error: any) {
     console.error('Error rejecting withdrawal:', error)
     throw createError({

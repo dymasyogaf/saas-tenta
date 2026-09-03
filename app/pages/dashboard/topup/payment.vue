@@ -207,7 +207,7 @@
                   <span class="text-green-600 font-semibold">+{{ displayAmount(Number(route.query.net)) }}</span>
                 </div>
                 <div class="payment-amount-breakdown__row">
-                  <span>Service Fee</span>
+                  <span>Service Fee ({{ feePercentText }})</span>
                   <span class="font-semibold">{{ displayAmount(Number(route.query.fee)) }}</span>
                 </div>
                 <div class="payment-amount-breakdown__row">
@@ -460,10 +460,22 @@ const copyAmountText = () => {
 
 const displayAmount = (num: number) => {
   if (isCrypto.value) {
-    return `$${Number(num || 0).toFixed(2)} USD`
+    return `${Number(num || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USDT`
   }
   return formatRupiah(Number(num || 0))
 }
+
+const feePercentText = computed(() => {
+  const pkg = String(route.query.pkg || 'starter').toLowerCase()
+  if (isCrypto.value) {
+    if (pkg === 'scale') return '3%'
+    if (pkg === 'growth') return '4%'
+    return '5%'
+  }
+  if (pkg === 'scale') return '3.5%'
+  if (pkg === 'growth') return '4.5%'
+  return '5%'
+})
 
 // ─── State ───────────────────────────────────────────────────────────────────
 const paymentStatus = ref<'pending' | 'success' | 'failed'>('pending')
@@ -493,7 +505,7 @@ const invoiceTransaction = computed(() => {
   }
 })
 const isInstructionOpen = ref(false)
-const activeInstructionTab = ref('mobile')
+const activeInstructionTab = ref(isCrypto.value ? 'indodax' : 'mobile')
 
 // ─── Timer ───────────────────────────────────────────────────────────────────
 const EXPIRY_MINUTES = 60
@@ -582,11 +594,20 @@ const bankLogoMap: Record<string, string> = {
 const bankLogo = computed(() => bankLogoMap[route.query.bank as string] || null)
 
 // ─── Instruksi Pembayaran ─────────────────────────────────────────────────────
-const instructionTabs = [
-  { id: 'mobile', label: 'Mobile Banking' },
-  { id: 'atm', label: 'ATM' },
-  { id: 'internet', label: 'Internet Banking' },
-]
+const instructionTabs = computed(() => {
+  if (isCrypto.value) {
+    return [
+      { id: 'indodax', label: 'Indodax' },
+      { id: 'binance', label: 'Binance / Tokocrypto' },
+      { id: 'wallet', label: 'TrustWallet / Other' },
+    ]
+  }
+  return [
+    { id: 'mobile', label: 'Mobile Banking' },
+    { id: 'atm', label: 'ATM' },
+    { id: 'internet', label: 'Internet Banking' },
+  ]
+})
 
 const vaInstructions: Record<string, Record<string, string[]>> = {
   'M2': {
@@ -701,30 +722,29 @@ const vaInstructions: Record<string, Record<string, string[]>> = {
 const currentBankInstructions = computed(() => {
   if (isCrypto.value) {
     return {
-      mobile: [
-        'Open your Crypto App (Binance, Indodax, Tokocrypto, TrustWallet, etc.)',
-        'Select "Withdraw" or "Send" and choose USDT',
-        'Choose Network: TRC-20 (Tron / TRON Network)',
-        `Scan QR Code or paste Deposit Address: ${payAddress.value}`,
-        `Enter exact amount: ${payAmount.value} USDT`,
-        'Confirm transaction and enter your PIN/2FA code',
-        'Payment verified automatically upon 1 blockchain confirmation'
+      indodax: [
+        'Buka aplikasi Indodax ➔ masuk ke menu "Wallet / Dompet" di pojok kanan bawah',
+        'Cari dan pilih aset "USDT (Tether)", lalu pilih menu "Kirim / Withdraw"',
+        'Pilih Jaringan: "TRC20 / TRON (TRX)" (PENTING: Jangan pilih ERC20 / BEP20)',
+        `Scan QR Code di atas atau tempel Alamat Wallet: ${payAddress.value}`,
+        `Pastikan "Jumlah Diterima / Receive Amount" tepat: ${payAmount.value} USDT (sesuaikan total pengiriman dengan fee withdraw Indodax)`,
+        'Masukkan PIN/OTP dan klik link konfirmasi di Email akun Indodax Anda',
+        'Pembayaran otomatis terverifikasi lunas dalam 1 - 3 menit'
       ],
-      atm: [
-        'Login to your Crypto Exchange account',
-        'Navigate to Wallet -> Fiat and Crypto -> Withdraw',
-        'Select USDT currency',
-        'Select TRC-20 network (Do NOT use BEP-20 or ERC-20)',
-        `Paste Deposit Address: ${payAddress.value}`,
-        `Input Withdrawal Amount: ${payAmount.value} USDT`,
-        'Submit withdrawal request'
+      binance: [
+        'Buka aplikasi Binance / Tokocrypto ➔ masuk ke menu "Wallets" ➔ "Withdraw"',
+        'Pilih aset "USDT" ➔ pilih "Send via Crypto Network"',
+        'Pilih Network: "Tron (TRC20)"',
+        `Scan QR Code atau tempel Address: ${payAddress.value}`,
+        `Masukkan Receive Amount tepat: ${payAmount.value} USDT`,
+        'Selesaikan verifikasi keamanan (2FA/Email). Dana akan masuk dalam 1 - 3 menit'
       ],
-      internet: [
-        'Open your Web3 Wallet or Exchange web dashboard',
-        'Go to Transfer / Send USDT',
-        `Paste TRC-20 Address: ${payAddress.value}`,
-        `Specify Amount: ${payAmount.value} USDT`,
-        'Approve the transaction and keep receipt'
+      wallet: [
+        'Buka TrustWallet, MetaMask, atau Web3 Wallet kompatibel TRC-20 Anda',
+        'Pilih aset "Tether USD (TRC-20)" ➔ klik "Send"',
+        `Scan QR Code di atas atau masukkan alamat tujuan: ${payAddress.value}`,
+        `Masukkan nominal transfer: ${payAmount.value} USDT`,
+        'Konfirmasi pengiriman. Transaksi akan divalidasi otomatis oleh sistem'
       ]
     }
   }

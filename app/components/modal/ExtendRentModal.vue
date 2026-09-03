@@ -179,9 +179,7 @@ const submitPayment = async () => {
   try {
     const response = await $fetch<any>('/api/ads/extend-rent', {
       method: 'POST',
-      headers: {
-        'csrf-token': unref(csrf)
-      },
+      headers: unref(csrf) ? { 'csrf-token': unref(csrf) } : {},
       body: {
         accountId: props.account.id,
         subscriptionMonths: form.subscriptionMonths,

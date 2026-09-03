@@ -349,9 +349,10 @@ const submitBroadcast = async () => {
   const messageToSend = quillSendRef.value?.getHTML() || form.message
 
   try {
+    const csrfToken = unref(csrf) || ''
     await $fetch('/api/admin/broadcast', {
       method: 'POST',
-      headers: { 'csrf-token': csrf },
+      headers: csrfToken ? { 'csrf-token': csrfToken } : {},
       body: {
         title: form.title,
         message: messageToSend,
@@ -474,9 +475,10 @@ const submitEdit = async () => {
   const messageToUpdate = quillEditRef.value?.getHTML ? quillEditRef.value.getHTML() : editForm.message
 
   try {
+    const csrfToken = unref(csrf) || ''
     await $fetch(`/api/admin/broadcasts/${editingBroadcast.value.id}`, {
       method: 'PUT',
-      headers: { 'csrf-token': csrf },
+      headers: csrfToken ? { 'csrf-token': csrfToken } : {},
       body: {
         title: editForm.title,
         message: messageToUpdate
@@ -496,9 +498,10 @@ const submitEdit = async () => {
 const deleteBroadcast = async (id: string) => {
   if (!(await useConfirm().show({ message: 'Yakin ingin menghapus pengumuman ini? Semua notifikasi di klien juga akan ditarik mundur.' }))) return
   try {
+    const csrfToken = unref(csrf) || ''
     await $fetch(`/api/admin/broadcasts/${id}`, {
       method: 'DELETE',
-      headers: { 'csrf-token': csrf }
+      headers: csrfToken ? { 'csrf-token': csrfToken } : {}
     })
     loadHistory()
   } catch (err: any) {
@@ -530,9 +533,10 @@ const removeUserNotif = async (userId: string) => {
   if (!(await useConfirm().show({ message: 'Tarik notifikasi untuk pengguna ini?' }))) return
   
   try {
+    const csrfToken = unref(csrf) || ''
     await $fetch(`/api/admin/broadcasts/${viewingDetails.value.id}/users/${userId}`, {
       method: 'DELETE',
-      headers: { 'csrf-token': csrf }
+      headers: csrfToken ? { 'csrf-token': csrfToken } : {}
     })
     // Remove locally from UI
     recipients.value = recipients.value.filter(r => r.user_id !== userId)

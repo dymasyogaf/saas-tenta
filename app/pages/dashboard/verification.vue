@@ -257,7 +257,7 @@
         <div class="flex justify-end mt-6 gap-3">
           <button @click="currentStep = 'intro'" class="bg-white text-ink-500 font-bold py-3 px-6 rounded-lg text-sm hover:bg-ink-50 border border-ink-200 transition-all">{{ $t('verification.cancelBtn') }}</button>
           <button @click="currentStep = 2" :disabled="!isFormValid" class="bg-orange-500 text-white font-bold py-3 px-8 rounded-lg text-sm hover:bg-orange-600 shadow-lg shadow-orange-500/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
-            Selanjutnya
+            {{ isGlobal ? 'Next' : 'Selanjutnya' }}
           </button>
         </div>
       </div>
@@ -279,11 +279,11 @@
               <span class="sm:col-span-2 text-ink-900 text-sm font-bold">{{ formData.name }}</span>
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-1 sm:gap-0 border-b border-ink-50 pb-4">
-              <span class="col-span-1 text-ink-500 text-sm font-medium">{{ $t('verification.nikLabel') }}</span>
+              <span class="col-span-1 text-ink-500 text-sm font-medium">{{ isGlobal ? 'ID / Passport Number' : $t('verification.nikLabel') }}</span>
               <span class="sm:col-span-2 text-ink-900 text-sm font-bold">{{ formData.nik }}</span>
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-1 sm:gap-0 border-b border-ink-50 pb-4">
-              <span class="col-span-1 text-ink-500 text-sm font-medium">Tanggal Lahir</span>
+              <span class="col-span-1 text-ink-500 text-sm font-medium">{{ isGlobal ? 'Date of Birth' : 'Tanggal Lahir' }}</span>
               <span class="sm:col-span-2 text-ink-900 text-sm font-bold">{{ formData.dob }}</span>
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-1 sm:gap-0 border-b border-ink-50 pb-4">
@@ -291,7 +291,7 @@
               <span class="sm:col-span-2 text-ink-900 text-sm font-bold">{{ user?.email }}</span>
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-1 sm:gap-0">
-              <span class="col-span-1 text-ink-500 text-sm font-medium">Nomor WhatsApp</span>
+              <span class="col-span-1 text-ink-500 text-sm font-medium">{{ isGlobal ? 'WhatsApp / Phone Number' : 'Nomor WhatsApp' }}</span>
               <span class="sm:col-span-2 text-ink-900 text-sm font-bold">{{ userPhone }}</span>
             </div>
           </div>
@@ -351,17 +351,17 @@ import {
   MessageSquare
 } from 'lucide-vue-next'
 import imageCompression from 'browser-image-compression'
+import { useAppMode } from '~/composables/useAppMode'
 
 definePageMeta({
   layout: 'dashboard'
 })
 
 const { user } = useAuth()
-const router = useRouter()
-const supabase = useSupabaseClient()
 const { csrf } = useCsrf()
 const { t } = useI18n()
 const { addToast } = useToast()
+const { isGlobal } = useAppMode()
 
 const currentStep = ref<number | 'intro'>('intro')
 
@@ -397,14 +397,20 @@ const selectedKTP = ref<File | null>(null)
 const selectedPasPhoto = ref<File | null>(null)
 const isCompressingKTP = ref(false)
 const isCompressingPasPhoto = ref(false)
-const isScanning = ref(false)
 
-const isNikValid = computed(() => formData.value.nik.length === 0 || /^\d{8,20}$/.test(formData.value.nik))
+const isNikValid = computed(() => {
+  if (formData.value.nik.length === 0) return true
+  return isGlobal.value ? /^[a-zA-Z0-9]{5,20}$/.test(formData.value.nik) : /^\d{8,20}$/.test(formData.value.nik)
+})
 const isDobValid = computed(() => formData.value.dob.length === 0 || /^(0[1-9]|[12][0-9]|3[01])-(0[1-9]|1[012])-\d{4}$/.test(formData.value.dob))
 
 const isFormValid = computed(() => {
+  const isIdValid = isGlobal.value 
+    ? /^[a-zA-Z0-9]{5,20}$/.test(formData.value.nik)
+    : /^\d{8,20}$/.test(formData.value.nik)
+
   return formData.value.name.trim().length > 2 && 
-         /^\d{8,20}$/.test(formData.value.nik) && 
+         isIdValid && 
          /^(0[1-9]|[12][0-9]|3[01])-(0[1-9]|1[012])-\d{4}$/.test(formData.value.dob) &&
          selectedKTP.value !== null &&
          selectedPasPhoto.value !== null
@@ -486,9 +492,10 @@ const requestOTP = async () => {
   
   isSendingOTP.value = true
   try {
+    const csrfToken = unref(csrf) || ''
     await $fetch('/api/otp/send', {
       method: 'POST',
-      headers: { 'csrf-token': csrf },
+      headers: csrfToken ? { 'csrf-token': csrfToken } : {},
       body: { phone: userPhone.value }
     })
     
@@ -505,10 +512,11 @@ const requestOTP = async () => {
 const submitVerification = async () => {
   isSubmitting.value = true
   try {
+    const csrfToken = unref(csrf) || ''
     // 1. Verifikasi OTP
     await $fetch('/api/otp/verify', {
       method: 'POST',
-      headers: { 'csrf-token': csrf },
+      headers: csrfToken ? { 'csrf-token': csrfToken } : {},
       body: { phone: userPhone.value, code: otpCode.value }
     })
     // 2. Upload File ke Supabase Storage via Server (Aman dari RLS)
@@ -524,9 +532,9 @@ const submitVerification = async () => {
     const ktpBase64 = await fileToBase64(selectedKTP.value!)
     const pasPhotoBase64 = await fileToBase64(selectedPasPhoto.value!)
 
-    const uploadResponse = await $fetch('/api/upload-kyc', {
+    await $fetch('/api/upload-kyc', {
       method: 'POST',
-      headers: { 'csrf-token': csrf },
+      headers: csrfToken ? { 'csrf-token': csrfToken } : {},
       body: {
         userId: user.value?.id || user.value?.sub,
         ktp_base64: ktpBase64,

@@ -10,24 +10,6 @@ export default defineEventHandler(async (event) => {
 
   const netAmount = parseFloat(amount)
 
-  // Fee tier calculation (same as previous Binance Pay logic)
-  let feePercentage = 0.05 // 5% default (< $11,000)
-  if (netAmount >= 51000) {
-    feePercentage = 0.03 // 3% ($51,000+)
-  } else if (netAmount >= 11000) {
-    feePercentage = 0.04 // 4% ($11,000 - $50,000)
-  }
-
-  let selectedPkg = packageType
-  if (!selectedPkg || !['starter', 'growth', 'scale'].includes(selectedPkg)) {
-    if (netAmount >= 51000) selectedPkg = 'scale'
-    else if (netAmount >= 11000) selectedPkg = 'growth'
-    else selectedPkg = 'starter'
-  }
-
-  const feeAmount = netAmount * feePercentage
-  const paymentAmount = netAmount + feeAmount
-
   const supabase = serverSupabaseServiceRole<any>(event)
   const user = await serverSupabaseUser(event)
 
@@ -35,6 +17,45 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 401, statusMessage: 'Unauthorized' })
   }
   const userId = user.id || (user as any).sub
+
+  let selectedPkg = packageType
+  if (!selectedPkg || !['starter', 'growth', 'scale'].includes(selectedPkg)) {
+    try {
+      const { data: userProfile } = await supabase
+        .from('users')
+        .select('usd_active_package, active_package')
+        .eq('id', userId)
+        .single()
+      
+      if (userProfile?.usd_active_package && ['starter', 'growth', 'scale'].includes(userProfile.usd_active_package)) {
+        selectedPkg = userProfile.usd_active_package
+      } else if (userProfile?.active_package && ['starter', 'growth', 'scale'].includes(userProfile.active_package)) {
+        selectedPkg = userProfile.active_package
+      }
+    } catch (e) {
+      console.warn('Could not fetch user active package:', e)
+    }
+  }
+
+  // Fallback if still undetermined
+  if (!selectedPkg || !['starter', 'growth', 'scale'].includes(selectedPkg)) {
+    if (netAmount >= 51000) selectedPkg = 'scale'
+    else if (netAmount >= 11000) selectedPkg = 'growth'
+    else selectedPkg = 'starter'
+  }
+
+  // Exact fee percentage per package: Starter = 5%, Growth = 4%, Scale = 3%
+  let feePercentage = 0.05
+  if (selectedPkg === 'scale') {
+    feePercentage = 0.03
+  } else if (selectedPkg === 'growth') {
+    feePercentage = 0.04
+  } else {
+    feePercentage = 0.05
+  }
+
+  const feeAmount = netAmount * feePercentage
+  const paymentAmount = netAmount + feeAmount
 
   const config = useRuntimeConfig()
   const apiKey = config.nowpaymentsApiKey || process.env.NOWPAYMENTS_API_KEY || process.env.NUXT_NOWPAYMENTS_API_KEY
@@ -55,7 +76,7 @@ export default defineEventHandler(async (event) => {
       },
       body: JSON.stringify({
         price_amount: paymentAmount,
-        price_currency: 'usd',
+        price_currency: 'usdttrc20',
         pay_currency: 'usdttrc20',
         order_id: merchantOrderId,
         order_description: `Deposit Layanan Iklan (USD) via USDT TRC-20 (Paket ${selectedPkg})`,
@@ -73,9 +94,9 @@ export default defineEventHandler(async (event) => {
       })
     }
 
-    // Round up USDT pay_amount to nearest 0.50 step (e.g., 1.23 -> 1.50, 31.37 -> 31.50)
+    // Direct 1:1 USDT parity matching paymentAmount
     const rawPayAmount = result.pay_amount ? parseFloat(result.pay_amount) : paymentAmount
-    const finalPayAmount = Math.ceil(rawPayAmount * 2) / 2
+    const finalPayAmount = rawPayAmount || paymentAmount
 
     // Save transaction to DB
     const { error: dbError } = await supabase

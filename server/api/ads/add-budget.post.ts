@@ -5,12 +5,15 @@ export default defineEventHandler(async (event) => {
   const user = await requireUser(event)
 
   const body = await readBody(event)
-  const { accountId, amount } = body
+  const { accountId, amount, isGlobal: explicitGlobal } = body
 
-  if (!accountId || !amount || amount <= 0) {
+  const host = getRequestHost(event) || ''
+  const isGlobal = explicitGlobal === true || host.startsWith('area.')
+
+  if (!accountId || !amount || Number(amount) <= 0) {
     throw createError({
       statusCode: 400,
-      statusMessage: 'Account ID dan Nominal Anggaran (minimal Rp1) wajib diisi',
+      statusMessage: isGlobal ? 'Account ID and budget amount are required' : 'Account ID dan Nominal Anggaran (minimal Rp1) wajib diisi',
     })
   }
   
@@ -28,64 +31,110 @@ export default defineEventHandler(async (event) => {
   if (accError || !account) {
     throw createError({
       statusCode: 404,
-      statusMessage: 'Akun iklan tidak ditemukan',
+      statusMessage: isGlobal ? 'Ad account not found' : 'Akun iklan tidak ditemukan',
     })
   }
 
   if (String(account.user_id) !== String(userId)) {
     throw createError({
       statusCode: 403,
-      statusMessage: 'Akses ditolak: Anda bukan pemilik akun iklan ini',
+      statusMessage: isGlobal ? 'Access denied: You do not own this ad account' : 'Akses ditolak: Anda bukan pemilik akun iklan ini',
     })
   }
 
   // 2. Cek Saldo Utama (Ad Balance) klien
-  const { data: saldoData, error: saldoErr } = await supabase
+  let { data: saldoData, error: saldoErr } = await supabase
     .from('saldo')
-    .select('balance, pending_balance')
+    .select('balance, pending_balance, usd_balance, usd_pending_balance')
     .eq('user_id', userId)
     .single()
+
+  if (saldoErr && saldoErr.code === 'PGRST116') {
+    const { data: newSaldo, error: insertErr } = await supabase
+      .from('saldo')
+      .insert({ user_id: userId, balance: 0, pending_balance: 0, usd_balance: 0, usd_pending_balance: 0 })
+      .select('balance, pending_balance, usd_balance, usd_pending_balance')
+      .single()
+      
+    if (!insertErr && newSaldo) {
+      saldoData = newSaldo
+      saldoErr = null
+    }
+  }
 
   if (saldoErr || !saldoData) {
     throw createError({
       statusCode: 404,
-      statusMessage: 'Data Saldo Utama tidak ditemukan',
+      statusMessage: isGlobal ? 'Main balance data not found' : 'Data Saldo Utama tidak ditemukan',
     })
   }
 
-  const currentBalance = Number(saldoData.balance)
-  const currentPendingBalance = Number(saldoData.pending_balance || 0)
-  const availableBalance = currentBalance - currentPendingBalance
   const addAmount = Number(amount)
+  let availableBalance = 0
+  let newPendingBalance = 0
 
-  if (availableBalance < addAmount) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: 'Sisa Saldo Utama tidak mencukupi untuk alokasi ini',
-    })
-  }
+  if (isGlobal) {
+    const currentUsdBalance = Number(saldoData.usd_balance || 0)
+    const currentUsdPending = Number(saldoData.usd_pending_balance || 0)
+    availableBalance = currentUsdBalance - currentUsdPending
 
-  // 3. Tambahkan ke Saldo Dibekukan (pending_balance)
-  const newPendingBalance = currentPendingBalance + addAmount
-  const { error: updateSaldoErr } = await supabase
-    .from('saldo')
-    .update({ pending_balance: newPendingBalance })
-    .eq('user_id', userId)
+    if (availableBalance < addAmount) {
+      throw createError({
+        statusCode: 400,
+        statusMessage: isGlobal ? 'Insufficient available USD balance for this allocation' : 'Sisa Saldo USD tidak mencukupi untuk alokasi ini',
+      })
+    }
 
-  if (updateSaldoErr) {
-    throw createError({
-      statusCode: 500,
-      statusMessage: 'Gagal membekukan Saldo Utama',
-    })
+    newPendingBalance = currentUsdPending + addAmount
+    const { error: updateSaldoErr } = await supabase
+      .from('saldo')
+      .update({ usd_pending_balance: newPendingBalance, updated_at: new Date().toISOString() })
+      .eq('user_id', userId)
+
+    if (updateSaldoErr) {
+      throw createError({
+        statusCode: 500,
+        statusMessage: isGlobal ? 'Failed to hold USD balance' : 'Gagal membekukan Saldo USD',
+      })
+    }
+  } else {
+    const currentBalance = Number(saldoData.balance || 0)
+    const currentPending = Number(saldoData.pending_balance || 0)
+    availableBalance = currentBalance - currentPending
+
+    if (availableBalance < addAmount) {
+      throw createError({
+        statusCode: 400,
+        statusMessage: 'Sisa Saldo Utama tidak mencukupi untuk alokasi ini',
+      })
+    }
+
+    newPendingBalance = currentPending + addAmount
+    const { error: updateSaldoErr } = await supabase
+      .from('saldo')
+      .update({ pending_balance: newPendingBalance, updated_at: new Date().toISOString() })
+      .eq('user_id', userId)
+
+    if (updateSaldoErr) {
+      throw createError({
+        statusCode: 500,
+        statusMessage: 'Gagal membekukan Saldo Utama',
+      })
+    }
   }
 
   // 4. Catat ke tabel transactions (status: pending)
+  const trxDescription = isGlobal
+    ? `Budget Allocation Request - ${account.account_name || account.account_id} (${account.platform})`
+    : `Request Alokasi Anggaran Iklan - ${account.account_name || account.account_id} (${account.platform})`
+
   const { data: trxData, error: trxErr } = await supabase.from('transactions').insert({
     user_id: userId,
     amount: addAmount,
     type: 'payment',
     status: 'pending',
-    description: `Request Alokasi Anggaran Iklan - ${account.account_name || account.account_id} (${account.platform})`,
+    currency: isGlobal ? 'USD' : 'IDR',
+    description: trxDescription,
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString()
   }).select('id').single()
@@ -107,17 +156,31 @@ export default defineEventHandler(async (event) => {
 
   if (requestErr) {
     console.error('Gagal membuat request alokasi:', requestErr)
-    // Sebaiknya rollback pending_balance, tapi untuk saat ini lempar error
+    // Rollback pending balance
+    if (isGlobal) {
+      await supabase
+        .from('saldo')
+        .update({ usd_pending_balance: Number(saldoData.usd_pending_balance || 0), updated_at: new Date().toISOString() })
+        .eq('user_id', userId)
+    } else {
+      await supabase
+        .from('saldo')
+        .update({ pending_balance: Number(saldoData.pending_balance || 0), updated_at: new Date().toISOString() })
+        .eq('user_id', userId)
+    }
+
     throw createError({
       statusCode: 500,
-      statusMessage: 'Gagal membuat pengajuan anggaran',
+      statusMessage: isGlobal ? 'Failed to submit budget request' : 'Gagal membuat pengajuan anggaran',
     })
   }
 
   // 6. Selesai (Menunggu persetujuan Admin Ads Ops)
   return {
     success: true,
-    message: 'Permintaan penambahan anggaran berhasil dikirim dan sedang menunggu persetujuan tim iklan.',
+    message: isGlobal 
+      ? 'Budget allocation request successfully submitted and awaiting review.'
+      : 'Permintaan penambahan anggaran berhasil dikirim dan sedang menunggu persetujuan tim iklan.',
     new_pending_balance: newPendingBalance
   }
 })

@@ -141,8 +141,9 @@ const { csrf } = useCsrf()
 
 onMounted(async () => {
   try {
+    const csrfToken = unref(csrf)
     const res = await $fetch<any>(`/api/admin/clients/${props.clientId}`, {
-      headers: csrf.value ? { 'csrf-token': csrf.value } : {}
+      headers: csrfToken ? { 'csrf-token': csrfToken } : {}
     })
     details.value = res.data
   } catch (err: any) {

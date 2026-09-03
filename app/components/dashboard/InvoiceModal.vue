@@ -118,13 +118,13 @@ const isPaid = computed(() => {
 })
 
 const formatMoney = (amount: number | string | undefined) => {
-  if (amount === undefined || amount === null) return '$0.00'
+  if (amount === undefined || amount === null) return '0.00 USDT'
   const isUsd = props.transaction?.currency === 'USD' || 
                 props.transaction?.payment_data?.method?.includes('USDT') || 
                 props.transaction?.payment_data?.method?.includes('TRC') ||
                 props.transaction?.payment_data?.paymentName?.includes('USDT')
   if (isUsd) {
-    return `$${Number(amount).toFixed(2)} USD`
+    return `${Number(amount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USDT`
   }
   return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(Number(amount))
 }

@@ -262,9 +262,10 @@ const userInitials = computed(() => {
 
 const closeTicket = async () => {
   try {
+    const csrfToken = unref(csrf) || ''
     await $fetch(`/api/support/tickets/${ticketId}/close`, { 
       method: 'POST',
-      headers: { 'csrf-token': csrf }
+      headers: csrfToken ? { 'csrf-token': csrfToken } : {}
     })
     toast.addToast(t('support.toast.ticketClosed'), 'success')
     refresh()
@@ -327,9 +328,10 @@ const sendReply = async () => {
       }
     }
 
+    const csrfToken = unref(csrf) || ''
     await $fetch(`/api/support/tickets/${ticketId}/reply`, {
       method: 'POST',
-      headers: { 'csrf-token': csrf },
+      headers: csrfToken ? { 'csrf-token': csrfToken } : {},
       body: { content: replyContent.value, attachments: attachmentUrls }
     })
     

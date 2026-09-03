@@ -118,12 +118,14 @@ import { ref, onMounted, onUnmounted } from 'vue'
 import { Bell, Plus, Trash2, CheckCheck } from 'lucide-vue-next'
 import { stripHtml } from '../../../utils/formatters'
 import { useAuth } from '~/composables/useAuth'
+import { useCsrf } from '#imports'
 
 definePageMeta({
   layout: 'dashboard'
 })
 
 const { user } = useAuth()
+const { csrf } = useCsrf()
 const supabase = useSupabaseClient<any>()
 const notifications = ref<any[]>([])
 const loading = ref(true)
@@ -179,8 +181,10 @@ const markAllRead = async () => {
   const userId = user.value.id || (user.value as any).sub
   loading.value = true
   try {
+    const csrfToken = unref(csrf) || ''
     await $fetch('/api/notifications/read-all', {
       method: 'PUT',
+      headers: csrfToken ? { 'csrf-token': csrfToken } : {},
       body: { userId }
     })
     await fetchNotifications()
@@ -196,8 +200,10 @@ const deleteAll = async () => {
   const userId = user.value.id || (user.value as any).sub
   loading.value = true
   try {
+    const csrfToken = unref(csrf) || ''
     await $fetch('/api/notifications/all', {
       method: 'DELETE',
+      headers: csrfToken ? { 'csrf-token': csrfToken } : {},
       body: { userId }
     })
     await fetchNotifications()
@@ -212,7 +218,11 @@ const deleteNotif = async (id: string) => {
   try {
     // Optimistic UI update
     notifications.value = notifications.value.filter(n => n.id !== id)
-    await $fetch(`/api/notifications/${id}`, { method: 'DELETE' })
+    const csrfToken = unref(csrf) || ''
+    await $fetch(`/api/notifications/${id}`, { 
+      method: 'DELETE',
+      headers: csrfToken ? { 'csrf-token': csrfToken } : {}
+    })
     window.dispatchEvent(new CustomEvent('refresh-notifications'))
   } catch (err) {
     console.error('Error deleting notification:', err)

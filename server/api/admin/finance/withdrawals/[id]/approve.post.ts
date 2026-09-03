@@ -13,7 +13,14 @@ export default defineEventHandler(async (event) => {
     // Ambil data withdrawal
     const { data: withdrawal, error: fetchError } = await supabase
       .from('affiliate_withdrawals')
-      .select('user_id, amount, status')
+      .select(`
+        user_id, 
+        amount, 
+        status,
+        users (
+          affiliate_profiles (bank_name, bank_account)
+        )
+      `)
       .eq('id', id)
       .single()
 
@@ -25,6 +32,11 @@ export default defineEventHandler(async (event) => {
       throw createError({ statusCode: 400, message: 'Hanya pengajuan dengan status pending yang dapat disetujui' })
     }
 
+    const userObj = Array.isArray((withdrawal as any).users) ? (withdrawal as any).users[0] : (withdrawal as any).users
+    let profile = userObj?.affiliate_profiles
+    if (Array.isArray(profile)) profile = profile[0]
+    const isCrypto = profile?.bank_name?.includes('USDT') || profile?.bank_name?.includes('TRC') || Number(withdrawal.amount) < 1000
+
     // 1. Update status menjadi approved
     const { error: updateError } = await supabase
       .from('affiliate_withdrawals')
@@ -34,10 +46,15 @@ export default defineEventHandler(async (event) => {
     if (updateError) throw updateError
 
     // 2. Buat notifikasi untuk user
+    const notifTitle = isCrypto ? 'Affiliate Payout Completed' : 'Pencairan Komisi Berhasil'
+    const notifMessage = isCrypto
+      ? `Your affiliate commission payout of ${Number(withdrawal.amount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USDT has been approved and sent to your TRC-20 wallet.`
+      : `Pencairan komisi afiliasi Anda sebesar Rp ${Number(withdrawal.amount).toLocaleString('id-ID')} telah disetujui dan ditransfer ke rekening Anda.`
+
     await supabase.from('notifications').insert({
       user_id: withdrawal.user_id,
-      title: 'Pencairan Komisi Berhasil',
-      message: `Pencairan komisi afiliasi Anda sebesar Rp ${withdrawal.amount.toLocaleString('id-ID')} telah disetujui dan ditransfer ke rekening Anda.`,
+      title: notifTitle,
+      message: notifMessage,
       type: 'system',
       is_read: false
     })
@@ -48,12 +65,13 @@ export default defineEventHandler(async (event) => {
       amount: withdrawal.amount,
       type: 'affiliate_commission',
       status: 'success',
-      payment_method: 'finance_transfer',
-      description: 'Pencairan komisi afiliasi ke rekening bank',
+      currency: isCrypto ? 'USD' : 'IDR',
+      payment_method: isCrypto ? 'usdt_trc20' : 'finance_transfer',
+      description: isCrypto ? 'Affiliate commission payout to USDT TRC-20 wallet' : 'Pencairan komisi afiliasi ke rekening bank',
       reference_id: `WD-${id.split('-')[0]}`
     })
 
-    return { success: true, message: 'Pengajuan pencairan berhasil disetujui.' }
+    return { success: true, message: isCrypto ? 'Payout approved and marked as sent.' : 'Pengajuan pencairan berhasil disetujui.' }
   } catch (error: any) {
     console.error('Error approving withdrawal:', error)
     throw createError({

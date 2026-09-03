@@ -9,6 +9,9 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 401, message: 'User ID not found' })
   }
 
+  const host = getRequestHost(event) || ''
+  const isGlobal = host.startsWith('area.')
+
   const supabase = await serverSupabaseServiceRole(event)
 
   try {
@@ -23,14 +26,25 @@ export default defineEventHandler(async (event) => {
     if (refError) throw refError
 
     if (!referrals || referrals.length === 0) {
-      throw createError({ statusCode: 400, message: 'Tidak ada komisi yang bisa diklaim saat ini.' })
+      throw createError({
+        statusCode: 400,
+        message: isGlobal ? 'No commission available to withdraw right now.' : 'Tidak ada komisi yang bisa diklaim saat ini.'
+      })
     }
 
     // 2. Hitung total yang akan diklaim
     const totalClaimAmount = referrals.reduce((sum: number, r: any) => sum + (Number(r.reward_amount) || 0), 0)
 
-    if (totalClaimAmount < 100000) {
-      throw createError({ statusCode: 400, message: `Minimal pencairan komisi adalah Rp 100.000. Saldo Anda: Rp ${totalClaimAmount.toLocaleString('id-ID')}` })
+    const minAmount = isGlobal ? 10 : 100000
+    if (totalClaimAmount < minAmount) {
+      const minText = isGlobal ? '10.00 USDT' : 'Rp 100.000'
+      const curText = isGlobal ? `${totalClaimAmount.toFixed(2)} USDT` : `Rp ${totalClaimAmount.toLocaleString('id-ID')}`
+      throw createError({
+        statusCode: 400,
+        message: isGlobal
+          ? `Minimum commission payout is ${minText}. Your balance: ${curText}`
+          : `Minimal pencairan komisi adalah ${minText}. Saldo Anda: ${curText}`
+      })
     }
 
     // 3. Buat pengajuan pencairan di affiliate_withdrawals
@@ -46,7 +60,10 @@ export default defineEventHandler(async (event) => {
 
     if (wdError) {
       console.error('Withdrawal Insert Error:', wdError)
-      throw createError({ statusCode: 500, message: 'Gagal membuat pengajuan pencairan.' })
+      throw createError({
+        statusCode: 500,
+        message: isGlobal ? 'Failed to submit withdrawal request.' : 'Gagal membuat pengajuan pencairan.'
+      })
     }
 
     // 4. Tandai referral sebagai sudah diklaim dan tautkan ke pengajuan ini
@@ -60,9 +77,15 @@ export default defineEventHandler(async (event) => {
       })
       .in('id', referralIds)
 
+    const formattedAmount = isGlobal
+      ? `${totalClaimAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USDT`
+      : `Rp ${totalClaimAmount.toLocaleString('id-ID')}`
+
     return {
       success: true,
-      message: `Berhasil mengajukan pencairan komisi sebesar Rp ${totalClaimAmount.toLocaleString('id-ID')}. Tim Finance akan segera memprosesnya.`,
+      message: isGlobal
+        ? `Successfully requested commission payout of ${formattedAmount}. Finance team will process it shortly.`
+        : `Berhasil mengajukan pencairan komisi sebesar ${formattedAmount}. Tim Finance akan segera memprosesnya.`,
       amount: totalClaimAmount
     }
 
@@ -70,7 +93,7 @@ export default defineEventHandler(async (event) => {
     console.error('Affiliate Claim Error:', error)
     throw createError({
       statusCode: error.statusCode || 500,
-      message: error.message || 'Terjadi kesalahan pada server saat memproses pencairan komisi.'
+      message: error.message || (isGlobal ? 'Server error processing withdrawal.' : 'Terjadi kesalahan pada server saat memproses pencairan komisi.')
     })
   }
 })

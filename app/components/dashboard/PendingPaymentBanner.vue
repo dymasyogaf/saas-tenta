@@ -96,14 +96,14 @@ const resumePayment = async (trx: any) => {
     const paymentId = pd?.paymentId
 
     const rawAmt = parseFloat(String(payAmount || pd?.totalAmount || Number(trx.amount || 0) * 1.05))
-    const roundedAmt = (!rawAmt || isNaN(rawAmt)) ? '31.50' : (Math.ceil(rawAmt * 2) / 2).toFixed(2)
+    const formattedAmt = (!rawAmt || isNaN(rawAmt)) ? '31.50' : rawAmt.toFixed(2)
 
     const query: Record<string, string> = {
       orderId: String(pd?.merchantOrderId || trx.payment_gateway_ref || ''),
       paymentId: String(paymentId || ''),
       ref: String(trx.payment_gateway_ref || ''),
       payAddress: String(payAddress || ''),
-      payAmount: roundedAmt,
+      payAmount: formattedAmt,
       method: 'USDT TRC-20 (Crypto)',
       bank: 'USDT TRC-20',
       amount: String(pd?.totalAmount || (Number(trx.amount || 0) * 1.05)),
