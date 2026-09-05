@@ -95,7 +95,11 @@
 
           <!-- Notification Bell -->
           <div ref="notifRef" class="relative z-50">
-            <button class="text-ink-500 hover:text-orange-500 transition-colors relative p-1.5 rounded-lg hover:bg-ink-50" @click="toggleNotif">
+            <button 
+              class="text-ink-500 hover:text-orange-500 transition-colors relative p-1.5 rounded-lg hover:bg-ink-50" 
+              :class="{ 'animate-bounce text-orange-500': isBellRinging }"
+              @click="toggleNotif"
+            >
               <Bell class="w-4 h-4 sm:w-5 sm:h-5" />
               <span v-if="unreadCount > 0" class="absolute top-0.5 right-0.5 bg-red-500 text-white text-[9px] font-bold px-1 py-0.2 rounded-full border border-white leading-none">
                 {{ unreadCount }}
@@ -105,44 +109,262 @@
             <!-- Notification Popup -->
             <div
               v-if="isNotifOpen"
-              class="fixed inset-x-3 top-[64px] sm:absolute sm:inset-x-auto sm:right-0 sm:top-full sm:mt-2 w-auto sm:w-80 bg-white border border-ink-100 rounded-xl shadow-xl shadow-ink-900/10 z-50 flex flex-col"
+              class="fixed inset-x-3 top-[64px] sm:absolute sm:inset-x-auto sm:right-0 sm:top-full sm:mt-2 w-auto sm:w-[380px] bg-white border border-ink-100 rounded-2xl shadow-2xl shadow-ink-900/15 z-50 flex flex-col overflow-hidden"
             >
-              <div class="flex items-center justify-between p-3.5 border-b border-ink-100">
-                <h3 class="font-semibold text-ink-900 text-sm">{{ $t('header.notifications') }}</h3>
-              </div>
-              <div class="flex flex-col h-72 overflow-y-auto">
-                <div v-if="notifications.length === 0" class="p-8 flex flex-col items-center justify-center text-center h-full">
-                  <div class="w-20 h-20 mb-4 bg-ink-50 rounded-full flex items-center justify-center text-ink-300 relative">
-                    <Bell class="w-8 h-8" />
-                    <span class="absolute top-2 right-2 text-ink-400 font-bold text-xs transform rotate-12">zZ</span>
-                  </div>
-                  <p class="text-ink-500 text-sm">{{ $t('header.noNotifications') }}</p>
+              <!-- 1. Header: List Mode -->
+              <div v-if="notifTab === 'list'" class="flex items-center justify-between p-3.5 border-b border-ink-100 bg-white">
+                <div class="flex items-center gap-2">
+                  <h3 class="font-bold text-ink-900 text-sm">{{ $t('header.notifications') }}</h3>
+                  <span v-if="unreadCount > 0" class="bg-orange-100 text-orange-700 text-[10px] font-bold px-2 py-0.5 rounded-full">
+                    {{ unreadCount }} baru
+                  </span>
                 </div>
-                <div v-else class="divide-y divide-ink-100">
+                <button
+                  type="button"
+                  @click="notifTab = 'settings'"
+                  class="p-1.5 text-ink-500 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-colors flex items-center gap-1"
+                  title="Pengaturan Notifikasi"
+                >
+                  <Settings class="w-4 h-4" />
+                </button>
+              </div>
+
+              <!-- 1. Header: Settings Mode -->
+              <div v-else class="flex items-center justify-between px-4 py-3 border-b border-ink-100 bg-white">
+                <button
+                  type="button"
+                  @click="notifTab = 'list'"
+                  class="flex items-center gap-1 text-xs font-bold text-ink-700 hover:text-orange-600 hover:bg-orange-50 px-2.5 py-1.5 rounded-xl transition-all cursor-pointer border border-ink-100 hover:border-orange-200 -ml-1"
+                >
+                  <ChevronLeft class="w-4 h-4" />
+                  <span>Kembali</span>
+                </button>
+                <h4 class="font-bold text-ink-900 text-xs">Pengaturan Notifikasi</h4>
+                <div class="w-16"></div>
+              </div>
+
+              <!-- 2. Body: Settings Panel -->
+              <div v-if="notifTab === 'settings'" class="p-3.5 space-y-3 bg-ink-50/40">
+                <!-- Group Container -->
+                <div class="bg-white rounded-2xl border border-ink-100 divide-y divide-ink-100 shadow-xs overflow-hidden">
+                  <!-- Row 1: Audio Sound -->
+                  <div class="p-3.5 space-y-2.5 hover:bg-ink-50/40 transition-colors">
+                    <div class="flex items-center justify-between gap-3">
+                      <div class="flex items-center gap-3 min-w-0">
+                        <div 
+                          class="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 border transition-colors"
+                          :class="isSoundEnabled ? 'bg-orange-50 text-orange-600 border-orange-200' : 'bg-ink-50 text-ink-400 border-ink-200'"
+                        >
+                          <Volume2 v-if="isSoundEnabled" class="w-4 h-4" />
+                          <VolumeX v-else class="w-4 h-4" />
+                        </div>
+                        <div class="min-w-0">
+                          <div class="font-bold text-ink-950 text-xs">Suara Notifikasi</div>
+                          <p class="text-[11px] text-ink-500 leading-tight">Nada dering lonceng saat ada update.</p>
+                        </div>
+                      </div>
+
+                      <div class="flex items-center gap-2 shrink-0">
+                        <button
+                          type="button"
+                          @click="toggleSound()"
+                          class="relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-hidden"
+                          :class="isSoundEnabled ? 'bg-orange-600' : 'bg-ink-200'"
+                        >
+                          <span
+                            class="pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-sm ring-0 transition duration-200 ease-in-out"
+                            :class="isSoundEnabled ? 'translate-x-4' : 'translate-x-0'"
+                          />
+                        </button>
+                      </div>
+                    </div>
+
+                    <!-- Inline Sound Test Button -->
+                    <div v-if="isSoundEnabled" class="pl-12 flex items-center">
+                      <button
+                        type="button"
+                        @click="playNotificationChime('info')"
+                        class="text-[10px] font-bold text-orange-600 hover:text-orange-700 bg-orange-50 hover:bg-orange-100 px-2.5 py-1 rounded-lg border border-orange-200/80 transition-colors flex items-center gap-1.5 cursor-pointer"
+                      >
+                        <Volume2 class="w-3 h-3" />
+                        <span>Uji Nada Dering 🔊</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- Row 2: Desktop & Web Push -->
+                  <div class="p-3.5 space-y-2.5 hover:bg-ink-50/40 transition-colors">
+                    <div class="flex items-center justify-between gap-3">
+                      <div class="flex items-center gap-3 min-w-0">
+                        <div 
+                          class="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 border transition-colors"
+                          :class="isDesktopActive ? 'bg-orange-50 text-orange-600 border-orange-200' : 'bg-ink-50 text-ink-400 border-ink-200'"
+                        >
+                          <BellRing class="w-4 h-4" />
+                        </div>
+                        <div class="min-w-0">
+                          <div class="flex items-center gap-2">
+                            <span class="font-bold text-ink-950 text-xs">Notifikasi Desktop / HP</span>
+                            <span 
+                              class="inline-flex items-center gap-1 text-[9px] font-bold px-1.5 py-0.2 rounded-full border"
+                              :class="isDesktopActive ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-ink-100 text-ink-500 border-ink-200'"
+                            >
+                              <span class="w-1.5 h-1.5 rounded-full" :class="isDesktopActive ? 'bg-emerald-500' : 'bg-ink-400'"></span>
+                              <span>{{ isDesktopActive ? 'Aktif' : 'Nonaktif' }}</span>
+                            </span>
+                          </div>
+                          <p class="text-[11px] text-ink-500 leading-tight mt-0.5">Pop-up saat web ditutup / minimize.</p>
+                        </div>
+                      </div>
+
+                      <div class="flex items-center gap-2 shrink-0">
+                        <button
+                          type="button"
+                          @click="handleToggleDesktop"
+                          class="relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-hidden"
+                          :class="isDesktopActive ? 'bg-orange-600' : 'bg-ink-200'"
+                          :title="isDesktopActive ? 'Nonaktifkan notifikasi desktop' : 'Aktifkan notifikasi desktop'"
+                        >
+                          <span
+                            class="pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-sm ring-0 transition duration-200 ease-in-out"
+                            :class="isDesktopActive ? 'translate-x-4' : 'translate-x-0'"
+                          />
+                        </button>
+                      </div>
+                    </div>
+
+                    <!-- Push Action Button / Test Button -->
+                    <div class="pl-12">
+                      <button
+                        v-if="!isDesktopActive && desktopPermission !== 'denied'"
+                        type="button"
+                        @click="handleToggleDesktop"
+                        :disabled="isPushSubscribing"
+                        class="w-full py-1.5 px-3 text-[11px] font-bold text-white bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 rounded-lg transition-all shadow-sm flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
+                      >
+                        <Bell class="w-3.5 h-3.5" />
+                        <span>{{ isPushSubscribing ? 'Memproses Izin...' : 'Aktifkan Notifikasi Desktop' }}</span>
+                      </button>
+                      <button
+                        v-else-if="isDesktopActive"
+                        type="button"
+                        @click="handleTestNotification"
+                        class="w-full py-1.5 px-3 text-[11px] font-bold text-orange-600 hover:text-orange-700 hover:bg-orange-50/80 bg-white border border-orange-200 rounded-lg transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+                      >
+                        <Sparkles class="w-3.5 h-3.5" />
+                        <span>Kirim Tes Notifikasi Latar Belakang</span>
+                      </button>
+                      <div v-else-if="desktopPermission === 'denied'" class="text-[10px] text-red-500 bg-red-50 px-2 py-1 rounded border border-red-200">
+                        Izin notifikasi diblokir di browser. Harap aktifkan izin di pengaturan browser Anda.
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Row 3: Mobile Haptic -->
+                  <div class="p-3.5 flex items-center justify-between gap-3 hover:bg-ink-50/40 transition-colors">
+                    <div class="flex items-center gap-3 min-w-0">
+                      <div 
+                        class="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 border transition-colors"
+                        :class="isHapticEnabled ? 'bg-orange-50 text-orange-600 border-orange-200' : 'bg-ink-50 text-ink-400 border-ink-200'"
+                      >
+                        <Smartphone class="w-4 h-4" />
+                      </div>
+                      <div class="min-w-0">
+                        <div class="font-bold text-ink-950 text-xs">Getaran Perangkat</div>
+                        <p class="text-[11px] text-ink-500 leading-tight">Getar saat notifikasi masuk di HP / tablet.</p>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      @click="toggleHaptic()"
+                      class="relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-hidden"
+                      :class="isHapticEnabled ? 'bg-orange-600' : 'bg-ink-200'"
+                    >
+                      <span
+                        class="pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-sm ring-0 transition duration-200 ease-in-out"
+                        :class="isHapticEnabled ? 'translate-x-4' : 'translate-x-0'"
+                      />
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Footer Reassurance Note -->
+                <div class="flex items-center justify-center gap-1.5 text-[10px] text-ink-400 font-medium pt-1">
+                  <ShieldCheck class="w-3.5 h-3.5 text-emerald-600" />
+                  <span>Pengaturan tersimpan otomatis di perangkat ini</span>
+                </div>
+              </div>
+
+              <!-- 2. Body: Notification List Mode -->
+              <div v-else class="flex flex-col">
+                <!-- Permission Prompt Banner inside list only if not active -->
+                <div 
+                  v-if="!isDesktopActive" 
+                  class="p-3 bg-orange-50/90 border-b border-orange-100 flex items-center justify-between gap-3"
+                >
+                  <div class="flex items-center gap-2.5 min-w-0">
+                    <div class="w-7 h-7 rounded-lg bg-orange-100 text-orange-600 flex items-center justify-center shrink-0">
+                      <BellRing class="w-3.5 h-3.5 animate-pulse" />
+                    </div>
+                    <p class="text-[11px] text-orange-900 font-medium leading-tight">
+                      Aktifkan notifikasi saat web ditutup / minimize?
+                    </p>
+                  </div>
+                  <button 
+                    type="button" 
+                    @click="handleEnableNotifications" 
+                    :disabled="isPushSubscribing"
+                    class="text-[11px] font-bold text-white bg-orange-600 hover:bg-orange-700 disabled:opacity-50 px-3 py-1.5 rounded-lg shadow-xs shrink-0 transition-colors cursor-pointer"
+                  >
+                    {{ isPushSubscribing ? '...' : 'Izinkan' }}
+                  </button>
+                </div>
+
+                <div class="flex flex-col divide-y divide-ink-100">
+                  <div v-if="notifications.length === 0" class="p-6 flex flex-col items-center justify-center text-center">
+                    <div class="w-12 h-12 mb-2 bg-ink-50 rounded-full flex items-center justify-center text-ink-300 relative">
+                      <Bell class="w-6 h-6" />
+                      <span class="absolute top-1 right-1 text-ink-400 font-bold text-[9px] transform rotate-12">zZ</span>
+                    </div>
+                    <p class="text-ink-500 text-xs font-medium">{{ $t('header.noNotifications') }}</p>
+                  </div>
                   <div 
-                    v-for="notif in notifications" 
+                    v-else
+                    v-for="notif in notifications.slice(0, 3)" 
                     :key="notif.id"
                     @click="viewNotification(notif)"
-                    class="p-3.5 hover:bg-ink-50 cursor-pointer transition-colors relative"
-                    :class="{'bg-orange-50/30': !notif.is_read}"
+                    class="p-3 hover:bg-ink-50/80 cursor-pointer transition-colors relative flex items-start gap-2.5"
+                    :class="{'bg-orange-50/35': !notif.is_read}"
                   >
-                    <div v-if="!notif.is_read" class="absolute left-2 top-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-orange-500"></div>
-                    <div class="pl-3">
-                      <p class="text-xs font-bold text-ink-900 mb-1">{{ notif.title }}</p>
-                      <p class="text-xs text-ink-600 line-clamp-2">{{ stripHtml(notif.message) }}</p>
-                      <p class="text-[10px] text-ink-400 mt-1.5">{{ new Date(notif.created_at).toLocaleDateString('id-ID') }}</p>
+                    <div 
+                      class="w-2 h-2 rounded-full shrink-0 mt-1.5"
+                      :class="notif.is_read ? 'bg-transparent' : 'bg-orange-500 ring-2 ring-orange-200'"
+                    ></div>
+                    <div class="flex-1 min-w-0 pr-1">
+                      <div class="flex items-center justify-between gap-2 mb-0.5">
+                        <p class="text-xs font-bold text-ink-950 truncate">{{ notif.title }}</p>
+                        <span class="text-[10px] text-ink-400 font-medium shrink-0">
+                          {{ new Date(notif.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' }) }}
+                        </span>
+                      </div>
+                      <p class="text-[11px] text-ink-600 line-clamp-1 leading-snug">{{ stripHtml(notif.message) }}</p>
                     </div>
                   </div>
                 </div>
-              </div>
-              <div class="p-3 border-t border-ink-100 text-center">
-                <NuxtLink
-                  to="/dashboard/notifikasi"
-                  class="w-full text-xs sm:text-sm font-semibold text-orange-500 hover:text-orange-600 flex items-center justify-center gap-1.5"
-                  @click="isNotifOpen = false"
-                >
-                  {{ $t('header.viewAll') }} <ArrowRight class="w-3.5 h-3.5" />
-                </NuxtLink>
+
+                <div class="p-2.5 border-t border-ink-100 text-center bg-white">
+                  <NuxtLink
+                    to="/dashboard/notifikasi"
+                    class="w-full text-xs font-bold text-orange-600 hover:text-orange-700 flex items-center justify-center gap-1.5 py-0.5"
+                    @click="isNotifOpen = false"
+                  >
+                    <span>{{ $t('header.viewAll') }}</span>
+                    <span v-if="notifications.length > 3" class="text-[10px] bg-orange-100 text-orange-700 px-1.5 py-0.2 rounded-full">
+                      {{ notifications.length }}
+                    </span>
+                    <ArrowRight class="w-3.5 h-3.5" />
+                  </NuxtLink>
+                </div>
               </div>
             </div>
           </div>
@@ -274,10 +496,71 @@ import {
   ShieldCheck,
   Headset,
   Gift,
-  Check
+  Check,
+  Volume2,
+  VolumeX,
+  BellRing,
+  ChevronLeft,
+  Smartphone,
+  Sparkles
 } from 'lucide-vue-next'
+import { useNotificationSound } from '~/composables/useNotificationSound'
+import { useRealtimeNotifications } from '~/composables/useRealtimeNotifications'
+import { useWebPush } from '~/composables/useWebPush'
 
 const { t, locale, locales, setLocale } = useI18n()
+const { isSoundEnabled, isHapticEnabled, toggleSound, toggleHaptic, playNotificationChime } = useNotificationSound()
+const { desktopPermission, requestDesktopPermission, triggerPopup, isDesktopNotificationEnabled, toggleDesktopNotification } = useRealtimeNotifications()
+const { isSupported: isPushSupported, isSubscribed: isPushSubscribed, isSubscribing: isPushSubscribing, subscribeToPush, unsubscribeFromPush, sendTestPush } = useWebPush()
+
+const notifTab = ref<'list' | 'settings'>('list')
+const isDesktopActive = computed(() => {
+  if (!isDesktopNotificationEnabled.value) return false
+  if (import.meta.client && typeof window !== 'undefined' && 'Notification' in window) {
+    return Notification.permission === 'granted'
+  }
+  return desktopPermission.value === 'granted' || isPushSubscribed.value
+})
+
+const handleToggleDesktop = async () => {
+  if (isDesktopActive.value) {
+    await toggleDesktopNotification(false)
+  } else {
+    if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission !== 'granted') {
+      await handleEnableNotifications()
+    } else {
+      await toggleDesktopNotification(true)
+      if (isPushSupported.value && !isPushSubscribed.value) {
+        await subscribeToPush()
+      }
+    }
+  }
+}
+
+const handleEnableNotifications = async () => {
+  await requestDesktopPermission()
+  if (isPushSupported.value) {
+    await subscribeToPush()
+  }
+}
+
+const handleTestNotification = async () => {
+  playNotificationChime('success')
+  triggerPopup({
+    id: 'test-' + Date.now(),
+    user_id: user.value?.id || '',
+    title: 'Tes Pengaturan Notifikasi 🔔',
+    message: 'Pengaturan audio chime, pop-up in-app, dan push background aktif & normal!',
+    type: 'success',
+    created_at: new Date().toISOString()
+  })
+
+  if (isPushSubscribed.value) {
+    try {
+      await sendTestPush()
+    } catch (_) {}
+  }
+}
 
 const availableLocales = computed(() =>
   (locales.value as Array<{ code: string; name: string }>).filter(l => l.code !== locale.value)
@@ -304,12 +587,12 @@ const supabase = useSupabaseClient<any>()
 
 const notifications = ref<any[]>([])
 const unreadCount = computed(() => notifications.value.filter(n => !n.is_read).length)
-
-
+const isBellRinging = ref(false)
 
 const toggleNotif = async () => {
   isNotifOpen.value = !isNotifOpen.value
   if (isNotifOpen.value) {
+    notifTab.value = 'list'
     isLangOpen.value = false
     isProfileOpen.value = false
     await fetchNotifications()
@@ -318,7 +601,6 @@ const toggleNotif = async () => {
 
 const fetchNotifications = async () => {
   if (!user.value) {
-    console.log('fetchNotifications: user is null')
     return
   }
   
@@ -330,13 +612,20 @@ const fetchNotifications = async () => {
         _t: Date.now()
       }
     })
-    console.log('fetchNotifications Data:', data)
     if (data) {
       notifications.value = data
     }
   } catch (err: any) {
     console.error('fetchNotifications Error:', err)
   }
+}
+
+const handleNotificationUpdate = async () => {
+  isBellRinging.value = true
+  await fetchNotifications()
+  setTimeout(() => {
+    isBellRinging.value = false
+  }, 1500)
 }
 
 const selectedNotif = ref<any>(null)
@@ -352,18 +641,28 @@ const viewNotification = async (notif: any) => {
 }
 
 onMounted(() => {
+  // Sync preferences from localStorage on client mount
+  if (import.meta.client) {
+    const savedSound = localStorage.getItem('tentaklik_sound_enabled')
+    if (savedSound !== null) isSoundEnabled.value = savedSound === 'true'
+    const savedHaptic = localStorage.getItem('tentaklik_haptic_enabled')
+    if (savedHaptic !== null) isHapticEnabled.value = savedHaptic === 'true'
+    const savedDesktop = localStorage.getItem('tentaklik_desktop_notif_enabled')
+    if (savedDesktop !== null) isDesktopNotificationEnabled.value = savedDesktop === 'true'
+  }
+
   // Hanya fetch jika belum ada (untuk menghindari double fetch di halaman saldo/topup)
   if (saldoStore.activePackage === null) {
     saldoStore.fetchSaldo()
   }
   if (user.value) {
     fetchNotifications()
-    window.addEventListener('refresh-notifications', fetchNotifications)
+    window.addEventListener('refresh-notifications', handleNotificationUpdate)
   }
 })
 
 onUnmounted(() => {
-  window.removeEventListener('refresh-notifications', fetchNotifications)
+  window.removeEventListener('refresh-notifications', handleNotificationUpdate)
 })
 
 const userName = computed(() => {

@@ -132,11 +132,14 @@ export default defineNuxtConfig({
     nowpaymentsApiKey: process.env.NOWPAYMENTS_API_KEY || '',
     nowpaymentsIpnSecret: process.env.NOWPAYMENTS_IPN_SECRET || '',
     nowpaymentsWebhookUrl: process.env.NOWPAYMENTS_WEBHOOK_URL || 'https://area.tentaklik.com/api/nowpayments/webhook',
+    vapidPrivateKey: process.env.VAPID_PRIVATE_KEY || '-BIi0inbvsu42yCZ4r-jyArYKcVwohBF8bz2Lg7aypQ',
+    vapidSubject: process.env.VAPID_SUBJECT || 'mailto:admin@tentaklik.com',
     // Public keys (exposed to client)
     public: {
       appName: 'Tentaklik',
       supabaseUrl: '',
       supabaseKey: '',
+      vapidPublicKey: process.env.VAPID_PUBLIC_KEY || 'BFc5tXocI2v1YFHh__LGA63kjdm3S19HHvlpLRXNDg8ZR_nIVs6Nxnd0ImmP_7h9XeTMBsRCgTqr5CK_ApZLMDs',
       pricingMonthly: 150000,
       pricingMonthlyUsd: 31,
       pricingQuarterly: 350000,
