@@ -149,45 +149,8 @@ const { isSoundEnabled, toggleSound, toggleHaptic } = useNotificationSound()
 const { isSupported: isPushSupported, subscribeToPush } = useWebPush()
 
 const checkShouldShowModal = () => {
-  if (!import.meta.client || typeof window === 'undefined') return
-
-  // Jangan munculkan di halaman auth/login
-  if (route.path.startsWith('/login') || route.path.startsWith('/register') || route.path.startsWith('/forgot-password')) {
-    isOpen.value = false
-    return
-  }
-
-  // 1. Cek apakah izin notifikasi browser diblokir permanen (denied)
-  if ('Notification' in window && Notification.permission === 'denied') {
-    return
-  }
-
-  // 2. Baca status tersimpan terkini dari localStorage
-  const savedDesktop = localStorage.getItem('tentaklik_desktop_notif_enabled')
-  const savedSound = localStorage.getItem('tentaklik_sound_enabled')
-
-  const isBrowserGranted = 'Notification' in window && Notification.permission === 'granted'
-  const isDesktopActive = isBrowserGranted && (savedDesktop !== null ? savedDesktop === 'true' : isDesktopNotificationEnabled.value)
-  const isSoundActive = (savedSound !== null ? savedSound === 'true' : isSoundEnabled.value)
-
-  // Jika Notifikasi Desktop DAN Suara sudah aktif, TIDAK PERLU munculkan popup
-  if (isDesktopActive && isSoundActive) {
-    isOpen.value = false
-    return
-  }
-
-  // 3. Cek apakah baru saja ditutup dalam sesi ini (sessionStorage)
-  const dismissedInSession = sessionStorage.getItem('tentaklik_notif_modal_dismissed')
-  if (dismissedInSession === 'true') {
-    return
-  }
-
-  // 4. Munculkan popup modal dengan delay halus
-  setTimeout(() => {
-    if (!route.path.startsWith('/login') && !route.path.startsWith('/register')) {
-      isOpen.value = true
-    }
-  }, 600)
+  // Dinonaktifkan sementara sesuai instruksi pengguna
+  isOpen.value = false
 }
 
 const handleEnable = async () => {

@@ -41,7 +41,8 @@ watch(user, (newUser) => {
     <NuxtPage />
   </NuxtLayout>
   <NotificationInAppNotificationPopup />
-  <NotificationPromptModal />
+  <!-- NotificationPromptModal dinonaktifkan sementara sesuai instruksi -->
+  <!-- <NotificationPromptModal /> -->
   <SharedToast />
   <ConfirmModal />
 </template>
