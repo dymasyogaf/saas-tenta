@@ -1,5 +1,6 @@
 import { serverSupabaseServiceRole } from '#supabase/server'
 import { syncUserHighestPackage } from '../../utils/packageSync'
+import { sendPushToUser } from '../../utils/webPush'
 
 export default defineEventHandler(async (event) => {
   const query = getQuery(event)
@@ -81,6 +82,23 @@ export default defineEventHandler(async (event) => {
           }
 
           await syncUserHighestPackage(supabase, trx.user_id, 'USD')
+
+          // Notifikasi real-time: USD Deposit Berhasil
+          const usdAmount = `$${Number(trx.amount).toLocaleString('en-US', { minimumFractionDigits: 2 })} USDT`
+          await supabase.from('notifications').insert({
+            user_id: trx.user_id,
+            type: 'topup_approved',
+            title: 'Deposit Successful',
+            message: `Your crypto deposit of ${usdAmount} has been confirmed and credited to your account.`,
+            created_at: new Date().toISOString()
+          })
+
+          sendPushToUser(event, trx.user_id, {
+            title: 'Deposit Successful',
+            body: `Your crypto deposit of ${usdAmount} has been confirmed and credited to your account.`,
+            url: '/dashboard/saldo',
+            tag: `topup-success-${trx.id}`
+          }).catch(() => {})
         }
       } catch (err) {
         console.error('Failed to sync NOWPayments status to DB:', err)

@@ -1,4 +1,5 @@
 import { serverSupabaseServiceRole, serverSupabaseUser } from '#supabase/server'
+import { sendPushToUser } from '../../utils/webPush'
 
 export default defineEventHandler(async (event) => {
   const body = await readBody(event)
@@ -133,10 +134,18 @@ export default defineEventHandler(async (event) => {
   
   await supabaseAdmin.from('notifications').insert({
     user_id: userId,
-    type: 'system',
+    type: 'ad_request_pending',
     title: 'Pengajuan Akun Sedang Direview',
     message: `Pengajuan sewa akun iklan ${platformLabel} Anda telah kami terima dan sedang dalam peninjauan.`
   })
+
+  // Web Push
+  sendPushToUser(event, userId, {
+    title: 'Pengajuan Akun Sedang Direview',
+    body: `Pengajuan sewa akun iklan ${platformLabel} Anda telah kami terima dan sedang dalam peninjauan.`,
+    url: '/dashboard/platform',
+    tag: `ad-request-pending-${Date.now()}`
+  }).catch(() => {})
 
   // --- AFFILIATE COMMISSION LOGIC ---
   const { data: referral } = await supabaseAdmin

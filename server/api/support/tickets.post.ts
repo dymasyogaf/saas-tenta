@@ -1,5 +1,6 @@
 import { serverSupabaseUser, serverSupabaseServiceRole } from '#supabase/server'
 import sanitizeHtml from 'sanitize-html'
+import { sendPushToUser } from '../../utils/webPush'
 
 export default defineEventHandler(async (event) => {
   const user = await serverSupabaseUser(event)
@@ -44,6 +45,22 @@ export default defineEventHandler(async (event) => {
       .single()
 
     if (error) throw error
+
+    // Notifikasi real-time: Tiket dibuat
+    await supabase.from('notifications').insert({
+      user_id: userId,
+      type: 'ticket_created',
+      title: 'Tiket Bantuan Dibuat',
+      message: `Tiket bantuan "${subject}" (${ticketNumber}) telah berhasil dibuat. Tim kami akan segera merespons.`,
+      created_at: new Date().toISOString()
+    })
+
+    sendPushToUser(event, userId, {
+      title: 'Tiket Bantuan Dibuat',
+      body: `Tiket "${subject}" (${ticketNumber}) telah berhasil dibuat.`,
+      url: '/dashboard/support',
+      tag: `ticket-created-${ticketNumber}`
+    }).catch(() => {})
 
     return { success: true, message: 'Tiket berhasil dibuat', data }
   } catch (error: any) {

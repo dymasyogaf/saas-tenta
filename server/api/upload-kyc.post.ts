@@ -1,4 +1,5 @@
 import { serverSupabaseServiceRole, serverSupabaseUser } from '#supabase/server'
+import { sendPushToUser } from '../utils/webPush'
 
 export default defineEventHandler(async (event) => {
   const user = await serverSupabaseUser(event)
@@ -61,6 +62,22 @@ export default defineEventHandler(async (event) => {
     }).eq('id', userId)
 
     if (dbErr) throw dbErr
+
+    // Notifikasi real-time: Dokumen Diterima
+    await (supabase as any).from('notifications').insert({
+      user_id: userId,
+      type: 'kyc_pending',
+      title: 'Dokumen Verifikasi Diterima',
+      message: 'Dokumen identitas Anda telah berhasil diunggah dan sedang dalam peninjauan tim kami. Kami akan menghubungi Anda melalui notifikasi setelah proses verifikasi selesai.',
+      created_at: new Date().toISOString()
+    })
+
+    sendPushToUser(event, userId, {
+      title: 'Dokumen Verifikasi Diterima',
+      body: 'Dokumen identitas Anda telah berhasil diunggah dan sedang dalam peninjauan.',
+      url: '/dashboard/verification',
+      tag: `kyc-pending-${userId}`
+    }).catch(() => {})
 
     return {
       success: true,

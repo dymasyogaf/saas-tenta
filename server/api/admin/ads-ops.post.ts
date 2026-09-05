@@ -1,4 +1,5 @@
 import { serverSupabaseServiceRole } from '#supabase/server'
+import { sendPushToUser } from '../../utils/webPush'
 
 export default defineEventHandler(async (event) => {
   await requireAdmin(event, ['admin_ads_ops'])
@@ -53,12 +54,21 @@ export default defineEventHandler(async (event) => {
 
       if (request && request.user_id) {
         // 3. Beri notifikasi ke user
+        const notifMsg = reason || 'Mohon maaf, pengajuan pembuatan akun iklan Anda ditolak. Saldo telah dikembalikan ke Ad Balance Anda.'
         await supabase.from('notifications').insert({
           user_id: request.user_id,
-          type: 'system',
+          type: 'ad_request_rejected',
           title: 'Pengajuan Akun Ditolak',
-          message: reason || 'Mohon maaf, pengajuan pembuatan akun iklan Anda ditolak. Saldo telah dikembalikan ke Ad Balance Anda.'
+          message: notifMsg
         })
+
+        // Web Push
+        sendPushToUser(event, request.user_id, {
+          title: 'Pengajuan Akun Ditolak',
+          body: notifMsg.replace(/<[^>]*>/g, ''),
+          url: '/dashboard/platform',
+          tag: `ad-request-rejected-${request_id}`
+        }).catch(() => {})
       }
 
       return { success: true, message: 'Pengajuan ditolak dan saldo dikembalikan' }
@@ -321,10 +331,18 @@ export default defineEventHandler(async (event) => {
         
         await supabase.from('notifications').insert({
           user_id: request.user_id,
-          type: 'system',
+          type: 'ad_request_approved',
           title: notifTitle,
           message: notifMsg
         })
+
+        // Web Push
+        sendPushToUser(event, request.user_id, {
+          title: notifTitle,
+          body: notifMsg.replace(/<[^>]*>/g, ''),
+          url: '/dashboard/platform',
+          tag: `ad-request-approved-${request_id}`
+        }).catch(() => {})
 
       return { success: true, message: 'ID Akun Iklan berhasil disimpan dan akun aktif' }
     }

@@ -95,17 +95,29 @@ export const useNotificationSound = () => {
 
       const t = (type || '').toLowerCase()
 
-      if (t === 'budget_approved' || t === 'success' || t === 'topup_approved' || t === 'kyc_approved') {
+      if (t === 'budget_approved' || t === 'success' || t === 'topup_approved' || t === 'kyc_approved' || t === 'ad_request_approved' || t === 'ad_rent_extended' || t === 'payout_approved') {
         // High harmonic ascending sparkle chime (G5 -> C6 -> E6)
         const notes = [783.99, 1046.50, 1318.51]
         notes.forEach((freq, idx) => {
           playBellNote(freq, now + idx * 0.09, 0.5)
         })
-      } else if (t === 'budget_rejected' || t === 'error' || t === 'warning') {
+      } else if (t === 'budget_pending' || t === 'ad_request_pending' || t === 'payout_pending' || t === 'kyc_pending' || t === 'ticket_created') {
+        // Warm confirmation 2-tone (C5 -> E5) — friendly, not urgent
+        const notes = [523.25, 659.25]
+        notes.forEach((freq, idx) => {
+          playBellNote(freq, now + idx * 0.11, 0.45)
+        })
+      } else if (t === 'budget_rejected' || t === 'error' || t === 'warning' || t === 'ad_request_rejected' || t === 'payout_rejected' || t === 'kyc_rejected') {
         // Distinct alert chime (A5 -> F5)
         const notes = [880.00, 698.46]
         notes.forEach((freq, idx) => {
           playBellNote(freq, now + idx * 0.12, 0.45)
+        })
+      } else if (t === 'ticket_reply' || t === 'ticket_closed') {
+        // Soft gentle ping (E5 -> G5) — informational
+        const notes = [659.25, 783.99]
+        notes.forEach((freq, idx) => {
+          playBellNote(freq, now + idx * 0.10, 0.4)
         })
       } else {
         // Crisp, elegant modern 2-tone notification bell (A5 -> E6)

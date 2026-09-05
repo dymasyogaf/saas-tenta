@@ -1,4 +1,5 @@
 import { serverSupabaseServiceRole } from '#supabase/server'
+import { sendPushToUser } from '../../../utils/webPush'
 
 export default defineEventHandler(async (event) => {
   await requireAdmin(event, ['admin_compliance', 'super_admin'])
@@ -30,12 +31,20 @@ export default defineEventHandler(async (event) => {
       .from('notifications')
       .insert({
         user_id: userId,
-        type: 'system',
+        type: status === 'verified' ? 'kyc_approved' : 'kyc_rejected',
         title,
         message: notifMessage
       })
 
     if (notifError) throw notifError
+
+    // Web Push
+    sendPushToUser(event, userId, {
+      title,
+      body: notifMessage.replace(/<[^>]*>/g, ''),
+      url: '/dashboard/verification',
+      tag: `kyc-${status}-${userId}`
+    }).catch(() => {})
 
     return { success: true }
   } catch (error: any) {

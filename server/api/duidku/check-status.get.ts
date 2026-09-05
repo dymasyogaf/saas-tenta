@@ -1,6 +1,7 @@
 import { serverSupabaseServiceRole, serverSupabaseUser } from '#supabase/server'
 import crypto from 'node:crypto'
 import { syncUserHighestPackage } from '../../utils/packageSync'
+import { sendPushToUser } from '../../utils/webPush'
 
 export default defineEventHandler(async (event) => {
   const query = getQuery(event)
@@ -103,6 +104,23 @@ export default defineEventHandler(async (event) => {
 
       // Ensure user's highest package tier remains active
       await syncUserHighestPackage(supabase, transaction.user_id)
+
+      // Notifikasi real-time: Top Up Berhasil
+      const formattedAmount = `Rp ${Number(netAmount).toLocaleString('id-ID')}`
+      await supabase.from('notifications').insert({
+        user_id: transaction.user_id,
+        type: 'topup_approved',
+        title: 'Top Up Saldo Berhasil',
+        message: `Deposit saldo sebesar ${formattedAmount} telah berhasil diproses dan masuk ke akun Anda.`,
+        created_at: new Date().toISOString()
+      })
+
+      sendPushToUser(event, transaction.user_id, {
+        title: 'Top Up Saldo Berhasil',
+        body: `Deposit saldo sebesar ${formattedAmount} telah berhasil diproses dan masuk ke akun Anda.`,
+        url: '/dashboard/saldo',
+        tag: `topup-success-${transaction.id}`
+      }).catch(() => {})
 
       return {
         statusCode: 200,

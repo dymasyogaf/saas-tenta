@@ -1,4 +1,5 @@
 import { serverSupabaseServiceRole } from '#supabase/server'
+import { sendPushToUser } from '../../utils/webPush'
 
 export default defineEventHandler(async (event) => {
   await requireAdmin(event, ['admin_finance', 'admin_compliance'])
@@ -68,6 +69,28 @@ export default defineEventHandler(async (event) => {
         }
       }
     }
+
+    // 3. Notifikasi real-time untuk user
+    const formattedAmount = `Rp ${Number(transaction.amount).toLocaleString('id-ID')}`
+    const notifTitle = action === 'approve' ? 'Transaksi Disetujui' : 'Transaksi Ditolak'
+    const notifMessage = action === 'approve'
+      ? `Transaksi Anda sebesar ${formattedAmount} telah disetujui dan berhasil diproses.`
+      : `Transaksi Anda sebesar ${formattedAmount} ditolak. Dana telah dikembalikan ke saldo utama Anda.`
+
+    await supabase.from('notifications').insert({
+      user_id: transaction.user_id,
+      type: action === 'approve' ? 'success' : 'error',
+      title: notifTitle,
+      message: notifMessage,
+      created_at: new Date().toISOString()
+    })
+
+    sendPushToUser(event, transaction.user_id, {
+      title: notifTitle,
+      body: notifMessage,
+      url: '/dashboard/saldo',
+      tag: `finance-${action}-${transaction_id}`
+    }).catch(() => {})
 
     return { 
       success: true, 

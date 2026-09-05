@@ -100,11 +100,14 @@ import {
   ArrowRight, 
   X, 
   ShieldCheck,
-  AlertTriangle
+  AlertTriangle,
+  Clock,
+  Wallet,
+  Headphones
 } from 'lucide-vue-next'
 import { useRouter } from 'vue-router'
 import { useRealtimeNotifications, type ActivePopupNotification } from '~/composables/useRealtimeNotifications'
-import { stripHtml } from '../../../utils/formatters'
+import { stripHtml } from '~~/utils/formatters'
 
 const router = useRouter()
 const { activePopups, dismissPopup } = useRealtimeNotifications()
@@ -126,10 +129,14 @@ const handleClickNotification = (popup: ActivePopupNotification) => {
   const type = (popup.type || '').toLowerCase()
   if (type.includes('budget') || type.includes('saldo') || type.includes('topup') || type.includes('payment')) {
     router.push('/dashboard/saldo')
+  } else if (type.includes('ad_request') || type.includes('ad_rent') || type.includes('platform')) {
+    router.push('/dashboard/platform')
   } else if (type.includes('kyc') || type.includes('verify') || type.includes('verification')) {
     router.push('/dashboard/verification')
   } else if (type.includes('ticket') || type.includes('support')) {
     router.push('/dashboard/support')
+  } else if (type.includes('payout') || type.includes('affiliate') || type.includes('commission')) {
+    router.push('/dashboard/affiliate')
   } else {
     router.push('/dashboard/notifikasi')
   }
@@ -138,7 +145,8 @@ const handleClickNotification = (popup: ActivePopupNotification) => {
 const getNotificationStyle = (type?: string) => {
   const t = (type || '').toLowerCase()
 
-  if (t === 'budget_approved' || t === 'topup_approved' || t === 'success' || t === 'payment_success') {
+  // === APPROVED / SUCCESS ===
+  if (t === 'budget_approved' || t === 'topup_approved' || t === 'success' || t === 'payment_success' || t === 'ad_request_approved' || t === 'ad_rent_extended' || t === 'payout_approved') {
     return {
       icon: CheckCircle2,
       badgeLabel: 'Disetujui',
@@ -148,7 +156,8 @@ const getNotificationStyle = (type?: string) => {
     }
   }
 
-  if (t === 'budget_rejected' || t === 'error' || t === 'rejected') {
+  // === REJECTED / ERROR ===
+  if (t === 'budget_rejected' || t === 'error' || t === 'rejected' || t === 'ad_request_rejected' || t === 'payout_rejected' || t === 'kyc_rejected') {
     return {
       icon: AlertOctagon,
       badgeLabel: 'Ditolak',
@@ -158,6 +167,18 @@ const getNotificationStyle = (type?: string) => {
     }
   }
 
+  // === PENDING / MENUNGGU ===
+  if (t === 'budget_pending' || t === 'ad_request_pending' || t === 'payout_pending' || t === 'kyc_pending') {
+    return {
+      icon: Clock,
+      badgeLabel: 'Menunggu',
+      iconBgClass: 'bg-amber-50 text-amber-600 border-amber-200',
+      badgeClass: 'bg-amber-50 text-amber-800 border-amber-200',
+      accentBarClass: 'bg-gradient-to-r from-amber-500 to-yellow-400'
+    }
+  }
+
+  // === BROADCAST / ANNOUNCEMENT ===
   if (t === 'broadcast' || t === 'announcement') {
     return {
       icon: Megaphone,
@@ -168,6 +189,7 @@ const getNotificationStyle = (type?: string) => {
     }
   }
 
+  // === KYC / VERIFICATION ===
   if (t === 'kyc_approved' || t === 'verification') {
     return {
       icon: ShieldCheck,
@@ -178,16 +200,29 @@ const getNotificationStyle = (type?: string) => {
     }
   }
 
-  if (t === 'support' || t === 'ticket') {
+  // === SUPPORT / TICKET ===
+  if (t === 'support' || t === 'ticket' || t === 'ticket_created' || t === 'ticket_reply' || t === 'ticket_closed') {
     return {
-      icon: MessageSquare,
-      badgeLabel: 'Bantuan',
+      icon: Headphones,
+      badgeLabel: t === 'ticket_closed' ? 'Selesai' : 'Bantuan',
       iconBgClass: 'bg-sky-50 text-sky-600 border-sky-200',
       badgeClass: 'bg-sky-50 text-sky-800 border-sky-200',
       accentBarClass: 'bg-gradient-to-r from-sky-500 to-blue-400'
     }
   }
 
+  // === SALDO / TOPUP ===
+  if (t === 'topup' || t === 'saldo') {
+    return {
+      icon: Wallet,
+      badgeLabel: 'Saldo',
+      iconBgClass: 'bg-violet-50 text-violet-600 border-violet-200',
+      badgeClass: 'bg-violet-50 text-violet-800 border-violet-200',
+      accentBarClass: 'bg-gradient-to-r from-violet-500 to-purple-400'
+    }
+  }
+
+  // === WARNING ===
   if (t === 'warning') {
     return {
       icon: AlertTriangle,
@@ -198,6 +233,7 @@ const getNotificationStyle = (type?: string) => {
     }
   }
 
+  // === DEFAULT ===
   return {
     icon: Bell,
     badgeLabel: 'Notifikasi',

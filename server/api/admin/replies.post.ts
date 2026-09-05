@@ -1,5 +1,6 @@
 import { serverSupabaseServiceRole } from '#supabase/server'
 import sanitizeHtml from 'sanitize-html'
+import { sendPushToUser } from '../../utils/webPush'
 
 export default defineEventHandler(async (event) => {
   const user = await requireAdmin(event)
@@ -29,7 +30,7 @@ export default defineEventHandler(async (event) => {
     // Ambil info tiket
     const { data: ticket, error: fetchErr } = await supabase
       .from('support_tickets')
-      .select('assigned_to_role')
+      .select('assigned_to_role, user_id, subject, ticket_number')
       .eq('id', ticket_id)
       .single()
       
@@ -63,6 +64,27 @@ export default defineEventHandler(async (event) => {
         .eq('id', ticket_id)
 
       if (statusError) throw statusError
+    }
+
+    // Notifikasi ke pemilik tiket
+    if (ticket?.user_id) {
+      const notifTitle = 'Balasan Tiket Bantuan'
+      const notifMessage = `Tim Support telah membalas tiket Anda "${ticket.subject || ''}" (${ticket.ticket_number || ''}).`
+
+      await supabase.from('notifications').insert({
+        user_id: ticket.user_id,
+        type: 'ticket_reply',
+        title: notifTitle,
+        message: notifMessage,
+        created_at: new Date().toISOString()
+      })
+
+      sendPushToUser(event, ticket.user_id, {
+        title: notifTitle,
+        body: notifMessage,
+        url: '/dashboard/support',
+        tag: `ticket-reply-${ticket_id}`
+      }).catch(() => {})
     }
 
     return { success: true, message: 'Balasan berhasil dikirim' }

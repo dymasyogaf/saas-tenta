@@ -1,4 +1,5 @@
 import { serverSupabaseServiceRole } from '#supabase/server'
+import { sendPushToUser } from '../../../../../utils/webPush'
 
 export default defineEventHandler(async (event) => {
   await requireAdmin(event, ['admin_finance', 'admin_compliance', 'super_admin'])
@@ -76,9 +77,17 @@ export default defineEventHandler(async (event) => {
       user_id: withdrawal.user_id,
       title: notifTitle,
       message: notifMessage,
-      type: 'system',
+      type: 'payout_rejected',
       is_read: false
     })
+
+    // Web Push
+    sendPushToUser(event, withdrawal.user_id, {
+      title: notifTitle,
+      body: notifMessage,
+      url: '/dashboard/affiliate',
+      tag: `payout-rejected-${id}`
+    }).catch(() => {})
 
     return { success: true, message: isCrypto ? 'Payout request rejected and commission restored.' : 'Pengajuan pencairan berhasil ditolak.' }
   } catch (error: any) {

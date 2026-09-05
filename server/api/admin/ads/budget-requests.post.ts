@@ -1,5 +1,6 @@
 import { serverSupabaseServiceRole } from '#supabase/server'
 import { requireAdmin } from '../../../utils/requireAdmin'
+import { sendPushToUser } from '../../../utils/webPush'
 
 export default defineEventHandler(async (event) => {
   await requireAdmin(event)
@@ -94,6 +95,14 @@ export default defineEventHandler(async (event) => {
       created_at: new Date().toISOString()
     })
 
+    // Web Push
+    sendPushToUser(event, request.user_id, {
+      title: notifTitle,
+      body: notifMessage.replace(/<[^>]*>/g, ''),
+      url: '/dashboard/saldo',
+      tag: `budget-approved-${request_id}`
+    }).catch(() => {})
+
     return { success: true, message: isUsd ? 'Budget approved and added successfully.' : 'Anggaran berhasil disetujui dan ditambahkan.' }
   } else if (action === 'reject') {
     // 4. Reject logic
@@ -132,6 +141,14 @@ export default defineEventHandler(async (event) => {
       message: notifMessage,
       created_at: new Date().toISOString()
     })
+
+    // Web Push
+    sendPushToUser(event, request.user_id, {
+      title: notifTitle,
+      body: notifMessage.replace(/<[^>]*>/g, ''),
+      url: '/dashboard/saldo',
+      tag: `budget-rejected-${request_id}`
+    }).catch(() => {})
 
     return { success: true, message: isUsd ? 'Budget request rejected and funds returned.' : 'Pengajuan anggaran berhasil ditolak dan saldo dikembalikan.' }
   }

@@ -1,5 +1,6 @@
 import { serverSupabaseClient, serverSupabaseServiceRole } from '#supabase/server'
 import { requireUser } from '../../utils/requireUser'
+import { sendPushToUser } from '../../utils/webPush'
 
 export default defineEventHandler(async (event) => {
   const user = await requireUser(event)
@@ -175,7 +176,30 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  // 6. Selesai (Menunggu persetujuan Admin Ads Ops)
+  // 6. Buat notifikasi real-time untuk user
+  const notifTitle = isGlobal ? 'Budget Top Up Submitted' : 'Pengajuan Top Up Anggaran Terkirim'
+  const notifMessage = isGlobal
+    ? `Your budget allocation request of $${addAmount.toLocaleString('en-US', { minimumFractionDigits: 2 })} for ${account.account_name || account.account_id} (${account.platform}) has been submitted and is awaiting review.`
+    : `Permintaan alokasi anggaran sebesar Rp ${addAmount.toLocaleString('id-ID')} pada akun ${account.account_name || account.account_id} (${account.platform}) telah dikirim dan sedang menunggu persetujuan Tim Ads Ops.`
+
+  await supabase.from('notifications').insert({
+    user_id: userId,
+    type: 'budget_pending',
+    title: notifTitle,
+    message: notifMessage,
+    created_at: new Date().toISOString()
+  })
+
+  // Web Push (background / minimized browser)
+  const cleanMessage = notifMessage.replace(/<[^>]*>/g, '')
+  sendPushToUser(event, userId, {
+    title: notifTitle,
+    body: cleanMessage,
+    url: '/dashboard/saldo',
+    tag: `budget-pending-${trxData?.id || Date.now()}`
+  }).catch(() => {})
+
+  // 7. Selesai (Menunggu persetujuan Admin Ads Ops)
   return {
     success: true,
     message: isGlobal 

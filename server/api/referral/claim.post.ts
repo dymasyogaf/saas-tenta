@@ -1,5 +1,6 @@
 import { serverSupabaseServiceRole } from '#supabase/server'
 import { requireUser } from '../../utils/requireUser'
+import { sendPushToUser } from '../../utils/webPush'
 
 export default defineEventHandler(async (event) => {
   const user = await requireUser(event)
@@ -80,6 +81,27 @@ export default defineEventHandler(async (event) => {
     const formattedAmount = isGlobal
       ? `${totalClaimAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USDT`
       : `Rp ${totalClaimAmount.toLocaleString('id-ID')}`
+
+    // Notifikasi real-time: Pengajuan Pencairan Dikirim
+    const notifTitle = isGlobal ? 'Payout Request Submitted' : 'Pengajuan Pencairan Komisi Dikirim'
+    const notifMessage = isGlobal
+      ? `Your commission payout request of ${formattedAmount} has been submitted. Finance team will process it shortly.`
+      : `Pengajuan pencairan komisi sebesar ${formattedAmount} telah dikirim. Tim Finance akan segera memprosesnya.`
+
+    await (supabase as any).from('notifications').insert({
+      user_id: uid,
+      type: 'payout_pending',
+      title: notifTitle,
+      message: notifMessage,
+      created_at: new Date().toISOString()
+    })
+
+    sendPushToUser(event, uid, {
+      title: notifTitle,
+      body: notifMessage,
+      url: '/dashboard/affiliate',
+      tag: `payout-pending-${withdrawal.id}`
+    }).catch(() => {})
 
     return {
       success: true,

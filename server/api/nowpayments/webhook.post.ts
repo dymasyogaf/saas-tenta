@@ -1,6 +1,7 @@
 import { serverSupabaseServiceRole } from '#supabase/server'
 import crypto from 'node:crypto'
 import { syncUserHighestPackage } from '../../utils/packageSync'
+import { sendPushToUser } from '../../utils/webPush'
 
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig()
@@ -138,6 +139,23 @@ export default defineEventHandler(async (event) => {
   }
 
   console.log(`NOWPayments Webhook: Successfully processed payment for ${orderId}. USD added: ${trx.amount}`)
+
+  // Notifikasi real-time: USD Deposit Berhasil
+  const formattedAmount = `$${Number(trx.amount).toLocaleString('en-US', { minimumFractionDigits: 2 })} USDT`
+  await supabase.from('notifications').insert({
+    user_id: trx.user_id,
+    type: 'topup_approved',
+    title: 'Deposit Successful',
+    message: `Your crypto deposit of ${formattedAmount} has been confirmed and credited to your account.`,
+    created_at: new Date().toISOString()
+  })
+
+  sendPushToUser(event, trx.user_id, {
+    title: 'Deposit Successful',
+    body: `Your crypto deposit of ${formattedAmount} has been confirmed and credited to your account.`,
+    url: '/dashboard/saldo',
+    tag: `topup-success-${trx.id}`
+  }).catch(() => {})
 
   // NOWPayments expects HTTP 200
   return { status: 'ok' }

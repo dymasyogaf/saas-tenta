@@ -2,6 +2,7 @@ import { serverSupabaseServiceRole } from '#supabase/server'
 import crypto from 'node:crypto'
 import { sendPaymentSuccessEmail } from '../../utils/email'
 import { syncUserHighestPackage } from '../../utils/packageSync'
+import { sendPushToUser } from '../../utils/webPush'
 
 // Memory lock untuk mencegah Race Condition (Double Credit)
 // saat Duitku mengirim webhook berbarengan dalam milidetik yang sama.
@@ -83,6 +84,26 @@ export default defineEventHandler(async (event) => {
         // Ensure user's highest package tier remains active
         await syncUserHighestPackage(supabase, transaction.user_id)
 
+        // Notifikasi real-time: Top Up Berhasil
+        const formattedAmount = `Rp ${Number(netAmount).toLocaleString('id-ID')}`
+        const notifTitle = 'Top Up Saldo Berhasil'
+        const notifMessage = `Deposit saldo sebesar ${formattedAmount} telah berhasil diproses dan masuk ke akun Anda.`
+
+        await supabase.from('notifications').insert({
+          user_id: transaction.user_id,
+          type: 'topup_approved',
+          title: notifTitle,
+          message: notifMessage,
+          created_at: new Date().toISOString()
+        })
+
+        sendPushToUser(event, transaction.user_id, {
+          title: notifTitle,
+          body: notifMessage,
+          url: '/dashboard/saldo',
+          tag: `topup-success-${transaction.id}`
+        }).catch(() => {})
+
         // Kirim email pembayaran berhasil ke customer
         // Ambil data user untuk email
         const { data: userData } = await supabase.auth.admin.getUserById(transaction.user_id)
@@ -101,6 +122,22 @@ export default defineEventHandler(async (event) => {
         })
 
         if (rpcError) throw rpcError
+
+        // Notifikasi real-time: Top Up Gagal
+        await supabase.from('notifications').insert({
+          user_id: transaction.user_id,
+          type: 'error',
+          title: 'Pembayaran Top Up Gagal',
+          message: `Pembayaran deposit Anda tidak berhasil diproses. Silakan coba kembali atau hubungi tim bantuan.`,
+          created_at: new Date().toISOString()
+        })
+
+        sendPushToUser(event, transaction.user_id, {
+          title: 'Pembayaran Top Up Gagal',
+          body: 'Pembayaran deposit Anda tidak berhasil diproses. Silakan coba kembali.',
+          url: '/dashboard/saldo',
+          tag: `topup-failed-${transaction.id}`
+        }).catch(() => {})
       }
     } finally {
       // Lepaskan kunci setelah selesai (berhasil/gagal)

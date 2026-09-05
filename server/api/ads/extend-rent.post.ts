@@ -1,5 +1,6 @@
 import { serverSupabaseServiceRole } from '#supabase/server'
 import { serverSupabaseUser } from '#supabase/server'
+import { sendPushToUser } from '../../utils/webPush'
 
 export default defineEventHandler(async (event) => {
   const body = await readBody(event)
@@ -139,6 +140,26 @@ export default defineEventHandler(async (event) => {
     if (updateAccErr) {
       throw new Error('Gagal memperbarui masa aktif akun')
     }
+
+    // 6. Notifikasi real-time untuk user
+    const notifTitle = 'Perpanjangan Sewa Berhasil'
+    const notifMessage = `Masa sewa akun iklan ${account.account_name || account.account_id} (${account.platform}) berhasil diperpanjang selama ${subscriptionMonths} bulan.`
+
+    await supabase.from('notifications').insert({
+      user_id: uid,
+      type: 'ad_rent_extended',
+      title: notifTitle,
+      message: notifMessage,
+      created_at: new Date().toISOString()
+    })
+
+    // Web Push
+    sendPushToUser(event, uid, {
+      title: notifTitle,
+      body: notifMessage,
+      url: '/dashboard/platform',
+      tag: `ad-rent-extended-${accountId}`
+    }).catch(() => {})
 
     return {
       success: true,

@@ -1,4 +1,5 @@
 import { serverSupabaseServiceRole } from '#supabase/server'
+import { sendPushToUser } from '../../../../../utils/webPush'
 
 export default defineEventHandler(async (event) => {
   await requireAdmin(event, ['admin_finance', 'admin_compliance', 'super_admin'])
@@ -55,9 +56,17 @@ export default defineEventHandler(async (event) => {
       user_id: withdrawal.user_id,
       title: notifTitle,
       message: notifMessage,
-      type: 'system',
+      type: 'payout_approved',
       is_read: false
     })
+
+    // Web Push
+    sendPushToUser(event, withdrawal.user_id, {
+      title: notifTitle,
+      body: notifMessage,
+      url: '/dashboard/affiliate',
+      tag: `payout-approved-${id}`
+    }).catch(() => {})
 
     // 3. Catat di tabel transactions
     await supabase.from('transactions').insert({
