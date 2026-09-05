@@ -539,9 +539,7 @@ const handleToggleDesktop = async () => {
 
 const handleEnableNotifications = async () => {
   await requestDesktopPermission()
-  if (isPushSupported.value) {
-    await subscribeToPush()
-  }
+  await subscribeToPush()
 }
 
 const handleTestNotification = async () => {

@@ -201,10 +201,8 @@ const handleEnable = async () => {
     toggleSound(true)
     toggleHaptic(true)
 
-    // 3. Mendaftarkan Web Push Background Service Worker jika didukung
-    if (isPushSupported.value) {
-      await subscribeToPush()
-    }
+    // 3. Mendaftarkan Web Push Background Service Worker
+    await subscribeToPush()
 
     if (import.meta.client) {
       sessionStorage.removeItem('tentaklik_notif_modal_dismissed')

@@ -41,8 +41,7 @@ watch(user, (newUser) => {
     <NuxtPage />
   </NuxtLayout>
   <NotificationInAppNotificationPopup />
-  <!-- TODO: Aktifkan kembali NotificationPromptModal jika pengujian notifikasi di production/HTTPS sudah selesai -->
-  <!-- <NotificationPromptModal /> -->
+  <NotificationPromptModal />
   <SharedToast />
   <ConfirmModal />
 </template>

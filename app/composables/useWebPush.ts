@@ -40,7 +40,7 @@ export const useWebPush = () => {
     }
   }
 
-  // Check current subscription status
+  // Check current subscription status & auto-sync to backend
   const checkSubscription = async () => {
     if (!import.meta.client) return
 
@@ -57,8 +57,39 @@ export const useWebPush = () => {
       const reg = await registerServiceWorker()
       if (!reg) return
 
-      const existingSub = await reg.pushManager.getSubscription()
-      isSubscribed.value = !!existingSub
+      let sub = await reg.pushManager.getSubscription()
+
+      // If permission is already granted but no subscription exists yet, create it
+      if (!sub && Notification.permission === 'granted' && vapidPublicKey) {
+        try {
+          const convertedKey = urlBase64ToUint8Array(vapidPublicKey)
+          sub = await reg.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey: convertedKey
+          })
+        } catch (subErr) {
+          console.warn('[WebPush] Auto-subscribe on granted permission failed:', subErr)
+        }
+      }
+
+      if (sub) {
+        isSubscribed.value = true
+        // Auto-sync subscription to server so backend always has the device token
+        try {
+          const subJson = sub.toJSON()
+          const { csrf } = useCsrf()
+          const csrfToken = unref(csrf) || ''
+          await $fetch('/api/notifications/push-subscribe', {
+            method: 'POST',
+            headers: csrfToken ? { 'csrf-token': csrfToken } : {},
+            body: subJson
+          })
+        } catch (syncErr) {
+          console.warn('[WebPush] Auto-sync to push-subscribe endpoint failed:', syncErr)
+        }
+      } else {
+        isSubscribed.value = false
+      }
     } catch (err) {
       console.warn('[WebPush] Error checking subscription:', err)
     }
@@ -66,7 +97,13 @@ export const useWebPush = () => {
 
   // Subscribe current device to Web Push
   const subscribeToPush = async () => {
-    if (!import.meta.client || !isSupported.value || isSubscribing.value) return false
+    if (!import.meta.client || isSubscribing.value) return false
+    if (!('serviceWorker' in navigator) || !('PushManager' in window) || !('Notification' in window)) {
+      console.warn('[WebPush] Push notification not supported in this browser.')
+      isSupported.value = false
+      return false
+    }
+    isSupported.value = true
     isSubscribing.value = true
     statusMessage.value = 'Mendaftar notifikasi push...'
 
