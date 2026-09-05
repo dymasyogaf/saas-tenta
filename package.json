@@ -10,6 +10,7 @@
     "postinstall": "nuxt prepare || true"
   },
   "dependencies": {
+    "@block65/webcrypto-web-push": "^2.0.0",
     "@nuxtjs/i18n": "^10.5.0",
     "@nuxtjs/supabase": "^2.0.9",
     "@nuxtjs/tailwindcss": "^6.14.0",
@@ -32,7 +33,6 @@
     "vue": "^3.5.39",
     "vue-router": "^5.1.0",
     "vue3-apexcharts": "^1.11.1",
-    "web-push": "^3.6.7",
     "zod": "^3.24.0"
   },
   "overrides": {
@@ -44,7 +44,6 @@
     "@tailwindcss/typography": "^0.5.20",
     "@types/node": "^26.1.1",
     "@types/sanitize-html": "^2.16.1",
-    "@types/web-push": "^3.6.4",
     "typescript": "^5.5.4",
     "vite": "^8.1.5",
     "vue-tsc": "^3.3.8",

@@ -1,4 +1,4 @@
-import webpush from 'web-push'
+import { buildPushPayload } from '@block65/webcrypto-web-push'
 import { serverSupabaseServiceRole } from '#supabase/server'
 import type { H3Event } from 'h3'
 
@@ -12,27 +12,28 @@ export interface WebPushPayload {
   id?: string
 }
 
-let isVapidInitialized = false
-
-export const initVapid = () => {
-  if (isVapidInitialized) return
-  const config = useRuntimeConfig()
-  const publicKey = config.public.vapidPublicKey
-  const privateKey = config.vapidPrivateKey
-  const subject = config.vapidSubject || 'mailto:admin@tentaklik.com'
-
-  if (publicKey && privateKey) {
-    webpush.setVapidDetails(subject, publicKey, privateKey)
-    isVapidInitialized = true
-  }
-}
-
 /**
  * Send Web Push notification to all active device subscriptions of a specific user.
+ * 100% Edge & Cloudflare Workers compatible using Web Crypto API.
  */
 export const sendPushToUser = async (event: H3Event, userId: string, payload: WebPushPayload) => {
   try {
-    initVapid()
+    const config = useRuntimeConfig()
+    const publicKey = config.public.vapidPublicKey
+    const privateKey = config.vapidPrivateKey
+    const subject = config.vapidSubject || 'mailto:admin@tentaklik.com'
+
+    if (!publicKey || !privateKey) {
+      console.warn('[WebPush] VAPID keys not configured')
+      return { sent: 0, failed: 0 }
+    }
+
+    const vapid = {
+      subject,
+      publicKey,
+      privateKey
+    }
+
     const supabase = serverSupabaseServiceRole(event)
 
     // Fetch all active subscriptions for this user
@@ -45,7 +46,7 @@ export const sendPushToUser = async (event: H3Event, userId: string, payload: We
       return { sent: 0, failed: 0 }
     }
 
-    const payloadString = JSON.stringify({
+    const messageData = JSON.stringify({
       title: payload.title || 'Tentaklik Notifikasi',
       body: payload.body || '',
       url: payload.url || '/dashboard/notifikasi',
@@ -61,25 +62,36 @@ export const sendPushToUser = async (event: H3Event, userId: string, payload: We
 
     await Promise.all(
       subs.map(async (sub) => {
-        const pushSubscription = {
-          endpoint: sub.endpoint,
-          keys: {
-            p256dh: sub.p256dh,
-            auth: sub.auth
-          }
-        }
-
         try {
-          await webpush.sendNotification(pushSubscription, payloadString)
-          sent++
+          const subscription = {
+            endpoint: sub.endpoint,
+            keys: {
+              p256dh: sub.p256dh,
+              auth: sub.auth
+            }
+          }
+
+          const pushPayload = await buildPushPayload({ data: messageData }, subscription, vapid)
+
+          const res = await fetch(sub.endpoint, {
+            method: pushPayload.method,
+            headers: pushPayload.headers,
+            body: pushPayload.body
+          })
+
+          if (res.ok || res.status === 201) {
+            sent++
+          } else {
+            failed++
+            if (res.status === 404 || res.status === 410) {
+              expiredIds.push(sub.id)
+            } else {
+              console.warn('[WebPush] Push endpoint returned status:', res.status)
+            }
+          }
         } catch (err: any) {
           failed++
-          // If subscription is expired or unregistered (HTTP 404 or 410 Gone)
-          if (err.statusCode === 404 || err.statusCode === 410) {
-            expiredIds.push(sub.id)
-          } else {
-            console.warn('[WebPush] Error sending push to endpoint:', err.message || err)
-          }
+          console.warn('[WebPush] Error sending push to endpoint:', err.message || err)
         }
       })
     )
