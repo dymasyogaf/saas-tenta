@@ -153,7 +153,7 @@ export const useAdsStore = defineStore('ads', {
         const saldoStore = useSaldoStore()
         
         this.adAccounts = accounts.map(acc => {
-          const limit = saldoStore.weeklyLimit || 0
+          const limit = saldoStore.weeklyLimit || Number(acc.limit_amount) || 0
           const penggunaan = Number(acc.penggunaan || acc.total_spend || 0)
           const weeklySpend = Number(acc.weekly_spend || 0)
           const saldo = acc.saldo || 0 // Murni dari database lokal (alokasi klien)
@@ -184,9 +184,8 @@ export const useAdsStore = defineStore('ads', {
                    const livePenggunaan = Number(res.data.totalSpend || 0)
                    const dbPenggunaan = Number(acc.penggunaan || 0)
                    const penggunaan = livePenggunaan > 0 ? livePenggunaan : dbPenggunaan
-                   
                    const saldoStore = useSaldoStore()
-                   const limit = saldoStore.weeklyLimit || 0
+                   const limit = saldoStore.weeklyLimit || Number(acc.limit_amount) || 0
                    const api_balance = res.data.api_balance
                    const api_budget_total = res.data.api_budget_total
                    const api_amount_spent = res.data.api_amount_spent

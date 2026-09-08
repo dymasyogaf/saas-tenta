@@ -297,7 +297,7 @@
                 <div v-if="getBudgetTotal(account) <= 0" class="mt-2.5">
                   <button @click="openAllocateBudgetModal(account.id)" class="w-full flex justify-center items-center gap-1.5 bg-orange-50 border border-orange-200 text-orange-600 text-[10px] font-bold px-3 py-1.5 rounded-lg hover:bg-orange-100 hover:text-orange-700 transition-colors shadow-sm">
                     <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                    + {{ $t('saldo.allocateBudgetShort') }}
+                    {{ $t('saldo.allocateBudgetShort') }}
                   </button>
                 </div>
                 <div v-else-if="getBudgetRemaining(account) <= 0" class="mt-2.5">
