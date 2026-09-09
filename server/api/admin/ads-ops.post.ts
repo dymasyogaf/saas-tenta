@@ -152,12 +152,14 @@ export default defineEventHandler(async (event) => {
               .eq('user_id', request.user_id)
           }
             
+          const platformLabel = dbPlatform === 'google' ? 'Google Ads' : dbPlatform === 'tiktok' ? 'TikTok Ads' : 'Facebook Ads'
+          const formattedName = ad_account_name ? ad_account_name : `Ad Account ${cleanAdAccountId}`
           await supabase.from('transactions').insert({
             user_id: request.user_id,
             amount: fee,
             type: 'payment',
             status: 'success',
-            description: isUsd ? 'Pembayaran Sewa Akun Iklan (USD)' : 'Pembayaran Sewa Akun Iklan',
+            description: `Pembayaran Sewa Akun Iklan - ${formattedName} (${platformLabel})${isUsd ? ' (USD)' : ''}`,
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString()
           })

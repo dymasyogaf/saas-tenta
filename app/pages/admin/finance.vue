@@ -130,6 +130,18 @@
             </div>
           </div>
           <SharedDateRangePicker v-model="feeDateRange" />
+          <button 
+            v-if="isSuperAdmin"
+            @click="hideTestingAccounts = !hideTestingAccounts"
+            type="button"
+            class="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold transition-all border shadow-2xs shrink-0"
+            :class="hideTestingAccounts ? 'bg-emerald-50 text-emerald-700 border-emerald-300' : 'bg-white text-slate-500 border-slate-200 hover:bg-slate-50'"
+            :title="hideTestingAccounts ? 'Akun testing (Dymas Yoga & Super Admin Dymas) disembunyikan' : 'Klik untuk menyembunyikan akun testing'"
+          >
+            <EyeOff v-if="hideTestingAccounts" class="w-3.5 h-3.5 text-emerald-600" />
+            <Eye v-else class="w-3.5 h-3.5 text-slate-400" />
+            <span>{{ hideTestingAccounts ? 'Testing Dihide' : 'Tampilkan Testing' }}</span>
+          </button>
         </div>
       </div>
 
@@ -199,6 +211,18 @@
             </div>
           </div>
           <SharedDateRangePicker v-model="historyDateRange" />
+          <button 
+            v-if="isSuperAdmin"
+            @click="hideTestingAccounts = !hideTestingAccounts"
+            type="button"
+            class="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold transition-all border shadow-2xs shrink-0"
+            :class="hideTestingAccounts ? 'bg-emerald-50 text-emerald-700 border-emerald-300' : 'bg-white text-slate-500 border-slate-200 hover:bg-slate-50'"
+            :title="hideTestingAccounts ? 'Akun testing (Dymas Yoga & Super Admin Dymas) disembunyikan dari rekap' : 'Klik untuk menyembunyikan akun testing'"
+          >
+            <EyeOff v-if="hideTestingAccounts" class="w-3.5 h-3.5 text-emerald-600" />
+            <Eye v-else class="w-3.5 h-3.5 text-slate-400" />
+            <span>{{ hideTestingAccounts ? 'Testing Dihide' : 'Tampilkan Testing' }}</span>
+          </button>
           <div class="w-56 relative z-10">
             <BaseSelect 
               v-model="typeFilter" 
@@ -218,13 +242,14 @@
               <th class="px-6 py-4">Klien</th>
               <th class="px-6 py-4">Jenis Transaksi</th>
               <th class="px-6 py-4 text-right">Nominal</th>
+              <th class="px-6 py-4 text-right">Fee</th>
               <th class="px-6 py-4 text-center">Status</th>
               <th v-if="isSuperAdmin" class="px-6 py-4 text-center">Aksi</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-slate-100">
             <tr v-if="filteredHistory.length === 0">
-              <td :colspan="isSuperAdmin ? 7 : 6" class="px-6 py-12 text-center text-slate-500">
+              <td :colspan="isSuperAdmin ? 8 : 7" class="px-6 py-12 text-center text-slate-500">
                 <Receipt class="w-12 h-12 text-slate-300 mx-auto mb-3" />
                 <p>Tidak ada riwayat mutasi yang sesuai.</p>
               </td>
@@ -238,16 +263,58 @@
                 {{ tx.users?.full_name || 'Tanpa Nama' }}
               </td>
               <td class="px-6 py-4">
-                <span class="text-[11px] font-bold uppercase tracking-wider"
-                  :class="{
-                    'text-emerald-600': tx.type === 'topup',
-                    'text-orange-600': tx.type === 'withdraw',
-                    'text-blue-600': tx.type === 'affiliate_commission',
-                  }">
-                  {{ tx.type }}
-                </span>
-                <p class="text-[10px] text-slate-400 mt-0.5 line-clamp-1 max-w-[150px]" :title="tx.payment_gateway_ref">{{ tx.payment_gateway_ref || 'Internal' }}</p>
-                <span v-if="tx.is_sandbox" class="inline-block mt-1 px-1.5 py-0.5 text-[9px] font-bold rounded bg-yellow-100 text-yellow-700 border border-yellow-300">SANDBOX</span>
+                <div class="flex flex-col gap-1.5 items-start">
+                  <!-- Badges Kategori & Platform Iklan -->
+                  <div class="flex flex-wrap items-center gap-1.5">
+                    <!-- Badge Jenis Transaksi -->
+                    <span 
+                      class="px-2 py-0.5 text-[10px] font-bold rounded-md tracking-wide"
+                      :class="getCategoryBadgeClass(tx)"
+                    >
+                      {{ getTransactionMeta(tx).categoryLabel }}
+                    </span>
+
+                    <!-- Badge Platform Iklan (Google Ads / Facebook Ads / etc.) -->
+                    <span 
+                      v-if="getTransactionMeta(tx).platformLabel"
+                      class="inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-bold rounded shadow-2xs"
+                      :class="getPlatformBadgeClass(tx)"
+                    >
+                      <span class="w-1.5 h-1.5 rounded-full" :class="getPlatformDotClass(tx)"></span>
+                      {{ getTransactionMeta(tx).platformLabel }}
+                    </span>
+                  </div>
+
+                  <!-- Keterangan Nama Akun & Referensi -->
+                  <div class="flex flex-wrap items-center gap-1.5 text-xs text-slate-500">
+                    <span 
+                      v-if="getTransactionMeta(tx).accountName" 
+                      class="text-slate-800 font-bold bg-slate-100 px-1.5 py-0.5 rounded text-[11px] truncate max-w-[190px]" 
+                      :title="'Akun: ' + getTransactionMeta(tx).accountName"
+                    >
+                      {{ getTransactionMeta(tx).accountName }}
+                    </span>
+                    <span 
+                      v-if="tx.payment_gateway_ref" 
+                      class="text-[10px] text-slate-400 font-mono truncate max-w-[130px]" 
+                      :title="tx.payment_gateway_ref"
+                    >
+                      {{ tx.payment_gateway_ref }}
+                    </span>
+                    <span 
+                      v-else-if="!getTransactionMeta(tx).accountName" 
+                      class="text-[10px] text-slate-400"
+                    >
+                      Internal
+                    </span>
+                    <span 
+                      v-if="tx.is_sandbox" 
+                      class="px-1.5 py-0.2 text-[8px] font-bold rounded bg-yellow-100 text-yellow-700 border border-yellow-300"
+                    >
+                      SANDBOX
+                    </span>
+                  </div>
+                </div>
               </td>
               <td class="px-6 py-4 text-right font-bold"
                   :class="{
@@ -255,6 +322,14 @@
                     'text-slate-900': tx.type !== 'topup',
                   }">
                 {{ tx.type === 'topup' ? '+' : '-' }} {{ formatCurrency(tx.amount || 0, tx.currency) }}
+              </td>
+              <td class="px-6 py-4 text-right font-medium">
+                <span v-if="Number(tx.fee_amount) > 0" class="text-emerald-600 font-bold">
+                  {{ formatCurrency(tx.fee_amount, tx.currency) }}
+                </span>
+                <span v-else class="text-slate-400">
+                  -
+                </span>
               </td>
               <td class="px-6 py-4 text-center">
                 <span class="px-2.5 py-1 text-[10px] font-bold rounded-full"
@@ -535,13 +610,48 @@
               <span class="ml-2 font-bold" :class="envFilter === 'sandbox' ? 'text-yellow-600' : 'text-emerald-600'">• {{ envFilter === 'sandbox' ? 'Sandbox' : envFilter === 'all' ? 'Semua' : 'Produksi' }}</span>
             </p>
           </div>
-          <div class="flex gap-2 print:hidden">
-            <button @click="printPDF" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold rounded-lg transition-colors flex items-center gap-2">
+          <div class="flex items-center gap-2 print:hidden">
+            <button 
+              v-if="isSuperAdmin"
+              @click="hideTestingAccounts = !hideTestingAccounts"
+              type="button"
+              class="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold transition-all border shadow-2xs"
+              :class="hideTestingAccounts ? 'bg-emerald-50 text-emerald-700 border-emerald-300' : 'bg-white text-slate-500 border-slate-200 hover:bg-slate-50'"
+              :title="hideTestingAccounts ? 'Akun testing (Dymas Yoga) dikecualikan dari rekap' : 'Akun testing disertakan'"
+            >
+              <EyeOff v-if="hideTestingAccounts" class="w-3.5 h-3.5 text-emerald-600" />
+              <Eye v-else class="w-3.5 h-3.5 text-slate-400" />
+              <span>{{ hideTestingAccounts ? 'Testing Dikecualikan' : 'Semua Akun' }}</span>
+            </button>
+            <button @click="exportReportSummaryToCSV" class="px-3 py-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-sm font-bold rounded-lg transition-colors flex items-center gap-2 shadow-2xs">
+              <FileSpreadsheet class="w-4 h-4 text-emerald-600" /> Export Excel
+            </button>
+            <button @click="printPDF" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold rounded-lg transition-colors flex items-center gap-2 shadow-2xs">
               <FileText class="w-4 h-4" /> Cetak / PDF
             </button>
             <button @click="isReportModalOpen = false" class="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg">
               <X class="w-5 h-5" />
             </button>
+          </div>
+        </div>
+
+        <!-- Mini Summary Cards -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 p-4 bg-slate-50/70 border-b border-slate-100 print:bg-white print:border-b-2 print:border-slate-300 shrink-0">
+          <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-2xs print:border-slate-300">
+            <p class="text-[11px] font-medium text-slate-500">Total Top Up</p>
+            <p class="text-base font-bold text-emerald-600 mt-0.5">{{ formatCurrency(reportClientSummary.reduce((sum, c) => sum + c.totalTopup, 0)) }}</p>
+          </div>
+          <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-2xs print:border-slate-300">
+            <p class="text-[11px] font-medium text-slate-500">Dialokasikan</p>
+            <p class="text-base font-bold text-red-600 mt-0.5">{{ formatCurrency(reportClientSummary.reduce((sum, c) => sum + c.totalInternal, 0)) }}</p>
+          </div>
+          <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-2xs print:border-slate-300">
+            <p class="text-[11px] font-medium text-purple-600">Total Fee</p>
+            <p class="text-base font-bold text-purple-700 mt-0.5">{{ formatCurrency(reportClientSummary.reduce((sum, c) => sum + c.totalFee, 0)) }}</p>
+          </div>
+          <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-2xs print:border-slate-300">
+            <p class="text-[11px] font-medium text-slate-500">Sisa Saldo</p>
+            <p class="text-base font-bold text-blue-600 mt-0.5">{{ formatCurrency(reportClientSummary.reduce((sum, c) => sum + c.totalTopup - c.totalInternal, 0)) }}</p>
           </div>
         </div>
 
@@ -557,6 +667,7 @@
                 <th class="px-4 py-3 text-center text-xs">Frekuensi</th>
                 <th class="px-4 py-3 text-right text-xs">Total Top Up</th>
                 <th class="px-4 py-3 text-right text-xs">Dialokasikan</th>
+                <th class="px-4 py-3 text-right text-xs">Total Fee</th>
                 <th class="px-4 py-3 text-right text-xs">Sisa Saldo</th>
               </tr>
             </thead>
@@ -572,6 +683,9 @@
                 </td>
                 <td class="px-4 py-3 text-right font-bold text-sm text-red-600">
                   {{ formatCurrency(client.totalInternal) }}
+                </td>
+                <td class="px-4 py-3 text-right font-bold text-sm text-purple-600">
+                  {{ formatCurrency(client.totalFee) }}
                 </td>
                 <td class="px-4 py-3 text-right font-bold text-sm" :class="client.totalTopup - client.totalInternal >= 0 ? 'text-blue-700' : 'text-red-700'">
                   {{ formatCurrency(client.totalTopup - client.totalInternal) }}
@@ -590,6 +704,9 @@
                 <td class="px-4 py-3 text-right font-bold text-sm text-red-600">
                   {{ formatCurrency(reportClientSummary.reduce((sum, c) => sum + c.totalInternal, 0)) }}
                 </td>
+                <td class="px-4 py-3 text-right font-bold text-sm text-purple-600">
+                  {{ formatCurrency(reportClientSummary.reduce((sum, c) => sum + c.totalFee, 0)) }}
+                </td>
                 <td class="px-4 py-3 text-right font-bold text-sm text-blue-700">
                   {{ formatCurrency(reportClientSummary.reduce((sum, c) => sum + c.totalTopup - c.totalInternal, 0)) }}
                 </td>
@@ -599,7 +716,7 @@
 
           <!-- Diagram Visual -->
           <div class="px-6 py-6 border-t border-slate-100 bg-white">
-            <h4 class="text-sm font-bold text-slate-700 mb-4 text-center">Perbandingan Top Up vs Dialokasikan per Klien</h4>
+            <h4 class="text-sm font-bold text-slate-700 mb-4 text-center">Perbandingan Top Up vs Dialokasikan vs Fee per Klien</h4>
             <ClientOnly>
               <apexchart type="bar" :height="Math.max(220, reportClientSummary.length * 55)" :options="reportGroupedBarOptions" :series="reportGroupedBarOptions.series"></apexchart>
             </ClientOnly>
@@ -695,8 +812,8 @@
 </style>
 
 <script setup lang="ts">
-import { RefreshCw, WalletCards, Search, Receipt, ChevronDown, Download, PieChart, FileSpreadsheet, FileText, X } from 'lucide-vue-next'
-import { ref, computed } from 'vue'
+import { RefreshCw, WalletCards, Search, Receipt, ChevronDown, Download, PieChart, FileSpreadsheet, FileText, X, Eye, EyeOff } from 'lucide-vue-next'
+import { ref, computed, watch } from 'vue'
 import { useSupabaseUser, useCsrf, useToast, useConfirm } from '#imports'
 import BaseSelect from '~/components/ui/BaseSelect.vue'
 
@@ -705,22 +822,175 @@ definePageMeta({
   middleware: ['admin']
 })
 
+const route = useRoute()
 const { csrf } = useCsrf()
 const toast = useToast()
 const user = useSupabaseUser()
 const isSuperAdmin = computed(() => user.value?.user_metadata?.role === 'super_admin')
 const managingTxId = ref<string | null>(null)
 
-const activeTab = ref('history')
+// Mode filter sembunyikan akun testing (Dymas Yoga & Super Admin Dymas)
+// Hanya Super Admin yang bisa melihat tombol dan mengatur toggle ini; untuk mode finance biasa, testing SELALU disembunyikan secara mutlak
+const hideTestingAccounts = ref(true)
+const shouldHideTesting = computed(() => {
+  if (!isSuperAdmin.value) return true
+  return hideTestingAccounts.value
+})
+
+const isTestingAccount = (userId?: string, fullName?: string, email?: string) => {
+  if (userId === 'a978c0ff-8959-4dd7-b641-42e4f5103d15' || userId === 'f6f1883f-252d-484e-bfcb-ef648a677f28') {
+    return true
+  }
+  const name = (fullName || '').toLowerCase()
+  const mail = (email || '').toLowerCase()
+  if (name.includes('dymas') || mail.includes('dymasyoga11') || mail.includes('dymas@alfatihah')) {
+    return true
+  }
+  return false
+}
+
+const validTabs = ['history', 'fee-summary', 'referral', 'affiliates']
+const initialTab = typeof route.query.tab === 'string' && validTabs.includes(route.query.tab) ? route.query.tab : 'history'
+const activeTab = ref(initialTab)
+
+watch(activeTab, (newTab) => {
+  if (route.query.tab !== newTab) {
+    navigateTo({ query: { ...route.query, tab: newTab } }, { replace: true })
+  }
+})
+
+watch(() => route.query.tab, (newQueryTab) => {
+  if (typeof newQueryTab === 'string' && validTabs.includes(newQueryTab) && newQueryTab !== activeTab.value) {
+    activeTab.value = newQueryTab
+  }
+})
 const searchQuery = ref('')
 const typeFilter = ref('all')
 
 const typeFilterOptions = [
   { label: 'Semua Jenis Transaksi', value: 'all' },
-  { label: 'Top Up Masuk', value: 'topup' },
+  { label: 'Top Up Saldo', value: 'topup' },
+  { label: 'Alokasi Anggaran', value: 'allocation' },
+  { label: 'Sewa Akun Iklan', value: 'rental' },
+  { label: 'Google Ads (Gads)', value: 'google' },
+  { label: 'Facebook Ads (Meta)', value: 'meta' },
   { label: 'Pencairan Keluar', value: 'withdraw' },
   { label: 'Pencairan Komisi', value: 'affiliate_commission' },
+  { label: 'Refund Saldo', value: 'refund' },
 ]
+
+// --- Helper Deteksi Metadata Transaksi & Platform Iklan ---
+const getTransactionMeta = (tx: any) => {
+  if (tx.category_label && tx.ad_platform_label !== undefined) {
+    return {
+      category: tx.transaction_category || tx.type,
+      categoryLabel: tx.category_label || tx.type.toUpperCase(),
+      platform: tx.ad_platform,
+      platformLabel: tx.ad_platform_label,
+      accountName: tx.ad_account_name
+    }
+  }
+  
+  const rawDesc = tx.description || ''
+  const desc = rawDesc.toLowerCase()
+  let category = tx.type
+  let categoryLabel = tx.type.toUpperCase()
+  let platform: 'google' | 'meta' | 'tiktok' | null = null
+  let platformLabel: string | null = null
+  let accountName: string | null = null
+
+  if (tx.type === 'topup') {
+    category = 'topup'
+    categoryLabel = 'Top Up Saldo'
+  } else if (tx.type === 'withdraw') {
+    category = 'withdraw'
+    categoryLabel = 'Pencairan Saldo'
+  } else if (tx.type === 'affiliate_commission') {
+    category = 'affiliate_commission'
+    categoryLabel = 'Komisi Afiliasi'
+  } else if (tx.type === 'refund' || desc.includes('refund')) {
+    category = 'refund'
+    categoryLabel = 'Refund Saldo'
+  } else if (tx.type === 'payment' || desc.includes('alokasi') || desc.includes('sewa') || desc.includes('tagihan')) {
+    if (desc.includes('alokasi') || desc.includes('budget allocation')) {
+      category = 'allocation'
+      categoryLabel = 'Alokasi Anggaran'
+    } else if (desc.includes('perpanjangan sewa')) {
+      category = 'extension'
+      categoryLabel = 'Perpanjangan Sewa'
+    } else if (desc.includes('sewa akun')) {
+      category = 'rental'
+      categoryLabel = 'Sewa Akun Iklan'
+    } else if (desc.includes('tagihan') || desc.includes('release')) {
+      category = 'release'
+      categoryLabel = 'Tagihan Iklan'
+    }
+
+    if (desc.includes('(google)') || desc.includes('google ads') || desc.includes('gads') || desc.includes('google')) {
+      platform = 'google'
+      platformLabel = 'Google Ads'
+    } else if (desc.includes('(meta)') || desc.includes('facebook') || desc.includes('meta ads') || desc.includes('fb ads') || desc.includes('(fb)')) {
+      platform = 'meta'
+      platformLabel = 'Facebook Ads'
+    } else if (desc.includes('(tiktok)') || desc.includes('tiktok')) {
+      platform = 'tiktok'
+      platformLabel = 'TikTok Ads'
+    }
+
+    const match = rawDesc.match(/-\s*([^()]+?)\s*\((google|meta|facebook|tiktok)/i)
+    if (match && match[1]) {
+      accountName = match[1].trim()
+    }
+  }
+
+  return { category, categoryLabel, platform, platformLabel, accountName }
+}
+
+const getCategoryBadgeClass = (tx: any) => {
+  const meta = getTransactionMeta(tx)
+  switch (meta.category) {
+    case 'allocation':
+      return 'bg-blue-50 text-blue-700 border border-blue-200'
+    case 'rental':
+      return 'bg-purple-50 text-purple-700 border border-purple-200'
+    case 'extension':
+      return 'bg-amber-50 text-amber-700 border border-amber-200'
+    case 'topup':
+      return 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+    case 'withdraw':
+      return 'bg-orange-50 text-orange-700 border border-orange-200'
+    case 'affiliate_commission':
+      return 'bg-indigo-50 text-indigo-700 border border-indigo-200'
+    case 'refund':
+      return 'bg-cyan-50 text-cyan-700 border border-cyan-200'
+    case 'release':
+      return 'bg-slate-100 text-slate-700 border border-slate-200'
+    default:
+      return 'bg-slate-100 text-slate-700 border border-slate-200'
+  }
+}
+
+const getPlatformBadgeClass = (tx: any) => {
+  const meta = getTransactionMeta(tx)
+  if (meta.platform === 'google') {
+    return 'bg-sky-600 text-white'
+  } else if (meta.platform === 'meta') {
+    return 'bg-indigo-600 text-white'
+  } else if (meta.platform === 'tiktok') {
+    return 'bg-slate-900 text-white'
+  }
+  return 'bg-slate-700 text-white'
+}
+
+const getPlatformDotClass = (tx: any) => {
+  const meta = getTransactionMeta(tx)
+  if (meta.platform === 'google') {
+    return 'bg-sky-200'
+  } else if (meta.platform === 'meta') {
+    return 'bg-indigo-200'
+  }
+  return 'bg-slate-300'
+}
 
 const envFilter = ref('production')
 const currencyFilter = ref('all')
@@ -761,14 +1031,18 @@ const exportToCSV = () => {
     return
   }
   
-  const headers = ['Tgl & Waktu', 'Klien', 'Jenis Transaksi', 'Nominal (Rp)', 'Status']
+  const headers = ['Tgl & Waktu', 'Klien', 'Jenis Transaksi', 'Platform Iklan', 'Nama Akun / Ref', 'Nominal (Rp)', 'Fee (Rp)', 'Status']
   const rows = filteredHistory.value.map(tx => {
+    const meta = getTransactionMeta(tx)
     const isMinus = (tx.type === 'withdraw' || tx.type === 'affiliate_commission' || tx.type === 'payment')
     return [
       `"${new Date(tx.created_at).toLocaleString('id-ID')}"`,
       `"${tx.users?.email || 'N/A'}"`,
-      `"${tx.type}"`,
+      `"${meta.categoryLabel}"`,
+      `"${meta.platformLabel || '-'}"`,
+      `"${meta.accountName || tx.payment_gateway_ref || 'Internal'}"`,
       `"${isMinus ? '-' : ''}${tx.amount}"`,
+      `"${tx.fee_amount || 0}"`,
       `"${tx.status}"`
     ]
   })
@@ -791,6 +1065,10 @@ const reportClientSummary = computed(() => {
   const map = new Map()
   filteredHistory.value.forEach(tx => {
     const uid = tx.user_id
+    // Sembunyikan akun testing dari rekap (mutlak untuk mode finance)
+    if (shouldHideTesting.value && isTestingAccount(uid, tx.users?.full_name, tx.users?.email)) {
+      return
+    }
     if (!map.has(uid)) {
       map.set(uid, {
         user_id: uid,
@@ -798,14 +1076,17 @@ const reportClientSummary = computed(() => {
         count: 0,
         totalTopup: 0,
         totalInternal: 0,
+        totalFee: 0,
       })
     }
     const data = map.get(uid)
     data.count += 1
     if (tx.type === 'topup') {
       data.totalTopup += tx.amount || 0
+      data.totalFee += Number(tx.fee_amount) || 0
     } else {
       data.totalInternal += tx.amount || 0
+      data.totalFee += Number(tx.fee_amount) || 0
     }
   })
   return Array.from(map.values())
@@ -819,7 +1100,7 @@ const reportGroupedBarOptions = computed(() => {
   return {
     chart: { type: 'bar', toolbar: { show: false }, stacked: false },
     plotOptions: { bar: { borderRadius: 4, horizontal: true, barHeight: '65%' } },
-    colors: ['#10b981', '#ef4444'],
+    colors: ['#10b981', '#ef4444', '#a855f7'],
     dataLabels: { enabled: false },
     xaxis: {
       categories,
@@ -832,9 +1113,49 @@ const reportGroupedBarOptions = computed(() => {
     series: [
       { name: 'Top Up', data: clients.map(c => c.totalTopup) },
       { name: 'Dialokasikan', data: clients.map(c => c.totalInternal) },
+      { name: 'Fee Dihasilkan', data: clients.map(c => c.totalFee) },
     ]
   }
 })
+
+const exportReportSummaryToCSV = () => {
+  if (reportClientSummary.value.length === 0) {
+    alert('Tidak ada data ringkasan untuk diexport.')
+    return
+  }
+  const headers = ['No', 'Klien', 'Frekuensi Transaksi', 'Total Top Up (Rp)', 'Dialokasikan (Rp)', 'Total Fee (Rp)', 'Sisa Saldo (Rp)']
+  const rows = reportClientSummary.value.map((c, i) => [
+    `"${i + 1}"`,
+    `"${c.full_name}"`,
+    `"${c.count}"`,
+    `"${c.totalTopup}"`,
+    `"${c.totalInternal}"`,
+    `"${c.totalFee}"`,
+    `"${c.totalTopup - c.totalInternal}"`
+  ])
+  
+  const totalTopup = reportClientSummary.value.reduce((sum, c) => sum + c.totalTopup, 0)
+  const totalInternal = reportClientSummary.value.reduce((sum, c) => sum + c.totalInternal, 0)
+  const totalFee = reportClientSummary.value.reduce((sum, c) => sum + c.totalFee, 0)
+  rows.push([
+    '"TOTAL"',
+    '""',
+    `"${filteredHistory.value.length}"`,
+    `"${totalTopup}"`,
+    `"${totalInternal}"`,
+    `"${totalFee}"`,
+    `"${totalTopup - totalInternal}"`
+  ])
+  
+  const csvContent = "data:text/csv;charset=utf-8," + [headers.join(','), ...rows.map(r => r.join(','))].join('\n')
+  const encodedUri = encodeURI(csvContent)
+  const link = document.createElement("a")
+  link.setAttribute("href", encodedUri)
+  link.setAttribute("download", `Ringkasan_Mutasi_${formatDateOnly(historyDateRange.value.start)}_to_${formatDateOnly(historyDateRange.value.end)}.csv`)
+  document.body.appendChild(link)
+  link.click()
+  link.remove()
+}
 
 const feeBarChartOptions = computed(() => {
   const labels = filteredFeeSummary.value.map(item => item.full_name)
@@ -988,14 +1309,32 @@ const filteredHistory = computed(() => {
     const q = searchQuery.value.toLowerCase()
     history = history.filter(tx => tx.users?.full_name?.toLowerCase().includes(q))
   }
+  // Sembunyikan akun testing dari daftar jika aktif (mutlak untuk mode finance)
+  if (shouldHideTesting.value) {
+    history = history.filter(tx => !isTestingAccount(tx.user_id, tx.users?.full_name, tx.users?.email))
+  }
   if (typeFilter.value !== 'all') {
-    history = history.filter(tx => tx.type === typeFilter.value)
+    history = history.filter(tx => {
+      const meta = getTransactionMeta(tx)
+      if (typeFilter.value === 'topup') return tx.type === 'topup'
+      if (typeFilter.value === 'withdraw') return tx.type === 'withdraw'
+      if (typeFilter.value === 'affiliate_commission') return tx.type === 'affiliate_commission'
+      if (typeFilter.value === 'allocation') return meta.category === 'allocation'
+      if (typeFilter.value === 'rental') return meta.category === 'rental' || meta.category === 'extension'
+      if (typeFilter.value === 'google') return meta.platform === 'google'
+      if (typeFilter.value === 'meta') return meta.platform === 'meta'
+      if (typeFilter.value === 'refund') return tx.type === 'refund' || meta.category === 'refund'
+      return tx.type === typeFilter.value
+    })
   }
   return history
 })
 
 const totalFeeRevenue = computed(() => {
   let txs = transactions.value.filter(tx => tx.type === 'topup' && tx.status === 'success')
+  if (shouldHideTesting.value) {
+    txs = txs.filter(tx => !isTestingAccount(tx.user_id, tx.users?.full_name, tx.users?.email))
+  }
   // Filter by environment
   if (envFilter.value === 'production') {
     txs = txs.filter(tx => !tx.is_sandbox)
@@ -1013,6 +1352,9 @@ const totalFeeRevenue = computed(() => {
 
 const filteredFeeSummary = computed(() => {
   let txs = transactions.value.filter(tx => tx.type === 'topup' && tx.status === 'success')
+  if (shouldHideTesting.value) {
+    txs = txs.filter(tx => !isTestingAccount(tx.user_id, tx.users?.full_name, tx.users?.email))
+  }
   
   if (envFilter.value === 'production') {
     txs = txs.filter(tx => !tx.is_sandbox)
