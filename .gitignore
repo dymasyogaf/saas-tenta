@@ -23,12 +23,23 @@ logs
 .env.*
 !.env.example
 
-# Markdown and SQL files
-*.md
-*.sql
+# Cloudflare Wrangler cache
+.wrangler/
 
-# Test/debug scripts
-check_db.js
-test-db.js
-test-duitku.js
-test-query.js
+# Internal documentation & reports
+laporan/
+SOP/
+docs/
+*.md
+!README.md
+
+# Database & Supabase migrations
+supabase/
+*.sql
+*.sqlite*
+
+# Test and debug scripts
+scripts/
+check_*.js
+test*.js
+test-*.js
