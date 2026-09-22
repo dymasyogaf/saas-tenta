@@ -80,8 +80,8 @@ export default defineNuxtConfig({
   // Supabase config
   supabase: {
     redirect: false, // We'll handle auth redirects manually
-    url: 'https://pjmsnphhnporuownasxe.supabase.co',
-    key: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBqbXNucGhobnBvcnVvd25hc3hlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQxODU0NDcsImV4cCI6MjA5OTc2MTQ0N30.nqxxJD-KqRcQjDrwEbyNBcKEiCY151_kNaBwk1APhbA',
+    url: process.env.SUPABASE_URL || process.env.NUXT_PUBLIC_SUPABASE_URL || 'https://pjmsnphhnporuownasxe.supabase.co',
+    key: process.env.SUPABASE_KEY || process.env.NUXT_PUBLIC_SUPABASE_KEY || '',
     serviceKey: process.env.SUPABASE_SERVICE_KEY,
     types: false, // Disable database type generation to suppress warning
   },
@@ -132,14 +132,14 @@ export default defineNuxtConfig({
     nowpaymentsApiKey: process.env.NOWPAYMENTS_API_KEY || '',
     nowpaymentsIpnSecret: process.env.NOWPAYMENTS_IPN_SECRET || '',
     nowpaymentsWebhookUrl: process.env.NOWPAYMENTS_WEBHOOK_URL || 'https://area.tentaklik.com/api/nowpayments/webhook',
-    vapidPrivateKey: process.env.VAPID_PRIVATE_KEY || '-BIi0inbvsu42yCZ4r-jyArYKcVwohBF8bz2Lg7aypQ',
+    vapidPrivateKey: process.env.VAPID_PRIVATE_KEY || process.env.NUXT_VAPID_PRIVATE_KEY || '',
     vapidSubject: process.env.VAPID_SUBJECT || 'mailto:admin@tentaklik.com',
     // Public keys (exposed to client)
     public: {
       appName: 'Tentaklik',
-      supabaseUrl: '',
-      supabaseKey: '',
-      vapidPublicKey: process.env.VAPID_PUBLIC_KEY || 'BFc5tXocI2v1YFHh__LGA63kjdm3S19HHvlpLRXNDg8ZR_nIVs6Nxnd0ImmP_7h9XeTMBsRCgTqr5CK_ApZLMDs',
+      supabaseUrl: process.env.SUPABASE_URL || process.env.NUXT_PUBLIC_SUPABASE_URL || '',
+      supabaseKey: process.env.SUPABASE_KEY || process.env.NUXT_PUBLIC_SUPABASE_KEY || '',
+      vapidPublicKey: process.env.VAPID_PUBLIC_KEY || process.env.NUXT_PUBLIC_VAPID_PUBLIC_KEY || '',
       pricingMonthly: 150000,
       pricingMonthlyUsd: 31,
       pricingQuarterly: 350000,
