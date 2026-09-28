@@ -134,3 +134,33 @@ Setiap kali ada akun baru di `auth.users`, trigger otomatis:
 |:---|:---|:---|
 | `support_attachments` | **Public** | Screenshot / bukti transfer di tiket support |
 | `kyc_documents` | **Private** | Foto KTP / Paspor untuk verifikasi identitas — hanya admin yang dapat akses via Signed URL |
+
+---
+
+## 5. 📂 Urutan Eksekusi File Migrasi Database
+
+Semua file SQL ada di folder `supabase/migrations/`. Karena tidak menggunakan Supabase CLI dengan timestamp otomatis, **eksekusi manual harus mengikuti urutan berikut** di Supabase Dashboard → SQL Editor:
+
+| Urutan | File | Keterangan |
+|:---|:---|:---|
+| 1 | `supabase_schema.sql` | **WAJIB PERTAMA** — Base schema: semua tabel utama, RLS, trigger, storage buckets |
+| 2 | `alter_db_v2.sql` | Tambah kolom sewa akun & update status pengajuan |
+| 3 | `supabase_updates.sql` | Tambah `weekly_spend` ke ad_accounts & fungsi broadcast pertama |
+| 4 | `supabase_updates_2.sql` | Tambah tabel `broadcasts`, update fungsi broadcast dengan history |
+| 5 | `add_is_sandbox_column.sql` | Tambah kolom `is_sandbox` ke transactions |
+| 6 | `add_payment_data_column.sql` | Tambah `payment_url` & `payment_data` ke transactions |
+| 7 | `add_notifications_realtime.sql` | Enable Supabase Realtime untuk tabel notifications |
+| 8 | `add_usd_balance.sql` | Tambah `usd_balance` & `usd_pending_balance` ke saldo (fitur global) |
+| 9 | `add_usd_package_and_currency.sql` | Tambah kolom `currency` ke transactions & field USD ke users |
+| 10 | `budget_requests_migration.sql` | Buat tabel `ad_budget_requests` |
+| 11 | `referral_update.sql` | Buat sequence & fungsi generate kode referral |
+| 12 | `finance_referral_migration.sql` | Buat tabel `affiliate_profiles` & `referrals` |
+| 13 | `referral_trigger_update.sql` | Update trigger `handle_new_user` untuk auto-track referral saat registrasi |
+| 14 | `package_expiration_migration.sql` | Tambah `package_expires_at` ke users & logika stacking paket |
+| 15 | `supabase_rpc_functions.sql` | Semua RPC functions untuk atomic balance operations |
+| 16 | `supabase_audit_logs.sql` | Sistem audit log perubahan data |
+| 17 | `add_push_subscriptions.sql` | Tabel `push_subscriptions` untuk Web Push Notification |
+| 18 | `system_health_setup.sql` | Tabel `system_health` untuk keepalive/monitoring |
+
+> **Catatan**: Semua SQL aman dijalankan berulang karena menggunakan klausa `IF NOT EXISTS` dan `ADD COLUMN IF NOT EXISTS`. File duplikat `add_weekly_spend.sql` telah dihapus karena sudah tercakup di `supabase_updates.sql`.
+

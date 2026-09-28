@@ -82,7 +82,56 @@ Jika ada penambahan tabel atau kolom baru:
 
 ## 6. 🛡️ SOP Pre-Push Quality Gate (5 Layer)
 
-Detail lengkap ada di `docs/SOP_PRE_COMMIT_PUSH.md`. Ringkasan:
+> **Tujuan**: Memastikan setiap baris kode yang masuk ke branch utama telah melewati 5 lapis filter kualitas, bebas bug logika, bebas deadcode, bebas CSRF token error, dan menjamin pemisahan data 100% mutlak antara domain global (`area.tentaklik.com`) dan domestik (`member.tentaklik.com`).
+
+```
+┌──────────────────────────────────────────────────────────────┐
+│                   5-LAYER PRE-PUSH FILTER                    │
+├──────────────────────────────────────────────────────────────┤
+│  Layer 1: Type Safety & Static Analysis (vue-tsc)           │
+│  Layer 2: CSRF Token & Security Integrity Audit             │
+│  Layer 3: Multi-Domain & Currency Isolation Check           │
+│  Layer 4: Production Build Verification (npm run build)      │
+│  Layer 5: Git Hygiene & Conventional Commit Standard        │
+└──────────────────────────────────────────────────────────────┘
+```
+
+### 🛡️ Layer 1: Type Safety & Static Code Analysis
+```bash
+npx vue-tsc --noEmit
+```
+**Kriteria Lolos:** Exit Code 0 — 0 Errors, 0 Warnings. Tidak ada unused import atau deadcode.
+
+### 🔒 Layer 2: CSRF Token Audit
+Pastikan setiap komponen yang melakukan `POST`, `PUT`, `DELETE`, atau `PATCH` menggunakan `unref(csrf)`:
+```ts
+// ❌ SALAH — menyebabkan error CSRF:
+headers: { 'csrf-token': csrf }
+
+// ✅ BENAR:
+const csrfToken = unref(csrf) || ''
+headers: csrfToken ? { 'csrf-token': csrfToken } : {}
+```
+
+### 🌐 Layer 3: Isolasi Domain & Mata Uang
+
+| Parameter | `area.tentaklik.com` (Global) | `member.tentaklik.com` (Domestik) |
+|:---|:---|:---|
+| **Saldo** | `usd_balance` & `usd_pending_balance` | `balance` & `pending_balance` |
+| **Mata Uang** | `$ / USDT` (Paritas 1:1) | `Rp / IDR` |
+| **Gateway** | NOWPayments (USDT TRC-20) | Duitku (VA Bank & E-Wallet) |
+| **Transaksi** | `currency: 'USD'` | `currency: 'IDR'` |
+| **Referral** | Wallet Tron USDT, min 10 USDT | Rekening Bank Lokal, min Rp 100.000 |
+| **KYC** | Passport / National ID (5-20 char) | KTP / NIK (8-20 digit) |
+| **Bahasa** | 100% English | Bahasa Indonesia |
+
+### 📦 Layer 4: Production Build Verification
+```bash
+npm run build
+```
+Kriteria: Bundle `dist/` berhasil terbuat tanpa error SSR atau bundling.
+
+### 🌿 Layer 5: Git Hygiene & Semantic Commit
 
 ```bash
 # Layer 1: Type Safety

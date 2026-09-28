@@ -26,18 +26,16 @@ logs
 # Cloudflare Wrangler cache
 .wrangler/
 
-# Internal documentation & reports
+# Internal documentation & reports (merged into handover/)
 laporan/
-SOP/
-docs/
 *.md
 !README.md
 !handover/**
 
 # Database & Supabase migrations
-supabase/
 *.sql
 *.sqlite*
+!supabase/migrations/**
 
 # Test and debug scripts
 scripts/

@@ -70,7 +70,7 @@ approved         rejected (dengan catatan alasan)
 
 ### Jalur B — SOP "Suntik Akun" Manual (Oleh Staf Admin Langsung)
 
-Berlaku untuk klien prioritas atau migrasi akun. Detail lengkap ada di `SOP/SOP_SUNTIK_AKUN.md`.
+Berlaku untuk klien prioritas atau migrasi akun (lihat [SOP Suntik Akun di Bagian 6](#6--sop-suntik-akun-manual-oleh-tim-ads-ops)).
 
 #### Aturan Wajib yang HARUS Dipatuhi:
 
@@ -158,3 +158,106 @@ Direktori: `server/api/cron/`
 | `cleanup-pending-transactions.ts` | Tiap 6 jam | Ubah transaksi `pending` yang berusia > 24 jam menjadi `cancelled` |
 
 > **Catatan**: Cron jobs ini bukan scheduler bawaan Nuxt/Cloudflare. Mereka adalah endpoint API biasa yang harus dipanggil oleh external scheduler (misalnya Cloudflare Cron Triggers, atau ping berkala dari layanan monitoring seperti UptimeRobot / BetterStack).
+
+---
+
+## 6. 📋 SOP Suntik Akun Manual (Oleh Tim Ads Ops)
+
+### Aturan Wajib
+
+**1. Jangan eksekusi langsung** — Kumpulkan data dulu, buat rangkuman rencana, tunggu konfirmasi eksplisit dari atasan (misal: "gas", "eksekusi") sebelum ubah data database.
+
+**2. Format ID Akun — tanpa strip/dash**
+- ✅ Benar: `6133346743`
+- ❌ Salah: `613-334-6743`
+- Bersihkan dengan: `rawId.replace(/\D/g, '')`
+
+**3. Nama akun dari API, bukan ketik manual**
+- Tarik dari endpoint internal: `/api/ads/google/accounts` atau `/api/ads/meta/accounts`
+- Cocokkan dengan `account_id`, gunakan nama resmi yang dikembalikan API
+
+**4. Sinkronisasi 2 tabel sekaligus**
+
+| Tabel | Kolom yang diupdate |
+|:---|:---|
+| `users` | `active_package`, `package_weekly_limit` |
+| `ad_accounts` | `limit_amount` |
+
+Contoh nilai paket:
+
+| Paket | `active_package` | `package_weekly_limit` | `limit_amount` |
+|:---|:---|:---|:---|
+| Starter | `starter` | `5000000` | `5000000` |
+| Growth | `growth` | `15000000` | `15000000` |
+| Scale | `scale` | `50000000` | `50000000` |
+
+**5. Perhitungan masa sewa (28 hari = 1 bulan)**
+- Format kolom `subscription_expires_at`: ISO UTC — `2026-10-03T00:00:00Z`
+- Jika suntik terlambat (klien mulai tanggal 6, disuntik tanggal 14): **backdate** kolom `created_at` ke tanggal mulai asli (`2026-09-06T00:00:00Z`) agar siklus reset limit mingguan terhitung benar
+
+**6. Set status langsung ke `active`** agar data langsung valid di dashboard admin
+
+---
+
+## 7. 📢 SOP Broadcast / Pengumuman (Khusus Super Admin)
+
+### Aturan Dasar
+1. **Pisahkan target audiens** — jangan kirim satu pesan yang sama untuk Klien dan Admin jika isinya berbeda
+2. Buat **2 broadcast terpisah** jika sebuah update berdampak pada keduanya
+
+### Gaya Bahasa
+| Target | Gaya |
+|:---|:---|
+| **Klien / Clients** | Ramah, fokus manfaat, hindari istilah teknis (API, database, dll.) |
+| **Tim Internal (Admin)** | Fokus instruksi operasional, teknis boleh, jelaskan tools baru |
+
+### Prosedur
+1. Buka **Panel Admin → Pengumuman**
+2. Tulis **Judul** singkat & menarik (1 kalimat, boleh pakai emoji)
+3. Tulis **Pesan** — gunakan bold/italic/bullet agar mudah di-scan
+4. Pilih **Target Penerima**: Semua Klien / Semua Admin / Pengguna Tertentu
+5. Periksa ulang sebelum kirim — **pesan yang terkirim tidak dapat ditarik kembali**
+
+### Template Siap Pakai
+
+**Template Update Sistem (untuk Klien):**
+```text
+Judul: 🚀 Update Sistem: [Nama Fitur]
+
+Halo Rekan Tentaklik,
+
+Demi kenyamanan Anda, kami telah melakukan pembaruan sistem:
+1. [Fitur 1]: [Jelaskan manfaatnya untuk klien]
+2. [Fitur 2]: [Jelaskan manfaatnya untuk klien]
+
+Jika ada kendala, hubungi kami via Tiket Bantuan.
+Salam sukses, Tim Tentaklik
+```
+
+**Template Update Internal (untuk Admin/Ads Ops):**
+```text
+Judul: 🛠️ Update Internal: [Modul/Fitur]
+
+Halo Tim Admin & Ads Ops,
+
+Dasbor admin diperbarui dengan fitur:
+1. [Fitur 1]: [Cara pakainya]
+2. [Fitur 2]: [Cara pakainya]
+
+Maksimalkan fitur ini untuk target harian. Semangat!
+```
+
+**Template Maintenance:**
+```text
+Judul: 🔧 Info Pemeliharaan Sistem (Maintenance) Rutin
+
+Halo Rekan Tentaklik,
+
+Kami akan melakukan pemeliharaan server pada:
+Hari/Tanggal: [isi]
+Pukul: [misal: 23:00 - 02:00 WIB]
+
+Selama maintenance, dasbor mungkin tidak dapat diakses sementara.
+Iklan Anda tetap berjalan dan tayang seperti biasa.
+Mohon maaf atas ketidaknyamanan ini.
+```

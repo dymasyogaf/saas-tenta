@@ -114,9 +114,7 @@ Saas Tenta/
 ├── supabase/
 │   └── migrations/                   # File SQL migrasi database berurutan
 │
-├── handover/                         # Dokumen serah terima proyek (dokumen ini)
-├── docs/                             # Dokumentasi internal teknis tambahan
-├── SOP/                              # Standar Operasional Prosedur
+├── handover/                         # Dokumen serah terima, SOP internal & panduan operasional
 ├── nuxt.config.ts                    # Konfigurasi induk Nuxt
 ├── wrangler.toml                     # Konfigurasi Cloudflare Pages deployment
 ├── .env.example                      # Template variabel environment

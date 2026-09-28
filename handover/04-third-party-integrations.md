@@ -135,3 +135,42 @@ Direktori: `server/api/ads/`
 4. Backend push notifikasi saat ada update tiket, peringatan saldo menipis, atau pengumuman broadcast.
 
 > **Generate VAPID Key Baru**: `npx web-push generate-vapid-keys`
+
+
+---
+
+## 5. 💱 Panduan Topup Manual via Indodax (USDT TRC-20)
+
+Panduan ini untuk klien atau staf yang melakukan pembayaran deposit saldo menggunakan **INDODAX** melalui jaringan crypto **USDT TRC-20**.
+
+> **WAJIB Jaringan TRC-20 (TRON Network)** — Jangan kirim via ERC-20, BEP-20, atau jaringan lain. Kesalahan jaringan = dana hilang permanen di blockchain.
+
+### Langkah 1: Beli USDT di Indodax (jika saldo masih IDR)
+1. Buka Indodax → **Market / Pasar** → cari **USDT / IDR**
+2. Pilih **Beli (Market Order)** → masukkan nominal IDR yang cukup **+ 1 USDT** (cadangan biaya withdraw jaringan)
+
+### Langkah 2: Salin Detail Tagihan dari TentaKlik
+Di halaman /dashboard/topup/payment:
+- Salin **Exact Amount** (misal: 31.50 USDT)
+- Salin **TRC-20 Wallet Address** (diawali huruf T...)
+- Atau scan **QR Code** langsung dari kamera ponsel
+
+### Langkah 3: Kirim USDT dari Indodax
+1. Indodax → **Wallet** → **USDT** → **Kirim / Withdraw**
+2. Pilih jaringan: **TRC20 / TRON (TRX)**
+3. Paste alamat tujuan & isi nominal
+4. **Perhatikan kolom "Jumlah Diterima"** — harus sama persis dengan tagihan TentaKlik
+   - Contoh: Tagihan 31.50 USDT + biaya withdraw Indodax 1 USDT = kirim 32.50 USDT
+5. Konfirmasi via OTP / email Indodax
+
+### Langkah 4: Verifikasi Otomatis
+- Jaringan TRON TRC-20 membutuhkan **1–5 menit** untuk konfirmasi
+- Halaman TentaKlik mendeteksi transaksi secara otomatis
+- Saldo USD langsung bertambah setelah terkonfirmasi
+
+### FAQ
+| Masalah | Solusi |
+|:---|:---|
+| Nominal yang dikirim kurang | Cek "Jumlah Diterima" di Indodax sebelum konfirmasi — harus sama persis |
+| Halaman tertutup saat proses | Masuk lagi → **Top Up** → klik **Pay Now** / **Resume** di transaksi pending |
+| Status belum berubah > 15 menit | Klik **Check Payment Status** atau hubungi CS via WhatsApp dengan TxID / Hash transaksi dari Indodax |
