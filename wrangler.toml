@@ -1,5 +1,5 @@
 # Cloudflare Pages configuration
-name = "tentaklik-saas"
+name = "saas-tenta"
 compatibility_date = "2025-07-15"
 pages_build_output_dir = "dist"
 
