@@ -256,38 +256,26 @@ export const useSaldoStore = defineStore('saldo', {
           }
         })
         
-        // Metode e-wallet / QRIS → tetap redirect ke Duitku
-        const eWalletMethods = ['OV', 'SA', 'DA', 'SP', 'FT', 'IR']
-        const isEWallet = eWalletMethods.includes(method)
-
         if (response && response.success) {
-          if (isEWallet && response.paymentUrl) {
-            // E-wallet: redirect ke halaman Duitku seperti biasa
-            window.location.href = response.paymentUrl
-          } else if (response.vaNumber || response.paymentCode) {
-            // Virtual Account: redirect ke halaman custom kita sendiri
-            await navigateTo({
-              path: '/dashboard/topup/payment',
-              query: {
-                orderId: response.merchantOrderId,
-                ref: response.reference,
-                va: response.vaNumber || response.paymentCode,
-                bank: response.paymentMethod,
-                bankCode: response.bankCode,
-                method: response.paymentName,
-                amount: String(response.paymentAmount),
-                net: String(response.netAmount),
-                fee: String(response.feeAmount),
-                pkg: response.packageType,
-                createdAt: new Date().toISOString()
-              }
-            })
-          } else if (response.paymentUrl) {
-            // Fallback: redirect ke Duitku jika tidak ada data VA
-            window.location.href = response.paymentUrl
-          } else {
-            throw new Error('Gagal mendapatkan data pembayaran')
-          }
+          // Selalu redirect ke halaman custom kita sendiri untuk menampilkan QRIS / VA / E-Wallet dengan UI yang sama
+          await navigateTo({
+            path: '/dashboard/topup/payment',
+            query: {
+              orderId: response.merchantOrderId,
+              ref: response.reference,
+              va: response.vaNumber || response.paymentCode || '',
+              qrString: response.qrString || '',
+              paymentUrl: response.paymentUrl || '',
+              bank: response.paymentMethod,
+              bankCode: response.bankCode,
+              method: response.paymentName,
+              amount: String(response.paymentAmount),
+              net: String(response.netAmount),
+              fee: String(response.feeAmount),
+              pkg: response.packageType,
+              createdAt: new Date().toISOString()
+            }
+          })
         } else {
           throw new Error('Gagal mendapatkan link pembayaran')
         }

@@ -586,10 +586,16 @@ const paymentMethods = computed(() => {
     ]
   }
   return [
+    { value: 'BC', name: 'BCA VA', logo: '/logos/bca.svg' },
+    { value: 'BR', name: 'BRI VA', logo: '/logos/bri.svg' },
     { value: 'M2', name: 'Mandiri VA', logo: '/logos/mandiri.png' },
     { value: 'I1', name: 'BNI VA', logo: '/logos/bni.png' },
     { value: 'B1', name: 'BSI VA', logo: '/logos/bsi.png' },
     { value: 'A1', name: 'ATM Bersama', logo: '/logos/atmbersama.png' },
+    { value: 'SP', name: 'QRIS', logo: '/logos/qris.svg' },
+    { value: 'OV', name: 'OVO', logo: '/logos/ovo.svg' },
+    { value: 'DA', name: 'DANA', logo: '/logos/dana.svg' },
+    { value: 'SA', name: 'ShopeePay', logo: '/logos/shopeepay.svg' },
     { value: 'FT', name: 'Alfamart', logo: '/logos/alfamart.svg' },
     { value: 'IR', name: 'Indomaret', logo: '/logos/indomaret.png' },
   ]

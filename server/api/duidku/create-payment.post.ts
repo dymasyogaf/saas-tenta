@@ -226,6 +226,7 @@ export default defineEventHandler(async (event) => {
         // Data untuk halaman custom VA
         vaNumber: result.vaNumber || result.paymentCode || null,
         paymentCode: result.paymentCode || result.vaNumber || null,
+        qrString: result.qrString || null,
         bankCode: bankCodes[method] || null,
         paymentName,
         paymentMethod: method,

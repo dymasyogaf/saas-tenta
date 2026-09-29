@@ -287,8 +287,14 @@
                 </div>
               </div>
 
+              <!-- QR Code Box -->
+              <div v-if="route.query.qrString && route.query.qrString !== 'null' && route.query.qrString !== 'undefined'" class="bg-white p-4 rounded-2xl border border-slate-200/90 shadow-sm text-center mb-1">
+                <img :src="`https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(route.query.qrString as string)}&margin=8`" alt="QRIS Code" class="w-48 h-48 sm:w-56 sm:h-56 rounded-xl mx-auto object-contain" />
+                <p class="text-[11px] font-semibold text-slate-500 mt-2.5">Scan this QR Code using any supported payment app</p>
+              </div>
+
               <!-- VA Number -->
-              <div class="payment-va__number-box">
+              <div v-else-if="route.query.va && route.query.va !== 'null' && route.query.va !== 'undefined' && route.query.va !== ''" class="payment-va__number-box">
                 <p class="payment-va__number-label">Virtual Account Number</p>
                 <div class="payment-va__number-row">
                   <span class="payment-va__number">{{ formatVA(route.query.va as string) }}</span>
@@ -297,6 +303,14 @@
                     {{ copied ? 'Copied!' : 'Copy' }}
                   </button>
                 </div>
+              </div>
+
+              <!-- App Redirect Box (Fallback for E-Wallet / QRIS) -->
+              <div v-else-if="route.query.paymentUrl && route.query.paymentUrl !== 'null' && route.query.paymentUrl !== 'undefined'" class="bg-white p-6 rounded-2xl border border-slate-200/90 shadow-sm text-center mb-1 space-y-4">
+                <p class="text-sm text-slate-600">Please complete the payment via the <strong>{{ route.query.method }}</strong> app or portal.</p>
+                <a :href="route.query.paymentUrl as string" class="payment-btn payment-btn--primary mx-auto w-full sm:w-auto px-8 inline-flex justify-center">
+                  Open {{ route.query.method }} App <ExternalLink class="w-4 h-4 ml-2" />
+                </a>
               </div>
 
               <!-- Warning -->
@@ -585,11 +599,15 @@ const bankLogoMap: Record<string, string> = {
   'BM': '/logos/mandiri.png',
   'I1': '/logos/bni.png',
   'B1': '/logos/bsi.png',
-  'BC': '/logos/bca.png',
-  'BR': '/logos/bri.png',
+  'BC': '/logos/bca.svg',
+  'BR': '/logos/bri.svg',
   'A1': '/logos/atmbersama.png',
   'FT': '/logos/alfamart.svg',
   'IR': '/logos/indomaret.png',
+  'OV': '/logos/ovo.svg',
+  'SA': '/logos/shopeepay.svg',
+  'DA': '/logos/dana.svg',
+  'SP': '/logos/qris.svg',
 }
 const bankLogo = computed(() => bankLogoMap[route.query.bank as string] || null)
 
